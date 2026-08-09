@@ -1,0 +1,12 @@
+[project]
+name = "tradeflow-ai-engine"
+version = "0.1.0"
+description = "TradeFlow AI Microservice for dynamic spot pricing, freight matching, ETA prediction, and VRP route optimization"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+    "scikit-learn>=1.4.0",
+    "ortools>=9.9.0",
+    "pydantic>=2.7.0"
+]
+requires-python = ">=3.11"

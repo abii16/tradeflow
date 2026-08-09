@@ -1,0 +1,26 @@
+{
+  "name": "tradeflow",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:web": "npm --prefix web run dev",
+    "dev:mobile": "npm --prefix mobile run start",
+    "dev:ai": "cd ai-engine && .venv\\Scripts\\python -m uvicorn app.main:app --reload",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.5"
+  }
+}
