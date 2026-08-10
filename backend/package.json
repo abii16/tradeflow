@@ -11,21 +11,27 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "argon2": "^0.45.1",
+    "bullmq": "^5.7.8",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "socket.io": "^4.7.5",
-    "bullmq": "^5.7.8",
-    "jsonwebtoken": "^9.0.2",
-    "zod": "^3.23.8",
     "drizzle-orm": "^0.30.10",
-    "postgres": "^3.4.4"
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "postgres": "^3.4.4",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.7.5",
+    "speakeasy": "^2.0.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
     "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.12.12",
+    "@types/speakeasy": "^2.0.10",
     "drizzle-kit": "^0.21.4",
     "tsx": "^4.10.5",
     "typescript": "^5.4.5"
