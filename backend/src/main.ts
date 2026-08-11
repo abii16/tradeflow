@@ -12,6 +12,7 @@ app.use(express.json());
 
 import { AuthController } from './auth/auth.controller';
 import { loadsRoutes } from './routes/loads.routes';
+import { bidsRoutes } from './routes/bids.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
 
 app.get('/health', (req, res) => {
@@ -20,6 +21,7 @@ app.get('/health', (req, res) => {
 
 app.use('/auth', AuthController);
 app.use('/loads', loadsRoutes);
+app.use('/bids', bidsRoutes);
 
 startTtlWorker();
 
