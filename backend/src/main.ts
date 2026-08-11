@@ -15,6 +15,7 @@ import { AuthController } from './auth/auth.controller';
 import { loadsRoutes } from './routes/loads.routes';
 import { bidsRoutes } from './routes/bids.routes';
 import { customsRoutes } from './routes/customs.routes';
+import { pricingRoutes } from './routes/pricing.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
 import { SocketGateway } from './gateways/socket.gateway';
 
@@ -26,6 +27,7 @@ app.use('/auth', AuthController);
 app.use('/loads', loadsRoutes);
 app.use('/bids', bidsRoutes);
 app.use('/customs', customsRoutes);
+app.use('/pricing', pricingRoutes);
 
 startTtlWorker();
 
