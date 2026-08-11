@@ -8,22 +8,43 @@ export interface ExtractedData {
   totalWeight?: string | null;
 }
 
+import xlsx from 'xlsx';
+import mammoth from 'mammoth';
+
 /**
  * Extracts text from a buffer based on mime type.
- * Supports PDFs via pdf-parse and Images via tesseract.js
+ * Supports PDFs, Images, Excel, and Word files.
  */
 export async function extractText(fileBuffer: Buffer, mimeType: string): Promise<string> {
   if (mimeType === 'application/pdf') {
     const data = await pdfParse(fileBuffer);
-    return data.text;
+    return data.text.toLowerCase();
+  }
+  
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || mimeType === 'application/vnd.ms-excel') {
+    console.log("Excel ፋይል እየተነበበ ነው...");
+    const workbook = xlsx.read(fileBuffer, { type: 'buffer' });
+    let fullText = "";
+    workbook.SheetNames.forEach(sheetName => {
+      const sheet = workbook.Sheets[sheetName];
+      fullText += xlsx.utils.sheet_to_txt(sheet) + " ";
+    });
+    return fullText.toLowerCase();
+  }
+
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    console.log("Word ፋይል እየተነበበ ነው...");
+    const { value } = await mammoth.extractRawText({ buffer: fileBuffer });
+    return value.toLowerCase();
   }
   
   if (mimeType.startsWith('image/')) {
+    console.log("ፎቶ እየተነበበ ነው...");
     const result = await Tesseract.recognize(fileBuffer, 'eng');
-    return result.data.text;
+    return result.data.text.toLowerCase();
   }
   
-  throw new Error(`Unsupported file type: ${mimeType}`);
+  throw new Error("የማይታወቅ የፋይል አይነት! እባክዎ PDF, ፎቶ, Word ወይም Excel ብቻ ይጫኑ።");
 }
 
 /**
