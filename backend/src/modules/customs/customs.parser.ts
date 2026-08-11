@@ -30,8 +30,8 @@ export async function extractText(fileBuffer: Buffer, mimeType: string): Promise
  * Parses a Commercial Invoice text for required fields.
  */
 export function parseInvoice(text: string): ExtractedData {
-  const invoiceNumberMatch = text.match(/invoice\s*(?:no|number|#)?\s*:?\s*([a-zA-Z0-9-]+)/i);
-  const totalValueMatch = text.match(/total\s*(?:value|amount)?\s*:?\s*[\$£€]?\s*([\d,]+\.?\d*)/i);
+  const invoiceNumberMatch = text.match(/invoice[ \t]*(?:no\.?|number|#)?[ \t]*:?[ \t]*([a-zA-Z0-9-]+)/i);
+  const totalValueMatch = text.match(/total[ \t]*(?:value|amount)?[ \t]*:?[ \t]*[\$£€]?[ \t]*([\d,]+\.?\d*)/i);
   
   return {
     invoiceNumber: invoiceNumberMatch ? invoiceNumberMatch[1].trim() : null,
@@ -43,8 +43,8 @@ export function parseInvoice(text: string): ExtractedData {
  * Parses a Packing List text for required fields.
  */
 export function parsePackingList(text: string): ExtractedData {
-  const invoiceNumberMatch = text.match(/invoice\s*(?:no|number|#)?\s*:?\s*([a-zA-Z0-9-]+)/i);
-  const totalWeightMatch = text.match(/total\s*weight\s*:?\s*([\d,]+\.?\d*)/i);
+  const invoiceNumberMatch = text.match(/invoice[ \t]*(?:no\.?|number|#)?[ \t]*:?[ \t]*([a-zA-Z0-9-]+)/i);
+  const totalWeightMatch = text.match(/total[ \t]*weight[ \t]*:?[ \t]*([\d,]+\.?\d*)/i);
   
   return {
     invoiceNumber: invoiceNumberMatch ? invoiceNumberMatch[1].trim() : null,
