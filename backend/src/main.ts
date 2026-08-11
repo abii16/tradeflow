@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ import { loadsRoutes } from './routes/loads.routes';
 import { bidsRoutes } from './routes/bids.routes';
 import { customsRoutes } from './routes/customs.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
+import { SocketGateway } from './gateways/socket.gateway';
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'TradeFlow API Gateway', timestamp: new Date().toISOString() });
@@ -27,6 +29,9 @@ app.use('/customs', customsRoutes);
 
 startTtlWorker();
 
-app.listen(PORT, () => {
+const httpServer = createServer(app);
+export const socketGateway = new SocketGateway(httpServer);
+
+httpServer.listen(PORT, () => {
   console.log(`Backend API Gateway running on port ${PORT}`);
 });
