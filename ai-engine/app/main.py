@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.api.v1.spot_pricing import router as spot_pricing_router
+from app.api.v1.eta_prediction import router as eta_prediction_router
 
 app = FastAPI(
     title="TradeFlow AI Engine Microservice",
@@ -13,3 +14,4 @@ def health_check():
 
 # Register API v1 Routers
 app.include_router(spot_pricing_router, prefix="/api/v1")
+app.include_router(eta_prediction_router, prefix="/api/v1")

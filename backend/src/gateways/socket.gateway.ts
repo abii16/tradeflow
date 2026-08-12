@@ -40,6 +40,52 @@ export class SocketGateway {
         console.log(`[Socket.io] Client ${socket.id} left room ${roomId}`);
       });
 
+      // FR-03: GPS updates that trigger ETA prediction
+      socket.on('gps-update', async (payload: any) => {
+        try {
+          // Send to Python AI Engine
+          const response = await fetch('http://127.0.0.1:8000/api/v1/predict-eta/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Broadcast new ETA back to users in the same trip room
+            this.emitToRoom(payload.tripId || 'general', 'eta-updated', {
+              predicted_travel_hours: data.predicted_travel_hours,
+              predicted_eta_minutes: data.predicted_eta_minutes,
+              timestamp: new Date().toISOString()
+            });
+          }
+        } catch (error) {
+          console.error('[Socket.io] Error predicting ETA:', error);
+        }
+      });
+
+      // FR-03: Trip completed, trigger retraining logic
+      socket.on('trip-completed', async (tripPayload: any) => {
+        try {
+          // Append to Python AI Engine retraining buffer
+          const response = await fetch('http://127.0.0.1:8000/api/v1/predict-eta/retrain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              trips: [tripPayload],
+              force_retrain: tripPayload.force_retrain || false
+            }),
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`[Socket.io] Retrain buffer status: ${data.message} (Buffered: ${data.trips_buffered})`);
+          }
+        } catch (error) {
+          console.error('[Socket.io] Error sending trip to retrain API:', error);
+        }
+      });
+
       socket.on('disconnect', () => {
         console.log(`[Socket.io] Client disconnected: ${socket.id}`);
       });
