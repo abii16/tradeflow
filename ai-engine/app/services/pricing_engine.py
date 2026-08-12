@@ -88,11 +88,21 @@ class PriceBreakdown(BaseModel):
     currency: str
 
 
+class RateRange(BaseModel):
+    min_rate: float = Field(description="Minimum floor rate / lower boundary in ETB (-30% market floor)")
+    recommended_rate: float = Field(description="ML-recommended optimal spot rate in ETB")
+    max_rate: float = Field(description="Maximum surge ceiling / upper boundary in ETB (+85% surge cap)")
+
+
 class SpotPriceResponse(BaseModel):
     calculation_id: str
     timestamp: datetime
     corridor_matched: Optional[str]
     spot_price: float
+    recommended_spot_rate: float = Field(description="ML-recommended optimal spot freight rate in ETB")
+    min_rate: float = Field(description="Minimum floor rate / lower negotiation boundary in ETB")
+    max_rate: float = Field(description="Maximum surge ceiling / upper negotiation boundary in ETB")
+    rate_range: RateRange
     currency: str
     rate_per_kg: float
     rate_per_ton_km: float
@@ -507,11 +517,21 @@ class DynamicSpotPricingEngine:
 
         expires_at = datetime.fromtimestamp(now.timestamp() + 3600, tz=timezone.utc)
 
+        rate_range = RateRange(
+            min_rate=price_floor,
+            recommended_rate=final_price,
+            max_rate=price_ceiling,
+        )
+
         response = SpotPriceResponse(
             calculation_id=calc_id,
             timestamp=now,
             corridor_matched=corridor_id,
             spot_price=final_price,
+            recommended_spot_rate=final_price,
+            min_rate=price_floor,
+            max_rate=price_ceiling,
+            rate_range=rate_range,
             currency=request.currency,
             rate_per_kg=rate_per_kg,
             rate_per_ton_km=rate_per_ton_km,
