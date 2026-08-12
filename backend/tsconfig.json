@@ -7,8 +7,9 @@
     "strict": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "types": ["jest", "node"],
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "."
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "test/**/*"]
 }
