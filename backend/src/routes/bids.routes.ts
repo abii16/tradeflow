@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import axios from 'axios';
 import { db } from '../db';
 import { bids } from '../db/schema/bids';
 import { loads } from '../db/schema/loads';
@@ -144,7 +145,40 @@ router.post('/', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SYSTEM_ADMIN']), Veri
       status: 'PENDING',
     }).returning();
 
-    res.status(201).json({ message: 'Bid submitted successfully', bid: newBid });
+    // Query AI Engine for Match Prediction
+    let aiPrediction = null;
+    try {
+      const aiPayload = {
+        required_weight_tons: Number(load.weightKg) / 1000,
+        transporter_capacity_tons: Number(load.weightKg) / 1000, // Simulated transporter capacity
+        trip_distance_km: 150, // Simulated distance
+        proximity_distance_km: 25, // Simulated proximity
+        proposed_cost_etb: Number(data.bidAmount),
+        historical_reliability_score: 0.95, // Simulated score
+        fuel_efficiency_score: 0.85 // Simulated score
+      };
+      
+      const aiResponse = await axios.post(
+        `${process.env.AI_ENGINE_URL || 'http://localhost:8000'}/predict-match`, 
+        aiPayload,
+        {
+          headers: {
+            'X-API-Key': process.env.AI_API_KEY || 'tradeflow-default-key'
+          },
+          timeout: 5000 // 5 seconds timeout
+        }
+      );
+      aiPrediction = aiResponse.data;
+    } catch (aiError) {
+      console.error('Failed to get AI prediction during bid creation:', aiError);
+      // We log but do not fail the bid creation
+    }
+
+    res.status(201).json({ 
+      message: 'Bid submitted successfully', 
+      bid: newBid, 
+      aiPrediction 
+    });
   } catch (error) {
     console.error('Error creating bid:', error);
     res.status(500).json({ error: 'Failed to create bid' });
