@@ -24,7 +24,14 @@ app.use((req, res, next) => {
   const role = req.headers['x-mock-role'] as any;
   const id = req.headers['x-mock-id'] as string;
   if (id && role) {
-    req.user = { id, role, email: 'test@test.com', isVerified: false };
+    req.user = { 
+      id, 
+      role, 
+      email: 'test@test.com', 
+      isVerified: false, 
+      fullName: 'Test User', 
+      createdAt: new Date() 
+    } as any;
     next();
   } else {
     res.status(401).json({ error: 'Unauthorized' });
