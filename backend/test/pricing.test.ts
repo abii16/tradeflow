@@ -1,4 +1,15 @@
+import { describe, it, expect, jest, beforeAll, afterAll } from '@jest/globals';
 import { pricingService } from '../src/modules/pricing/pricing.service';
+
+// Mock fetch globally to instantly simulate the AI Engine being unreachable,
+// preventing the 5-second connection timeout in Jest.
+const originalFetch = global.fetch;
+beforeAll(() => {
+  global.fetch = jest.fn(() => Promise.reject(new Error('ECONNREFUSED'))) as any;
+});
+afterAll(() => {
+  global.fetch = originalFetch;
+});
 import { SpotPricingRequestSchema, ContractEvaluationRequestSchema } from '../src/dto/pricing.dto';
 
 describe('Backend Pricing Service (FR-04)', () => {
