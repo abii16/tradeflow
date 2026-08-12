@@ -18,7 +18,9 @@ import { customsRoutes } from './routes/customs.routes';
 import { pricingRoutes } from './routes/pricing.routes';
 import { verificationRoutes } from './routes/verification.routes';
 import { adminRoutes } from './routes/admin.routes';
+import { paymentsRoutes } from './routes/payments.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
+import { startPayoutWorker } from './workers/payout.worker';
 import { SocketGateway } from './gateways/socket.gateway';
 
 app.get('/health', (req, res) => {
@@ -32,8 +34,10 @@ app.use('/customs', customsRoutes);
 app.use('/pricing', pricingRoutes);
 app.use('/verification', verificationRoutes);
 app.use('/admin', adminRoutes);
+app.use('/payments', paymentsRoutes);
 
 startTtlWorker();
+startPayoutWorker();
 
 const httpServer = createServer(app);
 export const socketGateway = new SocketGateway(httpServer);
