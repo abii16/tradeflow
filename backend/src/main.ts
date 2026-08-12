@@ -16,6 +16,8 @@ import { loadsRoutes } from './routes/loads.routes';
 import { bidsRoutes } from './routes/bids.routes';
 import { customsRoutes } from './routes/customs.routes';
 import { pricingRoutes } from './routes/pricing.routes';
+import { verificationRoutes } from './routes/verification.routes';
+import { adminRoutes } from './routes/admin.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
 import { SocketGateway } from './gateways/socket.gateway';
 
@@ -28,6 +30,8 @@ app.use('/loads', loadsRoutes);
 app.use('/bids', bidsRoutes);
 app.use('/customs', customsRoutes);
 app.use('/pricing', pricingRoutes);
+app.use('/verification', verificationRoutes);
+app.use('/admin', adminRoutes);
 
 startTtlWorker();
 

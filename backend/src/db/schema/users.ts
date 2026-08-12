@@ -9,6 +9,14 @@ export const userRoleEnum = pgEnum('user_role', [
   'SYSTEM_ADMIN',
 ]);
 
+export const verificationStatusEnum = pgEnum('verification_status', [
+  'UNVERIFIED',
+  'PENDING',
+  'VERIFIED',
+  'REJECTED',
+  'SUSPENDED',
+]);
+
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: varchar('email', { length: 255 }).notNull().unique(),
@@ -16,6 +24,7 @@ export const users = pgTable('users', {
   phone: varchar('phone', { length: 50 }).notNull(),
   role: userRoleEnum('role').notNull().default('SHIPPER'),
   isVerified: boolean('is_verified').notNull().default(false),
+  verificationStatus: verificationStatusEnum('verification_status').notNull().default('UNVERIFIED'),
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
