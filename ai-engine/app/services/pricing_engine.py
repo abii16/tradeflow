@@ -336,12 +336,18 @@ class DynamicSpotPricingEngine:
         }
 
     def _match_corridor(self, origin_city: str, dest_city: str) -> Optional[CorridorBenchmark]:
-        """Matches predefined corridor benchmark."""
+        """Matches predefined corridor benchmark (supports both forward and return/backhaul routes)."""
         orig = origin_city.strip().lower()
         dest = dest_city.strip().lower()
+        # 1. Exact directional match
         for corridor in self.corridors.values():
             if (corridor.origin_city.lower() in orig or orig in corridor.origin_city.lower()) and \
                (corridor.destination_city.lower() in dest or dest in corridor.destination_city.lower()):
+                return corridor
+        # 2. Reverse / return direction match (e.g. Hawassa -> Addis matches ADDIS_HAWASSA)
+        for corridor in self.corridors.values():
+            if (corridor.origin_city.lower() in dest or dest in corridor.origin_city.lower()) and \
+               (corridor.destination_city.lower() in orig or orig in corridor.destination_city.lower()):
                 return corridor
         return None
 
