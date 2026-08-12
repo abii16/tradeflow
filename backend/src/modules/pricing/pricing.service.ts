@@ -41,10 +41,14 @@ export class PricingService {
       if (response.ok) {
         quoteResponse = await response.json();
       } else {
-        console.warn(`[PricingService] AI Engine responded with status ${response.status}. Using resilient fallback.`);
+        if (process.env.NODE_ENV !== 'test') {
+          console.warn(`[PricingService] AI Engine responded with status ${response.status}. Using resilient fallback.`);
+        }
       }
     } catch (error) {
-      console.warn('[PricingService] AI Engine unreachable. Using local calculation fallback:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('[PricingService] AI Engine unreachable. Using local calculation fallback:', error);
+      }
     }
 
     // Resilient Fallback Calculation if microservice is offline
@@ -72,7 +76,9 @@ export class PricingService {
         expiresAt: new Date(quoteResponse.expires_at),
       });
     } catch (dbErr) {
-      console.warn('[PricingService] Could not persist price quote record to database:', dbErr);
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('[PricingService] Could not persist price quote record to database:', dbErr);
+      }
     }
 
     return quoteResponse;
@@ -106,7 +112,9 @@ export class PricingService {
         return await response.json();
       }
     } catch (err) {
-      console.warn('[PricingService] AI Engine evaluation failed. Using fallback:', err);
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('[PricingService] AI Engine evaluation failed. Using fallback:', err);
+      }
     }
 
     // Local Fallback Evaluation
@@ -151,7 +159,9 @@ export class PricingService {
         return await response.json();
       }
     } catch (err) {
-      console.warn('[PricingService] Failed to fetch corridors from AI engine:', err);
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('[PricingService] Failed to fetch corridors from AI engine:', err);
+      }
     }
 
     return [

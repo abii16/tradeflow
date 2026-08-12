@@ -4,4 +4,5 @@ export * from './bids';
 export * from './shipments';
 export * from './payments';
 export * from './customs';
+export * from './freight_matches';
 export * from './price_quotes';

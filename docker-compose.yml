@@ -21,6 +21,15 @@ services:
     volumes:
       - redis_data:/data
 
+  ai-engine:
+    build:
+      context: ./ai-engine
+    container_name: tradeflow-ai-engine
+    ports:
+      - "8000:8000"
+    environment:
+      AI_API_KEY: tradeflow-default-key
+
 volumes:
   postgres_data:
   redis_data:
