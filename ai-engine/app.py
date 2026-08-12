@@ -1,8 +1,8 @@
 import os
 import pickle
-from fastapi import FastAPI, HTTPException, Security, Depends
-from fastapi.security import APIKeyHeader
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Security, Depends # type: ignore
+from fastapi.security import APIKeyHeader # type: ignore
+from pydantic import BaseModel # type: ignore
 
 app = FastAPI(title="TradeFlow AI Engine")
 
