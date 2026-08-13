@@ -1,8 +1,19 @@
 import os
 import pickle
+import json
+import logging
+from datetime import datetime
 from fastapi import FastAPI, HTTPException, Security, Depends # type: ignore
 from fastapi.security import APIKeyHeader # type: ignore
 from pydantic import BaseModel # type: ignore
+
+# Configure JSON Audit Logger
+logger = logging.getLogger("ai_engine_audit")
+logger.setLevel(logging.INFO)
+# Avoid adding multiple handlers in case of reloads
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
 
 app = FastAPI(title="TradeFlow AI Engine")
 
@@ -39,6 +50,13 @@ class FreightInput(BaseModel):
     historical_reliability_score: float
     fuel_efficiency_score: float
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for SLA monitoring (5.2 Availability & Reliability)"""
+    if model is not None and scaler is not None:
+        return {"status": "ok", "service": "TradeFlow AI Engine"}
+    raise HTTPException(status_code=503, detail="Service Unavailable: Model or scaler not loaded")
+
 @app.post("/predict-match", dependencies=[Depends(get_api_key)])
 async def predict_match(data: FreightInput):
     try:
@@ -70,9 +88,27 @@ async def predict_match(data: FreightInput):
 
         match_accepted = bool(prediction[0])
         
+        # 5.4 Security: Full audit logging of pricing decisions
+        audit_entry = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "event": "MATCH_PREDICTION",
+            "inputs": data.model_dump() if hasattr(data, "model_dump") else data.dict(),
+            "outputs": {
+                "match_accepted": match_accepted,
+                "confidence_score": confidence_score
+            }
+        }
+        logger.info(json.dumps(audit_entry))
+        
         return {
             "match_accepted": match_accepted,
             "confidence_score": confidence_score
         }
     except Exception as e:
+        # Log the error for audit as well
+        logger.error(json.dumps({
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "event": "MATCH_PREDICTION_ERROR",
+            "error": str(e)
+        }))
         raise HTTPException(status_code=500, detail=str(e))
