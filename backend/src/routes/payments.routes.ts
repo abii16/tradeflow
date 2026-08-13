@@ -16,6 +16,7 @@ import {
   retryRollbackService,
   disputeService,
 } from '../modules/payments';
+import { auditMiddleware } from '../middleware/audit.middleware';
 
 const router = Router();
 
@@ -27,6 +28,7 @@ router.post(
   '/checkout',
   JwtAuthGuard,
   RolesGuard(['SHIPPER', 'SYSTEM_ADMIN', 'FINANCE_ADMIN']),
+  auditMiddleware('PAYMENT_CHECKOUT'),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const parsed = CreateCheckoutSchema.safeParse(req.body);
@@ -52,7 +54,7 @@ router.post(
  * POST /payments/webhook/telebirr - Public Webhook callback from TeleBirr API
  * Security: Validates cryptographic signature, enforces idempotency
  */
-router.post('/webhook/telebirr', async (req: Request, res: Response): Promise<void> => {
+router.post('/webhook/telebirr', auditMiddleware('PAYMENT_WEBHOOK'), async (req: Request, res: Response): Promise<void> => {
   try {
     const signatureHeader =
       (req.headers['telebirr-signature'] as string) ||
@@ -151,6 +153,7 @@ router.post(
   '/:id/schedule-payout',
   JwtAuthGuard,
   RolesGuard(['TRANSPORTER', 'DRIVER', 'SYSTEM_ADMIN', 'FINANCE_ADMIN']),
+  auditMiddleware('PAYMENT_SCHEDULE_PAYOUT'),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -203,6 +206,7 @@ router.post(
   '/:id/refund',
   JwtAuthGuard,
   RolesGuard(['SYSTEM_ADMIN', 'FINANCE_ADMIN']),
+  auditMiddleware('PAYMENT_REFUND'),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;

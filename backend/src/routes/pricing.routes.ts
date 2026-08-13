@@ -5,11 +5,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { db } from '../db';
 import { priceQuotes } from '../db/schema/price_quotes';
 import { eq, desc } from 'drizzle-orm';
+import { auditMiddleware } from '../middleware/audit.middleware';
 
 const router = Router();
 
 // POST /pricing/quote - Calculate dynamic spot rate (Open to authenticated and guest users for quotes)
-router.post('/quote', async (req: Request, res: Response): Promise<void> => {
+router.post('/quote', auditMiddleware('PRICING_QUOTE'), async (req: Request, res: Response): Promise<void> => {
   try {
     const parsed = SpotPricingRequestSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -27,7 +28,7 @@ router.post('/quote', async (req: Request, res: Response): Promise<void> => {
 });
 
 // POST /pricing/evaluate-contract - Evaluate contract divergence against spot market (FR-04.2)
-router.post('/evaluate-contract', async (req: Request, res: Response): Promise<void> => {
+router.post('/evaluate-contract', auditMiddleware('PRICING_CONTRACT_EVALUATION'), async (req: Request, res: Response): Promise<void> => {
   try {
     const parsed = ContractEvaluationRequestSchema.safeParse(req.body);
     if (!parsed.success) {
