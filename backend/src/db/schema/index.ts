@@ -11,3 +11,5 @@ export * from './vehicles';
 export * from './audit_logs';
 export * from './incidents';
 export * from './offline_sync';
+export * from './risk_zones';
+export * from './driver_geofence_logs';
