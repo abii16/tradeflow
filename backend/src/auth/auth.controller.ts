@@ -6,6 +6,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { VerificationGuard } from './guards/verification.guard';
 import { z } from 'zod';
+import { auditMiddleware } from '../middleware/audit.middleware';
 
 const router = Router();
 const authService = new AuthService();
@@ -19,7 +20,7 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-router.post('/register', authLimiter, async (req: Request, res: Response) => {
+router.post('/register', authLimiter, auditMiddleware('SECURITY_AUTH_REGISTER'), async (req: Request, res: Response) => {
   try {
     const validatedData = RegisterDto.parse(req.body);
     const result = await authService.register(validatedData);
@@ -33,7 +34,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
   }
 });
 
-router.post('/login', authLimiter, async (req: Request, res: Response) => {
+router.post('/login', authLimiter, auditMiddleware('SECURITY_AUTH_LOGIN'), async (req: Request, res: Response) => {
   try {
     const validatedData = LoginDto.parse(req.body);
     const result = await authService.login(validatedData);

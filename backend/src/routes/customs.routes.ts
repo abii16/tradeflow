@@ -12,6 +12,7 @@ import {
   parsePackingList,
   validateCustomsDocuments,
 } from '../modules/customs/customs.parser';
+import { auditMiddleware } from '../middleware/audit.middleware';
 
 const router = Router();
 
@@ -77,6 +78,7 @@ router.post(
     { name: 'invoice', maxCount: 1 },
     { name: 'packing_list', maxCount: 1 },
   ]),
+  auditMiddleware('DOCUMENT_SUBMISSION'),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };

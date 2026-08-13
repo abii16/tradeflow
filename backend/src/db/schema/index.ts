@@ -8,3 +8,4 @@ export * from './freight_matches';
 export * from './price_quotes';
 export * from './verifications';
 export * from './vehicles';
+export * from './audit_logs';
