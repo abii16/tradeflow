@@ -2,8 +2,8 @@ import os
 import joblib
 import json
 import logging
-from datetime import datetime
-from fastapi import APIRouter, HTTPException, Security, Depends
+from datetime import datetime, timezone
+from fastapi import APIRouter, HTTPException, Security, Depends # type: ignore
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 
@@ -86,7 +86,7 @@ async def predict_match(data: FreightInput):
         
         # 5.4 Security: Full audit logging of pricing decisions
         audit_entry = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "event": "MATCH_PREDICTION",
             "inputs": data.model_dump() if hasattr(data, "model_dump") else data.dict(),
             "outputs": {
@@ -102,7 +102,7 @@ async def predict_match(data: FreightInput):
         }
     except Exception as e:
         logger.error(json.dumps({
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "event": "MATCH_PREDICTION_ERROR",
             "error": str(e)
         }))
