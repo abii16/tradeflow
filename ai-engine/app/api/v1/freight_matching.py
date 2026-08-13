@@ -1,8 +1,19 @@
 import os
 import joblib
-from fastapi import APIRouter, HTTPException, Security, Depends
+import json
+import logging
+from datetime import datetime, timezone
+from fastapi import APIRouter, HTTPException, Security, Depends # type: ignore
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
+
+# Configure JSON Audit Logger
+logger = logging.getLogger("ai_engine_audit")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
+
 
 router = APIRouter(tags=["Freight Matching"])
 
@@ -73,9 +84,26 @@ async def predict_match(data: FreightInput):
 
         match_accepted = bool(prediction[0])
         
+        # 5.4 Security: Full audit logging of pricing decisions
+        audit_entry = {
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "event": "MATCH_PREDICTION",
+            "inputs": data.model_dump() if hasattr(data, "model_dump") else data.dict(),
+            "outputs": {
+                "match_accepted": match_accepted,
+                "confidence_score": confidence_score
+            }
+        }
+        logger.info(json.dumps(audit_entry))
+        
         return {
             "match_accepted": match_accepted,
             "confidence_score": confidence_score
         }
     except Exception as e:
+        logger.error(json.dumps({
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "event": "MATCH_PREDICTION_ERROR",
+            "error": str(e)
+        }))
         raise HTTPException(status_code=500, detail=str(e))

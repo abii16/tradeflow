@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
-    "@types/node-cron": "^3.0.11",
     "argon2": "^0.45.1",
     "axios": "^1.19.0",
     "bullmq": "^5.7.8",
@@ -45,6 +44,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/multer": "^2.2.0",
     "@types/node": "^20.12.12",
+    "@types/node-cron": "^3.0.11",
     "@types/pdf-parse": "^1.1.5",
     "@types/speakeasy": "^2.0.10",
     "@types/supertest": "^7.2.1",
