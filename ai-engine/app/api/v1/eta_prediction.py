@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends # type: ignore
 from pydantic import BaseModel, Field
 from typing import Optional, List
 import json

@@ -8,7 +8,7 @@ Exposes REST endpoints for:
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status # type: ignore
 from pydantic import BaseModel
 
 from app.services.pricing_engine import (

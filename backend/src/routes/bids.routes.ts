@@ -165,13 +165,17 @@ router.post('/', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SYSTEM_ADMIN']), Veri
           headers: {
             'X-API-Key': process.env.AI_API_KEY || 'tradeflow-default-key'
           },
-          timeout: 5000 // 5 seconds timeout
+          timeout: 1000 // 1 second timeout (NFR 5.1 Performance SLA)
         }
       );
       aiPrediction = aiResponse.data;
-    } catch (aiError) {
-      console.error('Failed to get AI prediction during bid creation:', aiError);
-      // We log but do not fail the bid creation
+    } catch (aiError: any) {
+      if (aiError.code === 'ECONNABORTED' || (aiError.message && aiError.message.includes('timeout'))) {
+        console.warn('AI Engine request timed out (SLA < 1s missed):', aiError.message);
+      } else {
+        console.error('Failed to get AI prediction during bid creation:', aiError.message || aiError);
+      }
+      // NFR 5.2 Availability: We log but do not fail the bid creation to ensure 99.9% core uptime
     }
 
     res.status(201).json({ 

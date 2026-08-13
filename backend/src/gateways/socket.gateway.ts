@@ -1,5 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
+import { db } from '../db';
+import { incidents } from '../db/schema/incidents';
 
 export class SocketGateway {
   private io: Server;
@@ -40,18 +42,39 @@ export class SocketGateway {
         console.log(`[Socket.io] Client ${socket.id} left room ${roomId}`);
       });
 
-      // FR-03: GPS updates that trigger ETA prediction
+      // FR-03 & FR-05.3: GPS updates that trigger ETA prediction and Mid-trip Rerouting
       socket.on('gps-update', async (payload: any) => {
         try {
-          // Send to Python AI Engine
-          const response = await fetch('http://127.0.0.1:8000/api/v1/predict-eta/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
+          // NFR 5.1: Enforce <5s latency using concurrent execution (Promise.all) and a 4000ms timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+          const [etaResponse, optimizeResponse] = await Promise.all([
+            fetch('http://127.0.0.1:8000/api/v1/predict-eta/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+              signal: controller.signal
+            }).catch(e => null),
+
+            fetch('http://127.0.0.1:8000/api/v1/route/optimize', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                current_lat: payload.latitude,
+                current_lng: payload.longitude,
+                destination_lat: payload.destination_lat,
+                destination_lng: payload.destination_lng,
+                vehicle_weight: payload.vehicle_weight || 10.0,
+                fuel_level: payload.fuel_level || 50.0
+              }),
+              signal: controller.signal
+            }).catch(e => null)
+          ]);
+          clearTimeout(timeoutId);
+
+          if (etaResponse?.ok) {
+            const data = await etaResponse.json();
             // Broadcast new ETA back to users in the same trip room
             this.emitToRoom(payload.tripId || 'general', 'eta-updated', {
               predicted_travel_hours: data.predicted_travel_hours,
@@ -59,8 +82,48 @@ export class SocketGateway {
               timestamp: new Date().toISOString()
             });
           }
+
+          if (optimizeResponse?.ok) {
+            const routeData = await optimizeResponse.json();
+            if (routeData.better_route_found && routeData.cost_savings_percentage > 5.0) {
+              // Propose reroute to driver (requires confirmation)
+              this.emitToRoom(payload.tripId || 'general', 'propose-reroute', routeData);
+            }
+          }
         } catch (error) {
-          console.error('[Socket.io] Error predicting ETA:', error);
+          console.error('[Socket.io] Error in GPS update flow:', error);
+        }
+      });
+
+      // FR-05.2: Incident Logging (Accident, Checkpoint, Fuel Unavailability)
+      socket.on('report-incident', async (payload: any) => {
+        try {
+          console.log(`[Socket.io] Incident reported: ${payload.incidentType}`);
+          
+          // 1. Save to Database
+          await db.insert(incidents).values({
+            shipmentId: payload.shipmentId,
+            reporterId: payload.reporterId,
+            incidentType: payload.incidentType,
+            latitude: payload.latitude,
+            longitude: payload.longitude,
+            severity: payload.severity || 'MEDIUM',
+            notes: payload.notes,
+            // NFR 5.2: Authoritative timestamp from the driver's device (offline queuing support)
+            reportedAt: new Date(payload.reportedAt || Date.now())
+          });
+
+          // 2. Notify AI Engine to update routing model in near-real time
+          await fetch('http://127.0.0.1:8000/api/v1/route/incident', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          // 3. Broadcast to dispatchers/room
+          this.emitToRoom(payload.tripId || 'general', 'incident-alert', payload);
+        } catch (error) {
+          console.error('[Socket.io] Error reporting incident:', error);
         }
       });
 

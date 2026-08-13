@@ -9,3 +9,5 @@ export * from './price_quotes';
 export * from './verifications';
 export * from './vehicles';
 export * from './audit_logs';
+export * from './incidents';
+export * from './offline_sync';
