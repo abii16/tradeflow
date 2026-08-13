@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 import logging
-import pickle
+import joblib
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -15,12 +15,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger("RetrainModel")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "latest_training_data.csv")
-MODEL_FILE = os.path.join(BASE_DIR, "tradeflow_ai_engine.pkl")
-SCALER_FILE = os.path.join(BASE_DIR, "tradeflow_scaler.pkl")
-MODEL_BACKUP = os.path.join(BASE_DIR, "tradeflow_ai_engine_backup.pkl")
-SCALER_BACKUP = os.path.join(BASE_DIR, "tradeflow_scaler_backup.pkl")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DATA_FILE = os.path.join(PROJECT_ROOT, "latest_training_data.csv")
+MODEL_DIR = os.path.join(PROJECT_ROOT, "app", "models")
+MODEL_FILE = os.path.join(MODEL_DIR, "tradeflow_ai_engine.pkl")
+SCALER_FILE = os.path.join(MODEL_DIR, "tradeflow_scaler.pkl")
+MODEL_BACKUP = os.path.join(MODEL_DIR, "tradeflow_ai_engine_backup.pkl")
+SCALER_BACKUP = os.path.join(MODEL_DIR, "tradeflow_scaler_backup.pkl")
 
 EXPECTED_FEATURES = [
     'required_weight_tons', 'transporter_capacity_tons', 'trip_distance_km', 
@@ -129,15 +130,15 @@ def main():
     score = model.score(X_scaled, y)
     logger.info(f"Model trained successfully. Accuracy on training set: {score:.4f}")
     
-    temp_model_path = os.path.join(BASE_DIR, "temp_tradeflow_ai_engine.pkl")
-    temp_scaler_path = os.path.join(BASE_DIR, "temp_tradeflow_scaler.pkl")
+    temp_model_path = os.path.join(MODEL_DIR, "temp_tradeflow_ai_engine.pkl")
+    temp_scaler_path = os.path.join(MODEL_DIR, "temp_tradeflow_scaler.pkl")
     
     logger.info("Saving new models to temporary files...")
     with open(temp_model_path, 'wb') as f:
-        pickle.dump(model, f)
+        joblib.dump(model, f)
         
     with open(temp_scaler_path, 'wb') as f:
-        pickle.dump(scaler, f)
+        joblib.dump(scaler, f)
         
     perform_zero_downtime_deployment(temp_model_path, temp_scaler_path)
     logger.info("Retraining process completed.")
