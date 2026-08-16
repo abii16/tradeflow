@@ -34,7 +34,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       </div>
 
       <nav className="flex-1 p-4 space-y-2">
-        <button className="w-full bg-emerald-600 text-white rounded-md py-2.5 px-4 mb-6 font-semibold text-xs uppercase tracking-wide hover:brightness-110 active:scale-[0.98] shadow-sm shadow-emerald-500/20 transition-all">
+        <button className="w-full bg-slate-800 text-white rounded-lg py-2.5 px-4 mb-6 font-medium text-xs tracking-wide hover:bg-slate-700 active:scale-[0.99] shadow-sm transition-all">
           + {t('new_shipment')}
         </button>
 
@@ -44,12 +44,12 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             onClick={() => setActiveTab(item.id)}
             className={`w-full flex items-center space-x-3 px-3 py-2 transition-all ${
               activeTab === item.id 
-                ? 'bg-slate-100 text-blue-600 border-l-[3px] border-blue-600 rounded-r-md font-semibold' 
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 rounded-md border-l-[3px] border-transparent font-medium'
+                ? 'bg-slate-100 text-slate-900 border-l-[3px] border-slate-800 rounded-r-md font-semibold' 
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded-md border-l-[3px] border-transparent font-medium'
             }`}
           >
-            <item.icon size={20} className={activeTab === item.id ? "text-blue-600" : "text-slate-400"} />
-            <span className="text-left">{item.name}</span>
+            <item.icon size={18} className={activeTab === item.id ? "text-slate-900" : "text-slate-400"} />
+            <span className="text-left text-sm">{item.name}</span>
           </button>
         ))}
       </nav>
