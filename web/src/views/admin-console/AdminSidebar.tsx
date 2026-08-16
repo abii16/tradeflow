@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   Radar, 
   ClipboardCheck, 
@@ -18,15 +19,16 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ activeSubTab, setActiveSubTab }: AdminSidebarProps) {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
-    { id: 'radar', name: 'Live Telematics & Radar', icon: Radar },
-    { id: 'verification', name: 'Verification Queue', icon: ClipboardCheck, badge: '12' },
-    { id: 'pricing', name: 'Dynamic Pricing & Yield', icon: TrendingUp },
-    { id: 'security', name: 'Security & Detours', icon: ShieldAlert },
-    { id: 'disputes', name: 'Dispute Mediation', icon: Scale },
-    { id: 'audit', name: 'Audit Logs & Compliance', icon: FileSearch },
+    { id: 'radar', name: t('admin_nav_radar'), icon: Radar },
+    { id: 'verification', name: t('admin_nav_verification'), icon: ClipboardCheck, badge: '12' },
+    { id: 'pricing', name: t('admin_nav_pricing'), icon: TrendingUp },
+    { id: 'security', name: t('admin_nav_security'), icon: ShieldAlert },
+    { id: 'disputes', name: t('admin_nav_disputes'), icon: Scale },
+    { id: 'audit', name: t('admin_nav_audit'), icon: FileSearch },
   ];
 
   return (
@@ -82,11 +84,11 @@ export default function AdminSidebar({ activeSubTab, setActiveSubTab }: AdminSid
       <div className={`${collapsed ? 'p-2' : 'p-4'} border-t border-slate-800 text-sm space-y-1`}>
         <button className={`w-full flex items-center ${collapsed ? 'justify-center py-2.5' : 'space-x-2.5 py-2 px-3'} text-slate-400 hover:text-slate-200 rounded-lg hover:bg-slate-800/60 transition-colors`}>
           <HelpCircle size={18} />
-          {!collapsed && <span>Help & Support</span>}
+          {!collapsed && <span>{t('admin_nav_help')}</span>}
         </button>
         <button className={`w-full flex items-center ${collapsed ? 'justify-center py-2.5' : 'space-x-2.5 py-2 px-3'} text-rose-400 hover:text-rose-300 rounded-lg hover:bg-rose-950/40 transition-colors`}>
           <Power size={18} />
-          {!collapsed && <span>Log Out</span>}
+          {!collapsed && <span>{t('admin_nav_logout')}</span>}
         </button>
       </div>
     </aside>

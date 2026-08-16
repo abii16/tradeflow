@@ -7,7 +7,7 @@ interface AdminHeaderProps {
 }
 
 export default function AdminHeader({ onSwitchPortal }: AdminHeaderProps) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'am' : 'en');
@@ -23,7 +23,7 @@ export default function AdminHeader({ onSwitchPortal }: AdminHeaderProps) {
         </div>
         <input 
           type="text" 
-          placeholder="Search shipments, assets, or IDs..." 
+          placeholder={t('admin_search_placeholder')} 
           className="w-full pl-9 pr-12 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
         />
         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -37,7 +37,7 @@ export default function AdminHeader({ onSwitchPortal }: AdminHeaderProps) {
         <div className="flex items-center space-x-4">
           {/* Escrow Widget */}
           <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-xs text-slate-500 font-medium">Escrow Wallet Balance:</span>
+            <span className="text-xs text-slate-500 font-medium">{t('admin_escrow_wallet')}</span>
             <span className="text-sm text-slate-900 font-mono font-bold">ETB 2,450,000.00</span>
           </div>
 
@@ -58,7 +58,7 @@ export default function AdminHeader({ onSwitchPortal }: AdminHeaderProps) {
         <div className="flex items-center space-x-3 cursor-pointer group">
           <div className="text-right hidden sm:block">
             <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Habtamu Zewde</div>
-            <div className="text-[11px] text-slate-500 font-medium">Operations Director</div>
+            <div className="text-[11px] text-slate-500 font-medium">{t('admin_role_director')}</div>
           </div>
           <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center border-2 border-white shadow-sm ring-1 ring-slate-100 relative">
             HZ
