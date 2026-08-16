@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Bell, UserCircle } from 'lucide-react';
+import { Search, Bell, UserCircle, Wallet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Header() {
   const { t, i18n } = useTranslation();
@@ -10,34 +11,45 @@ export default function Header() {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-      <div className="flex items-center space-x-6 text-sm font-medium text-slate-500">
-        <a href="#" className="text-blue-600 border-b-2 border-blue-600 pb-5 pt-5">Operations</a>
-        <a href="#" className="hover:text-slate-800">Telematics</a>
-        <a href="#" className="hover:text-slate-800">Marketplace</a>
-        <a href="#" className="hover:text-slate-800">Rates</a>
-        <a href="#" className="hover:text-slate-800">Customs</a>
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+      <div className="flex items-center space-x-2 text-sm">
+        <span className="font-bold text-slate-800">{t('org_name')}</span>
+        <span className="text-slate-300">•</span>
+        <span className="text-emerald-600 font-medium flex items-center">
+          <span className="w-2 h-2 bg-emerald-600 rounded-full mr-2"></span>
+          {t('shipper_portal')}
+        </span>
       </div>
 
-      <div className="flex items-center space-x-6">
-        <div className="relative">
+      <div className="flex items-center space-x-4 lg:space-x-6">
+        <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-md">
+          <Wallet size={16} className="text-slate-400" />
+          <span className="text-xs text-slate-500">{t('escrow_wallet_balance')}:</span>
+          <span className="text-sm font-bold text-slate-800">ETB 2,450,000.00</span>
+          <Button variant="outline" size="sm" className="h-6 text-xs ml-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">
+            {t('top_up')}
+          </Button>
+        </div>
+
+        <div className="relative hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             type="text" 
             placeholder={t('search')} 
-            className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
           />
         </div>
         
         <button 
           onClick={toggleLanguage}
-          className="text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-md hover:bg-slate-200"
+          className="text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-md hover:bg-slate-200 transition-colors"
         >
           {i18n.language === 'en' ? 'አማርኛ' : 'English'}
         </button>
 
-        <button className="text-slate-400 hover:text-slate-600">
+        <button className="text-slate-400 hover:text-slate-600 relative">
           <Bell size={20} />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
 
         <div className="flex items-center space-x-2">

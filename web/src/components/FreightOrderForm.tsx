@@ -70,15 +70,15 @@ export default function FreightOrderForm() {
       </Card>
 
       {quoteGenerated && (
-        <Card className="bg-slate-900 text-white border-none shadow-lg">
+        <Card className="bg-slate-900 text-white border-none shadow-lg mt-6">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <div className="flex items-center text-teal-400 text-xs font-semibold tracking-wider">
+            <div className="flex items-center text-amber-400 text-xs font-semibold tracking-wider uppercase">
               <BrainCircuit size={14} className="mr-1" />
               {t('ai_spot_pricing_engine')}
             </div>
-            <div className="flex items-center text-slate-400 text-xs">
+            <div className="flex items-center text-slate-400 text-xs font-mono">
               <Clock size={14} className="mr-1" />
-              14:30
+              14:31 mins
             </div>
           </CardHeader>
           <CardContent>
@@ -87,16 +87,17 @@ export default function FreightOrderForm() {
             <div className="flex justify-between items-end border-b border-slate-700 pb-4 mb-4">
               <div>
                 <p className="text-slate-400 text-xs mb-1">{t('guaranteed_rate')}</p>
-                <div className="text-4xl font-bold text-teal-400">ETB 348,500.00</div>
+                <div className="text-4xl font-bold text-white">ETB 348,500.00</div>
               </div>
               <div className="text-right">
                 <p className="text-slate-400 text-xs mb-1">{t('confidence_score')}</p>
-                <div className="text-lg font-medium">94.2% {t('high')}</div>
+                <div className="text-lg font-medium text-amber-400">94.2% {t('high')}</div>
+                <div className="text-xs text-slate-500 mt-1">+12.4% Fuel ADJ</div>
               </div>
             </div>
 
             <div className="flex space-x-3">
-              <Button className="flex-1 bg-teal-400 hover:bg-teal-500 text-slate-900 font-bold">
+              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
                 <Lock size={16} className="mr-2" />
                 {t('accept_quote_lock_escrow')}
               </Button>
