@@ -51,81 +51,86 @@ export default function ActiveShipment() {
           </MapContainer>
         </div>
 
-        {/* 4-Stage Stepper */}
-        <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-emerald-500 before:to-slate-200">
+        {/* 4-Stage Stepper Matching Image */}
+        <div className="space-y-0 relative">
           
           {/* Step 1: Port Clearance */}
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 shadow ring-4 ring-white z-10 shrink-0">
-              <Check size={12} className="text-white" />
+          <div className="relative flex items-start pb-8">
+            <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-emerald-500"></div>
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 shadow-sm z-10 shrink-0 mt-0.5">
+              <Check size={12} className="text-white stroke-[3]" />
             </div>
-            <div className="ml-4 w-full">
-              <div className="flex justify-between items-center">
-                <h4 className="text-sm font-bold text-slate-900">{t('port_clearance')}</h4>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded flex items-center">
-                  <Check size={10} className="mr-1" /> {t('completed')}
-                </span>
+            <div className="ml-5 w-full flex justify-between items-start">
+              <div>
+                <h4 className="text-[15px] font-bold text-slate-900 leading-none mb-1.5">{t('port_clearance')}</h4>
+                <p className="text-sm text-slate-500">Djibouti Terminal Doral</p>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Djibouti Terminal Doral</p>
+              <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md flex items-center shadow-sm border border-emerald-100/50">
+                <Check size={12} className="mr-1" /> Completed
+              </span>
             </div>
           </div>
 
           {/* Step 2: Customs Transit */}
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 shadow ring-4 ring-white z-10 shrink-0">
-              <Check size={12} className="text-white" />
+          <div className="relative flex items-start pb-8">
+            <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-emerald-500"></div>
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 shadow-sm z-10 shrink-0 mt-0.5">
+              <Check size={12} className="text-white stroke-[3]" />
             </div>
-            <div className="ml-4 w-full">
-              <div className="flex justify-between items-center">
-                <h4 className="text-sm font-bold text-slate-900">{t('customs_transit')}</h4>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded flex items-center">
-                  <Check size={10} className="mr-1" /> {t('completed')}
-                </span>
+            <div className="ml-5 w-full flex justify-between items-start">
+              <div>
+                <h4 className="text-[15px] font-bold text-slate-900 leading-none mb-1.5">{t('customs_transit')}</h4>
+                <p className="text-sm text-slate-500">Galafi Border Post</p>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Galafi Border Post</p>
+              <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md flex items-center shadow-sm border border-emerald-100/50">
+                <Check size={12} className="mr-1" /> Completed
+              </span>
             </div>
           </div>
 
-          {/* Step 3: In Transit (Live) */}
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 shadow ring-4 ring-white z-10 shrink-0 relative">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping"></span>
-              <Truck size={12} className="text-white relative" />
+          {/* Step 3: In Transit (Live Box) */}
+          <div className="relative flex items-start pb-8">
+            <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-slate-300"></div>
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 shadow-sm z-10 shrink-0 mt-2">
+              <Truck size={12} className="text-white" />
             </div>
-            <div className="ml-4 w-full p-3 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-bold text-blue-700">{t('in_transit')}</h4>
+            
+            <div className="ml-5 w-full bg-white border border-slate-200 rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-1">
+                <h4 className="text-[15px] font-bold text-blue-700 leading-none">{t('in_transit')}</h4>
                 <span className="text-xs font-bold text-blue-700 flex items-center uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1.5 animate-pulse"></span> {t('live')}
+                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1.5"></span> LIVE
                 </span>
               </div>
-              <p className="text-xs text-slate-600 mb-2 font-medium">A1 Highway, Near Awash</p>
-              <div className="flex space-x-3 text-xs bg-white p-2 rounded border border-slate-100">
+              <p className="text-sm text-slate-600 mb-4 font-medium">A1 Highway, Near Awash</p>
+              
+              <div className="flex bg-slate-50/80 rounded-lg p-3 border border-slate-100">
                 <div className="flex-1">
-                  <span className="text-slate-400 block mb-0.5">Speed</span>
-                  <span className="font-semibold text-slate-800">62 km/h</span>
+                  <span className="text-slate-400 text-xs block mb-1">Speed</span>
+                  <span className="font-semibold text-sm text-slate-900">62 km/h</span>
                 </div>
-                <div className="flex-1 border-l border-slate-100 pl-3">
-                  <span className="text-slate-400 block mb-0.5">ETA</span>
-                  <span className="font-semibold text-slate-800">14:30 EAT</span>
+                <div className="w-px bg-slate-200 mx-4"></div>
+                <div className="flex-1">
+                  <span className="text-slate-400 text-xs block mb-1">ETA</span>
+                  <span className="font-semibold text-sm text-slate-900">14:30 EAT</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Step 4: Arrival Modjo */}
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 ring-4 ring-white z-10 shrink-0">
+          <div className="relative flex items-start">
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 z-10 shrink-0 mt-0.5 shadow-sm">
               <div className="w-2 h-2 rounded-full bg-slate-400"></div>
             </div>
-            <div className="ml-4 w-full">
-              <div className="flex justify-between items-center">
-                <h4 className="text-sm font-bold text-slate-600">{t('arrival_modjo')}</h4>
-                <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex items-center">
-                  <Clock size={10} className="mr-1" /> {t('pending')}
-                </span>
+            <div className="ml-5 w-full flex justify-between items-start">
+              <div>
+                <h4 className="text-[15px] font-bold text-slate-700 leading-none mb-1.5">{t('arrival_modjo')}</h4>
+                <p className="text-sm text-slate-400">Modjo Dry Port Terminal</p>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Modjo Dry Port Terminal</p>
+              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md flex items-center border border-slate-200/50">
+                <Clock size={12} className="mr-1" /> Pending
+              </span>
             </div>
           </div>
 

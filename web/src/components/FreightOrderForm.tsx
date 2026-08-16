@@ -36,30 +36,30 @@ export default function FreightOrderForm() {
             {/* Row 1: Dual-Column Segment */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
-              {/* Left Column: Route Inputs */}
-              <div className="relative flex flex-col space-y-3 h-full justify-between">
+              {/* Segmented Route Inputs */}
+            <div className="relative flex flex-col bg-slate-50/50 rounded-xl border border-slate-100">
+              <div className="relative p-4 pb-3">
+                <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Origin</Label>
                 <div className="relative">
-                  <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Origin</Label>
-                  <div className="relative">
-                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Djibouti Container Terminal" />
-                  </div>
-                </div>
-
-                <div className="absolute top-[48%] left-8 -translate-y-1/2 z-10 hidden sm:flex">
-                   <button type="button" className="p-1.5 bg-white border border-slate-200 rounded-full shadow-sm hover:bg-slate-50 text-slate-400 transition-colors">
-                     <ArrowDownUp size={12} />
-                   </button>
-                </div>
-
-                <div className="relative">
-                  <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Destination</Label>
-                  <div className="relative">
-                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" />
-                    <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Modjo Dry Port" />
-                  </div>
+                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Djibouti Container Terminal" />
                 </div>
               </div>
+
+              <div className="absolute top-1/2 left-8 -translate-y-1/2 z-10 hidden sm:flex">
+                 <button type="button" className="p-1.5 bg-slate-50 border border-slate-200 rounded-full shadow-sm hover:bg-white text-slate-400 transition-colors">
+                   <ArrowDownUp size={12} />
+                 </button>
+              </div>
+
+              <div className="relative p-4 pt-3 border-t border-slate-200/50">
+                <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Destination</Label>
+                <div className="relative">
+                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" />
+                  <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Modjo Dry Port" />
+                </div>
+              </div>
+            </div>
 
               {/* Right Column: Cargo Specs */}
               <div className="flex flex-col space-y-3 h-full justify-between">
@@ -95,7 +95,7 @@ export default function FreightOrderForm() {
 
             {/* Row 3: Action CTA */}
             <div className="pt-2">
-              <Button type="submit" className="w-full bg-white border border-slate-200 border-l-[3px] border-l-transparent text-slate-700 h-11 rounded-r-lg rounded-l-sm text-xs tracking-wide uppercase font-semibold hover:bg-emerald-50 hover:border-slate-300 hover:border-l-emerald-500 hover:text-emerald-900 transition-all duration-200">
+              <Button type="submit" className="w-full bg-emerald-50 border border-slate-300 border-l-[3px] border-l-emerald-500 text-emerald-900 h-11 rounded-r-lg rounded-l-sm text-xs tracking-wide uppercase font-semibold hover:bg-white hover:border-slate-300 hover:border-l-transparent hover:text-slate-700 hover:shadow-md hover:shadow-slate-200/60 transition-all duration-200 active:scale-[0.99]">
                 {t('request_spot_pricing')}
               </Button>
             </div>
@@ -131,7 +131,7 @@ export default function FreightOrderForm() {
             </div>
 
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              <Button className="flex-1 bg-white border border-slate-200 border-l-[3px] border-l-transparent text-slate-700 font-semibold h-11 rounded-r-lg rounded-l-sm text-sm hover:bg-emerald-50 hover:border-slate-300 hover:border-l-emerald-500 hover:text-emerald-900 transition-all duration-200">
+              <Button className="flex-1 bg-emerald-50 border border-slate-300 border-l-[3px] border-l-emerald-500 text-emerald-900 font-semibold h-11 rounded-r-lg rounded-l-sm text-sm hover:bg-white hover:border-slate-300 hover:border-l-transparent hover:text-slate-700 hover:shadow-md hover:shadow-slate-200/60 transition-all duration-200 active:scale-[0.99]">
                 <Lock size={16} className="mr-2" />
                 {t('accept_quote_lock_escrow')}
               </Button>
