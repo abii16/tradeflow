@@ -1,7 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Database, Download, Search, Filter, Calendar } from 'lucide-react';
 
 export default function AuditLogs() {
+  const { t } = useTranslation();
+
   const logs = [
     {
       time: "2026-08-16 14:31:02 EAT",
@@ -61,17 +64,17 @@ export default function AuditLogs() {
         <div>
           <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             <Database size={20} className="text-blue-600" /> 
-            Immutable Security & Regulatory Audit Ledger
+            {t('al_title')}
           </h2>
-          <p className="text-xs text-slate-500 mt-1">7-Year Data Retention enforced for Ethiopian Customs Commission compliance.</p>
+          <p className="text-xs text-slate-500 mt-1">{t('al_desc')}</p>
         </div>
         
         <div className="flex items-center gap-3">
           <button className="bg-white text-slate-700 hover:text-slate-900 font-semibold py-2 px-4 border border-slate-200 hover:border-slate-300 rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2">
-            <Download size={16} /> Export CSV
+            <Download size={16} /> {t('al_export_csv')}
           </button>
           <button className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2">
-            <Download size={16} /> Export PDF Report
+            <Download size={16} /> {t('al_export_pdf')}
           </button>
         </div>
       </div>
@@ -84,19 +87,19 @@ export default function AuditLogs() {
           
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-            <input type="text" placeholder="Search by ID, TIN, or IP..." className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+            <input type="text" placeholder={t('al_search')} className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
           </div>
 
           <div className="flex items-center gap-3">
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <input type="text" placeholder="Today" readOnly className="w-32 pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg bg-white cursor-pointer" />
+              <input type="text" placeholder={t('al_date_today')} readOnly className="w-32 pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg bg-white cursor-pointer" />
             </div>
 
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
               <select className="w-40 pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg bg-white appearance-none cursor-pointer">
-                <option>All Actions</option>
+                <option>{t('al_filter_all')}</option>
                 <option>AUTH</option>
                 <option>ESCROW_MUTATION</option>
                 <option>PRICING_ENGINE</option>
@@ -111,12 +114,12 @@ export default function AuditLogs() {
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="text-[10px] font-bold text-slate-500 bg-slate-100 uppercase border-b border-slate-200 tracking-wider">
               <tr>
-                <th className="px-6 py-3">Timestamp (EAT)</th>
-                <th className="px-6 py-3">Action Type</th>
-                <th className="px-6 py-3">Actor / Principal</th>
-                <th className="px-6 py-3">Event Details</th>
-                <th className="px-6 py-3">Source IP</th>
-                <th className="px-6 py-3 text-right">Status</th>
+                <th className="px-6 py-3">{t('al_col_time')}</th>
+                <th className="px-6 py-3">{t('al_col_action')}</th>
+                <th className="px-6 py-3">{t('al_col_actor')}</th>
+                <th className="px-6 py-3">{t('al_col_event')}</th>
+                <th className="px-6 py-3">{t('al_col_ip')}</th>
+                <th className="px-6 py-3 text-right">{t('al_col_status')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs font-mono">
@@ -133,9 +136,9 @@ export default function AuditLogs() {
                   </td>
                   <td className="px-6 py-3 text-slate-400">{log.ip}</td>
                   <td className="px-6 py-3 text-right">
-                    {log.status === 'SUCCESS' && <span className="text-emerald-600 font-bold">SUCCESS</span>}
-                    {log.status === 'WARNING' && <span className="text-amber-600 font-bold">WARNING</span>}
-                    {log.status === 'FAILED' && <span className="text-rose-600 font-bold">FAILED</span>}
+                    {log.status === 'SUCCESS' && <span className="text-emerald-600 font-bold">{t('al_status_success')}</span>}
+                    {log.status === 'WARNING' && <span className="text-amber-600 font-bold">{t('al_status_warning')}</span>}
+                    {log.status === 'FAILED' && <span className="text-rose-600 font-bold">{t('al_status_failed')}</span>}
                   </td>
                 </tr>
               ))}
@@ -148,7 +151,7 @@ export default function AuditLogs() {
                   <td className="px-6 py-3 font-semibold text-slate-800">System Analytics</td>
                   <td className="px-6 py-3 text-slate-600">Batch export of corridor spot rates</td>
                   <td className="px-6 py-3 text-slate-400">10.0.1.55</td>
-                  <td className="px-6 py-3 text-right text-emerald-600 font-bold">SUCCESS</td>
+                  <td className="px-6 py-3 text-right text-emerald-600 font-bold">{t('al_status_success')}</td>
                 </tr>
               ))}
 
