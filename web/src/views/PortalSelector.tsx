@@ -1,144 +1,138 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import {
-  PackageSearch,
-  Wallet,
-  ArrowRight,
-  Ship,
-  BarChart3,
-  Globe,
-  Calculator,
-  FileText,
-  Scale
-} from 'lucide-react';
+import { Bell, Settings } from 'lucide-react';
+import landingVideo from './landingpage.mp4';
 
 interface PortalSelectorProps {
-  onSelectPortal: (portal: 'shipper' | 'finance') => void;
+  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin') => void;
 }
 
 export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) {
-  const { t, i18n } = useTranslation();
-
-  const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language === 'en' ? 'am' : 'en');
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
       {/* Top Bar */}
-      <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
-        <div className="font-semibold text-slate-900 text-sm tracking-tight">
+      <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 relative z-10">
+        <div className="font-bold text-blue-600 text-lg tracking-tight">
           TradeFlow
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={toggleLanguage}
-            className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-          >
-            <Globe size={14} />
-            {i18n.language === 'en' ? 'አማርኛ' : 'English'}
+        
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500">
+          <button className="hover:text-slate-900 transition-colors">Corridor Telematics</button>
+          <button className="hover:text-slate-900 transition-colors">Load Board</button>
+          <button className="hover:text-slate-900 transition-colors">Dynamic Rates</button>
+          <button className="hover:text-slate-900 transition-colors">Customs Sync</button>
+        </nav>
+
+        <div className="flex items-center gap-4">
+          <button className="bg-black text-white text-sm font-medium px-4 py-1.5 hover:bg-gray-800 transition-colors rounded-sm">
+            Launch Platform
           </button>
-          <div className="w-px h-4 bg-slate-200"></div>
-          <div className="text-xs font-medium text-slate-700">
-            Dani
-          </div>
+          <button className="text-slate-600 hover:text-slate-900">
+            <Bell size={18} />
+          </button>
+          <button className="text-slate-600 hover:text-slate-900">
+            <Settings size={18} />
+          </button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-3xl space-y-6">
-          {/* Title Section */}
-          <div className="text-center space-y-1">
-            <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
-              {t('portal_selector_title')}
-            </h1>
-            <p className="text-xs text-slate-500">
-              {t('portal_selector_subtitle')}
-            </p>
+      {/* Ticker Bar */}
+      <div className="h-8 bg-slate-100/90 backdrop-blur-sm border-b border-slate-200 flex items-center shrink-0 relative z-10 w-full overflow-hidden">
+        <div className="flex animate-marquee whitespace-nowrap shrink-0">
+          <div className="text-[10px] font-mono font-bold text-slate-700 tracking-wider px-4">
+            DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 &bull; GALAFI BORDER DWELL: 45 MINS &bull; DIESEL INDEX: ETB 95.50/L &bull; 12 CUSTOMS PASSES CLEARED
           </div>
-
-          {/* Portal Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Shipper Portal Card */}
-            <button
-              onClick={() => onSelectPortal('shipper')}
-              className="text-left bg-white border border-slate-200 rounded-md p-5 hover:border-slate-400 hover:bg-slate-50/50 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-8 h-8 bg-slate-900 rounded flex items-center justify-center text-white">
-                  <Ship size={16} />
-                </div>
-                <ArrowRight size={14} className="text-slate-400" />
-              </div>
-
-              <h2 className="text-sm font-semibold text-slate-900 mb-1">
-                {t('shipper_portal_title')}
-              </h2>
-              <p className="text-xs text-slate-500 leading-relaxed mb-4">
-                {t('shipper_portal_desc')}
-              </p>
-
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  { icon: PackageSearch, label: t('bids') },
-                  { icon: BarChart3, label: t('operations') },
-                  { icon: Globe, label: 'AM / EN' },
-                ].map((tag, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 text-[11px] text-slate-600 bg-slate-100 rounded px-2 py-0.5"
-                  >
-                    <tag.icon size={11} />
-                    {tag.label}
-                  </span>
-                ))}
-              </div>
-            </button>
-
-            {/* Financial Dashboard Card */}
-            <button
-              onClick={() => onSelectPortal('finance')}
-              className="text-left bg-white border border-slate-200 rounded-md p-5 hover:border-slate-400 hover:bg-slate-50/50 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-8 h-8 bg-slate-900 rounded flex items-center justify-center text-white">
-                  <Wallet size={16} />
-                </div>
-                <ArrowRight size={14} className="text-slate-400" />
-              </div>
-
-              <h2 className="text-sm font-semibold text-slate-900 mb-1">
-                {t('finance_portal_title')}
-              </h2>
-              <p className="text-xs text-slate-500 leading-relaxed mb-4">
-                {t('finance_portal_desc')}
-              </p>
-
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  { icon: Calculator, label: t('spot_pricing') },
-                  { icon: FileText, label: t('ledger') },
-                  { icon: Scale, label: t('disputes') },
-                ].map((tag, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 text-[11px] text-slate-600 bg-slate-100 rounded px-2 py-0.5"
-                  >
-                    <tag.icon size={11} />
-                    {tag.label}
-                  </span>
-                ))}
-              </div>
-            </button>
+          <div className="text-[10px] font-mono font-bold text-slate-700 tracking-wider px-4">
+            DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 &bull; GALAFI BORDER DWELL: 45 MINS &bull; DIESEL INDEX: ETB 95.50/L &bull; 12 CUSTOMS PASSES CLEARED
           </div>
-
-          {/* Footer */}
-          <div className="text-center text-[11px] text-slate-400">
-            Djibouti–Ethiopia Corridor • Freight Matching & Corridor Telematics
+        </div>
+        <div className="flex animate-marquee whitespace-nowrap shrink-0" aria-hidden="true">
+          <div className="text-[10px] font-mono font-bold text-slate-700 tracking-wider px-4">
+            DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 &bull; GALAFI BORDER DWELL: 45 MINS &bull; DIESEL INDEX: ETB 95.50/L &bull; 12 CUSTOMS PASSES CLEARED
+          </div>
+          <div className="text-[10px] font-mono font-bold text-slate-700 tracking-wider px-4">
+            DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 &bull; GALAFI BORDER DWELL: 45 MINS &bull; DIESEL INDEX: ETB 95.50/L &bull; 12 CUSTOMS PASSES CLEARED
           </div>
         </div>
       </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 relative flex items-center px-8 md:px-24">
+        {/* Background Video */}
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          src={landingVideo}
+        />
+        {/* Dark overlay to make text readable */}
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
+        
+        {/* Main Content Overlay (No White Card) */}
+        <div className="w-full max-w-2xl relative z-10 p-4 md:p-0">
+          <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-50 border border-emerald-400/30 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider mb-6 uppercase backdrop-blur-sm shadow-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+            Neural Logistics Engine Active (v4.0.2)
+          </div>
+
+          <h1 className="text-4xl md:text-[40px] font-bold text-white tracking-tight leading-[1.1] mb-4 drop-shadow-md">
+            AI-Powered Freight Matching for East Africa's Principal Corridor.
+          </h1>
+          
+          <p className="text-slate-200 text-base mb-8 drop-shadow-sm max-w-xl">
+            Optimizing the 810km Djibouti-Modjo artery.
+          </p>
+
+          <div className="flex flex-col md:flex-row gap-8 border-y border-white/20 py-6 mb-8 backdrop-blur-sm">
+            <div>
+              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">142</div>
+              <div className="text-[10px] text-slate-300 uppercase tracking-wider font-mono drop-shadow-sm">Active Heavy Assets</div>
+            </div>
+            <div>
+              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">ETB 356K</div>
+              <div className="text-[10px] text-slate-300 uppercase tracking-wider font-mono drop-shadow-sm">Avg Spot Rate</div>
+            </div>
+            <div>
+              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">98.28%</div>
+              <div className="text-[10px] text-slate-300 uppercase tracking-wider font-mono drop-shadow-sm">Model Precision</div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button 
+              onClick={() => onSelectPortal('shipper')}
+              className="bg-white text-slate-900 px-5 py-2.5 text-sm font-bold hover:bg-slate-100 transition-colors rounded-sm shadow-lg"
+            >
+              Launch Freight Marketplace
+            </button>
+            <button 
+              onClick={() => onSelectPortal('finance')}
+              className="bg-white/10 text-white border border-white/30 backdrop-blur-md px-5 py-2.5 text-sm font-medium hover:bg-white/20 transition-colors rounded-sm shadow-lg"
+            >
+              Calculate Spot Quote
+            </button>
+            <button 
+              onClick={() => onSelectPortal('admin')}
+              className="bg-blue-600/20 text-blue-50 border border-blue-500/30 backdrop-blur-md px-5 py-2.5 text-sm font-medium hover:bg-blue-600/30 transition-colors rounded-sm shadow-lg"
+            >
+              Admin Control Tower
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="h-8 bg-white border-t border-slate-200 flex items-center justify-between px-6 shrink-0 relative z-10 text-[10px] text-slate-500 font-mono">
+        <div>
+          &copy; 2024 TradeFlow Logistics. All rights reserved.
+        </div>
+        <div className="flex items-center gap-6">
+          <a href="#" className="hover:text-slate-900 transition-colors">Security Policy</a>
+          <a href="#" className="hover:text-slate-900 transition-colors">Terms of Transit</a>
+          <a href="#" className="hover:text-slate-900 transition-colors">Escrow Rules</a>
+        </div>
+      </footer>
     </div>
   );
 }
