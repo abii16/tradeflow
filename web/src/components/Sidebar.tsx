@@ -34,7 +34,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       </div>
 
       <nav className="flex-1 p-4 space-y-2">
-        <button className="w-full bg-slate-800 text-white rounded-lg py-2.5 px-4 mb-6 font-medium text-xs tracking-wide hover:bg-slate-700 active:scale-[0.99] shadow-sm transition-all">
+        <button className="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-lg py-2.5 px-4 mb-6 font-semibold text-xs tracking-wide hover:bg-white hover:border-slate-400 hover:shadow-md hover:shadow-slate-200/60 transition-all duration-200 active:scale-[0.99]">
           + {t('new_shipment')}
         </button>
 

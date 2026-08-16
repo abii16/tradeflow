@@ -18,7 +18,7 @@ export default function FreightOrderForm() {
 
   return (
     <div className="flex flex-col space-y-6">
-      <Card className="bg-white border-slate-200 shadow-sm rounded-xl">
+      <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md hover:shadow-slate-100 rounded-xl transition-all duration-200">
         <CardHeader className="px-6 py-5 border-b border-slate-100">
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
@@ -33,63 +33,69 @@ export default function FreightOrderForm() {
         <CardContent className="p-6">
           <form onSubmit={handleRequestQuote} className="space-y-6">
             
-            {/* Segmented Route Inputs */}
-            <div className="relative flex flex-col space-y-3 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-              <div className="relative">
-                <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">{t('origin')}</Label>
+            {/* Row 1: Dual-Column Segment */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Left Column: Route Inputs */}
+              <div className="relative flex flex-col space-y-3 h-full justify-between">
                 <div className="relative">
-                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Djibouti Container Terminal" />
+                  <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Origin</Label>
+                  <div className="relative">
+                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Djibouti Container Terminal" />
+                  </div>
+                </div>
+
+                <div className="absolute top-[48%] left-8 -translate-y-1/2 z-10 hidden sm:flex">
+                   <button type="button" className="p-1.5 bg-white border border-slate-200 rounded-full shadow-sm hover:bg-slate-50 text-slate-400 transition-colors">
+                     <ArrowDownUp size={12} />
+                   </button>
+                </div>
+
+                <div className="relative">
+                  <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Destination</Label>
+                  <div className="relative">
+                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" />
+                    <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Modjo Dry Port" />
+                  </div>
                 </div>
               </div>
 
-              <div className="absolute top-[45%] left-8 -translate-y-1/2 z-10 hidden sm:flex">
-                 <button type="button" className="p-1.5 bg-white border border-slate-200 rounded-full shadow-sm hover:bg-slate-50 text-slate-400 transition-colors">
-                   <ArrowDownUp size={12} />
-                 </button>
-              </div>
-
-              <div className="relative">
-                <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">{t('destination')}</Label>
+              {/* Right Column: Cargo Specs */}
+              <div className="flex flex-col space-y-3 h-full justify-between">
                 <div className="relative">
-                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" />
-                  <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Modjo Dry Port" />
+                  <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Cargo Details</Label>
+                  <div className="relative">
+                    <Package size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium" defaultValue="30T Construction Rebar (Flatbed)" />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Total Weight</Label>
+                  <div className="relative flex items-center">
+                    <Scale size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Input className="pl-9 pr-12 bg-white border-slate-200 h-11 text-sm font-medium font-mono" defaultValue="30.00" />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">MT</div>
+                  </div>
                 </div>
               </div>
+
             </div>
 
-            {/* Smart Cargo Specs Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 block">{t('cargo_details')}</Label>
-                <div className="relative">
-                  <Package size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium" defaultValue="30T Construction Rebar (Flatbed)" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 block">Total Weight</Label>
-                <div className="relative flex items-center">
-                  <Scale size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <Input className="pl-9 pr-12 bg-white border-slate-200 h-11 text-sm font-medium font-mono" defaultValue="30.00" />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">MT</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Lead Time Pill Selector */}
+            {/* Row 2: Full-Width Lead Time */}
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 block">{t('required_lead_time')}</Label>
-              <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-200/60 w-full sm:w-auto">
-                <button type="button" onClick={() => setLeadTime('24h')} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-md transition-all ${leadTime === '24h' ? 'bg-white shadow-sm border border-slate-200/50 text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Immediate 24h</button>
-                <button type="button" onClick={() => setLeadTime('48h')} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-md transition-all ${leadTime === '48h' ? 'bg-white shadow-sm border border-slate-200/50 text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>48h Flexible</button>
-                <button type="button" onClick={() => setLeadTime('schedule')} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-md transition-all ${leadTime === 'schedule' ? 'bg-white shadow-sm border border-slate-200/50 text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Scheduled Date</button>
+              <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 block">Required Lead Time</Label>
+              <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-200/60 w-full">
+                <button type="button" onClick={() => setLeadTime('24h')} className={`flex-1 px-4 py-2.5 text-xs font-semibold rounded-md transition-all ${leadTime === '24h' ? 'bg-white shadow-sm border border-slate-300 text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Immediate 24h</button>
+                <button type="button" onClick={() => setLeadTime('48h')} className={`flex-1 px-4 py-2.5 text-xs font-semibold rounded-md transition-all ${leadTime === '48h' ? 'bg-white shadow-sm border border-slate-300 text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>48h Flexible</button>
+                <button type="button" onClick={() => setLeadTime('schedule')} className={`flex-1 px-4 py-2.5 text-xs font-semibold rounded-md transition-all ${leadTime === 'schedule' ? 'bg-white shadow-sm border border-slate-300 text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Scheduled Date</button>
               </div>
             </div>
 
+            {/* Row 3: Action CTA */}
             <div className="pt-2">
-              <Button type="submit" className="w-full sm:w-auto sm:ml-auto block bg-slate-800 hover:bg-slate-700 text-white h-11 px-8 rounded-lg text-xs tracking-wide uppercase font-bold shadow-sm transition-all active:scale-[0.99]">
+              <Button type="submit" className="w-full bg-slate-50 border border-slate-300 text-slate-800 h-11 rounded-lg text-xs tracking-wide uppercase font-semibold hover:bg-white hover:border-slate-400 hover:shadow-md hover:shadow-slate-200/60 transition-all duration-200 active:scale-[0.99]">
                 {t('request_spot_pricing')}
               </Button>
             </div>
@@ -125,7 +131,7 @@ export default function FreightOrderForm() {
             </div>
 
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              <Button className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold h-11 rounded-lg text-sm shadow-sm transition-all active:scale-[0.99]">
+              <Button className="flex-1 bg-slate-50 border border-slate-300 text-slate-800 font-semibold h-11 rounded-lg text-sm hover:bg-white hover:border-slate-400 hover:shadow-md hover:shadow-slate-200/60 transition-all duration-200 active:scale-[0.99]">
                 <Lock size={16} className="mr-2" />
                 {t('accept_quote_lock_escrow')}
               </Button>
