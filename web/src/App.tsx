@@ -33,7 +33,9 @@ export default function App() {
       shipper: '/shipper',
       finance: '/finance',
     };
-    window.history.pushState({ portal: target }, '', paths[target]);
+    if (window.location.pathname !== paths[target]) {
+      window.history.pushState({ portal: target }, '', paths[target]);
+    }
   };
 
   const handleSelectPortal = (p: 'shipper' | 'finance') => {
