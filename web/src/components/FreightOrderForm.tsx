@@ -33,12 +33,11 @@ export default function FreightOrderForm() {
         <CardContent className="p-6">
           <form onSubmit={handleRequestQuote} className="space-y-6">
             
-            {/* Row 1: Dual-Column Segment */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Row 1: High-Density 2x2 Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               
-              {/* Segmented Route Inputs */}
-            <div className="relative flex flex-col bg-slate-50/50 rounded-xl border border-slate-100">
-              <div className="relative p-4 pb-3">
+              {/* Top Left: Origin */}
+              <div className="relative">
                 <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Origin</Label>
                 <div className="relative">
                   <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -46,38 +45,31 @@ export default function FreightOrderForm() {
                 </div>
               </div>
 
-              <div className="absolute top-1/2 left-8 -translate-y-1/2 z-10 hidden sm:flex">
-                 <button type="button" className="p-1.5 bg-slate-50 border border-slate-200 rounded-full shadow-sm hover:bg-white text-slate-400 transition-colors">
-                   <ArrowDownUp size={12} />
-                 </button>
+              {/* Top Right: Cargo Details */}
+              <div className="relative">
+                <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Cargo Details</Label>
+                <div className="relative">
+                  <Package size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium" defaultValue="30T Construction Rebar (Flatbed)" />
+                </div>
               </div>
 
-              <div className="relative p-4 pt-3 border-t border-slate-200/50">
+              {/* Bottom Left: Destination */}
+              <div className="relative">
                 <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Destination</Label>
                 <div className="relative">
                   <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" />
                   <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium focus-visible:ring-slate-400" defaultValue="Modjo Dry Port" />
                 </div>
               </div>
-            </div>
 
-              {/* Right Column: Cargo Specs */}
-              <div className="flex flex-col space-y-3 h-full justify-between">
-                <div className="relative">
-                  <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Cargo Details</Label>
-                  <div className="relative">
-                    <Package size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <Input className="pl-9 bg-white border-slate-200 h-11 text-sm font-medium" defaultValue="30T Construction Rebar (Flatbed)" />
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Total Weight</Label>
-                  <div className="relative flex items-center">
-                    <Scale size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <Input className="pl-9 pr-12 bg-white border-slate-200 h-11 text-sm font-medium font-mono" defaultValue="30.00" />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">MT</div>
-                  </div>
+              {/* Bottom Right: Total Weight */}
+              <div className="relative">
+                <Label className="text-[10px] font-bold tracking-wider uppercase text-slate-500 mb-1.5 block">Total Weight</Label>
+                <div className="relative flex items-center">
+                  <Scale size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input className="pl-9 pr-12 bg-white border-slate-200 h-11 text-sm font-medium font-mono" defaultValue="30.00" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">MT</div>
                 </div>
               </div>
 
