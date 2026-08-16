@@ -1,0 +1,78 @@
+import React, { useState, useEffect } from 'react';
+import ShipperSidebar from './ShipperSidebar';
+import ShipperHeader from './ShipperHeader';
+import ShipperDashboard from '../ShipperDashboard';
+import BidsTab from '../BidsTab';
+import TelematicsTab from '../TelematicsTab';
+import CustomsTab from '../CustomsTab';
+import SettingsTab from '../SettingsTab';
+
+const SHIPPER_TAB_PATHS: Record<string, string> = {
+  '/shipper': 'operations',
+  '/shipper/operations': 'operations',
+  '/shipper/bids': 'bids',
+  '/shipper/telematics': 'telematics',
+  '/shipper/customs': 'customs_vault',
+  '/shipper/settings': 'settings',
+};
+
+const TAB_TO_SLUG: Record<string, string> = {
+  operations: 'operations',
+  bids: 'bids',
+  telematics: 'telematics',
+  customs_vault: 'customs',
+  settings: 'settings',
+};
+
+interface ShipperPortalProps {
+  onSwitchPortal: () => void;
+}
+
+export default function ShipperPortal({ onSwitchPortal }: ShipperPortalProps) {
+  const getTabFromPath = (): string => {
+    const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/shipper';
+    return SHIPPER_TAB_PATHS[path] || 'operations';
+  };
+
+  const [activeTab, setActiveTabState] = useState<string>(getTabFromPath);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setActiveTabState(getTabFromPath());
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    const slug = TAB_TO_SLUG[tab] || tab;
+    const targetPath = `/shipper/${slug}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({ tab }, '', targetPath);
+    }
+  };
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case 'operations': return <ShipperDashboard />;
+      case 'bids': return <BidsTab />;
+      case 'telematics': return <TelematicsTab />;
+      case 'customs_vault': return <CustomsTab />;
+      case 'settings': return <SettingsTab />;
+      default: return <ShipperDashboard />;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-white overflow-hidden font-sans">
+      <ShipperSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <ShipperHeader onSwitchPortal={onSwitchPortal} />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+          {renderTab()}
+        </main>
+      </div>
+    </div>
+  );
+}

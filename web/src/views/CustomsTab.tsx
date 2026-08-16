@@ -1,100 +1,103 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FileCheck, UploadCloud, CheckCircle2, Clock } from 'lucide-react';
+import { UploadCloud, CheckCircle2, Clock } from 'lucide-react';
 
 export default function CustomsTab() {
   const { t } = useTranslation();
 
+  const documents = [
+    {
+      type: 'Commercial Invoice',
+      status: 'verified',
+      statusLabel: 'Uploaded — Hash Verified',
+      file: 'inv_88204_ethio.pdf',
+    },
+    {
+      type: 'Bill of Lading (MBL/HBL)',
+      status: 'cleared',
+      statusLabel: 'Uploaded — Cleared',
+      file: 'bl_dj_mod_9921.pdf',
+    },
+    {
+      type: 'Packing List',
+      status: 'pending',
+      statusLabel: 'Pending Upload',
+      file: null,
+    },
+    {
+      type: 'Certificate of Origin',
+      status: 'review',
+      statusLabel: 'Under Review',
+      file: 'cert_org_991.pdf',
+    },
+  ];
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">{t('customs_vault')}</h2>
+    <div className="max-w-[1320px] mx-auto space-y-5">
+      <div className="pb-4 border-b border-slate-200">
+        <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{t('customs_vault')}</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Upload and validate clearance documents for customs submission (FR-06)</p>
       </div>
 
-      <div className="bg-emerald-50 border border-emerald-200 rounded-md p-4 flex items-center space-x-3 mb-6">
-        <CheckCircle2 className="text-emerald-600" size={24} />
-        <div>
-          <h4 className="text-emerald-800 font-bold tracking-wider text-sm">VALIDATED - SUBMITTED TO GALAFI BORDER DESK</h4>
-          <p className="text-emerald-600 text-xs mt-0.5">All required documents have passed automated consistency checks.</p>
+      {/* Validation Status */}
+      <div className="bg-slate-50 border border-slate-200 rounded-md p-3 flex items-center gap-2">
+        <CheckCircle2 size={16} className="text-slate-500" />
+        <div className="text-xs">
+          <span className="font-medium text-slate-900">Validated</span>
+          <span className="text-slate-500 ml-1">— Submitted to Galafi Border Desk. All documents passed consistency checks.</span>
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="bg-slate-50 border-b border-slate-200">
-          <CardTitle className="text-lg text-slate-800">{t('document_upload')}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow>
-                <TableHead>Document Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>File Reference</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium text-slate-900">Commercial Invoice</TableCell>
-                <TableCell>
-                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none flex w-fit items-center">
-                    <CheckCircle2 size={12} className="mr-1" /> Uploaded - Hash Verified
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-slate-600 font-mono text-xs">inv_88204_ethio.pdf</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm">View</Button>
-                </TableCell>
-              </TableRow>
-              
-              <TableRow>
-                <TableCell className="font-medium text-slate-900">Bill of Lading (MBL/HBL)</TableCell>
-                <TableCell>
-                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none flex w-fit items-center">
-                    <CheckCircle2 size={12} className="mr-1" /> Uploaded - Cleared
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-slate-600 font-mono text-xs">bl_dj_mod_9921.pdf</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm">View</Button>
-                </TableCell>
-              </TableRow>
+      {/* Documents Table */}
+      <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
+        <div className="p-3 border-b border-slate-100">
+          <span className="text-sm font-semibold text-slate-900">{t('document_upload')}</span>
+        </div>
 
-              <TableRow>
-                <TableCell className="font-medium text-slate-900">Packing List</TableCell>
+        <Table>
+          <TableHeader className="bg-slate-50 text-[11px] font-semibold text-slate-600">
+            <TableRow>
+              <TableHead>Document Type</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>File Reference</TableHead>
+              <TableHead className="text-right">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="text-xs">
+            {documents.map((doc, i) => (
+              <TableRow key={i} className="hover:bg-slate-50/50">
+                <TableCell className="font-medium text-slate-900">{doc.type}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex w-fit items-center">
-                    Pending Upload
-                  </Badge>
+                  <div className="flex items-center gap-1 text-slate-600">
+                    {doc.status === 'verified' || doc.status === 'cleared' ? (
+                      <CheckCircle2 size={12} className="text-slate-400" />
+                    ) : doc.status === 'review' ? (
+                      <Clock size={12} className="text-slate-400" />
+                    ) : null}
+                    <span>{doc.statusLabel}</span>
+                  </div>
                 </TableCell>
-                <TableCell className="text-slate-400 text-xs italic">Not provided</TableCell>
+                <TableCell className="text-slate-500 font-mono text-[11px]">
+                  {doc.file || <span className="italic text-slate-400">Not provided</span>}
+                </TableCell>
                 <TableCell className="text-right">
-                  <Button size="sm" className="bg-slate-900 text-white flex items-center space-x-2 w-full justify-center md:w-auto md:ml-auto">
-                    <UploadCloud size={14} /> <span>Upload</span>
-                  </Button>
+                  {doc.status === 'pending' ? (
+                    <button className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-medium rounded transition-colors">
+                      <UploadCloud size={12} />
+                      Upload
+                    </button>
+                  ) : (
+                    <button className="px-2.5 py-1 border border-slate-300 text-slate-700 hover:bg-slate-50 text-[11px] font-medium rounded transition-colors">
+                      View
+                    </button>
+                  )}
                 </TableCell>
               </TableRow>
-
-              <TableRow>
-                <TableCell className="font-medium text-slate-900">Certificate of Origin</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex w-fit items-center">
-                    <Clock size={12} className="mr-1" /> Under Review
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-slate-600 font-mono text-xs">cert_org_991.pdf</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm">View</Button>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
