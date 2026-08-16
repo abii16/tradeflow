@@ -95,7 +95,7 @@ export default function FreightOrderForm() {
 
             {/* Row 3: Action CTA */}
             <div className="pt-2">
-              <Button type="submit" className="w-full bg-slate-50 border border-slate-300 text-slate-800 h-11 rounded-lg text-xs tracking-wide uppercase font-semibold hover:bg-white hover:border-slate-400 hover:shadow-md hover:shadow-slate-200/60 transition-all duration-200 active:scale-[0.99]">
+              <Button type="submit" className="w-full bg-slate-50 border border-slate-300 border-l-[3px] border-l-transparent text-slate-800 h-11 rounded-r-lg rounded-l-sm text-xs tracking-wide uppercase font-semibold hover:bg-emerald-50 hover:border-slate-300 hover:border-l-emerald-500 hover:text-emerald-900 transition-all duration-200">
                 {t('request_spot_pricing')}
               </Button>
             </div>
@@ -131,11 +131,11 @@ export default function FreightOrderForm() {
             </div>
 
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              <Button className="flex-1 bg-slate-50 border border-slate-300 text-slate-800 font-semibold h-11 rounded-lg text-sm hover:bg-white hover:border-slate-400 hover:shadow-md hover:shadow-slate-200/60 transition-all duration-200 active:scale-[0.99]">
+              <Button className="flex-1 bg-slate-50 border border-slate-300 border-l-[3px] border-l-transparent text-slate-800 font-semibold h-11 rounded-r-lg rounded-l-sm text-sm hover:bg-emerald-50 hover:border-slate-300 hover:border-l-emerald-500 hover:text-emerald-900 transition-all duration-200">
                 <Lock size={16} className="mr-2" />
                 {t('accept_quote_lock_escrow')}
               </Button>
-              <Button variant="outline" className="h-11 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 text-sm font-medium px-8 transition-all" onClick={() => setQuoteGenerated(false)}>
+              <Button variant="outline" className="h-11 rounded-r-lg rounded-l-sm bg-white border border-slate-200 border-l-[3px] border-l-transparent text-slate-700 hover:bg-emerald-50 hover:border-slate-200 hover:border-l-emerald-500 hover:text-emerald-900 text-sm font-medium px-8 transition-all" onClick={() => setQuoteGenerated(false)}>
                 {t('decline')}
               </Button>
             </div>
