@@ -80,7 +80,7 @@ export default function ControlTowerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column (65%): Live Interactive Corridor Radar */}
-        <div className="lg:col-span-2 bg-[#0F172A] rounded-xl shadow-sm overflow-hidden relative min-h-[500px] border border-slate-800">
+        <div className="lg:col-span-2 bg-[#0F172A] rounded-xl shadow-sm overflow-hidden relative h-full min-h-[480px] border border-slate-800">
           <LiveRadarMap />
         </div>
 

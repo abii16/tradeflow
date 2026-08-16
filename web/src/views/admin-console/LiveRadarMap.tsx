@@ -33,27 +33,29 @@ const createVehicleMarker = (id: string, colorClass = "bg-cyan-400") => {
   });
 };
 
-const MapResetter = ({ center, zoom }: { center: [number, number], zoom: number }) => {
+const bounds: L.LatLngBoundsExpression = [[8.4, 38.8], [11.9, 43.4]];
+
+const MapController = () => {
   const map = useMap();
   useEffect(() => {
+    map.fitBounds(bounds, { padding: [30, 30] });
+    
     const btn = document.getElementById('reset-map-btn');
     if (btn) {
-      btn.onclick = () => map.setView(center, zoom, { animate: true });
+      btn.onclick = () => map.fitBounds(bounds, { padding: [30, 30], animate: true });
     }
-  }, [map, center, zoom]);
+  }, [map]);
   return null;
 };
 
 export default function LiveRadarMap() {
-  const initialCenter: [number, number] = [10.5, 41.5];
-  const initialZoom = 7;
-
   return (
-    <div className="relative w-full h-full min-h-[500px]">
+    <div className="relative w-full h-full min-h-[480px]">
       <MapContainer 
-        center={initialCenter} 
-        zoom={initialZoom} 
+        bounds={bounds}
         zoomControl={false}
+        minZoom={6}
+        maxZoom={10}
         className="absolute inset-0 z-0 bg-[#0B0F17]"
       >
         <TileLayer
@@ -112,7 +114,7 @@ export default function LiveRadarMap() {
           </Popup>
         </Marker>
 
-        <MapResetter center={initialCenter} zoom={initialZoom} />
+        <MapController />
       </MapContainer>
 
       {/* Floating HUD */}

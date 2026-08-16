@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
 import ControlTowerDashboard from './ControlTowerDashboard';
+import VerificationQueue from './VerificationQueue';
+import DynamicPricing from './DynamicPricing';
+import SecurityDetours from './SecurityDetours';
+import DisputeMediation from './DisputeMediation';
+import AuditLogs from './AuditLogs';
 
 type AdminSubTab = 'radar' | 'verification' | 'pricing' | 'security' | 'disputes' | 'audit';
 
@@ -20,6 +25,16 @@ export default function AdminPortal({ onSwitchPortal }: AdminPortalProps) {
     switch (activeSubTab) {
       case 'radar':
         return <ControlTowerDashboard />;
+      case 'verification':
+        return <VerificationQueue />;
+      case 'pricing':
+        return <DynamicPricing />;
+      case 'security':
+        return <SecurityDetours />;
+      case 'disputes':
+        return <DisputeMediation />;
+      case 'audit':
+        return <AuditLogs />;
       default:
         return (
           <div className="flex items-center justify-center h-64">
