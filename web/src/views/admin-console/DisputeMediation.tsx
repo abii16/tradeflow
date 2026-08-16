@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Scale, AlertCircle, FileText, Lock, Unlock, Gavel, Handshake, CornerUpRight, Search, FileImage } from 'lucide-react';
+import { Scale, AlertCircle, FileText, Lock, Unlock, Gavel, Handshake, Search, FileImage, ShieldCheck, X } from 'lucide-react';
 
 export default function DisputeMediation() {
   const { t } = useTranslation();
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
 
   return (
     <div className="h-full flex flex-col space-y-6">
@@ -78,22 +79,27 @@ export default function DisputeMediation() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 mb-1">{t('dm_claim')} #DSP-204</h3>
-                <div className="text-sm font-semibold text-slate-600">Ethio-Trading PLC ({t('dm_shipper_label')}) <span className="text-slate-400 mx-2">{t('dm_vs')}</span> Abyssinia Heavy Logistics ({t('dm_transporter_label')})</div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1 flex items-center gap-3">
+                  {t('dm_claim')} #DSP-204
+                  <a href="#" className="text-[10px] font-mono bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors">
+                    [SHP-9021-DJM • 30T Rebar • Djibouti -&gt; Modjo]
+                  </a>
+                </h3>
+                <div className="text-sm font-semibold text-slate-600">Ethio-Trading PLC ({t('dm_importer_label')}) <span className="text-slate-400 mx-2">{t('dm_vs')}</span> Abyssinia Heavy Logistics ({t('dm_carrier_label')})</div>
               </div>
               <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-right">
                 <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1.5 justify-end">
-                  <Lock size={12} className="text-amber-500" /> {t('dm_escrow_locked')}
+                  <Lock size={12} className="text-amber-500" /> {t('dm_escrow_multi_sig')}
                 </div>
                 <div className="text-lg font-mono font-bold text-slate-900">ETB 348,500.00</div>
               </div>
             </div>
 
-            <div className="bg-rose-50 border border-rose-100 rounded-lg p-4 flex items-start gap-3">
+            <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-lg p-4 flex items-start gap-3">
               <AlertCircle size={18} className="text-rose-600 mt-0.5 shrink-0" />
               <div>
-                <h4 className="font-bold text-rose-800 text-sm mb-1">{t('dm_dispute_reason')}: 1.5 MT Weight Discrepancy</h4>
-                <p className="text-xs text-rose-700">The Shipper claims the cargo arrived 1.5 metric tons lighter than dispatched. The Transporter claims no tampering occurred and attributes it to scale calibration differences.</p>
+                <h4 className="font-bold text-rose-800 text-sm mb-1">{t('dm_severity_alert')}: 1.5 MT Weight Discrepancy</h4>
+                <p className="text-xs text-rose-700">{t('dm_claim_desc')}</p>
               </div>
             </div>
           </div>
@@ -111,16 +117,16 @@ export default function DisputeMediation() {
                 <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">SH</div>
                 <div className="flex-1 bg-white border border-slate-200 rounded-lg rounded-tl-none p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-sm text-slate-900">Ethio-Trading PLC ({t('dm_shipper_label')})</span>
+                    <span className="font-bold text-sm text-slate-900">Ethio-Trading PLC ({t('dm_importer_label')})</span>
                     <span className="text-[10px] text-slate-400">10:45 AM</span>
                   </div>
-                  <p className="text-sm text-slate-700 mb-3">Modjo weighbridge ticket clearly shows 23.0 MT. We dispatched 24.5 MT from Galafi. We demand a partial refund for the missing 1.5 MT of rebar.</p>
+                  <p className="text-sm text-slate-700 mb-3">{t('dm_evidence_shipper_msg')}</p>
                   
                   <div className="flex gap-2">
-                    <div className="border border-slate-200 rounded p-2 flex items-center gap-2 bg-slate-50 text-xs w-fit">
-                      <FileImage size={14} className="text-blue-500" />
-                      <span>modjo_scale_ticket.jpg</span>
-                    </div>
+                    <button className="border border-slate-200 rounded p-2 flex items-center gap-2 bg-slate-50 text-xs w-fit hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer group">
+                      <FileImage size={14} className="text-blue-500 group-hover:scale-110 transition-transform" />
+                      <span>modjo_scale_ticket.jpg (2.4 MB)</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -130,20 +136,20 @@ export default function DisputeMediation() {
                 <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">TR</div>
                 <div className="flex-1 bg-white border border-slate-200 rounded-lg rounded-tl-none p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-sm text-slate-900">Abyssinia Heavy Logistics</span>
+                    <span className="font-bold text-sm text-slate-900">Abyssinia Heavy Logistics ({t('dm_carrier_label')})</span>
                     <span className="text-[10px] text-slate-400">11:15 AM</span>
                   </div>
-                  <p className="text-sm text-slate-700 mb-3">The cargo was sealed with a digital smart lock (Lock ID: DL-889). The telemetry logs show the lock was never tampered with during transit. Attached is the Galafi scale ticket showing 24.5 MT and the lock integrity report.</p>
+                  <p className="text-sm text-slate-700 mb-3">{t('dm_evidence_carrier_msg')}</p>
                   
                   <div className="flex gap-2 flex-wrap">
-                    <div className="border border-slate-200 rounded p-2 flex items-center gap-2 bg-slate-50 text-xs w-fit">
-                      <FileImage size={14} className="text-blue-500" />
-                      <span>galafi_scale_ticket.jpg</span>
-                    </div>
-                    <div className="border border-slate-200 rounded p-2 flex items-center gap-2 bg-slate-50 text-xs w-fit">
-                      <FileText size={14} className="text-emerald-500" />
-                      <span>telemetry_lock_log.pdf</span>
-                    </div>
+                    <button className="border border-slate-200 rounded p-2 flex items-center gap-2 bg-slate-50 text-xs w-fit hover:bg-emerald-50 hover:border-emerald-200 transition-colors cursor-pointer group">
+                      <FileImage size={14} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                      <span>galafi_scale_ticket.jpg (1.8 MB)</span>
+                    </button>
+                    <button className="border border-slate-200 rounded p-2 flex items-center gap-2 bg-slate-50 text-xs w-fit hover:bg-emerald-50 hover:border-emerald-200 transition-colors cursor-pointer group">
+                      <ShieldCheck size={14} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                      <span>telemetry_lock_log.pdf ({t('dm_attachment_verified')})</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -152,24 +158,36 @@ export default function DisputeMediation() {
           </div>
 
           {/* Action / Resolution Panel */}
-          <div className="bg-[#0F172A] rounded-xl shadow-lg p-5 border border-slate-800">
+          <div className="bg-[#0F172A] rounded-xl shadow-lg p-6 border border-slate-800">
             <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
               <Gavel size={16} className="text-indigo-400" /> {t('dm_resolution_title')}
             </h4>
             
-            <div className="grid grid-cols-3 gap-4">
-              <button className="bg-emerald-600/20 border border-emerald-500/30 hover:bg-emerald-600/30 text-emerald-50 font-semibold py-3 px-4 rounded-lg text-sm transition-colors flex flex-col items-center justify-center gap-1">
-                <Unlock size={16} className="text-emerald-400 mb-1" />
+            <div className="mb-6">
+              <label className="block text-xs font-semibold text-slate-300 mb-2">{t('dm_resolution_note')}</label>
+              <textarea 
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none" 
+                rows={3}
+                placeholder={t('dm_resolution_note_placeholder')}
+              ></textarea>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button className="bg-[#059669] hover:bg-[#047857] text-white font-bold py-3 px-4 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2">
+                <Unlock size={16} />
                 {t('dm_release_100')}
               </button>
               
-              <button className="bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 text-amber-50 font-semibold py-3 px-4 rounded-lg text-sm transition-colors flex flex-col items-center justify-center gap-1">
-                <Handshake size={16} className="text-amber-400 mb-1" />
+              <button 
+                onClick={() => setIsRefundModalOpen(true)}
+                className="bg-[#D97706] hover:bg-[#B45309] text-white font-bold py-3 px-4 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
+              >
+                <Scale size={16} />
                 {t('dm_issue_refund')}
               </button>
               
-              <button className="bg-rose-600/20 border border-rose-500/30 hover:bg-rose-600/30 text-rose-50 font-semibold py-3 px-4 rounded-lg text-sm transition-colors flex flex-col items-center justify-center gap-1">
-                <CornerUpRight size={16} className="text-rose-400 mb-1" />
+              <button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold py-3 px-4 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2">
+                <Gavel size={16} />
                 {t('dm_escalate_legal')}
               </button>
             </div>
@@ -178,6 +196,46 @@ export default function DisputeMediation() {
         </div>
 
       </div>
+
+      {/* Partial Refund Modal */}
+      {isRefundModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+              <h3 className="font-bold text-slate-900">{t('dm_modal_refund_title')}</h3>
+              <button onClick={() => setIsRefundModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">{t('dm_modal_refund_amount')}</label>
+                <input 
+                  type="number" 
+                  defaultValue={21336.73}
+                  className="w-full border border-slate-300 rounded-lg px-4 py-2 text-lg font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                />
+                <p className="text-xs text-slate-500 mt-2">Pre-calculated pro-rata for 1.5 MT discrepancy.</p>
+              </div>
+            </div>
+            <div className="p-5 border-t border-slate-200 bg-slate-50 flex gap-3 justify-end">
+              <button 
+                onClick={() => setIsRefundModalOpen(false)}
+                className="px-4 py-2 font-semibold text-slate-600 hover:bg-slate-200 bg-slate-100 rounded-lg transition-colors text-sm"
+              >
+                {t('dm_modal_cancel')}
+              </button>
+              <button 
+                onClick={() => setIsRefundModalOpen(false)}
+                className="px-4 py-2 font-bold text-white bg-[#D97706] hover:bg-[#B45309] rounded-lg transition-colors shadow-sm text-sm"
+              >
+                {t('dm_modal_deduct_btn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
