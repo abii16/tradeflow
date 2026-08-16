@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import PortalSelector from './views/PortalSelector';
 import ShipperPortal from './views/shipper-portal/ShipperPortal';
 import FinancePortal from './views/financial-dashboard/FinancePortal';
+import AdminPortal from './views/admin-console/AdminPortal';
 
-type PortalView = 'selector' | 'shipper' | 'finance';
+type PortalView = 'selector' | 'shipper' | 'finance' | 'admin';
 
 function getPortalFromPath(): PortalView {
   const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
   if (path.startsWith('/shipper')) return 'shipper';
   if (path.startsWith('/finance')) return 'finance';
+  if (path.startsWith('/admin')) return 'admin';
   // Legacy route redirects
   if (path.startsWith('/bids') || path.startsWith('/telematics') || path.startsWith('/customs') || path === '/operations') return 'shipper';
   if (path.startsWith('/escrow') || path.startsWith('/settlements') || path.startsWith('/ledger') || path.startsWith('/disputes') || path.startsWith('/pricing')) return 'finance';
@@ -32,13 +34,14 @@ export default function App() {
       selector: '/',
       shipper: '/shipper',
       finance: '/finance',
+      admin: '/admin',
     };
     if (window.location.pathname !== paths[target]) {
       window.history.pushState({ portal: target }, '', paths[target]);
     }
   };
 
-  const handleSelectPortal = (p: 'shipper' | 'finance') => {
+  const handleSelectPortal = (p: 'shipper' | 'finance' | 'admin') => {
     navigateToPortal(p);
   };
 
@@ -50,6 +53,8 @@ export default function App() {
       return <ShipperPortal onSwitchPortal={switchToFinance} />;
     case 'finance':
       return <FinancePortal onSwitchPortal={switchToShipper} />;
+    case 'admin':
+      return <AdminPortal onSwitchPortal={() => navigateToPortal('selector')} />;
     default:
       return <PortalSelector onSelectPortal={handleSelectPortal} />;
   }
