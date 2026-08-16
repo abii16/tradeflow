@@ -45,7 +45,7 @@ export default function ActiveShipment() {
               attribution=''
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <Polyline positions={routeLine} color="#94A3B8" weight={3} dashArray="5, 5" />
+            <Polyline positions={routeLine} color="#E2E8F0" weight={3} dashArray="5, 5" />
             <Polyline positions={[djibouti, galafi, awash]} color="#059669" weight={4} />
             <Marker position={awash} />
           </MapContainer>
@@ -56,8 +56,8 @@ export default function ActiveShipment() {
           
           {/* Step 1: Port Clearance */}
           <div className="relative flex items-start pb-8">
-            <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-emerald-500"></div>
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 shadow-sm z-10 shrink-0 mt-0.5">
+            <div className="absolute left-[11px] top-[16px] bottom-0 w-[2px] bg-emerald-600 z-0"></div>
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 shadow-sm z-10 shrink-0 mt-1">
               <Check size={12} className="text-white stroke-[3]" />
             </div>
             <div className="ml-5 w-full flex justify-between items-start">
@@ -73,8 +73,8 @@ export default function ActiveShipment() {
 
           {/* Step 2: Customs Transit */}
           <div className="relative flex items-start pb-8">
-            <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-emerald-500"></div>
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 shadow-sm z-10 shrink-0 mt-0.5">
+            <div className="absolute left-[11px] top-0 bottom-0 w-[2px] bg-emerald-600 z-0"></div>
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 shadow-sm z-10 shrink-0 mt-1">
               <Check size={12} className="text-white stroke-[3]" />
             </div>
             <div className="ml-5 w-full flex justify-between items-start">
@@ -90,8 +90,9 @@ export default function ActiveShipment() {
 
           {/* Step 3: In Transit (Live Box) */}
           <div className="relative flex items-start pb-8">
-            <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-slate-300"></div>
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 shadow-sm z-10 shrink-0 mt-2">
+            <div className="absolute left-[11px] top-0 h-[16px] w-[2px] bg-emerald-600 z-0"></div>
+            <div className="absolute left-[11px] top-[16px] bottom-0 w-[2px] bg-slate-200 z-0"></div>
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 shadow-sm z-10 shrink-0 mt-1">
               <Truck size={12} className="text-white" />
             </div>
             
@@ -99,7 +100,7 @@ export default function ActiveShipment() {
               <div className="flex justify-between items-start mb-1">
                 <h4 className="text-[15px] font-bold text-blue-700 leading-none">{t('in_transit')}</h4>
                 <span className="text-xs font-bold text-blue-700 flex items-center uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1.5"></span> LIVE
+                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1.5 animate-pulse"></span> LIVE
                 </span>
               </div>
               <p className="text-sm text-slate-600 mb-4 font-medium">A1 Highway, Near Awash</p>
@@ -120,7 +121,8 @@ export default function ActiveShipment() {
 
           {/* Step 4: Arrival Modjo */}
           <div className="relative flex items-start">
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 z-10 shrink-0 mt-0.5 shadow-sm">
+            <div className="absolute left-[11px] top-0 h-[16px] w-[2px] bg-slate-200 z-0"></div>
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 z-10 shrink-0 mt-1 shadow-sm">
               <div className="w-2 h-2 rounded-full bg-slate-400"></div>
             </div>
             <div className="ml-5 w-full flex justify-between items-start">
