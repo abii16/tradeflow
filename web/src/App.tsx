@@ -6,9 +6,14 @@ import TelematicsTab from './views/TelematicsTab';
 import CustomsTab from './views/CustomsTab';
 import EscrowTab from './views/EscrowTab';
 import SettingsTab from './views/SettingsTab';
+import LandingPage from './views/LandingPage';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('operations');
+  const [activeTab, setActiveTab] = useState('landing');
+
+  if (activeTab === 'landing') {
+    return <LandingPage onLaunch={() => setActiveTab('operations')} />;
+  }
 
   const renderTab = () => {
     switch (activeTab) {
