@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Polyline, Circle, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -49,6 +50,8 @@ const MapController = () => {
 };
 
 export default function LiveRadarMap() {
+  const { t } = useTranslation();
+
   return (
     <div className="relative w-full h-full min-h-[480px]">
       <MapContainer 
@@ -76,8 +79,8 @@ export default function LiveRadarMap() {
           pathOptions={{ color: "#EF4444", fillColor: "#DC2626", fillOpacity: 0.25, weight: 1.5, dashArray: "4, 4" }} 
         >
           <Popup>
-            <div className="font-bold text-red-600 text-sm mb-1">RISK-04: Active Detour Enforced</div>
-            <div className="text-xs text-slate-600">Semera Bypass Congestion</div>
+            <div className="font-bold text-red-600 text-sm mb-1">{t('radar_risk_04_title')}</div>
+            <div className="text-xs text-slate-600">{t('radar_risk_04_desc')}</div>
           </Popup>
         </Circle>
 
@@ -86,13 +89,13 @@ export default function LiveRadarMap() {
           <Popup className="rounded shadow-xl">
             <div className="text-[11px] space-y-1.5 font-mono text-slate-700 min-w-[180px]">
               <div className="border-b border-slate-100 pb-1 mb-1">
-                <strong className="text-slate-900">Truck ID:</strong> ET-9021
+                <strong className="text-slate-900">{t('radar_truck_id')}</strong> ET-9021
               </div>
-              <div className="flex justify-between"><strong>Cargo:</strong> 30T Rebar</div>
-              <div className="flex justify-between"><strong>Speed:</strong> 64 km/h</div>
-              <div className="flex justify-between"><strong>Driver:</strong> Yared Tekle</div>
+              <div className="flex justify-between"><strong>{t('radar_cargo')}</strong> 30T Rebar</div>
+              <div className="flex justify-between"><strong>{t('radar_speed')}</strong> 64 km/h</div>
+              <div className="flex justify-between"><strong>{t('radar_driver')}</strong> Yared Tekle</div>
               <div className="flex justify-between text-blue-600 mt-2 border-t border-slate-100 pt-1">
-                <strong>ETA Modjo:</strong> 6.2h
+                <strong>{t('radar_eta_modjo')}</strong> 6.2h
               </div>
             </div>
           </Popup>
@@ -102,13 +105,13 @@ export default function LiveRadarMap() {
            <Popup className="rounded shadow-xl">
             <div className="text-[11px] space-y-1.5 font-mono text-slate-700 min-w-[180px]">
               <div className="border-b border-slate-100 pb-1 mb-1">
-                <strong className="text-slate-900">Truck ID:</strong> BHL-8892
+                <strong className="text-slate-900">{t('radar_truck_id')}</strong> BHL-8892
               </div>
-              <div className="flex justify-between"><strong>Cargo:</strong> 40ft Container</div>
-              <div className="flex justify-between"><strong>Speed:</strong> 58 km/h</div>
-              <div className="flex justify-between"><strong>Driver:</strong> Alazar M.</div>
+              <div className="flex justify-between"><strong>{t('radar_cargo')}</strong> 40ft Container</div>
+              <div className="flex justify-between"><strong>{t('radar_speed')}</strong> 58 km/h</div>
+              <div className="flex justify-between"><strong>{t('radar_driver')}</strong> Alazar M.</div>
               <div className="flex justify-between text-blue-600 mt-2 border-t border-slate-100 pt-1">
-                <strong>ETA Modjo:</strong> 3.8h
+                <strong>{t('radar_eta_modjo')}</strong> 3.8h
               </div>
             </div>
           </Popup>
@@ -123,7 +126,7 @@ export default function LiveRadarMap() {
           <div className="flex justify-between items-center mb-3 border-b border-slate-700/50 pb-2">
             <h2 className="text-xs font-bold text-white tracking-widest flex items-center gap-2">
               <Radar size={14} className="text-blue-500 animate-pulse" />
-              LIVE SATELLITE RADAR
+              {t('radar_hud_title')}
             </h2>
             <div className="text-[10px] font-mono flex items-center gap-1.5 text-emerald-400">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -133,12 +136,12 @@ export default function LiveRadarMap() {
           
           <div className="space-y-3">
             <div className="text-[11px] flex justify-between items-center bg-slate-950/50 px-2 py-1.5 rounded border border-slate-800">
-              <span className="text-slate-400 uppercase font-semibold">Corridor Status:</span>
-              <span className="text-emerald-400 font-bold font-mono">OPERATIONAL (96%)</span>
+              <span className="text-slate-400 uppercase font-semibold">{t('radar_corridor_status')}</span>
+              <span className="text-emerald-400 font-bold font-mono">{t('radar_operational')}</span>
             </div>
             <div className="text-[10px] font-mono text-slate-400 text-center leading-relaxed">
-              142 Active Heavy Assets <br />
-              Avg Speed: 68 km/h | Galafi Dwell: 45m
+              {t('radar_active_assets')} <br />
+              {t('radar_metrics')}
             </div>
           </div>
         </div>
@@ -148,18 +151,18 @@ export default function LiveRadarMap() {
       <div className="absolute bottom-4 right-4 z-[400] flex flex-col items-end gap-2 pointer-events-none">
         <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg p-1 flex gap-1 pointer-events-auto shadow-lg text-[10px] font-mono">
           <button className="bg-slate-800 text-white px-2.5 py-1.5 rounded shadow-sm border border-slate-600 transition-colors hover:bg-slate-700">
-            [● Satellite]
+            {t('radar_btn_satellite')}
           </button>
           <button className="text-slate-400 hover:text-white px-2.5 py-1.5 rounded transition-colors hover:bg-slate-800/50">
-            [○ Vector Road]
+            {t('radar_btn_vector')}
           </button>
           <button className="text-slate-400 hover:text-white px-2.5 py-1.5 rounded transition-colors hover:bg-slate-800/50">
-            [○ Weather Radar]
+            {t('radar_btn_weather')}
           </button>
         </div>
         
         <button id="reset-map-btn" className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 text-slate-300 hover:text-white px-4 py-2 rounded-lg text-[11px] font-mono pointer-events-auto transition-all hover:bg-slate-800 shadow-lg">
-          Reset Corridor Extent
+          {t('radar_btn_reset')}
         </button>
       </div>
     </div>
