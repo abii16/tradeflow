@@ -1,7 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Scale, AlertCircle, FileText, Lock, Unlock, Gavel, Handshake, CornerUpRight, Search, FileImage } from 'lucide-react';
 
 export default function DisputeMediation() {
+  const { t } = useTranslation();
+
   return (
     <div className="h-full flex flex-col space-y-6">
       
@@ -10,12 +13,12 @@ export default function DisputeMediation() {
         <div>
           <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             <Scale size={20} className="text-indigo-600" /> 
-            Escrow Discrepancy & Cargo Claims Mediation
+            {t('dm_title')}
           </h2>
-          <p className="text-xs text-slate-500 mt-1">Resolve escrow payment disputes between Shippers and Transporters (FR-10.3).</p>
+          <p className="text-xs text-slate-500 mt-1">{t('dm_desc')}</p>
         </div>
         <div className="bg-indigo-50 text-indigo-700 font-bold px-4 py-2 rounded-lg text-sm border border-indigo-100 flex items-center gap-2">
-          <AlertCircle size={16} /> 3 Active Disputes
+          <AlertCircle size={16} /> 3 {t('dm_active_disputes')}
         </div>
       </div>
 
@@ -27,7 +30,7 @@ export default function DisputeMediation() {
           <div className="p-4 border-b border-slate-200 bg-slate-50">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <input type="text" placeholder="Search Claim ID or Entity..." className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
+              <input type="text" placeholder={t('dm_search')} className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
             </div>
           </div>
           
@@ -37,9 +40,9 @@ export default function DisputeMediation() {
             <div className="p-4 border-b border-slate-200 bg-indigo-50/50 border-l-4 border-l-indigo-600 cursor-pointer">
               <div className="flex justify-between items-start mb-1">
                 <span className="text-xs font-bold font-mono text-indigo-700">#DSP-204</span>
-                <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Open</span>
+                <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_open')}</span>
               </div>
-              <h4 className="font-semibold text-slate-900 text-sm mb-1">Ethio-Trading PLC <span className="text-slate-400 font-normal mx-1">vs</span> Abyssinia Logistics</h4>
+              <h4 className="font-semibold text-slate-900 text-sm mb-1">Ethio-Trading PLC <span className="text-slate-400 font-normal mx-1">{t('dm_vs')}</span> Abyssinia Logistics</h4>
               <p className="text-[11px] text-slate-500 line-clamp-1">Weight discrepancy reported at Modjo weighbridge.</p>
               <div className="text-[10px] text-slate-400 mt-2">Opened 2 hours ago</div>
             </div>
@@ -48,9 +51,9 @@ export default function DisputeMediation() {
             <div className="p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer opacity-75">
               <div className="flex justify-between items-start mb-1">
                 <span className="text-xs font-bold font-mono text-slate-600">#DSP-203</span>
-                <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Under Review</span>
+                <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_review')}</span>
               </div>
-              <h4 className="font-semibold text-slate-900 text-sm mb-1">BGI Brewery <span className="text-slate-400 font-normal mx-1">vs</span> TransHorn Logistics</h4>
+              <h4 className="font-semibold text-slate-900 text-sm mb-1">BGI Brewery <span className="text-slate-400 font-normal mx-1">{t('dm_vs')}</span> TransHorn Logistics</h4>
               <p className="text-[11px] text-slate-500 line-clamp-1">Delayed arrival SLA breach dispute.</p>
               <div className="text-[10px] text-slate-400 mt-2">Opened yesterday</div>
             </div>
@@ -58,9 +61,9 @@ export default function DisputeMediation() {
             <div className="p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer opacity-50">
               <div className="flex justify-between items-start mb-1">
                 <span className="text-xs font-bold font-mono text-slate-600">#DSP-200</span>
-                <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">Resolved</span>
+                <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_resolved')}</span>
               </div>
-              <h4 className="font-semibold text-slate-900 text-sm mb-1">Mugher Cement <span className="text-slate-400 font-normal mx-1">vs</span> ET-9021</h4>
+              <h4 className="font-semibold text-slate-900 text-sm mb-1">Mugher Cement <span className="text-slate-400 font-normal mx-1">{t('dm_vs')}</span> ET-9021</h4>
               <p className="text-[11px] text-slate-500 line-clamp-1">Cargo damage claim rejected.</p>
               <div className="text-[10px] text-slate-400 mt-2">Resolved 3 days ago</div>
             </div>
@@ -75,12 +78,12 @@ export default function DisputeMediation() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 mb-1">Claim #DSP-204</h3>
-                <div className="text-sm font-semibold text-slate-600">Ethio-Trading PLC (Shipper) <span className="text-slate-400 mx-2">vs</span> Abyssinia Heavy Logistics (Transporter)</div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">{t('dm_claim')} #DSP-204</h3>
+                <div className="text-sm font-semibold text-slate-600">Ethio-Trading PLC ({t('dm_shipper_label')}) <span className="text-slate-400 mx-2">{t('dm_vs')}</span> Abyssinia Heavy Logistics ({t('dm_transporter_label')})</div>
               </div>
               <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-right">
                 <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1.5 justify-end">
-                  <Lock size={12} className="text-amber-500" /> Escrow Held (Locked)
+                  <Lock size={12} className="text-amber-500" /> {t('dm_escrow_locked')}
                 </div>
                 <div className="text-lg font-mono font-bold text-slate-900">ETB 348,500.00</div>
               </div>
@@ -89,7 +92,7 @@ export default function DisputeMediation() {
             <div className="bg-rose-50 border border-rose-100 rounded-lg p-4 flex items-start gap-3">
               <AlertCircle size={18} className="text-rose-600 mt-0.5 shrink-0" />
               <div>
-                <h4 className="font-bold text-rose-800 text-sm mb-1">Dispute Reason: 1.5 MT Weight Discrepancy</h4>
+                <h4 className="font-bold text-rose-800 text-sm mb-1">{t('dm_dispute_reason')}: 1.5 MT Weight Discrepancy</h4>
                 <p className="text-xs text-rose-700">The Shipper claims the cargo arrived 1.5 metric tons lighter than dispatched. The Transporter claims no tampering occurred and attributes it to scale calibration differences.</p>
               </div>
             </div>
@@ -98,7 +101,7 @@ export default function DisputeMediation() {
           {/* Evidence Thread */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex-1 flex flex-col overflow-hidden">
             <div className="p-4 border-b border-slate-100 bg-slate-50">
-              <h4 className="font-bold text-slate-700 text-sm">Evidence Thread</h4>
+              <h4 className="font-bold text-slate-700 text-sm">{t('dm_evidence_thread')}</h4>
             </div>
             
             <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-slate-50/50">
@@ -108,7 +111,7 @@ export default function DisputeMediation() {
                 <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">SH</div>
                 <div className="flex-1 bg-white border border-slate-200 rounded-lg rounded-tl-none p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-sm text-slate-900">Ethio-Trading PLC (Shipper)</span>
+                    <span className="font-bold text-sm text-slate-900">Ethio-Trading PLC ({t('dm_shipper_label')})</span>
                     <span className="text-[10px] text-slate-400">10:45 AM</span>
                   </div>
                   <p className="text-sm text-slate-700 mb-3">Modjo weighbridge ticket clearly shows 23.0 MT. We dispatched 24.5 MT from Galafi. We demand a partial refund for the missing 1.5 MT of rebar.</p>
@@ -151,23 +154,23 @@ export default function DisputeMediation() {
           {/* Action / Resolution Panel */}
           <div className="bg-[#0F172A] rounded-xl shadow-lg p-5 border border-slate-800">
             <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
-              <Gavel size={16} className="text-indigo-400" /> Admin Resolution Action (FR-10.3)
+              <Gavel size={16} className="text-indigo-400" /> {t('dm_resolution_title')}
             </h4>
             
             <div className="grid grid-cols-3 gap-4">
               <button className="bg-emerald-600/20 border border-emerald-500/30 hover:bg-emerald-600/30 text-emerald-50 font-semibold py-3 px-4 rounded-lg text-sm transition-colors flex flex-col items-center justify-center gap-1">
                 <Unlock size={16} className="text-emerald-400 mb-1" />
-                Release 100% to Transporter
+                {t('dm_release_100')}
               </button>
               
               <button className="bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 text-amber-50 font-semibold py-3 px-4 rounded-lg text-sm transition-colors flex flex-col items-center justify-center gap-1">
                 <Handshake size={16} className="text-amber-400 mb-1" />
-                Issue Pro-Rata Partial Refund
+                {t('dm_issue_refund')}
               </button>
               
               <button className="bg-rose-600/20 border border-rose-500/30 hover:bg-rose-600/30 text-rose-50 font-semibold py-3 px-4 rounded-lg text-sm transition-colors flex flex-col items-center justify-center gap-1">
                 <CornerUpRight size={16} className="text-rose-400 mb-1" />
-                Escalate to Legal (Freeze)
+                {t('dm_escalate_legal')}
               </button>
             </div>
           </div>
