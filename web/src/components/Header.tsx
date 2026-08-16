@@ -26,7 +26,10 @@ export default function Header() {
           <Wallet size={16} className="text-slate-400" />
           <span className="text-xs text-slate-500">{t('escrow_wallet_balance')}:</span>
           <span className="text-sm font-bold text-slate-800">ETB 2,450,000.00</span>
-          <Button variant="outline" size="sm" className="h-6 text-xs ml-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">
+          <div className="flex items-center bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ml-1">
+            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-1"></span> Multi-Sig
+          </div>
+          <Button size="sm" className="h-7 text-xs ml-2 bg-slate-900 text-white hover:bg-slate-800">
             {t('top_up')}
           </Button>
         </div>

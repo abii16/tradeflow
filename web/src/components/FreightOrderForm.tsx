@@ -17,14 +17,12 @@ export default function FreightOrderForm() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center text-lg font-medium text-slate-800">
-            <span className="text-blue-600 mr-2">+</span> {t('post_new_freight_order')}
-          </CardTitle>
+    <div className="flex flex-col space-y-0">
+      <Card className="bg-white border-slate-200 shadow-sm rounded-xl mb-6">
+        <CardHeader className="p-6 pb-4">
+          <CardTitle className="text-xl text-slate-900 font-bold">{t('post_new_freight_order')}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 pt-0">
           <form onSubmit={handleRequestQuote} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -62,7 +60,7 @@ export default function FreightOrderForm() {
               </div>
             </div>
 
-            <Button type="submit" className="bg-slate-900 text-white hover:bg-slate-800">
+            <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 rounded-lg text-base font-semibold shadow-sm">
               {t('request_spot_pricing')}
             </Button>
           </form>
@@ -70,38 +68,38 @@ export default function FreightOrderForm() {
       </Card>
 
       {quoteGenerated && (
-        <Card className="bg-slate-900 text-white border-none shadow-lg mt-6">
-          <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <div className="flex items-center text-amber-400 text-xs font-semibold tracking-wider uppercase">
-              <BrainCircuit size={14} className="mr-1" />
+        <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
+          <CardHeader className="p-6 pb-4 flex flex-row items-center justify-between">
+            <div className="flex items-center text-slate-900 text-base font-bold">
+              <BrainCircuit size={20} className="mr-2 text-amber-600" />
               {t('ai_spot_pricing_engine')}
             </div>
-            <div className="flex items-center text-slate-400 text-xs font-mono">
-              <Clock size={14} className="mr-1" />
+            <div className="flex items-center text-amber-700 bg-amber-100/50 px-3 py-1 rounded-full text-xs font-semibold">
+              <Clock size={14} className="mr-1.5" />
               14:31 mins
             </div>
           </CardHeader>
-          <CardContent>
-            <h3 className="text-xl font-bold mb-4">{t('market_quote_generated')}</h3>
+          <CardContent className="p-6 pt-0">
+            <h3 className="text-lg font-semibold text-slate-600 mb-6">{t('market_quote_generated')}</h3>
             
-            <div className="flex justify-between items-end border-b border-slate-700 pb-4 mb-4">
+            <div className="flex justify-between items-end border-b border-slate-200 pb-6 mb-6">
               <div>
-                <p className="text-slate-400 text-xs mb-1">{t('guaranteed_rate')}</p>
-                <div className="text-4xl font-bold text-white">ETB 348,500.00</div>
+                <p className="text-slate-500 text-sm mb-1">{t('guaranteed_rate')}</p>
+                <div className="text-4xl font-mono font-bold text-slate-900 tracking-tight">ETB 348,500.00</div>
               </div>
               <div className="text-right">
-                <p className="text-slate-400 text-xs mb-1">{t('confidence_score')}</p>
-                <div className="text-lg font-medium text-amber-400">94.2% {t('high')}</div>
-                <div className="text-xs text-slate-500 mt-1">+12.4% Fuel ADJ</div>
+                <p className="text-slate-500 text-sm mb-1">{t('confidence_score')}</p>
+                <div className="text-lg font-bold text-emerald-600">94.2% {t('high')}</div>
+                <div className="text-sm font-semibold text-amber-600 mt-1">+12.4% Fuel ADJ</div>
               </div>
             </div>
 
-            <div className="flex space-x-3">
-              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
-                <Lock size={16} className="mr-2" />
+            <div className="flex space-x-4">
+              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-lg text-base shadow-sm">
+                <Lock size={18} className="mr-2" />
                 {t('accept_quote_lock_escrow')}
               </Button>
-              <Button variant="outline" className="text-white border-slate-600 hover:bg-slate-800" onClick={() => setQuoteGenerated(false)}>
+              <Button variant="outline" className="h-12 rounded-lg text-slate-700 border-slate-300 hover:bg-slate-50 text-base font-semibold px-8" onClick={() => setQuoteGenerated(false)}>
                 {t('decline')}
               </Button>
             </div>

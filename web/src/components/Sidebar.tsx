@@ -42,10 +42,10 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
+            className={`w-full flex items-center space-x-3 px-3 py-2 transition-colors ${
               activeTab === item.id 
-                ? 'bg-blue-600 text-white' 
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                ? 'bg-slate-100 text-slate-900 border-l-4 border-slate-900 rounded-r-md rounded-l-sm font-semibold' 
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 rounded-md border-l-4 border-transparent'
             }`}
           >
             <item.icon size={20} />

@@ -4,12 +4,12 @@ import ActiveShipment from '../components/ActiveShipment';
 
 export default function ShipperDashboard() {
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+    <div className="max-w-[1400px] mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-[55%_1fr] gap-6 items-start">
+        <div className="w-full">
           <FreightOrderForm />
         </div>
-        <div className="lg:col-span-1">
+        <div className="w-full">
           <ActiveShipment />
         </div>
       </div>
