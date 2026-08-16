@@ -7,7 +7,7 @@ dist/
 build/
 out/
 drizzle/
-
+doc folders/
 # Environment variables
 .env
 .env.local
