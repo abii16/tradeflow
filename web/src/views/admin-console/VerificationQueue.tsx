@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ShieldCheck, AlertTriangle, FileText, CheckCircle, XCircle, Search, FileSignature, X, Image as ImageIcon } from 'lucide-react';
 
 export default function VerificationQueue() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
 
@@ -11,7 +13,7 @@ export default function VerificationQueue() {
       entity: 'TransHorn Logistics',
       tin: 'TIN-ET-99421A',
       fleet: '14 Trucks',
-      status: 'Roadworthy Validated',
+      status: t('vq_status_roadworthy'),
       statusType: 'success',
       type: 'pending'
     },
@@ -20,7 +22,7 @@ export default function VerificationQueue() {
       entity: 'BlueNile Freighters',
       tin: 'LIC-DJ-44219B',
       fleet: '8 Trucks',
-      status: 'TIN Mismatch Detected',
+      status: t('vq_status_mismatch'),
       statusType: 'error',
       type: 'mismatch'
     },
@@ -29,7 +31,7 @@ export default function VerificationQueue() {
       entity: 'Afar Transport Co.',
       tin: 'TIN-ET-11093C',
       fleet: '22 Trucks',
-      status: 'Pending Insurance Doc',
+      status: t('vq_status_pending_doc'),
       statusType: 'warning',
       type: 'pending'
     }
@@ -41,22 +43,22 @@ export default function VerificationQueue() {
       {/* Top Header & Metrics */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Transporter & Fleet Compliance Queue</h2>
-          <p className="text-xs text-slate-500 mt-1">Review entity KYC and vehicle roadworthiness certifications.</p>
+          <h2 className="text-lg font-bold text-slate-900">{t('vq_title')}</h2>
+          <p className="text-xs text-slate-500 mt-1">{t('vq_desc')}</p>
         </div>
         
         <div className="flex items-center gap-3">
           <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-            <span className="text-xs font-semibold text-slate-700">12 Pending Review</span>
+            <span className="text-xs font-semibold text-slate-700">12 {t('vq_pending_metric')}</span>
           </div>
           <div className="bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-            <span className="text-xs font-semibold text-emerald-800">48 Verified Today</span>
+            <span className="text-xs font-semibold text-emerald-800">48 {t('vq_verified_metric')}</span>
           </div>
           <div className="bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-            <span className="text-xs font-semibold text-rose-800">2 Suspended</span>
+            <span className="text-xs font-semibold text-rose-800">2 {t('vq_suspended_metric')}</span>
           </div>
         </div>
       </div>
@@ -69,15 +71,15 @@ export default function VerificationQueue() {
           
           <div className="p-4 border-b border-slate-200 flex flex-wrap gap-2 items-center justify-between">
             <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-              <button onClick={() => setActiveTab('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>All Applications</button>
-              <button onClick={() => setActiveTab('pending')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'pending' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Pending Review (12)</button>
-              <button onClick={() => setActiveTab('mismatch')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'mismatch' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Mismatch Flagged (3)</button>
-              <button onClick={() => setActiveTab('verified')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'verified' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Verified</button>
+              <button onClick={() => setActiveTab('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{t('vq_tab_all')}</button>
+              <button onClick={() => setActiveTab('pending')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'pending' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{t('vq_tab_pending')}</button>
+              <button onClick={() => setActiveTab('mismatch')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'mismatch' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{t('vq_tab_mismatch')}</button>
+              <button onClick={() => setActiveTab('verified')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'verified' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{t('vq_tab_verified')}</button>
             </div>
             
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <input type="text" placeholder="Search TIN or Entity..." className="pl-9 pr-4 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-64" />
+              <input type="text" placeholder={t('vq_search')} className="pl-9 pr-4 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-64" />
             </div>
           </div>
 
@@ -85,12 +87,12 @@ export default function VerificationQueue() {
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200 font-semibold">
                 <tr>
-                  <th className="px-6 py-3">App ID</th>
-                  <th className="px-6 py-3">Transporter Entity</th>
-                  <th className="px-6 py-3">TIN / Trade License</th>
-                  <th className="px-6 py-3">Fleet Size</th>
-                  <th className="px-6 py-3">Insurance & Roadworthiness</th>
-                  <th className="px-6 py-3 text-right">Action</th>
+                  <th className="px-6 py-3">{t('vq_col_app_id')}</th>
+                  <th className="px-6 py-3">{t('vq_col_entity')}</th>
+                  <th className="px-6 py-3">{t('vq_col_tin')}</th>
+                  <th className="px-6 py-3">{t('vq_col_fleet')}</th>
+                  <th className="px-6 py-3">{t('vq_col_insurance')}</th>
+                  <th className="px-6 py-3 text-right">{t('vq_col_action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -123,14 +125,14 @@ export default function VerificationQueue() {
                           onClick={() => setSelectedRequest(req.id)}
                           className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded transition-colors inline-flex items-center gap-1"
                         >
-                          Escalate / Reject
+                          {t('vq_action_escalate')}
                         </button>
                       ) : (
                         <button 
                           onClick={() => setSelectedRequest(req.id)}
                           className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors inline-flex items-center gap-1"
                         >
-                          Review & Approve
+                          {t('vq_action_review')}
                         </button>
                       )}
                     </td>
@@ -152,32 +154,32 @@ export default function VerificationQueue() {
             </button>
             
             <div className="p-5 border-b border-slate-200">
-              <h3 className="font-bold text-slate-900 mb-1">Application {selectedRequest}</h3>
-              <p className="text-xs text-slate-500">Document Inspection</p>
+              <h3 className="font-bold text-slate-900 mb-1">{t('vq_app_title')} {selectedRequest}</h3>
+              <p className="text-xs text-slate-500">{t('vq_drawer_inspection')}</p>
             </div>
 
             <div className="flex-1 p-5 overflow-y-auto space-y-6">
               
               <div>
-                <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">Entity Details</h4>
+                <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">{t('vq_drawer_entity_details')}</h4>
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-2 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Legal Name</span>
+                    <span className="text-slate-500">{t('vq_drawer_legal_name')}</span>
                     <span className="font-semibold text-slate-900">TransHorn Logistics</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">TIN Number</span>
+                    <span className="text-slate-500">{t('vq_drawer_tin')}</span>
                     <span className="font-mono font-semibold text-slate-900">TIN-ET-99421A</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Registered Fleet</span>
+                    <span className="text-slate-500">{t('vq_drawer_fleet')}</span>
                     <span className="font-semibold text-slate-900">14 Heavy Trucks</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">Submitted Documents</h4>
+                <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">{t('vq_drawer_docs')}</h4>
                 <div className="space-y-3">
                   
                   <div className="border border-slate-200 rounded-lg p-3 flex items-center gap-3 hover:border-blue-400 transition-colors cursor-pointer group">
@@ -185,8 +187,8 @@ export default function VerificationQueue() {
                       <FileSignature size={20} />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-semibold text-slate-900">Business Trade License</div>
-                      <div className="text-[10px] text-slate-500">PDF Document • 2.4 MB</div>
+                      <div className="text-sm font-semibold text-slate-900">{t('vq_drawer_trade_license')}</div>
+                      <div className="text-[10px] text-slate-500">{t('vq_drawer_pdf_size')}</div>
                     </div>
                   </div>
 
@@ -195,10 +197,10 @@ export default function VerificationQueue() {
                       <ImageIcon size={20} />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-semibold text-slate-900">Vehicle Inspection Certs</div>
-                      <div className="text-[10px] text-slate-500">Scanned Image • 1.1 MB</div>
+                      <div className="text-sm font-semibold text-slate-900">{t('vq_drawer_inspection_cert')}</div>
+                      <div className="text-[10px] text-slate-500">{t('vq_drawer_scanned_size')}</div>
                     </div>
-                    <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Check Expiry</span>
+                    <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">{t('vq_drawer_check_expiry')}</span>
                   </div>
 
                 </div>
@@ -208,10 +210,10 @@ export default function VerificationQueue() {
 
             <div className="p-5 border-t border-slate-200 bg-slate-50 rounded-b-xl flex gap-3">
               <button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-sm transition-colors flex items-center justify-center gap-2">
-                <CheckCircle size={16} /> Approve Entity
+                <CheckCircle size={16} /> {t('vq_btn_approve')}
               </button>
               <button className="flex-1 bg-white hover:bg-rose-50 text-rose-600 font-bold py-2.5 rounded-lg text-sm shadow-sm border border-slate-200 hover:border-rose-200 transition-colors flex items-center justify-center gap-2">
-                <XCircle size={16} /> Reject with Reason
+                <XCircle size={16} /> {t('vq_btn_reject')}
               </button>
             </div>
           </div>
