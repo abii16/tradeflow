@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Globe, ChevronDown, Bell } from 'lucide-react';
 
 interface AdminHeaderProps {
@@ -6,6 +7,12 @@ interface AdminHeaderProps {
 }
 
 export default function AdminHeader({ onSwitchPortal }: AdminHeaderProps) {
+  const { i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'en' ? 'am' : 'en');
+  };
+
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 sticky top-0 z-20">
       
@@ -34,9 +41,9 @@ export default function AdminHeader({ onSwitchPortal }: AdminHeaderProps) {
             <span className="text-sm text-slate-900 font-mono font-bold">ETB 2,450,000.00</span>
           </div>
 
-          <button className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+          <button onClick={toggleLanguage} className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors">
             <Globe size={15} />
-            EN <ChevronDown size={12} className="opacity-50" />
+            {i18n.language === 'en' ? 'AM' : 'EN'} <ChevronDown size={12} className="opacity-50" />
           </button>
           
           <button className="relative p-1.5 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50">

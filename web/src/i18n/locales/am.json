@@ -70,5 +70,17 @@
   "spot_pricing": "የቦታ ዋጋ ስሌት",
   "settlements": "የአጓጓዦች ክፍያዎች",
   "ledger": "የግብይት መዝገብ",
-  "disputes": "የአለመግባባት መፍቻ"
+  "disputes": "የአለመግባባት መፍቻ",
+  "sec_detours_title": "የኮሪደር አደጋ አስተዳደር እና ንቁ የጂኦ-አጥሮች",
+  "sec_detours_subtitle": "አካላዊ አደጋዎችን፣ የመንገድ መዘጋቶችን እና ራስ-ሰር አቅጣጫ ማስቀየርን ያስተዳድሩ።",
+  "sec_active_geofences": "ንቁ የክልል ጂኦ-አጥሮች",
+  "sec_broadcast_new": "አዲስ አደጋ / ጂኦ-አጥር ያሳውቁ",
+  "sec_resolved_history": "የተፈቱ አደጋዎች ታሪክ (ያለፉት 30 ቀናት)",
+  "sec_gps_lat": "የጂፒኤስ ኬክሮስ",
+  "sec_gps_lng": "የጂፒኤስ ኬንትሮስ",
+  "sec_radius": "የራዲየስ ርቀት (በሜትር)",
+  "sec_severity": "የአደጋ ደረጃ",
+  "sec_incident_type": "የአደጋ ዓይነት",
+  "sec_message": "የማሳወቂያ መልእክት",
+  "sec_btn_broadcast": "ማሳወቂያ ይላኩ እና አቅጣጫ ያስቀይሩ"
 }
