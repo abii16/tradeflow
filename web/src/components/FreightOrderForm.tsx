@@ -60,7 +60,7 @@ export default function FreightOrderForm() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 rounded-lg text-base font-semibold shadow-sm">
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-lg text-base font-semibold shadow-sm transition-all">
               {t('request_spot_pricing')}
             </Button>
           </form>
@@ -99,7 +99,7 @@ export default function FreightOrderForm() {
                 <Lock size={18} className="mr-2" />
                 {t('accept_quote_lock_escrow')}
               </Button>
-              <Button variant="outline" className="h-12 rounded-lg text-slate-700 border-slate-300 hover:bg-slate-50 text-base font-semibold px-8" onClick={() => setQuoteGenerated(false)}>
+              <Button variant="outline" className="h-12 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-base font-semibold px-8 transition-colors" onClick={() => setQuoteGenerated(false)}>
                 {t('decline')}
               </Button>
             </div>

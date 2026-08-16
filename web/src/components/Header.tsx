@@ -29,7 +29,7 @@ export default function Header() {
           <div className="flex items-center bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ml-1">
             <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-1"></span> Multi-Sig
           </div>
-          <Button size="sm" className="h-7 text-xs ml-2 bg-slate-900 text-white hover:bg-slate-800">
+          <Button size="sm" className="h-7 text-xs ml-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
             {t('top_up')}
           </Button>
         </div>
