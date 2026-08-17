@@ -3,10 +3,10 @@ import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, Chevr
 import landingVideo from './landingpage.mp4';
 
 interface LandingPageProps {
-  onLaunch?: () => void;
+  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
 }
 
-export default function LandingPage({ onLaunch }: LandingPageProps) {
+export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   return (
     <div className="min-h-screen w-full overflow-y-auto bg-slate-900 font-inter text-slate-900 smooth-scroll">
       {/* =================================================================================
@@ -14,18 +14,18 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
           ================================================================================= */}
       <section className="relative w-full h-screen flex flex-col justify-between overflow-hidden">
         {/* Video Background */}
-        <div className="absolute inset-0 z-0 bg-slate-900">
+        <div className="absolute inset-0 z-0 overflow-hidden bg-black">
           <video 
             autoPlay 
             loop 
             muted 
             playsInline 
-            className="w-full h-full object-cover opacity-50 mix-blend-overlay"
+            className="w-full h-full object-cover opacity-60"
           >
             <source src={landingVideo} type="video/mp4" />
           </video>
-          {/* Gradient Overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/80"></div>
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/40"></div>
         </div>
 
         {/* TOP NAVIGATION HEADER */}
@@ -43,7 +43,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
 
           <div className="flex items-center">
             <button 
-              onClick={onLaunch}
+              onClick={() => onSelectPortal('shipper')}
               className="bg-blue-600 text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-colors shadow-lg shadow-blue-900/20"
             >
               System Login
@@ -94,7 +94,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
         <div className="relative z-30 pb-12 px-12 md:px-24 w-full">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <button 
-              onClick={onLaunch}
+              onClick={() => onSelectPortal('shipper')}
               className="group bg-white p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 transition-all shadow-xl shadow-black/20"
             >
               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -104,7 +104,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
             </button>
 
             <button 
-              onClick={onLaunch}
+              onClick={() => onSelectPortal('forwarder')}
               className="group bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 hover:bg-white/20 transition-all"
             >
               <div className="p-2 bg-slate-800 text-slate-300 rounded-lg group-hover:bg-slate-700 transition-colors">
@@ -114,7 +114,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
             </button>
 
             <button 
-              onClick={onLaunch}
+              onClick={() => onSelectPortal('finance')}
               className="group bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 hover:bg-white/20 transition-all"
             >
               <div className="p-2 bg-slate-800 text-slate-300 rounded-lg group-hover:bg-slate-700 transition-colors">
@@ -124,7 +124,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
             </button>
 
             <button 
-              onClick={onLaunch}
+              onClick={() => onSelectPortal('admin')}
               className="group bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 hover:bg-white/20 transition-all"
             >
               <div className="p-2 bg-slate-800 text-slate-300 rounded-lg group-hover:bg-slate-700 transition-colors">
@@ -134,7 +134,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
             </button>
 
             <button 
-              onClick={onLaunch}
+              onClick={() => onSelectPortal('customs')}
               className="group bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 hover:bg-white/20 transition-all"
             >
               <div className="p-2 bg-slate-800 text-slate-300 rounded-lg group-hover:bg-slate-700 transition-colors">
