@@ -1,4 +1,5 @@
 import React from 'react';
+import { Toaster } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { 
   Truck, 
@@ -14,12 +15,15 @@ import {
   Radar
 } from 'lucide-react';
 import LiveRadarMap from './LiveRadarMap';
+import { useLiveTelemetry } from '../../hooks/useLiveTelemetry';
 
 export default function ControlTowerDashboard() {
   const { t } = useTranslation();
+  const { telemetry } = useLiveTelemetry();
 
   return (
     <div className="space-y-6">
+      <Toaster position="top-right" />
       
       {/* Row 1: KPI Metric Summary Strip */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -28,7 +32,7 @@ export default function ControlTowerDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl font-mono font-bold text-slate-900">142</span>
+              <span className="text-2xl font-mono font-bold text-slate-900">{telemetry.trucks.length > 0 ? telemetry.trucks.length : 142}</span>
               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full">
                 +12.5%
               </span>
