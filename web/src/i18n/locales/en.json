@@ -248,5 +248,15 @@
   "al_col_status": "Status",
   "al_status_success": "SUCCESS",
   "al_status_warning": "WARNING",
-  "al_status_failed": "FAILED"
+  "al_status_failed": "FAILED",
+  "fwd_portal_subtitle": "Forwarder Portal",
+  "fwd_workspace": "Workspace",
+  "fwd_manifests": "Manifests",
+  "fwd_bidding": "Bidding & Freight",
+  "fwd_analytics": "Analytics",
+  "fwd_settings": "Settings",
+  "fwd_switch_portal": "Switch Portal",
+  "fwd_ops_team": "Operations Team",
+  "fwd_entity_name": "Horn of Africa Forwarding Ltd.",
+  "fwd_entity_desc": "Verified Broker (HBL Lic: ET-8841)"
 }

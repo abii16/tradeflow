@@ -248,5 +248,15 @@
   "al_col_status": "ሁኔታ",
   "al_status_success": "ተሳክቷል",
   "al_status_warning": "ማስጠንቀቂያ",
-  "al_status_failed": "አልተሳካም"
+  "al_status_failed": "አልተሳካም",
+  "fwd_portal_subtitle": "የጭነት አስተላላፊ ፖርታል",
+  "fwd_workspace": "የስራ ቦታ",
+  "fwd_manifests": "የጉምሩክ ማኒፌስቶ",
+  "fwd_bidding": "ጨረታ እና ጭነት",
+  "fwd_analytics": "ትንታኔዎች",
+  "fwd_settings": "ቅንብሮች",
+  "fwd_switch_portal": "ፖርታል ቀይር",
+  "fwd_ops_team": "የስራ ክንውን ቡድን",
+  "fwd_entity_name": "ቀንድ አፍሪካ የጭነት አስተላላፊ ኃ.የተ.የግ.ማ",
+  "fwd_entity_desc": "የተረጋገጠ ደላላ (የHBL ፍቃድ: ET-8841)"
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Ship, PackageSearch, FileText, Gavel, BarChart3, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ForwarderSidebarProps {
   activeSubTab: string;
@@ -7,11 +8,13 @@ interface ForwarderSidebarProps {
 }
 
 export default function ForwarderSidebar({ activeSubTab, setActiveSubTab }: ForwarderSidebarProps) {
+  const { t } = useTranslation();
+
   const menuItems = [
-    { id: 'workspace', label: 'Workspace', icon: PackageSearch },
-    { id: 'manifests', label: 'Manifests', icon: FileText },
-    { id: 'bidding', label: 'Bidding & Freight', icon: Gavel },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'workspace', label: t('fwd_workspace', 'Workspace'), icon: PackageSearch },
+    { id: 'manifests', label: t('fwd_manifests', 'Manifests'), icon: FileText },
+    { id: 'bidding', label: t('fwd_bidding', 'Bidding & Freight'), icon: Gavel },
+    { id: 'analytics', label: t('fwd_analytics', 'Analytics'), icon: BarChart3 },
   ];
 
   return (
@@ -23,7 +26,7 @@ export default function ForwarderSidebar({ activeSubTab, setActiveSubTab }: Forw
       
       <div className="p-4">
         <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-2">
-          Forwarder Portal
+          {t('fwd_portal_subtitle', 'Forwarder Portal')}
         </div>
         
         <nav className="space-y-1">
@@ -52,7 +55,7 @@ export default function ForwarderSidebar({ activeSubTab, setActiveSubTab }: Forw
       <div className="mt-auto p-4 border-t border-slate-800">
         <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800/50 hover:text-slate-200 transition-colors border-l-2 border-transparent">
           <Settings size={18} className="text-slate-500" />
-          <span className="font-medium text-sm">Settings</span>
+          <span className="font-medium text-sm">{t('fwd_settings', 'Settings')}</span>
         </button>
       </div>
     </aside>
