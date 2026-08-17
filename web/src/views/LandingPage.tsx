@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield } from 'lucide-react';
+import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin } from 'lucide-react';
 import landingVideo from './landingpage.mp4';
 
 interface LandingPageProps {
@@ -224,6 +224,80 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
           </div>
         </div>
       </section>
+
+      {/* =================================================================================
+          SECTION 3: THE 810KM ARTERY INTERACTIVE TIMELINE
+          ================================================================================= */}
+      <section className="w-full bg-slate-900 py-24 relative z-40 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-8 md:px-12">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">
+              The Principal Trade Artery
+            </h2>
+            <p className="text-slate-400 font-medium text-lg">
+              Djibouti Port to Modjo Dry Port (810km)
+            </p>
+          </div>
+
+          <div className="relative">
+            {/* Horizontal Line connecting nodes */}
+            <div className="absolute top-6 left-[10%] right-[10%] h-1 bg-slate-800 rounded-full hidden md:block z-0"></div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
+              {/* Node 1 */}
+              <div className="flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-slate-800 text-blue-400 border-4 border-slate-900 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors relative z-10 shadow-xl">
+                  <MapPin size={20} />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-2">Doraleh Terminal</h4>
+                <div className="text-[10px] font-mono text-slate-500 mb-2 uppercase tracking-wider">Djibouti (0 KM)</div>
+                <p className="text-xs text-slate-400 leading-relaxed">Vessel Discharge -&gt; Master BL Generation -&gt; Cargo Bond Initiation</p>
+              </div>
+
+              {/* Node 2 */}
+              <div className="flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-slate-800 text-amber-400 border-4 border-slate-900 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors relative z-10 shadow-xl">
+                  <Shield size={20} />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-2">Galafi Border</h4>
+                <div className="text-[10px] font-mono text-slate-500 mb-2 uppercase tracking-wider">Ethiopia (240 KM)</div>
+                <p className="text-xs text-slate-400 leading-relaxed">Automated Weighbridge Consistency -&gt; E-Seal Verification -&gt; Digital Transit Pass Issuance (FR-06.3)</p>
+              </div>
+
+              {/* Node 3 */}
+              <div className="flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-slate-800 text-rose-400 border-4 border-slate-900 rounded-full flex items-center justify-center mb-4 group-hover:bg-rose-500 group-hover:text-white transition-colors relative z-10 shadow-xl">
+                  <Monitor size={20} />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-2">Mille / Semera</h4>
+                <div className="text-[10px] font-mono text-slate-500 mb-2 uppercase tracking-wider">Intersection (380 KM)</div>
+                <p className="text-xs text-slate-400 leading-relaxed">Fuel Telemetry Monitoring -&gt; Real-time Conflict &amp; Hazard Geofencing (FR-05, FR-08)</p>
+              </div>
+
+              {/* Node 4 */}
+              <div className="flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-slate-800 text-indigo-400 border-4 border-slate-900 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-500 group-hover:text-white transition-colors relative z-10 shadow-xl">
+                  <Navigation size={20} />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-2">Awash Station</h4>
+                <div className="text-[10px] font-mono text-slate-500 mb-2 uppercase tracking-wider">Waypoint (620 KM)</div>
+                <p className="text-xs text-slate-400 leading-relaxed">Driver Waypoint Check-in -&gt; En-route Fuel Stock Level Assessment</p>
+              </div>
+
+              {/* Node 5 */}
+              <div className="flex flex-col items-center text-center group">
+                <div className="w-12 h-12 bg-slate-800 text-emerald-400 border-4 border-slate-900 rounded-full flex items-center justify-center mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-colors relative z-10 shadow-xl">
+                  <Package size={20} />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-2">Modjo Dry Port</h4>
+                <div className="text-[10px] font-mono text-slate-500 mb-2 uppercase tracking-wider">Terminal (810 KM)</div>
+                <p className="text-xs text-slate-400 leading-relaxed">Final Axle Weighing -&gt; Digital Proof-of-Delivery (e-PoD) -&gt; TeleBirr Escrow Settlement Release (FR-10.1)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes marquee {
