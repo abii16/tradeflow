@@ -48,11 +48,10 @@ export default function CustomsWorkspace() {
           <table className="w-full text-left border-collapse table-fixed">
             <thead className="bg-slate-50 sticky top-0 border-b border-slate-200 z-10">
               <tr>
-                <th className="w-2/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">MANIFEST ID</th>
+                <th className="w-3/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">MANIFEST ID</th>
                 <th className="w-4/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">FREIGHT FORWARDER</th>
                 <th className="w-2/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">ETA AT GALAFI</th>
-                <th className="w-2/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">STATUS</th>
-                <th className="w-2/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">ACTION</th>
+                <th className="w-3/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">STATUS / ACTION</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -73,18 +72,16 @@ export default function CustomsWorkspace() {
                     <td className="px-4 py-4 whitespace-nowrap truncate">
                       <span className="font-mono text-sm font-medium text-slate-600">{row.eta}</span>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap truncate">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold border shadow-sm ${getStatusClasses(row.color)}`}>
+                    <td className="px-4 py-4 whitespace-nowrap truncate flex items-center gap-2">
+                      <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold border shadow-sm ${getStatusClasses(row.color)}`}>
                         {row.status}
                       </span>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-right truncate">
-                      <button className={`inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded transition-all shadow-sm ${
+                      <button className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded transition-all shadow-sm ${
                         isActive 
-                          ? 'bg-slate-100 text-slate-800 border border-slate-300' 
+                          ? 'bg-blue-600 text-white' 
                           : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                       }`}>
-                        {isActive ? '[Active Selection]' : '[Inspect >]'}
+                        {isActive ? '[Active Selection]' : '[Inspect]'}
                       </button>
                     </td>
                   </tr>
