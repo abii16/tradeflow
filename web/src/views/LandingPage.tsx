@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin } from 'lucide-react';
+import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin, Building2, Truck, Briefcase } from 'lucide-react';
 import landingVideo from './landingpage.mp4';
 
 interface LandingPageProps {
@@ -298,6 +298,59 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
         </div>
       </section>
 
+      {/* =================================================================================
+          SECTION 4: ROLE-BASED ECOSYSTEM ACCESS
+          ================================================================================= */}
+      <section className="w-full bg-[#F8FAFC] py-24 relative z-40 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-8 md:px-12">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+              Role-Based Ecosystem Access
+            </h2>
+            <p className="text-slate-500 font-medium text-lg">
+              Unified operating picture across the logistics value chain.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Persona 1: Cargo Owners */}
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E2E8F0] hover:shadow-lg transition-all group overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+              <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6 relative z-10">
+                <Building2 size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4 relative z-10">For Cargo Owners</h3>
+              <p className="text-sm text-slate-600 leading-relaxed relative z-10">
+                Instant Spot Quotes, Verified Carriers, and Live Milestones from Doraleh to your Warehouse.
+              </p>
+            </div>
+
+            {/* Persona 2: Fleet Owners */}
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E2E8F0] hover:shadow-lg transition-all group overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+              <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-6 relative z-10">
+                <Truck size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4 relative z-10">For Fleet Owners &amp; Carriers</h3>
+              <p className="text-sm text-slate-600 leading-relaxed relative z-10">
+                Maximize Truck Utilization, Eliminate Empty Backhauls, and Receive Guaranteed Instant TeleBirr Payouts.
+              </p>
+            </div>
+
+            {/* Persona 3: Freight Forwarders */}
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E2E8F0] hover:shadow-lg transition-all group overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+              <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-6 relative z-10">
+                <Briefcase size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4 relative z-10">For Freight Forwarders &amp; Brokers</h3>
+              <p className="text-sm text-slate-600 leading-relaxed relative z-10">
+                Manage Multi-Shipper Manifests, Consolidate Customs Document Vaults, and Run Competitive Auctions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes marquee {
