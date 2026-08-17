@@ -136,7 +136,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         </div>
 
         {/* TOP NAVIGATION HEADER */}
-        <header className="absolute top-0 left-0 w-full h-16 border-b border-white/10 px-8 flex items-center justify-between z-50 bg-slate-900/20 backdrop-blur-md">
+        <header className="fixed top-0 left-0 w-full h-16 border-b border-white/10 px-8 flex items-center justify-between z-[60] bg-slate-900/90 backdrop-blur-md">
           <div className="flex items-center">
             <span className="font-bold text-[20px] text-white tracking-tight">TradeFlow</span>
           </div>
