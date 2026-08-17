@@ -3,7 +3,7 @@ import { Bell, Settings } from 'lucide-react';
 import landingVideo from './landingpage.mp4';
 
 interface PortalSelectorProps {
-  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin') => void;
+  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder') => void;
 }
 
 export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) {
@@ -105,6 +105,12 @@ export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) 
               className="bg-white text-slate-900 px-5 py-2.5 text-sm font-bold hover:bg-slate-100 transition-colors rounded-sm shadow-lg"
             >
               Launch Freight Marketplace
+            </button>
+            <button 
+              onClick={() => onSelectPortal('forwarder')}
+              className="bg-indigo-600/20 text-indigo-50 border border-indigo-500/30 backdrop-blur-md px-5 py-2.5 text-sm font-medium hover:bg-indigo-600/30 transition-colors rounded-sm shadow-lg"
+            >
+              Forwarder Console
             </button>
             <button 
               onClick={() => onSelectPortal('finance')}
