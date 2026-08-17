@@ -22,8 +22,8 @@ export default function CustomsPortal({ onSwitchPortal }: CustomsPortalProps) {
         <CustomsHeader onSwitchPortal={onSwitchPortal} />
 
         {/* Dynamic Workspace Canvas */}
-        <main className="flex-1 bg-[#F8FAFC] overflow-y-auto overflow-x-hidden relative">
-          <div className="absolute inset-0 p-6 md:p-8">
+        <main className="flex-1 bg-[#F8FAFC] relative overflow-hidden">
+          <div className="absolute inset-0 p-5 flex flex-col">
             {activeSubTab === 'queue' ? (
               <CustomsWorkspace />
             ) : (
