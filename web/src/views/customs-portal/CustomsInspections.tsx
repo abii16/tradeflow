@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Filter, AlertTriangle, Shield, CheckCircle2, FileText, ChevronRight, X } from 'lucide-react';
+import { Search, Filter, AlertTriangle, Shield, CheckCircle2, FileText, X, CircleDot } from 'lucide-react';
 
 export default function CustomsInspections() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeInspection, setActiveInspection] = useState<string | null>(null);
+  const [toggles, setToggles] = useState({ visual: false, tamper: false, eSeal: false });
 
   const inspections = [
     { id: 'TFM-9943 / CONT-8841', transporter: 'Red Sea Transport', trigger: 'Weight Variance (+6.73%)', bay: 'Bay 03 (Heavy Scale)', officer: 'Officer GA-772', action: 'Log Inspection Result', color: 'rose' },
@@ -22,6 +23,7 @@ export default function CustomsInspections() {
 
   const handleOpenModal = (id: string) => {
     setActiveInspection(id);
+    setToggles({ visual: true, tamper: true, eSeal: true }); // Mock state
     setIsModalOpen(true);
   };
 
@@ -37,7 +39,7 @@ export default function CustomsInspections() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-white border border-[#E2E8F0] rounded-xl flex flex-col overflow-hidden shadow-sm">
+      <div className="flex-1 bg-white border border-[#E2E8F0] rounded-xl flex flex-col overflow-hidden shadow-sm min-h-0">
         <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
           <div>
             <h3 className="font-bold text-slate-900">Active Inspection Queue</h3>
@@ -104,6 +106,37 @@ export default function CustomsInspections() {
             </tbody>
           </table>
         </div>
+        
+        {/* Bottom Bay Capacity Status Strip */}
+        <div className="border-t border-slate-100 p-4 bg-slate-50 shrink-0 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Bay 01 (Security / E-Seals)</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-amber-600 text-sm font-bold">
+              <CircleDot size={14} className="fill-amber-500" />
+              Occupied (TFM-9921)
+            </div>
+          </div>
+          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Bay 02 (Documentation Audit)</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-bold">
+              <CircleDot size={14} className="fill-emerald-500" />
+              Available
+            </div>
+          </div>
+          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Bay 03 (Heavy Axle Scale)</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-rose-600 text-sm font-bold">
+              <CircleDot size={14} className="fill-rose-500 animate-pulse" />
+              Active Inspection (TFM-9943)
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modal Overlay */}
@@ -118,7 +151,7 @@ export default function CustomsInspections() {
                   <FileText size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">Inspection Log Entry</h3>
+                  <h3 className="font-bold text-slate-900 text-lg">Physical Inspection Log</h3>
                   <p className="text-xs text-slate-500 font-mono font-medium">{activeInspection}</p>
                 </div>
               </div>
@@ -128,47 +161,65 @@ export default function CustomsInspections() {
             </div>
             
             <div className="p-6 overflow-y-auto space-y-6">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Physical Inspection Findings</label>
-                <textarea 
-                  className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
-                  placeholder="Enter detailed observations from physical bay inspection..."
-                ></textarea>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Scale Recalibration Result</label>
+              {/* Weight Recalibration */}
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                <label className="block text-sm font-bold text-slate-700 mb-2">Re-Weighed Scale Value (kg)</label>
+                <div className="flex items-center gap-3">
                   <input 
                     type="text" 
-                    className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-                    placeholder="e.g. 26,150 kg (Verified)"
+                    value="24,550 kg"
+                    readOnly
+                    className="w-1/2 border border-slate-300 rounded-md p-2.5 text-sm focus:outline-none font-mono font-bold bg-white text-slate-900 shadow-inner"
                   />
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-md">
+                    Variance reduced to 0.2% - Within Tolerance
+                  </span>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Contraband / Tampering Check</label>
-                  <select className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                    <option value="">Select Result...</option>
-                    <option value="pass">Pass (No Tampering)</option>
-                    <option value="fail">Fail (Contraband Found)</option>
-                    <option value="seal">Fail (Broken E-Seal)</option>
-                  </select>
+              </div>
+
+              {/* Contraband & Security Checks */}
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-3">Contraband & Security Check</label>
+                <div className="space-y-3">
+                  <button 
+                    onClick={() => setToggles({...toggles, visual: !toggles.visual})}
+                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.visual ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                  >
+                    <span className="font-medium text-sm">Physical Bay Visual Inspection</span>
+                    {toggles.visual ? <span className="font-bold text-xs bg-emerald-100 px-2 py-1 rounded">PASSED</span> : <span className="font-bold text-xs bg-slate-100 px-2 py-1 rounded">PENDING</span>}
+                  </button>
+                  <button 
+                    onClick={() => setToggles({...toggles, tamper: !toggles.tamper})}
+                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.tamper ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                  >
+                    <span className="font-medium text-sm">Cargo Tamper Inspection</span>
+                    {toggles.tamper ? <span className="font-bold text-xs bg-emerald-100 px-2 py-1 rounded">PASSED</span> : <span className="font-bold text-xs bg-slate-100 px-2 py-1 rounded">PENDING</span>}
+                  </button>
+                  <button 
+                    onClick={() => setToggles({...toggles, eSeal: !toggles.eSeal})}
+                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.eSeal ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                  >
+                    <span className="font-medium text-sm">New Digital E-Seal Applied</span>
+                    {toggles.eSeal ? <span className="font-bold text-xs bg-blue-100 px-2 py-1 rounded font-mono">#SEAL-ET-9941</span> : <span className="font-bold text-xs bg-slate-100 px-2 py-1 rounded">NOT APPLIED</span>}
+                  </button>
                 </div>
               </div>
             </div>
             
-            <div className="p-5 border-t border-slate-100 bg-slate-50 flex gap-4 shrink-0">
+            <div className="p-5 border-t border-slate-100 bg-slate-50 flex flex-col gap-3 shrink-0">
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="flex-1 py-2.5 bg-[#DC2626] hover:bg-rose-700 active:scale-[0.98] text-white font-semibold rounded-lg shadow-sm transition-all text-sm border border-rose-800/20"
+                className="w-full py-3 bg-[#059669] hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold rounded-lg shadow-sm transition-all text-sm border border-emerald-800/20 flex justify-center items-center gap-2"
               >
-                Seize & Issue Penalty Notice
+                <CheckCircle2 size={18} />
+                ✓ Issue Cleared Border Pass & Release Cargo
               </button>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="flex-1 py-2.5 bg-[#059669] hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold rounded-lg shadow-sm transition-all text-sm border border-emerald-800/20"
+                className="w-full py-3 bg-[#DC2626] hover:bg-rose-700 active:scale-[0.99] text-white font-semibold rounded-lg shadow-sm transition-all text-sm border border-rose-800/20 flex justify-center items-center gap-2"
               >
-                Release Cargo with Surcharge
+                <AlertTriangle size={18} />
+                ⚠️ Impound Container & Escalate to Ministry of Revenue
               </button>
             </div>
           </div>
