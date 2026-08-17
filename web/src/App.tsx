@@ -3,14 +3,16 @@ import PortalSelector from './views/PortalSelector';
 import ShipperPortal from './views/shipper-portal/ShipperPortal';
 import FinancePortal from './views/financial-dashboard/FinancePortal';
 import AdminPortal from './views/admin-console/AdminPortal';
+import ForwarderPortal from './views/forwarder-portal/ForwarderPortal';
 
-type PortalView = 'selector' | 'shipper' | 'finance' | 'admin';
+type PortalView = 'selector' | 'shipper' | 'finance' | 'admin' | 'forwarder';
 
 function getPortalFromPath(): PortalView {
   const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
   if (path.startsWith('/shipper')) return 'shipper';
   if (path.startsWith('/finance')) return 'finance';
   if (path.startsWith('/admin')) return 'admin';
+  if (path.startsWith('/forwarder')) return 'forwarder';
   // Legacy route redirects
   if (path.startsWith('/bids') || path.startsWith('/telematics') || path.startsWith('/customs') || path === '/operations') return 'shipper';
   if (path.startsWith('/escrow') || path.startsWith('/settlements') || path.startsWith('/ledger') || path.startsWith('/disputes') || path.startsWith('/pricing')) return 'finance';
@@ -35,13 +37,14 @@ export default function App() {
       shipper: '/shipper',
       finance: '/finance',
       admin: '/admin',
+      forwarder: '/forwarder',
     };
     if (window.location.pathname !== paths[target]) {
       window.history.pushState({ portal: target }, '', paths[target]);
     }
   };
 
-  const handleSelectPortal = (p: 'shipper' | 'finance' | 'admin') => {
+  const handleSelectPortal = (p: 'shipper' | 'finance' | 'admin' | 'forwarder') => {
     navigateToPortal(p);
   };
 
@@ -55,6 +58,8 @@ export default function App() {
       return <FinancePortal onSwitchPortal={switchToShipper} />;
     case 'admin':
       return <AdminPortal onSwitchPortal={() => navigateToPortal('selector')} />;
+    case 'forwarder':
+      return <ForwarderPortal onSwitchPortal={() => navigateToPortal('selector')} />;
     default:
       return <PortalSelector onSelectPortal={handleSelectPortal} />;
   }
