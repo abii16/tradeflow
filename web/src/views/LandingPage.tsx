@@ -352,6 +352,73 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
         </div>
       </section>
 
+      {/* =================================================================================
+          SECTION 5: ENTERPRISE STATS & COMPLIANCE FOOTER
+          ================================================================================= */}
+      <footer className="w-full bg-slate-900 border-t border-white/10 pt-16 pb-8 relative z-40">
+        <div className="max-w-7xl mx-auto px-8 md:px-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            {/* Left: Identity */}
+            <div>
+              <h3 className="text-xl font-bold text-white mb-4">TradeFlow Logistics Engine</h3>
+              <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                Aligned with Ethiopian Customs Commission &amp; Ethiopian Shipping and Logistics Services Enterprise specifications.
+              </p>
+              <div className="flex space-x-4">
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded border border-emerald-400/20">System Status: OPERATIONAL</span>
+              </div>
+            </div>
+
+            {/* Center: Links */}
+            <div className="grid grid-cols-2 gap-8">
+              <div>
+                <h4 className="text-sm font-bold text-white mb-4">Platform</h4>
+                <ul className="space-y-3 text-sm text-slate-400">
+                  <li><a href="#" className="hover:text-blue-400 transition-colors">Platform Specs</a></li>
+                  <li><a href="#" className="hover:text-blue-400 transition-colors">Corridor Telematics</a></li>
+                  <li><a href="#" className="hover:text-blue-400 transition-colors">Pricing Formulas</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white mb-4">Compliance</h4>
+                <ul className="space-y-3 text-sm text-slate-400">
+                  <li><a href="#" className="hover:text-blue-400 transition-colors">Escrow Mediation Rules</a></li>
+                  <li><a href="#" className="hover:text-blue-400 transition-colors">7-Year Audit Ledger</a></li>
+                  <li><a href="#" className="hover:text-blue-400 transition-colors">Data Retention Policy</a></li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Right: Badges */}
+            <div>
+              <h4 className="text-sm font-bold text-white mb-4">Verified Security</h4>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-sm text-slate-400">
+                  <ShieldCheck size={18} className="text-blue-400" />
+                  <span>AES-256 Encrypted Ledger</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-slate-400">
+                  <MapPin size={18} className="text-blue-400" />
+                  <span>Regional East Africa Data Residency</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-slate-400">
+                  <FileText size={18} className="text-blue-400" />
+                  <span>TeleBirr API Integrated Escrow</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between text-[11px] font-mono text-slate-500">
+            <p>© 2026 TradeFlow Logistics Platform. Developed for East Africa's Principal Corridor.</p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <a href="#" className="hover:text-slate-300 transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-slate-300 transition-colors">Privacy Policy</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes marquee {
           0% { transform: translateX(0%); }
