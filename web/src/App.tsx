@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import PortalSelector from './views/PortalSelector';
+import LandingPage from './views/LandingPage';
 import ShipperPortal from './views/shipper-portal/ShipperPortal';
 import FinancePortal from './views/financial-dashboard/FinancePortal';
 import AdminPortal from './views/admin-console/AdminPortal';
@@ -66,6 +66,6 @@ export default function App() {
     case 'customs':
       return <CustomsPortal onSwitchPortal={() => navigateToPortal('selector')} />;
     default:
-      return <PortalSelector onSelectPortal={handleSelectPortal} />;
+      return <LandingPage onSelectPortal={handleSelectPortal} />;
   }
 }
