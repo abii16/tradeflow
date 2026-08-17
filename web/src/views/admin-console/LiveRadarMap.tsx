@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapContainer, TileLayer, Polyline, Circle, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Circle, Marker, Popup, useMap, Polygon } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Radar } from 'lucide-react';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import { useLiveTelemetry } from '../../hooks/useLiveTelemetry';
 
 const DJIBOUTI_PORT: [number, number] = [11.588, 43.145];
 const GALAFI: [number, number] = [11.716, 41.838];
@@ -51,6 +53,7 @@ const MapController = () => {
 
 export default function LiveRadarMap() {
   const { t } = useTranslation();
+  const { telemetry, isConnected } = useLiveTelemetry();
 
   return (
     <div className="relative w-full h-full min-h-[480px]">
@@ -72,50 +75,66 @@ export default function LiveRadarMap() {
           pathOptions={{ color: "#38BDF8", weight: 4, opacity: 0.85, dashArray: "8, 4" }} 
         />
 
-        {/* Hazard Zone RISK-04 */}
-        <Circle 
-          center={SEMERA} 
-          radius={25000} 
-          pathOptions={{ color: "#EF4444", fillColor: "#DC2626", fillOpacity: 0.25, weight: 1.5, dashArray: "4, 4" }} 
+        {/* Hazard Zones */}
+        {telemetry.alerts.map(alert => (
+          alert.polygon ? (
+            <Polygon 
+              key={alert.id}
+              positions={alert.polygon} 
+              pathOptions={{ color: "#F97316", fillColor: "#EF4444", fillOpacity: 0.35, weight: 2, dashArray: "5, 5" }} 
+            >
+              <Popup>
+                <div className="font-bold text-red-600 text-sm mb-1">{t(alert.title) || alert.title}</div>
+                <div className="text-xs text-slate-600">{t(alert.description) || alert.description}</div>
+              </Popup>
+            </Polygon>
+          ) : (
+            <Circle 
+              key={alert.id}
+              center={[alert.lat, alert.lng]} 
+              radius={alert.radius} 
+              pathOptions={{ color: "#EF4444", fillColor: "#DC2626", fillOpacity: 0.25, weight: 1.5, dashArray: "4, 4" }} 
+            >
+              <Popup>
+                <div className="font-bold text-red-600 text-sm mb-1">{t(alert.title) || alert.title}</div>
+                <div className="text-xs text-slate-600">{t(alert.description) || alert.description}</div>
+              </Popup>
+            </Circle>
+          )
+        ))}
+
+        {/* Live Vehicles with Marker Clustering */}
+        <MarkerClusterGroup 
+          chunkedLoading 
+          maxClusterRadius={60}
+          spiderfyOnMaxZoom={true}
         >
-          <Popup>
-            <div className="font-bold text-red-600 text-sm mb-1">{t('radar_risk_04_title')}</div>
-            <div className="text-xs text-slate-600">{t('radar_risk_04_desc')}</div>
-          </Popup>
-        </Circle>
-
-        {/* Live Vehicles */}
-        <Marker position={[11.652, 42.493]} icon={createVehicleMarker('ET-9021')}>
-          <Popup className="rounded shadow-xl">
-            <div className="text-[11px] space-y-1.5 font-mono text-slate-700 min-w-[180px]">
-              <div className="border-b border-slate-100 pb-1 mb-1">
-                <strong className="text-slate-900">{t('radar_truck_id')}</strong> ET-9021
-              </div>
-              <div className="flex justify-between"><strong>{t('radar_cargo')}</strong> 30T Rebar</div>
-              <div className="flex justify-between"><strong>{t('radar_speed')}</strong> 64 km/h</div>
-              <div className="flex justify-between"><strong>{t('radar_driver')}</strong> Yared Tekle</div>
-              <div className="flex justify-between text-blue-600 mt-2 border-t border-slate-100 pt-1">
-                <strong>{t('radar_eta_modjo')}</strong> 6.2h
-              </div>
-            </div>
-          </Popup>
-        </Marker>
-
-        <Marker position={[10.354, 40.591]} icon={createVehicleMarker('BHL-8892')}>
-           <Popup className="rounded shadow-xl">
-            <div className="text-[11px] space-y-1.5 font-mono text-slate-700 min-w-[180px]">
-              <div className="border-b border-slate-100 pb-1 mb-1">
-                <strong className="text-slate-900">{t('radar_truck_id')}</strong> BHL-8892
-              </div>
-              <div className="flex justify-between"><strong>{t('radar_cargo')}</strong> 40ft Container</div>
-              <div className="flex justify-between"><strong>{t('radar_speed')}</strong> 58 km/h</div>
-              <div className="flex justify-between"><strong>{t('radar_driver')}</strong> Alazar M.</div>
-              <div className="flex justify-between text-blue-600 mt-2 border-t border-slate-100 pt-1">
-                <strong>{t('radar_eta_modjo')}</strong> 3.8h
-              </div>
-            </div>
-          </Popup>
-        </Marker>
+          {telemetry.trucks.map(truck => (
+            <Marker key={truck.id} position={[truck.lat, truck.lng]} icon={createVehicleMarker(truck.id, truck.status === 'GEOFENCE_BREACH' ? 'bg-red-500' : 'bg-cyan-400')}>
+              <Popup className="rounded shadow-xl">
+                <div className="text-[11px] space-y-1.5 font-mono text-slate-700 min-w-[180px]">
+                  <div className="border-b border-slate-100 pb-1 mb-1">
+                    <strong className="text-slate-900">{t('radar_truck_id')}</strong> {truck.id}
+                  </div>
+                  <div className="flex justify-between"><strong>{t('radar_cargo')}</strong> {truck.cargo}</div>
+                  <div className="flex justify-between"><strong>{t('radar_speed')}</strong> {truck.speed} km/h</div>
+                  <div className="flex justify-between"><strong>{t('radar_driver')}</strong> {truck.driver}</div>
+                  {truck.status && (
+                    <div className="flex justify-between">
+                      <strong>Status:</strong> 
+                      <span className={truck.status === 'GEOFENCE_BREACH' ? 'text-red-500 font-bold' : 'text-emerald-500 font-bold'}>
+                        {truck.status}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-blue-600 mt-2 border-t border-slate-100 pt-1">
+                    <strong>{t('radar_eta_modjo')}</strong> {truck.eta}
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
 
         <MapController />
       </MapContainer>
@@ -137,11 +156,13 @@ export default function LiveRadarMap() {
           <div className="space-y-3">
             <div className="text-[11px] flex justify-between items-center bg-slate-950/50 px-2 py-1.5 rounded border border-slate-800">
               <span className="text-slate-400 uppercase font-semibold">{t('radar_corridor_status')}</span>
-              <span className="text-emerald-400 font-bold font-mono">{t('radar_operational')}</span>
+              <span className={`font-bold font-mono ${isConnected ? 'text-emerald-400' : 'text-amber-500'}`}>
+                {isConnected ? t('radar_operational') : 'RECONNECTING...'}
+              </span>
             </div>
             <div className="text-[10px] font-mono text-slate-400 text-center leading-relaxed">
-              {t('radar_active_assets')} <br />
-              {t('radar_metrics')}
+              {telemetry.trucks.length} {t('radar_active_assets')} <br />
+              {telemetry.alerts.length} Active Alerts
             </div>
           </div>
         </div>
