@@ -3,7 +3,7 @@ import { Bell, Settings } from 'lucide-react';
 import landingVideo from './landingpage.mp4';
 
 interface PortalSelectorProps {
-  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder') => void;
+  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
 }
 
 export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) {
@@ -123,6 +123,12 @@ export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) 
               className="bg-blue-600/20 text-blue-50 border border-blue-500/30 backdrop-blur-md px-5 py-2.5 text-sm font-medium hover:bg-blue-600/30 transition-colors rounded-sm shadow-lg"
             >
               Admin Control Tower
+            </button>
+            <button 
+              onClick={() => onSelectPortal('customs')}
+              className="bg-emerald-600/20 text-emerald-50 border border-emerald-500/30 backdrop-blur-md px-5 py-2.5 text-sm font-medium hover:bg-emerald-600/30 transition-colors rounded-sm shadow-lg"
+            >
+              Customs Terminal
             </button>
           </div>
         </div>
