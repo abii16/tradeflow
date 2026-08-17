@@ -1,5 +1,10 @@
-import { pgTable, uuid, varchar, timestamp, boolean, geometry } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, boolean, customType } from 'drizzle-orm/pg-core';
 
+const geometry = customType<{ data: string; driverData: string, config: { type: string, srid: number } }>({
+  dataType(config) {
+    return `geometry(${config?.type || 'polygon'}, ${config?.srid || 4326})`;
+  }
+});
 export const riskZones = pgTable('risk_zones', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),

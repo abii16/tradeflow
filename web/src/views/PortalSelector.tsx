@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bell, Settings } from 'lucide-react';
-// import landingVideo from './landingpage.mp4';
+import landingVideo from './landingpage.mp4';
 
 interface PortalSelectorProps {
   onSelectPortal: (portal: 'shipper' | 'finance' | 'admin') => void;
@@ -64,7 +64,7 @@ export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) 
           muted 
           playsInline 
           className="absolute inset-0 w-full h-full object-cover z-0 bg-slate-900"
-          src="https://www.w3schools.com/html/mov_bbb.mp4"
+          src={landingVideo}
         />
         {/* Dark overlay to make text readable */}
         <div className="absolute inset-0 bg-black/40 z-0"></div>

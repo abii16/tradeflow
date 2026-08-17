@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bell, Settings } from 'lucide-react';
+import landingVideo from './landingpage.mp4';
 
 interface LandingPageProps {
   onLaunch?: () => void;
@@ -8,22 +9,19 @@ interface LandingPageProps {
 export default function LandingPage({ onLaunch }: LandingPageProps) {
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] relative font-sans text-slate-900">
-      {/* Background dot grid */}
-      <div 
-        className="absolute inset-0 z-0" 
-        style={{ backgroundImage: 'radial-gradient(#CBD5E1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
-      ></div>
-
-      {/* Interactive Corridor Schematic Vector Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          {/* Diagonally drawn dashed light blue telemetry artery line */}
-          <line x1="0" y1="100%" x2="100%" y2="0" stroke="#93C5FD" strokeWidth="2" strokeDasharray="6,6" />
-          {/* Circular node waypoints */}
-          <circle cx="25%" cy="75%" r="6" fill="#93C5FD" />
-          <circle cx="50%" cy="50%" r="6" fill="#93C5FD" />
-          <circle cx="75%" cy="25%" r="6" fill="#93C5FD" />
-        </svg>
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="w-full h-full object-cover opacity-60"
+        >
+          <source src={landingVideo} type="video/mp4" />
+        </video>
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-white/20"></div>
       </div>
 
       {/* TOP NAVIGATION HEADER */}
