@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown } from 'lucide-react';
+import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield } from 'lucide-react';
 import landingVideo from './landingpage.mp4';
 
 interface LandingPageProps {
@@ -147,6 +147,80 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce opacity-50">
             <span className="text-[10px] text-white font-mono uppercase tracking-widest mb-1">Explore</span>
             <ChevronDown size={16} className="text-white" />
+          </div>
+        </div>
+      </section>
+
+      {/* =================================================================================
+          SECTION 2: 4 CORE SYSTEM PILLARS
+          ================================================================================= */}
+      <section className="w-full bg-[#F8FAFC] py-24 relative z-40 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-8 md:px-12">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+              Engineering Autonomous Logistics for Landlocked Ethiopia
+            </h2>
+            <p className="text-slate-500 font-medium text-lg">
+              Built for shippers, fleet operators, freight forwarders, and regulatory authorities.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Card 1 */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E2E8F0] hover:shadow-md transition-shadow group flex flex-col h-full">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Zap size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">AI-Powered Freight Matching</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
+                Sub-second multi-objective ranking algorithm evaluating cost, carrier reliability, fuel rating, and proximity (SRS FR-02.2 & 8.1).
+              </p>
+              <div className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md w-fit">
+                &lt; 1.0s Matching Latency
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E2E8F0] hover:shadow-md transition-shadow group flex flex-col h-full">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Navigation size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">Corridor Telematics & Deep ETA</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
+                Gradient-boosted ETA models calculating live arrival windows with security-aware rerouting around flagged conflict zones (SRS FR-03.2, FR-08).
+              </p>
+              <div className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-md w-fit">
+                98.28% ETA Precision
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E2E8F0] hover:shadow-md transition-shadow group flex flex-col h-full">
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <TrendingUp size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">Dynamic Pricing & Fuel Governance</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
+                Real-time spot and contract rate calculation accounting for live diesel indices, dwell surcharges, and backhaul empty-mile optimization.
+              </p>
+              <div className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-md w-fit">
+                Automated Rate Floor/Ceiling
+              </div>
+            </div>
+
+            {/* Card 4 */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E2E8F0] hover:shadow-md transition-shadow group flex flex-col h-full">
+              <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Shield size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">Digital Customs Vault & Escrow</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
+                Immutable multi-document consistency checking (CI, PL, BL, COO) with multi-sig milestone payment releases upon verified delivery (e-PoD).
+              </p>
+              <div className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1.5 rounded-md w-fit">
+                Zero Paperwork Transit
+              </div>
+            </div>
           </div>
         </div>
       </section>
