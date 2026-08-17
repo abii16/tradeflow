@@ -4,8 +4,9 @@ import ShipperPortal from './views/shipper-portal/ShipperPortal';
 import FinancePortal from './views/financial-dashboard/FinancePortal';
 import AdminPortal from './views/admin-console/AdminPortal';
 import ForwarderPortal from './views/forwarder-portal/ForwarderPortal';
+import CustomsPortal from './views/customs-portal/CustomsPortal';
 
-type PortalView = 'selector' | 'shipper' | 'finance' | 'admin' | 'forwarder';
+type PortalView = 'selector' | 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs';
 
 function getPortalFromPath(): PortalView {
   const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
@@ -13,6 +14,7 @@ function getPortalFromPath(): PortalView {
   if (path.startsWith('/finance')) return 'finance';
   if (path.startsWith('/admin')) return 'admin';
   if (path.startsWith('/forwarder')) return 'forwarder';
+  if (path.startsWith('/customs')) return 'customs';
   // Legacy route redirects
   if (path.startsWith('/bids') || path.startsWith('/telematics') || path.startsWith('/customs') || path === '/operations') return 'shipper';
   if (path.startsWith('/escrow') || path.startsWith('/settlements') || path.startsWith('/ledger') || path.startsWith('/disputes') || path.startsWith('/pricing')) return 'finance';
@@ -38,13 +40,14 @@ export default function App() {
       finance: '/finance',
       admin: '/admin',
       forwarder: '/forwarder',
+      customs: '/customs',
     };
     if (window.location.pathname !== paths[target]) {
       window.history.pushState({ portal: target }, '', paths[target]);
     }
   };
 
-  const handleSelectPortal = (p: 'shipper' | 'finance' | 'admin' | 'forwarder') => {
+  const handleSelectPortal = (p: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => {
     navigateToPortal(p);
   };
 
@@ -60,6 +63,8 @@ export default function App() {
       return <AdminPortal onSwitchPortal={() => navigateToPortal('selector')} />;
     case 'forwarder':
       return <ForwarderPortal onSwitchPortal={() => navigateToPortal('selector')} />;
+    case 'customs':
+      return <CustomsPortal onSwitchPortal={() => navigateToPortal('selector')} />;
     default:
       return <PortalSelector onSelectPortal={handleSelectPortal} />;
   }
