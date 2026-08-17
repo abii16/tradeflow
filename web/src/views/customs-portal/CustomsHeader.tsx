@@ -14,8 +14,8 @@ export default function CustomsHeader({ onSwitchPortal }: CustomsHeaderProps) {
             <Menu size={24} />
           </button>
           <div>
-            <h2 className="text-base font-bold text-slate-900 font-inter">Galafi Border Checkpoint — Customs Terminal</h2>
-            <p className="text-[11px] text-slate-500 font-medium">Document Verification Queue (FR-06.3) & Automated Weight / Document Consistency Checking.</p>
+            <h2 className="text-base font-bold text-slate-900 font-inter">Galafi Border Checkpoint — Ethiopian Customs Commission Terminal</h2>
+            <p className="text-[11px] text-slate-500 font-medium">FR-06 Document Verification Queue, Weight Discrepancy Engine & Digital Transit Pass Issuance.</p>
           </div>
         </div>
 
@@ -38,7 +38,7 @@ export default function CustomsHeader({ onSwitchPortal }: CustomsHeaderProps) {
             <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200">
               <User size={16} className="text-slate-500" />
             </div>
-            <span className="text-sm font-bold hidden md:block">Officer ID: GA-772</span>
+            <span className="text-sm font-bold hidden md:block">Kassahun Bekele • Senior Customs Inspector (Officer ID: GA-772 • Galafi Post)</span>
           </button>
         </div>
       </div>
@@ -51,21 +51,21 @@ export default function CustomsHeader({ onSwitchPortal }: CustomsHeaderProps) {
           <span className="text-xs font-mono font-bold bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-700 shadow-sm">24</span>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Search size={14} className="text-blue-500" />
-          <span className="text-xs font-bold text-blue-700">Pending Review</span>
-          <span className="text-xs font-mono font-bold bg-blue-100 border border-blue-200 px-2 py-0.5 rounded text-blue-800 shadow-sm">12</span>
+        <div className="flex items-center gap-2 border-b-2 border-amber-500 pb-[13px] pt-[15px] -mb-[1px]">
+          <Search size={14} className="text-amber-500" />
+          <span className="text-xs font-bold text-amber-700">Under Review</span>
+          <span className="text-xs font-mono font-bold bg-amber-100 border border-amber-200 px-2 py-0.5 rounded text-amber-800 shadow-sm">12</span>
         </div>
         
         <div className="flex items-center gap-2">
           <CheckCircle2 size={14} className="text-emerald-500" />
-          <span className="text-xs font-bold text-emerald-700">Cleared Today</span>
+          <span className="text-xs font-bold text-emerald-700">Cleared</span>
           <span className="text-xs font-mono font-bold bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded text-emerald-800 shadow-sm">142</span>
         </div>
         
         <div className="flex items-center gap-2">
           <AlertTriangle size={14} className="text-rose-500" />
-          <span className="text-xs font-bold text-rose-700">Flagged for Physical Inspection</span>
+          <span className="text-xs font-bold text-rose-700">Rejected / Flagged</span>
           <span className="text-xs font-mono font-bold bg-rose-100 border border-rose-200 px-2 py-0.5 rounded text-rose-800 shadow-sm">3</span>
         </div>
       </div>
