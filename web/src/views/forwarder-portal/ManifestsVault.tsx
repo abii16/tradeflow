@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus, Check, AlertTriangle, Clock, Download, Upload, UploadCloud, X } from 'lucide-react';
+import { Search, Filter, Plus, Check, AlertTriangle, Clock, Download, Upload, UploadCloud, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ManifestsVault() {
   const [showModal, setShowModal] = useState(false);
@@ -13,29 +13,39 @@ export default function ManifestsVault() {
     { 
       mbl: 'CMA-77312-GL', hbl: 'AGRI-92', importer: 'Oromia Agri Co.', corridor: 'Galafi -> Modjo', 
       docs: { ci: 'valid', pl: 'error', bl: 'valid', coo: 'pending' },
-      status: 'Doc Error', badge: 'bg-red-100 text-red-700', action: 'Fix Documents' 
+      status: 'Doc Error', badge: 'bg-rose-100 text-rose-700', action: 'Fix Documents' 
     },
     { 
       mbl: 'ZIM-11029-DJ', hbl: 'TX-882', importer: 'Awash Textiles', corridor: 'Djibouti -> Hawassa', 
       docs: { ci: 'valid', pl: 'valid', bl: 'pending', coo: 'valid' },
       status: 'Pending Review', badge: 'bg-amber-100 text-amber-700', action: 'Upload Docs' 
     },
+    { 
+      mbl: 'TFM-9945-DJ', hbl: 'CEM-104', importer: 'Ethio-Cement', corridor: 'Djibouti -> Modjo', 
+      docs: { ci: 'valid', pl: 'valid', bl: 'valid', coo: 'pending' },
+      status: 'Pending Review', badge: 'bg-amber-100 text-amber-700', action: 'Upload Docs' 
+    },
+    { 
+      mbl: 'TFM-9946-DJ', hbl: 'BGI-88', importer: 'BGI Ethiopia', corridor: 'Djibouti -> Modjo', 
+      docs: { ci: 'valid', pl: 'valid', bl: 'valid', coo: 'valid' },
+      status: 'Cleared', badge: 'bg-emerald-100 text-emerald-700', action: 'Download Pass' 
+    },
   ];
 
-  const renderDocIcon = (status: string) => {
-    if (status === 'valid') return <Check size={14} className="text-emerald-500" />;
-    if (status === 'error') return <AlertTriangle size={14} className="text-red-500" />;
-    return <Clock size={14} className="text-amber-500" />;
+  const renderDocBadge = (status: string, label: string) => {
+    if (status === 'valid') return <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold"><Check size={10}/> {label}</span>;
+    if (status === 'error') return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-bold"><AlertTriangle size={10}/> {label}</span>;
+    return <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer hover:bg-rose-100 transition-colors" onClick={() => setShowModal(true)}><Upload size={10}/> {label}</span>;
   };
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto pb-10">
-      <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-sm">
+    <div className="space-y-6 max-w-[1400px] mx-auto pb-10 flex flex-col h-full">
+      <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-sm shrink-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight font-inter">Consolidated Customs Manifests & Document Vault (FR-06)</h1>
           </div>
-          <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0F172A] text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors shrink-0">
+          <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0F172A] text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-all active:scale-95 shrink-0 shadow-sm">
             <Plus size={16} />
             Create Master Manifest
           </button>
@@ -57,48 +67,45 @@ export default function ManifestsVault() {
         </div>
       </div>
 
-      <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-sm flex flex-col flex-1 min-h-0">
+        <div className="flex-1 overflow-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50">
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Master BL (MBL)</th>
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">House BL (HBL)</th>
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Declared Importer</th>
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Customs Corridor</th>
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Document Checklist</th>
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Clearance Status</th>
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+            <thead className="sticky top-0 bg-white/95 backdrop-blur z-10 shadow-sm">
+              <tr className="border-b border-slate-200">
+                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Master BL (MBL)</th>
+                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider">House BL (HBL)</th>
+                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Declared Importer</th>
+                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Customs Corridor</th>
+                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Document Checklist</th>
+                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Clearance Status</th>
+                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-100">
               {manifests.map((row, idx) => (
-                <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="py-4 px-6 font-mono text-sm font-bold text-slate-900">{row.mbl}</td>
-                  <td className="py-4 px-6 font-mono text-sm text-slate-600">{row.hbl}</td>
-                  <td className="py-4 px-6 text-sm text-slate-800 font-medium font-inter">{row.importer}</td>
-                  <td className="py-4 px-6 text-sm text-slate-600">{row.corridor}</td>
+                  <td className="py-4 px-6 font-mono text-sm text-slate-500">{row.hbl}</td>
+                  <td className="py-4 px-6 text-sm text-slate-800 font-bold font-inter">{row.importer}</td>
+                  <td className="py-4 px-6 text-[13px] font-medium text-slate-600">{row.corridor}</td>
                   <td className="py-4 px-6">
-                    <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-md border border-slate-200 inline-flex">
-                      <div className="flex items-center gap-1" title="Commercial Invoice"><span className="text-[10px] font-bold text-slate-500">CI:</span>{renderDocIcon(row.docs.ci)}</div>
-                      <div className="w-px h-3 bg-slate-300"></div>
-                      <div className="flex items-center gap-1" title="Packing List"><span className="text-[10px] font-bold text-slate-500">PL:</span>{renderDocIcon(row.docs.pl)}</div>
-                      <div className="w-px h-3 bg-slate-300"></div>
-                      <div className="flex items-center gap-1" title="Bill of Lading"><span className="text-[10px] font-bold text-slate-500">BL:</span>{renderDocIcon(row.docs.bl)}</div>
-                      <div className="w-px h-3 bg-slate-300"></div>
-                      <div className="flex items-center gap-1" title="Certificate of Origin"><span className="text-[10px] font-bold text-slate-500">COO:</span>{renderDocIcon(row.docs.coo)}</div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {renderDocBadge(row.docs.ci, 'CI')}
+                      {renderDocBadge(row.docs.pl, 'PL')}
+                      {renderDocBadge(row.docs.bl, 'BL')}
+                      {renderDocBadge(row.docs.coo, 'COO')}
                     </div>
                   </td>
                   <td className="py-4 px-6">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${row.badge}`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-[11px] font-bold uppercase tracking-wide border border-transparent ${row.badge.replace('bg-', 'border-').replace('100', '200')} ${row.badge}`}>
                       {row.status}
                     </span>
                   </td>
                   <td className="py-4 px-6 text-right">
                     <button 
                       onClick={() => row.action !== 'Download Pass' && setShowModal(true)}
-                      className={`inline-flex items-center gap-1.5 text-xs font-bold font-inter px-4 py-2 rounded transition-colors ${
-                        row.action === 'Download Pass' ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                      className={`inline-flex items-center gap-1.5 text-xs font-bold font-inter px-4 py-2 rounded transition-colors active:scale-95 ${
+                        row.action === 'Download Pass' ? 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200' : 'bg-[#0F172A] text-white hover:bg-slate-800 shadow-sm'
                       }`}
                     >
                       {row.action === 'Download Pass' ? <Download size={14} /> : <Upload size={14} />}
@@ -109,6 +116,26 @@ export default function ManifestsVault() {
               ))}
             </tbody>
           </table>
+        </div>
+        
+        {/* Pagination Dock */}
+        <div className="p-4 border-t border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50 rounded-b-xl">
+          <div className="text-sm font-medium text-slate-500">
+            Showing <span className="font-bold text-slate-900">1–5</span> of <span className="font-bold text-slate-900">142</span> Master Manifests
+          </div>
+          <div className="flex items-center gap-1">
+            <button className="px-3 py-1.5 rounded text-sm font-medium text-slate-500 hover:bg-slate-100 flex items-center gap-1 transition-colors">
+              <ChevronLeft size={16} /> Previous
+            </button>
+            <button className="w-8 h-8 rounded flex items-center justify-center text-sm font-bold bg-blue-600 text-white shadow-sm">1</button>
+            <button className="w-8 h-8 rounded flex items-center justify-center text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">2</button>
+            <button className="w-8 h-8 rounded flex items-center justify-center text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">3</button>
+            <span className="text-slate-400 px-1">...</span>
+            <button className="w-8 h-8 rounded flex items-center justify-center text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">15</button>
+            <button className="px-3 py-1.5 rounded text-sm font-medium text-slate-500 hover:bg-slate-100 flex items-center gap-1 transition-colors">
+              Next <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -128,8 +155,8 @@ export default function ManifestsVault() {
                 <p className="text-xs text-slate-500 mt-1">or click to browse local files</p>
               </div>
               <div className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-800">
-                <p className="font-medium">Instant Verification Active</p>
-                <p className="text-xs text-blue-600/80 mt-0.5">Files uploaded here are automatically checked against the Ethiopian Customs Authority ruleset.</p>
+                <p className="font-bold flex items-center gap-2"><Check size={16} className="text-blue-600"/> Instant Verification Active</p>
+                <p className="text-[13px] font-medium text-blue-700 mt-1">Files uploaded here are automatically checked against the Ethiopian Customs Authority ruleset.</p>
               </div>
             </div>
           </div>
