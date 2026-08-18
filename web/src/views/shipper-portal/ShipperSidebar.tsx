@@ -7,7 +7,8 @@ import {
   PackageSearch,
   FileCheck,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  FileSignature
 } from 'lucide-react';
 
 interface ShipperSidebarProps {
@@ -22,6 +23,7 @@ export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSideb
   const menuItems = [
     { id: 'operations', name: t('operations'), icon: BarChart3 },
     { id: 'bids', name: t('bids'), icon: PackageSearch },
+    { id: 'contract_rates', name: 'Contract Rates', icon: FileSignature },
     { id: 'telematics', name: t('telematics'), icon: Map },
     { id: 'customs_vault', name: t('customs_vault'), icon: FileCheck },
     { id: 'settings', name: t('settings'), icon: Settings },

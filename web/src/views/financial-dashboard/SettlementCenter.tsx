@@ -7,8 +7,10 @@ import {
   CheckCircle2, 
   Eye, 
   FileCheck2, 
-  Zap 
+  Zap,
+  AlertCircle
 } from 'lucide-react';
+import DisputeFormModal from '../../components/DisputeFormModal';
 
 interface SettlementCenterProps {
   currency: 'ETB' | 'USD' | 'DJF';
@@ -107,6 +109,7 @@ export default function SettlementCenter({
   const [releases, setReleases] = useState<EscrowReleaseItem[]>(INITIAL_RELEASES);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [inspectItem, setInspectItem] = useState<EscrowReleaseItem | null>(null);
+  const [disputeItem, setDisputeItem] = useState<EscrowReleaseItem | null>(null);
 
   const eligibleCount = releases.filter(r => r.status === 'eligible').length;
   const totalEligibleAmount = releases
@@ -229,14 +232,23 @@ export default function SettlementCenter({
                       Settled ({item.telebirrTxId})
                     </span>
                   ) : item.status === 'eligible' ? (
-                    <button
-                      type="button"
-                      disabled={processingId === item.id}
-                      onClick={() => handleReleaseSingle(item.id)}
-                      className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-medium rounded transition-colors"
-                    >
-                      {processingId === item.id ? 'Releasing...' : 'Release'}
-                    </button>
+                    <div className="flex justify-center gap-1.5">
+                      <button
+                        type="button"
+                        disabled={processingId === item.id}
+                        onClick={() => handleReleaseSingle(item.id)}
+                        className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-medium rounded transition-colors"
+                      >
+                        {processingId === item.id ? 'Releasing...' : 'Release'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDisputeItem(item)}
+                        className="px-2.5 py-1 border border-slate-300 text-slate-700 hover:bg-slate-50 text-[11px] font-medium rounded transition-colors"
+                      >
+                        Dispute
+                      </button>
+                    </div>
                   ) : (
                     <span className="text-[11px] text-slate-400">In Transit</span>
                   )}
@@ -303,6 +315,13 @@ export default function SettlementCenter({
             </div>
           </div>
         </div>
+      )}
+
+      {disputeItem && (
+        <DisputeFormModal
+          transactionId={disputeItem.waybillId}
+          onClose={() => setDisputeItem(null)}
+        />
       )}
     </div>
   );

@@ -10,7 +10,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   HelpCircle,
-  Power
+  Power,
+  Droplet
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -26,6 +27,7 @@ export default function AdminSidebar({ activeSubTab, setActiveSubTab }: AdminSid
     { id: 'radar', name: t('admin_nav_radar'), icon: Radar },
     { id: 'verification', name: t('admin_nav_verification'), icon: ClipboardCheck, badge: '12' },
     { id: 'pricing', name: t('admin_nav_pricing'), icon: TrendingUp },
+    { id: 'fuel', name: 'Fuel Analytics', icon: Droplet },
     { id: 'security', name: t('admin_nav_security'), icon: ShieldAlert },
     { id: 'disputes', name: t('admin_nav_disputes'), icon: Scale },
     { id: 'audit', name: t('admin_nav_audit'), icon: FileSearch },

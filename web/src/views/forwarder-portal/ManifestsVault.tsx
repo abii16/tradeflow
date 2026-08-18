@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Search, Filter, Plus, Check, AlertTriangle, Clock, Download, Upload, UploadCloud, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import CustomsDocumentUploadModal from '../../components/CustomsDocumentUploadModal';
 
 export default function ManifestsVault() {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState<string | null>(null);
 
   const manifests = [
     { 
@@ -32,10 +33,10 @@ export default function ManifestsVault() {
     },
   ];
 
-  const renderDocBadge = (status: string, label: string) => {
+  const renderDocBadge = (status: string, label: string, mbl: string) => {
     if (status === 'valid') return <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold"><Check size={10}/> {label}</span>;
     if (status === 'error') return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-bold"><AlertTriangle size={10}/> {label}</span>;
-    return <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer hover:bg-rose-100 transition-colors" onClick={() => setShowModal(true)}><Upload size={10}/> {label}</span>;
+    return <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer hover:bg-rose-100 transition-colors" onClick={() => setShowModal(mbl)}><Upload size={10}/> {label}</span>;
   };
 
   return (
@@ -90,10 +91,10 @@ export default function ManifestsVault() {
                   <td className="py-4 px-6 text-[13px] font-medium text-slate-600">{row.corridor}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      {renderDocBadge(row.docs.ci, 'CI')}
-                      {renderDocBadge(row.docs.pl, 'PL')}
-                      {renderDocBadge(row.docs.bl, 'BL')}
-                      {renderDocBadge(row.docs.coo, 'COO')}
+                      {renderDocBadge(row.docs.ci, 'CI', row.mbl)}
+                      {renderDocBadge(row.docs.pl, 'PL', row.mbl)}
+                      {renderDocBadge(row.docs.bl, 'BL', row.mbl)}
+                      {renderDocBadge(row.docs.coo, 'COO', row.mbl)}
                     </div>
                   </td>
                   <td className="py-4 px-6">
@@ -103,7 +104,7 @@ export default function ManifestsVault() {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <button 
-                      onClick={() => row.action !== 'Download Pass' && setShowModal(true)}
+                      onClick={() => row.action !== 'Download Pass' && setShowModal(row.mbl)}
                       className={`inline-flex items-center gap-1.5 text-xs font-bold font-inter px-4 py-2 rounded transition-colors active:scale-95 ${
                         row.action === 'Download Pass' ? 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200' : 'bg-[#0F172A] text-white hover:bg-slate-800 shadow-sm'
                       }`}
@@ -140,27 +141,10 @@ export default function ManifestsVault() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-lg text-slate-900">Upload Missing Documents</h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-700">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="border-2 border-dashed border-slate-300 rounded-xl p-10 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 hover:border-blue-400 transition-colors cursor-pointer group">
-                <UploadCloud size={40} className="text-slate-400 group-hover:text-blue-500 mb-4 transition-colors" />
-                <p className="text-sm font-semibold text-slate-700">Drag & drop files here</p>
-                <p className="text-xs text-slate-500 mt-1">or click to browse local files</p>
-              </div>
-              <div className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-800">
-                <p className="font-bold flex items-center gap-2"><Check size={16} className="text-blue-600"/> Instant Verification Active</p>
-                <p className="text-[13px] font-medium text-blue-700 mt-1">Files uploaded here are automatically checked against the Ethiopian Customs Authority ruleset.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CustomsDocumentUploadModal 
+          manifestId={showModal} 
+          onClose={() => setShowModal(null)} 
+        />
       )}
     </div>
   );

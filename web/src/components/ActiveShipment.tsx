@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Truck } from 'lucide-react';
+import { Check, Truck, Star } from 'lucide-react';
+import RatingModal from './RatingModal';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -20,6 +21,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 export default function ActiveShipment() {
   const { t } = useTranslation();
+  const [showRatingModal, setShowRatingModal] = useState(false);
   
   const djibouti = [11.5890, 43.1458] as [number, number];
   const galafi = [11.7200, 41.8333] as [number, number];
@@ -29,9 +31,25 @@ export default function ActiveShipment() {
 
   return (
     <div className="bg-white border border-slate-200 rounded-md">
+      {showRatingModal && (
+        <RatingModal 
+          transporterName="Kangaroo Freight" 
+          shipmentId="SHP-9021-DJM" 
+          onClose={() => setShowRatingModal(false)}
+          onSubmit={(rating, comment) => console.log('Rating submitted:', rating, comment)}
+        />
+      )}
       <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-        <h2 className="text-sm font-semibold text-slate-900">{t('active_shipment')}</h2>
-        <span className="text-xs font-mono text-slate-500">SHP-9021-DJM</span>
+        <div className="flex items-center gap-3">
+          <h2 className="text-sm font-semibold text-slate-900">{t('active_shipment')}</h2>
+          <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">SHP-9021-DJM</span>
+        </div>
+        <button 
+          onClick={() => setShowRatingModal(true)}
+          className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded hover:bg-amber-100 transition-colors flex items-center gap-1"
+        >
+          <Star size={12} className="fill-amber-600" /> Complete & Rate
+        </button>
       </div>
 
       <div className="p-4 space-y-4">

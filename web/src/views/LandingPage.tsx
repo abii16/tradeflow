@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin, Building2, Truck, Briefcase, X, ExternalLink, Activity } from 'lucide-react';
 import landingVideo from './landingpage.mp4';
+import RegistrationFlow from './auth/RegistrationFlow';
 
 interface LandingPageProps {
   onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
@@ -11,6 +12,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   const [activePillar, setActivePillar] = useState<string | null>(null);
   const [activeNode, setActiveNode] = useState<number | null>(null);
   const [activeComplianceModal, setActiveComplianceModal] = useState<{title: string, content: string} | null>(null);
+  const [showRegistration, setShowRegistration] = useState(false);
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
@@ -115,6 +117,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
     <div className="min-h-screen w-full overflow-y-auto bg-slate-900 font-inter text-slate-900 smooth-scroll relative">
       {renderRoleModal()}
       {renderComplianceModal()}
+      {showRegistration && <RegistrationFlow onClose={() => setShowRegistration(false)} />}
       
       {/* =================================================================================
           SECTION 1: HERO SECTION
@@ -148,7 +151,13 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-xs font-medium text-slate-300 hover:text-white transition-colors px-4">Customs Sync</a>
           </nav>
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setShowRegistration(true)}
+              className="text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:text-emerald-400 transition-colors"
+            >
+              Sign Up
+            </button>
             <button 
               onClick={() => setShowRoleModal(true)}
               className="bg-[#0F172A] text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-slate-800 transition-colors shadow-lg border border-slate-700"

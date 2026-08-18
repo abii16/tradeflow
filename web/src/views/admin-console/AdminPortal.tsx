@@ -7,8 +7,9 @@ import DynamicPricing from './DynamicPricing';
 import SecurityDetours from './SecurityDetours';
 import DisputeMediation from './DisputeMediation';
 import AuditLogs from './AuditLogs';
+import FuelAnalytics from './FuelAnalytics';
 
-type AdminSubTab = 'radar' | 'verification' | 'pricing' | 'security' | 'disputes' | 'audit';
+type AdminSubTab = 'radar' | 'verification' | 'pricing' | 'fuel' | 'security' | 'disputes' | 'audit';
 
 interface AdminPortalProps {
   onSwitchPortal: () => void;
@@ -29,6 +30,8 @@ export default function AdminPortal({ onSwitchPortal }: AdminPortalProps) {
         return <VerificationQueue />;
       case 'pricing':
         return <DynamicPricing />;
+      case 'fuel':
+        return <FuelAnalytics />;
       case 'security':
         return <SecurityDetours />;
       case 'disputes':

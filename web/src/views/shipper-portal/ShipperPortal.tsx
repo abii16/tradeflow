@@ -3,6 +3,7 @@ import ShipperSidebar from './ShipperSidebar';
 import ShipperHeader from './ShipperHeader';
 import ShipperDashboard from '../ShipperDashboard';
 import BidsTab from '../BidsTab';
+import ContractRates from './ContractRates';
 import TelematicsTab from '../TelematicsTab';
 import CustomsTab from '../CustomsTab';
 import SettingsTab from '../SettingsTab';
@@ -11,6 +12,7 @@ const SHIPPER_TAB_PATHS: Record<string, string> = {
   '/shipper': 'operations',
   '/shipper/operations': 'operations',
   '/shipper/bids': 'bids',
+  '/shipper/contract_rates': 'contract_rates',
   '/shipper/telematics': 'telematics',
   '/shipper/customs': 'customs_vault',
   '/shipper/settings': 'settings',
@@ -19,6 +21,7 @@ const SHIPPER_TAB_PATHS: Record<string, string> = {
 const TAB_TO_SLUG: Record<string, string> = {
   operations: 'operations',
   bids: 'bids',
+  contract_rates: 'contract_rates',
   telematics: 'telematics',
   customs_vault: 'customs',
   settings: 'settings',
@@ -57,6 +60,7 @@ export default function ShipperPortal({ onSwitchPortal }: ShipperPortalProps) {
     switch (activeTab) {
       case 'operations': return <ShipperDashboard />;
       case 'bids': return <BidsTab />;
+      case 'contract_rates': return <ContractRates />;
       case 'telematics': return <TelematicsTab />;
       case 'customs_vault': return <CustomsTab />;
       case 'settings': return <SettingsTab />;
