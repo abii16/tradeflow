@@ -5,6 +5,8 @@ import FinancePortal from './views/financial-dashboard/FinancePortal';
 import AdminPortal from './views/admin-console/AdminPortal';
 import ForwarderPortal from './views/forwarder-portal/ForwarderPortal';
 import CustomsPortal from './views/customs-portal/CustomsPortal';
+import { useAuth } from './hooks/useAuth';
+import { Loader2 } from 'lucide-react';
 
 type PortalView = 'selector' | 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs';
 
@@ -23,6 +25,7 @@ function getPortalFromPath(): PortalView {
 
 export default function App() {
   const [portal, setPortalState] = useState<PortalView>(getPortalFromPath);
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   useEffect(() => {
     const handlePopState = () => {
@@ -31,6 +34,55 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Protect routes and enforce Role-Based Access Control (RBAC)
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      if (portal !== 'selector') {
+        navigateToPortal('selector');
+      }
+      return;
+    }
+
+    if (user) {
+      const role = user.role;
+      let allowedPortals: PortalView[] = [];
+      let defaultPortal: PortalView = 'selector';
+
+      switch (role) {
+        case 'SHIPPER':
+        case 'TRANSPORTER':
+        case 'DRIVER':
+          allowedPortals = ['shipper'];
+          defaultPortal = 'shipper';
+          break;
+        case 'CUSTOMS_BROKER':
+          allowedPortals = ['forwarder', 'customs'];
+          defaultPortal = 'forwarder';
+          break;
+        case 'FINANCE_ADMIN':
+          allowedPortals = ['finance'];
+          defaultPortal = 'finance';
+          break;
+        case 'SYSTEM_ADMIN':
+          allowedPortals = ['admin', 'shipper', 'finance', 'forwarder', 'customs'];
+          defaultPortal = 'admin';
+          break;
+        default:
+          allowedPortals = [];
+          defaultPortal = 'selector';
+      }
+
+      if (portal === 'selector') {
+        navigateToPortal(defaultPortal);
+      } else if (!allowedPortals.includes(portal)) {
+        navigateToPortal(defaultPortal);
+        console.warn(`Unauthorized access attempt. Role ${role} cannot access ${portal} portal.`);
+      }
+    }
+  }, [isAuthenticated, isLoading, portal, user]);
 
   const navigateToPortal = (target: PortalView) => {
     setPortalState(target);
@@ -53,6 +105,19 @@ export default function App() {
 
   const switchToFinance = () => navigateToPortal('finance');
   const switchToShipper = () => navigateToPortal('shipper');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center text-white">
+        <Loader2 className="animate-spin" size={48} />
+      </div>
+    );
+  }
+
+  // If not authenticated and trying to access a portal, force selector (handled by useEffect, but double check here)
+  if (!isAuthenticated && portal !== 'selector') {
+    return <LandingPage onSelectPortal={handleSelectPortal} />;
+  }
 
   switch (portal) {
     case 'shipper':
