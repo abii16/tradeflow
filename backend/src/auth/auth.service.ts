@@ -47,6 +47,19 @@ export class AuthService {
 
     const userObj = result.user || result;
 
+    // Manually insert user into our public.users table since the Supabase trigger might not exist
+    try {
+      await db.insert(users).values({
+        id: userObj.id,
+        email: userObj.email,
+        fullName: data.fullName,
+        phone: data.phone,
+        role: data.role,
+      }).onConflictDoNothing(); // Prevent error if a trigger actually does exist
+    } catch (dbErr) {
+      console.error('Failed to insert user into public.users:', dbErr);
+    }
+
     return {
       message: 'Registration successful',
       user: {
@@ -81,9 +94,10 @@ export class AuthService {
     const result = await response.json();
 
     if (!response.ok) {
-      // Clean Security Logging & Enumeration Protection
-      // We don't expose if it was email or password that was wrong
-      console.error(`Login failed for email: ${data.email}`);
+      console.error(`Login failed for email: ${data.email}. Supabase error:`, result);
+      if (result.error_description === 'Email not confirmed' || result.msg === 'Email not confirmed') {
+        throw new Error('Email not confirmed. Please check your inbox and verify your email.');
+      }
       throw new Error('Invalid email or password');
     }
 
