@@ -46,6 +46,6 @@ const httpServer = createServer(app);
 export const socketGateway = new SocketGateway(httpServer);
 (global as any).socketGateway = socketGateway;
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT as number, '0.0.0.0', () => {
   console.log(`Backend API Gateway running on port ${PORT}`);
 });

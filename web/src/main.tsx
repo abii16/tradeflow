@@ -4,8 +4,12 @@ import './index.css';
 import './i18n/config';
 import App from './App';
 
+import { AuthProvider } from './hooks/useAuth';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>
 );
