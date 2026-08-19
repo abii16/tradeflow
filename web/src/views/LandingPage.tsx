@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin, Building2, Truck, Briefcase, X, ExternalLink, Activity } from 'lucide-react';
 import landingVideo from './landingpage.mp4';
 import RegistrationFlow from './auth/RegistrationFlow';
+import LoginModal from './auth/LoginModal';
+import { useAuth } from '../hooks/useAuth';
 
 interface LandingPageProps {
   onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
@@ -13,6 +15,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   const [activeNode, setActiveNode] = useState<number | null>(null);
   const [activeComplianceModal, setActiveComplianceModal] = useState<{title: string, content: string} | null>(null);
   const [showRegistration, setShowRegistration] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
@@ -118,6 +122,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {renderRoleModal()}
       {renderComplianceModal()}
       {showRegistration && <RegistrationFlow onClose={() => setShowRegistration(false)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} onSuccess={() => setShowRoleModal(true)} />}
       
       {/* =================================================================================
           SECTION 1: HERO SECTION
@@ -158,12 +163,29 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             >
               Sign Up
             </button>
-            <button 
-              onClick={() => setShowRoleModal(true)}
-              className="bg-[#0F172A] text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-slate-800 transition-colors shadow-lg border border-slate-700"
-            >
-              System Login
-            </button>
+            {!isAuthenticated ? (
+              <button 
+                onClick={() => setShowLoginModal(true)}
+                className="bg-[#0F172A] text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-slate-800 transition-colors shadow-lg border border-slate-700"
+              >
+                System Login
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setShowRoleModal(true)}
+                  className="bg-emerald-600 text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-emerald-700 transition-colors shadow-lg"
+                >
+                  Access Portals
+                </button>
+                <button 
+                  onClick={logout}
+                  className="text-slate-400 hover:text-white px-3 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
             <div className="flex items-center space-x-3 ml-4">
               <button className="text-slate-300 hover:text-white relative">
                 <Bell size={18} />
