@@ -4,10 +4,9 @@ import { z } from 'zod';
 export const RoleEnum = z.enum([
   'SHIPPER',
   'TRANSPORTER',
-  'DRIVER',
-  'CUSTOMS_BROKER',
-  'FINANCE_ADMIN',
-  'SYSTEM_ADMIN',
+  'FORWARDER',
+  'CUSTOMS_OFFICER',
+  'ADMIN',
 ]);
 
 export const RegisterDto = z.object({
@@ -24,17 +23,24 @@ export const RegisterDto = z.object({
   role: RoleEnum,
   
   // Optional role-specific fields
-  licenseNumber: z.string().optional(),
   companyName: z.string().optional(),
+  tinNumber: z.string().optional(),
+  tradeLicense: z.string().optional(),
+  badgeId: z.string().optional(),
 }).refine((data) => {
-  // Add custom validations depending on the role if needed
-  if (data.role === 'DRIVER' && !data.licenseNumber) {
+  // Add custom validations depending on the role
+  if (['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(data.role)) {
+    if (!data.companyName) return false;
+    if (!data.tinNumber) return false;
+    if (!data.tradeLicense) return false;
+  }
+  if (data.role === 'CUSTOMS_OFFICER' && !data.badgeId) {
     return false;
   }
   return true;
 }, {
-  message: "licenseNumber is required for DRIVER role",
-  path: ["licenseNumber"]
+  message: "Missing mandatory fields for the selected role",
+  path: ["role"] // Attach error generally
 });
 
 export const LoginDto = z.object({
