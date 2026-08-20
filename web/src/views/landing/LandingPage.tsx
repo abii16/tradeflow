@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin, Building2, Truck, Briefcase, X, ExternalLink, Activity } from 'lucide-react';
-
 import RegistrationFlow from '@/views/auth/RegistrationFlow';
 import LoginModal from '@/views/auth/LoginModal';
 import { useAuth } from '@/hooks/useAuth';
@@ -81,7 +80,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             playsInline 
             className="w-full h-full object-cover opacity-60"
           >
-            <source src="" type="video/mp4" />
+            <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-black/40"></div>
         </div>

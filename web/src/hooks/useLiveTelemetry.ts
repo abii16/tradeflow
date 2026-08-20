@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { getAuthToken } from '../lib/apiClient';
 
 export interface TruckTelemetry {
   id: string;
@@ -45,9 +46,9 @@ export function useLiveTelemetry() {
   const lastAlertTimeRef = useRef<number>(0);
 
   const connect = useCallback(() => {
-    // Requirements specify native WebSocket at ws://localhost:8000/ws/telematics
-    const isMock = (import.meta as any).env?.VITE_MOCK_TELEMETRY === 'true';
-    const wsUrl = (import.meta as any).env.VITE_WS_TELEMATICS_URL || 'ws://localhost:8000/ws/telematics';
+    const token = getAuthToken();
+    const baseUrl = import.meta.env.VITE_WS_TELEMATICS_URL || 'ws://localhost:8000/ws/telematics';
+    const wsUrl = token ? `${baseUrl}?token=${token}` : baseUrl;
     
     // Prevent multiple parallel connections
     if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) {
@@ -79,18 +80,16 @@ export function useLiveTelemetry() {
         wsRef.current = null;
         
         // Exponential backoff with jitter (avoids thundering herd)
-        if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
-          const backoff = Math.min(1000 * Math.pow(2, reconnectAttempts.current), MAX_BACKOFF_MS);
-          const jitter = Math.random() * 500;
-          const delay = backoff + jitter;
-          
-          reconnectTimeoutRef.current = window.setTimeout(() => {
-            reconnectAttempts.current += 1;
-            connect();
-          }, delay);
-        } else {
-          console.error("Max WebSocket reconnect attempts reached. Giving up.");
-        }
+        const backoff = Math.min(1000 * Math.pow(2, reconnectAttempts.current), MAX_BACKOFF_MS);
+        const jitter = Math.random() * 500;
+        const delay = backoff + jitter;
+        
+        console.log(`[WebSocket] Reconnecting in ${Math.round(delay)}ms... (Attempt ${reconnectAttempts.current + 1})`);
+        
+        reconnectTimeoutRef.current = window.setTimeout(() => {
+          reconnectAttempts.current += 1;
+          connect();
+        }, delay);
       };
 
       socket.onerror = (error) => {
