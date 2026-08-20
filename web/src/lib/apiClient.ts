@@ -48,7 +48,7 @@ export async function apiClient<T = any>(endpoint: string, options: FetchOptions
       // Optional: dispatch an event to force logout in UI
       window.dispatchEvent(new Event('auth:unauthorized'));
     }
-    
+
     let errorMessage = responseData?.error || response.statusText;
     if (responseData?.details && Array.isArray(responseData.details)) {
       const detailsText = responseData.details.map((d: any) => d.message).join(', ');

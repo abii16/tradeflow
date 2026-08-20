@@ -10,7 +10,6 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ onSelectPortal }: LandingPageProps) {
-  const [showRoleModal, setShowRoleModal] = useState(false);
   const [activePillar, setActivePillar] = useState<string | null>(null);
   const [activeNode, setActiveNode] = useState<number | null>(null);
   const [activeComplianceModal, setActiveComplianceModal] = useState<{title: string, content: string} | null>(null);
@@ -24,60 +23,6 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const renderRoleModal = () => {
-    if (!showRoleModal) return null;
-    return (
-      <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200">
-          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 className="font-bold text-lg text-slate-900">Select Operating Portal</h3>
-            <button onClick={() => setShowRoleModal(false)} className="text-slate-400 hover:text-slate-700">
-              <X size={20} />
-            </button>
-          </div>
-          <div className="p-6 grid grid-cols-1 gap-4">
-            <button onClick={() => onSelectPortal('shipper')} className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors text-left group">
-              <div className="bg-blue-100 text-blue-600 p-3 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Building2 size={24} />
-              </div>
-              <div>
-                <div className="font-bold text-slate-900">Cargo Shipper / Importer</div>
-                <div className="text-xs text-slate-500">Access Spot Quotes & Track Milestones</div>
-              </div>
-            </button>
-            <button onClick={() => onSelectPortal('forwarder')} className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-left group">
-              <div className="bg-indigo-100 text-indigo-600 p-3 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                <Briefcase size={24} />
-              </div>
-              <div>
-                <div className="font-bold text-slate-900">Freight Forwarder Console</div>
-                <div className="text-xs text-slate-500">Multi-Shipper Vault & Consolidation</div>
-              </div>
-            </button>
-            <button onClick={() => onSelectPortal('admin')} className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-slate-800 hover:bg-slate-100 transition-colors text-left group">
-              <div className="bg-slate-200 text-slate-700 p-3 rounded-lg group-hover:bg-slate-800 group-hover:text-white transition-colors">
-                <Monitor size={24} />
-              </div>
-              <div>
-                <div className="font-bold text-slate-900">Admin Control Tower</div>
-                <div className="text-xs text-slate-500">System Oversight & Dispute Resolution</div>
-              </div>
-            </button>
-            <button onClick={() => onSelectPortal('customs')} className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-colors text-left group">
-              <div className="bg-emerald-100 text-emerald-600 p-3 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                <ShieldCheck size={24} />
-              </div>
-              <div>
-                <div className="font-bold text-slate-900">Customs Terminal</div>
-                <div className="text-xs text-slate-500">Automated Clearance & Escrow Triggers</div>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   const renderComplianceModal = () => {
@@ -119,10 +64,9 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
   return (
     <div className="min-h-screen w-full overflow-y-auto bg-slate-900 font-inter text-slate-900 smooth-scroll relative">
-      {renderRoleModal()}
       {renderComplianceModal()}
       {showRegistration && <RegistrationFlow onClose={() => setShowRegistration(false)} />}
-      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} onSuccess={() => setShowRoleModal(true)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
       
       {/* =================================================================================
           SECTION 1: HERO SECTION
@@ -172,12 +116,6 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => setShowRoleModal(true)}
-                  className="bg-emerald-600 text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-emerald-700 transition-colors shadow-lg"
-                >
-                  Access Portals
-                </button>
                 <button 
                   onClick={logout}
                   className="text-slate-400 hover:text-white px-3 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ForwarderSidebar from './ForwarderSidebar';
-import ForwarderHeader from './ForwarderHeader';
+import UniversalTopBar from '../../components/UniversalTopBar';
 import MultiShipperWorkspace from './MultiShipperWorkspace';
 import ManifestsVault from './ManifestsVault';
 import BiddingExchange from './BiddingExchange';
@@ -37,7 +37,7 @@ export default function ForwarderPortal({ onSwitchPortal }: ForwarderPortalProps
       <ForwarderSidebar activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <ForwarderHeader onSwitchPortal={onSwitchPortal} />
+        <UniversalTopBar />
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8">
           {renderSubTab()}
