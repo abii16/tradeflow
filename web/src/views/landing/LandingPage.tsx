@@ -83,21 +83,21 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           >
             <source src="/video.mp4" type="video/mp4" />
           </video>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F17]/90 via-[#0B0F17]/75 to-[#0B0F17]/60"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0B0F17]"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F17]/40 via-[#0B0F17]/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0B0F17]/50"></div>
         </div>
 
         {/* TOP NAVIGATION HEADER */}
-        <header className="fixed top-0 left-0 w-full h-16 border-b border-white/10 px-8 flex items-center justify-between z-[60] bg-transparent">
+        <header className="fixed top-0 left-0 w-full h-16 border-b border-white/10 px-8 flex items-center justify-between z-[60] bg-black/40 backdrop-blur-md">
           <div className="flex items-center">
             <span className="font-bold text-[20px] text-white tracking-tight">TradeFlow<span className="text-cyan-400">.</span></span>
           </div>
           
-          <nav className="hidden md:flex items-center space-x-2">
-            <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-xs font-medium text-slate-300 hover:text-white transition-colors px-4">Corridor Telematics</a>
-            <a href="#ecosystem-roles" onClick={(e) => handleSmoothScroll(e, 'ecosystem-roles')} className="text-xs font-medium text-slate-300 hover:text-white transition-colors px-4">Load Board</a>
-            <a href="#system-pillars" onClick={(e) => handleSmoothScroll(e, 'system-pillars')} className="text-xs font-medium text-slate-300 hover:text-white transition-colors px-4">Dynamic Rates</a>
-            <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-xs font-medium text-slate-300 hover:text-white transition-colors px-4">Customs Sync</a>
+          <nav className="hidden md:flex items-center space-x-6">
+            <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">Corridor Telematics</a>
+            <a href="#ecosystem-roles" onClick={(e) => handleSmoothScroll(e, 'ecosystem-roles')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">Load Board</a>
+            <a href="#system-pillars" onClick={(e) => handleSmoothScroll(e, 'system-pillars')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">Dynamic Rates</a>
+            <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">Customs Sync</a>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -135,59 +135,48 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           </div>
         </header>
 
-        {/* LIVE CORRIDOR TICKER MARQUEE */}
-        <div className="absolute top-16 left-0 w-full py-2 bg-black/50 border-y border-white/10 backdrop-blur-md flex items-center overflow-hidden z-40">
-          <div className="animate-marquee whitespace-nowrap flex items-center space-x-6 text-xs font-mono text-emerald-400 font-medium tracking-wide">
-            <span>DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 • GALAFI BORDER DWELL: 45 MINS • DIESEL INDEX: ETB 95.50/L • 12 CUSTOMS PASSES CLEARED</span>
-            <span className="px-6 text-slate-500">•</span>
-            <span>DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 • GALAFI BORDER DWELL: 45 MINS • DIESEL INDEX: ETB 95.50/L • 12 CUSTOMS PASSES CLEARED</span>
-            <span className="px-6 text-slate-500">•</span>
-            <span>DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 • GALAFI BORDER DWELL: 45 MINS • DIESEL INDEX: ETB 95.50/L • 12 CUSTOMS PASSES CLEARED</span>
-          </div>
-        </div>
-
         {/* FOREGROUND HERO METRIC CARD */}
-        <div className="relative z-30 pt-48 px-12 md:px-24 max-w-4xl">
+        <div className="relative z-30 pt-48 px-12 md:px-24 max-w-4xl mx-auto flex flex-col items-center text-center">
           <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-full px-4 py-1.5 inline-flex items-center space-x-2 mb-6 backdrop-blur-sm">
             <span className="text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest flex items-center gap-2">
               [ <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div> NEURAL LOGISTICS ENGINE ACTIVE (V1.0) ]
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 max-w-3xl">
-            AI-Powered Freight Matching for East Africa's Principal Corridor
+          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 max-w-3xl mx-auto">
+            Autonomous Freight for East Africa.
           </h1>
-          <p className="text-lg text-slate-300 font-normal mb-10 max-w-2xl leading-relaxed">
-            Optimizing the 810km Djibouti-Modjo artery through real-time telematics, dynamic spot pricing, and digital customs escrow.
+          <p className="text-lg text-slate-300 font-normal mb-10 max-w-2xl mx-auto leading-relaxed">
+            AI matching, live telematics, and digital customs for the 810km Djibouti–Modjo artery.
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 mb-16">
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
             <button 
               onClick={() => onSelectPortal('shipper')}
               className="bg-white text-slate-950 font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-slate-100 transition-colors flex items-center gap-2"
             >
-              Launch Freight Marketplace <span className="font-bold">-&gt;</span>
+              Get Started <span className="font-bold">→</span>
             </button>
             <button 
               onClick={() => onSelectPortal('finance')}
               className="border border-white/20 text-white hover:bg-white/10 px-6 py-3 rounded-lg backdrop-blur-md transition-colors"
             >
-              Calculate Spot Quote
+              Calculate Rate
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-8">
-            <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center justify-center gap-8">
+            <div className="flex flex-col gap-1 items-center">
               <span className="text-white font-mono text-sm font-bold">[ 810 KM ]</span>
               <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Principal Corridor Artery</span>
             </div>
             <div className="w-px h-8 bg-white/10"></div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 items-center">
               <span className="text-white font-mono text-sm font-bold">[ ETB 356K ]</span>
               <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Avg Spot Rate Index</span>
             </div>
             <div className="w-px h-8 bg-white/10"></div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 items-center">
               <span className="text-white font-mono text-sm font-bold">[ 98.28% ]</span>
               <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">PyTorch ETA Precision</span>
             </div>
