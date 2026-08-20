@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import LandingPage from './views/LandingPage';
+import LandingPage from './views/landing/LandingPage';
 import ShipperPortal from './views/shipper-portal/ShipperPortal';
 import FinancePortal from './views/financial-dashboard/FinancePortal';
 import AdminPortal from './views/admin-console/AdminPortal';
@@ -7,7 +7,7 @@ import ForwarderPortal from './views/forwarder-portal/ForwarderPortal';
 import CustomsPortal from './views/customs-portal/CustomsPortal';
 import { useAuth } from './hooks/useAuth';
 import { Loader2 } from 'lucide-react';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
 
 
 

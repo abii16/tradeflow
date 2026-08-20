@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bell, ChevronDown, Globe } from 'lucide-react';
-import HeaderSearch from '@/components/HeaderSearch';
+import HeaderSearch from '@/components/common/HeaderSearch';
 
 interface ShipperHeaderProps {
   onSwitchPortal: () => void;
