@@ -27,12 +27,20 @@ export const RegisterDto = z.object({
   tinNumber: z.string().optional(),
   tradeLicense: z.string().optional(),
   badgeId: z.string().optional(),
+  fleetName: z.string().optional(),
+  operatorLicense: z.string().optional(),
+  vehicleCapacity: z.string().optional(),
 }).refine((data) => {
   // Add custom validations depending on the role
   if (['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(data.role)) {
     if (!data.companyName) return false;
     if (!data.tinNumber) return false;
     if (!data.tradeLicense) return false;
+  }
+  if (data.role === 'TRANSPORTER') {
+    if (!data.fleetName) return false;
+    if (!data.operatorLicense) return false;
+    if (!data.vehicleCapacity) return false;
   }
   if (data.role === 'CUSTOMS_OFFICER' && !data.badgeId) {
     return false;

@@ -11,10 +11,10 @@ import { auditMiddleware } from '../middleware/audit.middleware';
 const router = Router();
 const authService = new AuthService();
 
-// Rate Limiting: 5 requests per minute
+// Strict Rate Limiting for auth: 5 requests per 15 minutes
 const authLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 5,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50,
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,

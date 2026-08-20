@@ -42,15 +42,25 @@ export const auditMiddleware = (action: string) => {
           responsePayload = res.locals.body;
         }
 
+        const userRole = req.user?.role || null;
+        const timestamp = new Date().toISOString();
+        
+        // Cryptographic Hash generation (timestamp + userId + action + responsePayload)
+        const crypto = require('crypto');
+        const hashData = `${timestamp}|${userId || 'anonymous'}|${action}|${JSON.stringify(responsePayload)}`;
+        const recordHash = crypto.createHash('sha256').update(hashData).digest('hex');
+
         await db.insert(auditLogs).values({
           action,
           userId,
+          userRole,
           method: req.method,
           endpoint: req.originalUrl,
           statusCode,
           ipAddress: ipAddress ? ipAddress.substring(0, 45) : null,
           requestPayload,
           responsePayload,
+          recordHash,
         });
       } catch (error) {
         console.error(`[Audit Middleware] Error logging action ${action}:`, error);

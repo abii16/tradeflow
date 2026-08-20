@@ -5,11 +5,35 @@ import { createServer } from 'http';
 
 dotenv.config();
 
+import rateLimit from 'express-rate-limit';
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors());
+// Strict CORS whitelist (allow localhost for dev, add prod domains later)
+const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Global Rate Limiting: 100 requests per minute
+const globalLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(globalLimiter);
 
 import { AuthController } from './auth/auth.controller';
 import { loadsRoutes } from './routes/loads.routes';
