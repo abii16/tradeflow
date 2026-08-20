@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:4001';
+const API_BASE_URL = 'http://localhost:4000';
 
 export const getAuthToken = () => localStorage.getItem('tradeflow_token');
 export const setAuthToken = (token: string) => localStorage.setItem('tradeflow_token', token);
