@@ -28,16 +28,19 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'TradeFlow API Gateway', timestamp: new Date().toISOString() });
 });
 
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
+
 app.use('/auth', AuthController);
-app.use('/loads', loadsRoutes);
-app.use('/bids', bidsRoutes);
-app.use('/customs', customsRoutes);
-app.use('/pricing', pricingRoutes);
-app.use('/verification', verificationRoutes);
-app.use('/admin', adminRoutes);
-app.use('/payments', paymentsRoutes);
-app.use('/sync', offlineSyncRoutes);
-app.use('/offline-sync', offlineSyncRoutes);
+app.use('/loads', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), loadsRoutes);
+app.use('/bids', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SHIPPER', 'ADMIN']), bidsRoutes);
+app.use('/customs', JwtAuthGuard, RolesGuard(['CUSTOMS_OFFICER', 'FORWARDER', 'ADMIN']), customsRoutes);
+app.use('/pricing', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), pricingRoutes);
+app.use('/verification', JwtAuthGuard, RolesGuard(['ADMIN']), verificationRoutes);
+app.use('/admin', JwtAuthGuard, RolesGuard(['ADMIN']), adminRoutes);
+app.use('/payments', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), paymentsRoutes);
+app.use('/sync', JwtAuthGuard, offlineSyncRoutes);
+app.use('/offline-sync', JwtAuthGuard, offlineSyncRoutes);
 
 startTtlWorker();
 startPayoutWorker();

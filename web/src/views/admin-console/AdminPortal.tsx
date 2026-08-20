@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from './AdminSidebar';
-import AdminHeader from './AdminHeader';
+import UniversalTopBar from '../../components/UniversalTopBar';
 import ControlTowerDashboard from './ControlTowerDashboard';
 import VerificationQueue from './VerificationQueue';
 import DynamicPricing from './DynamicPricing';
@@ -51,7 +51,7 @@ export default function AdminPortal({ onSwitchPortal }: AdminPortalProps) {
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
       <AdminSidebar activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminHeader onSwitchPortal={onSwitchPortal} />
+        <UniversalTopBar />
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
           <div className="max-w-[1400px] mx-auto space-y-6">
             {renderSubTab()}

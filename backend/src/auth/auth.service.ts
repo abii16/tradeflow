@@ -55,6 +55,10 @@ export class AuthService {
         fullName: data.fullName,
         phone: data.phone,
         role: data.role,
+        companyName: data.companyName,
+        tinNumber: data.tinNumber,
+        tradeLicense: data.tradeLicense,
+        badgeId: data.badgeId,
       }).onConflictDoNothing(); // Prevent error if a trigger actually does exist
     } catch (dbErr) {
       console.error('Failed to insert user into public.users:', dbErr);

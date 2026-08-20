@@ -71,11 +71,10 @@ export default function FreightOrderForm() {
                   key={opt.key}
                   type="button"
                   onClick={() => setLeadTime(opt.key)}
-                  className={`flex-1 py-1 text-xs font-medium rounded transition-colors ${
-                    leadTime === opt.key
+                  className={`flex-1 py-1 text-xs font-medium rounded transition-colors ${leadTime === opt.key
                       ? 'bg-white text-slate-900 border border-slate-200 shadow-none'
                       : 'text-slate-500 hover:text-slate-800'
-                  }`}
+                    }`}
                 >
                   {opt.label}
                 </button>

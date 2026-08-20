@@ -12,17 +12,17 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [20, 32],
-    iconAnchor: [10, 32]
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [20, 32],
+  iconAnchor: [10, 32]
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
 export default function ActiveShipment() {
   const { t } = useTranslation();
   const [showRatingModal, setShowRatingModal] = useState(false);
-  
+
   const djibouti = [11.5890, 43.1458] as [number, number];
   const galafi = [11.7200, 41.8333] as [number, number];
   const awash = [8.9833, 40.1667] as [number, number];
@@ -32,9 +32,9 @@ export default function ActiveShipment() {
   return (
     <div className="bg-white border border-slate-200 rounded-md">
       {showRatingModal && (
-        <RatingModal 
-          transporterName="Kangaroo Freight" 
-          shipmentId="SHP-9021-DJM" 
+        <RatingModal
+          transporterName="Kangaroo Freight"
+          shipmentId="SHP-9021-DJM"
           onClose={() => setShowRatingModal(false)}
           onSubmit={(rating, comment) => console.log('Rating submitted:', rating, comment)}
         />
@@ -44,7 +44,7 @@ export default function ActiveShipment() {
           <h2 className="text-sm font-semibold text-slate-900">{t('active_shipment')}</h2>
           <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">SHP-9021-DJM</span>
         </div>
-        <button 
+        <button
           onClick={() => setShowRatingModal(true)}
           className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded hover:bg-amber-100 transition-colors flex items-center gap-1"
         >
@@ -105,14 +105,14 @@ export default function ActiveShipment() {
             <div className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-900 z-10 shrink-0 mt-0.5">
               <Truck size={10} className="text-white" />
             </div>
-            
+
             <div className="ml-3 w-full bg-slate-50 border border-slate-200 rounded p-3">
               <div className="flex justify-between items-start mb-1.5">
                 <div className="text-xs font-semibold text-slate-900">{t('in_transit')}</div>
                 <span className="text-[11px] font-mono text-slate-700 font-medium">Live</span>
               </div>
               <div className="text-[11px] text-slate-600 mb-2">A1 Highway, Near Awash</div>
-              
+
               <div className="flex gap-4 text-[11px] font-mono">
                 <div>
                   <span className="text-slate-500 font-sans">Speed:</span> <span className="font-medium text-slate-900">62 km/h</span>

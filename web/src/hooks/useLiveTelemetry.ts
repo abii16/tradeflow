@@ -46,7 +46,8 @@ export function useLiveTelemetry() {
 
   const connect = useCallback(() => {
     // Requirements specify native WebSocket at ws://localhost:8000/ws/telematics
-    const wsUrl = import.meta.env.VITE_WS_TELEMATICS_URL || 'ws://localhost:8000/ws/telematics';
+    const isMock = (import.meta as any).env?.VITE_MOCK_TELEMETRY === 'true';
+    const wsUrl = (import.meta as any).env.VITE_WS_TELEMATICS_URL || 'ws://localhost:8000/ws/telematics';
     
     // Prevent multiple parallel connections
     if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) {

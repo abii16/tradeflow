@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ShipperSidebar from './ShipperSidebar';
-import ShipperHeader from './ShipperHeader';
+import UniversalTopBar from '../../components/UniversalTopBar';
 import ShipperDashboard from '../ShipperDashboard';
 import BidsTab from '../BidsTab';
 import ContractRates from './ContractRates';
@@ -69,10 +69,10 @@ export default function ShipperPortal({ onSwitchPortal }: ShipperPortalProps) {
   };
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-50 w-full overflow-hidden font-inter text-slate-900">
       <ShipperSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <ShipperHeader onSwitchPortal={onSwitchPortal} />
+        <UniversalTopBar />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
           {renderTab()}
         </main>
