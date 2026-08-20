@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CustomsSidebar from './CustomsSidebar';
-import UniversalTopBar from '../../components/UniversalTopBar';
+import UniversalTopBar from '@/components/layout/UniversalTopBar';
 import CustomsWorkspace from './CustomsWorkspace';
 import CustomsInspections from './CustomsInspections';
 import CustomsReports from './CustomsReports';

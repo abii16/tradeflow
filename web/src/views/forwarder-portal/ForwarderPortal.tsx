@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ForwarderSidebar from './ForwarderSidebar';
-import UniversalTopBar from '../../components/UniversalTopBar';
+import UniversalTopBar from '@/components/layout/UniversalTopBar';
 import MultiShipperWorkspace from './MultiShipperWorkspace';
 import ManifestsVault from './ManifestsVault';
 import BiddingExchange from './BiddingExchange';

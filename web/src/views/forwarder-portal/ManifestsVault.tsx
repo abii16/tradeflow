@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, Plus, Check, AlertTriangle, Clock, Download, Upload, UploadCloud, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import CustomsDocumentUploadModal from '../../components/CustomsDocumentUploadModal';
+import CustomsDocumentUploadModal from '@/components/modals/CustomsDocumentUploadModal';
 
 export default function ManifestsVault() {
   const [showModal, setShowModal] = useState<string | null>(null);

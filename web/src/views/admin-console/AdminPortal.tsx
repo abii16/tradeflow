@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from './AdminSidebar';
-import UniversalTopBar from '../../components/UniversalTopBar';
+import UniversalTopBar from '@/components/layout/UniversalTopBar';
 import ControlTowerDashboard from './ControlTowerDashboard';
 import VerificationQueue from './VerificationQueue';
 import DynamicPricing from './DynamicPricing';

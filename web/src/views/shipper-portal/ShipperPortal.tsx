@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import ShipperSidebar from './ShipperSidebar';
-import UniversalTopBar from '../../components/UniversalTopBar';
-import ShipperDashboard from '../ShipperDashboard';
-import BidsTab from '../BidsTab';
+import UniversalTopBar from '@/components/layout/UniversalTopBar';
+import ShipperDashboard from './ShipperDashboard';
+import BidsTab from './BidsTab';
 import ContractRates from './ContractRates';
-import TelematicsTab from '../TelematicsTab';
-import CustomsTab from '../CustomsTab';
-import SettingsTab from '../SettingsTab';
+import TelematicsTab from './TelematicsTab';
+import CustomsTab from './CustomsTab';
+import SettingsTab from './SettingsTab';
 
 const SHIPPER_TAB_PATHS: Record<string, string> = {
   '/shipper': 'operations',

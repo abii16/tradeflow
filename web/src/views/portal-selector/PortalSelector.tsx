@@ -1,6 +1,5 @@
 import React from 'react';
 import { Bell, Settings } from 'lucide-react';
-import landingVideo from './landingpage.mp4';
 
 interface PortalSelectorProps {
   onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
@@ -57,19 +56,9 @@ export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) 
 
       {/* Main Content Area */}
       <div className="flex-1 relative flex items-center px-8 md:px-24">
-        {/* Background Video */}
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="absolute inset-0 w-full h-full object-cover z-0 bg-slate-900"
-          src={landingVideo}
-        />
-        {/* Dark overlay to make text readable */}
+        <div className="absolute inset-0 w-full h-full bg-slate-900 z-0"></div>
         <div className="absolute inset-0 bg-black/40 z-0"></div>
         
-        {/* Main Content Overlay (No White Card) */}
         <div className="w-full max-w-2xl relative z-10 p-4 md:p-0">
           <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-50 border border-emerald-400/30 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider mb-6 uppercase backdrop-blur-sm shadow-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>

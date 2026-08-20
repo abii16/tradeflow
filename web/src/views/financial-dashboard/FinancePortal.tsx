@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FinanceSidebar from './FinanceSidebar';
-import UniversalTopBar from '../../components/UniversalTopBar';
+import UniversalTopBar from '@/components/layout/UniversalTopBar';
 import OverviewTab from './OverviewTab';
 import SpotPricingCalculator from './SpotPricingCalculator';
 import SettlementCenter from './SettlementCenter';

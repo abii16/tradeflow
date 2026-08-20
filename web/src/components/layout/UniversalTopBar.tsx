@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bell, Globe, LogOut } from 'lucide-react';
-import HeaderSearch from './HeaderSearch';
-import { useAuth } from '../hooks/useAuth';
+import HeaderSearch from '@/components/common/HeaderSearch';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function UniversalTopBar() {
   const { i18n } = useTranslation();

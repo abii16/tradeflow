@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin, Building2, Truck, Briefcase, X, ExternalLink, Activity } from 'lucide-react';
-import RegistrationFlow from './auth/RegistrationFlow';
-import LoginModal from './auth/LoginModal';
-import { useAuth } from '../hooks/useAuth';
+import RegistrationFlow from '@/views/auth/RegistrationFlow';
+import LoginModal from '@/views/auth/LoginModal';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LandingPageProps {
   onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
@@ -82,7 +82,6 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           >
             <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4" />
           </video>
-          {/* Overlay for better text readability */}
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
 
@@ -352,7 +351,6 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           </div>
 
           <div className="relative mb-32">
-            {/* Horizontal Line connecting nodes */}
             <div className="absolute top-6 left-[10%] right-[10%] h-1 bg-slate-800 rounded-full hidden md:block z-0"></div>
             
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
@@ -381,7 +379,6 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                     {index === 0 ? 'Djibouti (0 KM)' : index === 1 ? 'Ethiopia (240 KM)' : index === 2 ? 'Intersection (380 KM)' : index === 3 ? 'Waypoint (620 KM)' : 'Terminal (810 KM)'}
                   </div>
 
-                  {/* HUD Overlay triggered on active node */}
                   {activeNode === index && (
                     <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 w-48 bg-slate-800 border border-slate-700 rounded-lg p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200">
                       <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-t border-l border-slate-700 rotate-45"></div>
