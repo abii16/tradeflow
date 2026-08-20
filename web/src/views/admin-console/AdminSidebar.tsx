@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Radar, 
   ClipboardCheck, 
@@ -21,6 +22,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ activeSubTab, setActiveSubTab }: AdminSidebarProps) {
   const { t } = useTranslation();
+  const { logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
@@ -88,7 +90,10 @@ export default function AdminSidebar({ activeSubTab, setActiveSubTab }: AdminSid
           <HelpCircle size={18} />
           {!collapsed && <span>{t('admin_nav_help')}</span>}
         </button>
-        <button className={`w-full flex items-center ${collapsed ? 'justify-center py-2.5' : 'space-x-2.5 py-2 px-3'} text-rose-400 hover:text-rose-300 rounded-lg hover:bg-rose-950/40 transition-colors`}>
+        <button 
+          onClick={logout}
+          className={`w-full flex items-center ${collapsed ? 'justify-center py-2.5' : 'space-x-2.5 py-2 px-3'} text-rose-400 hover:text-rose-300 rounded-lg hover:bg-rose-950/40 transition-colors`}
+        >
           <Power size={18} />
           {!collapsed && <span>{t('admin_nav_logout')}</span>}
         </button>

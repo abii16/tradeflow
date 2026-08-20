@@ -1,6 +1,7 @@
 import React from 'react';
-import { Ship, PackageSearch, FileText, Gavel, BarChart3, Settings } from 'lucide-react';
+import { Ship, PackageSearch, FileText, Gavel, BarChart3, Settings, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ForwarderSidebarProps {
   activeSubTab: string;
@@ -9,6 +10,7 @@ interface ForwarderSidebarProps {
 
 export default function ForwarderSidebar({ activeSubTab, setActiveSubTab }: ForwarderSidebarProps) {
   const { t } = useTranslation();
+  const { logout } = useAuth();
 
   const menuItems = [
     { id: 'workspace', label: t('fwd_workspace', 'Workspace'), icon: PackageSearch },
@@ -52,10 +54,17 @@ export default function ForwarderSidebar({ activeSubTab, setActiveSubTab }: Forw
         </nav>
       </div>
 
-      <div className="mt-auto p-4 border-t border-slate-800">
+      <div className="mt-auto p-4 border-t border-slate-800 space-y-1">
         <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800/50 hover:text-slate-200 transition-colors border-l-2 border-transparent">
           <Settings size={18} className="text-slate-500" />
           <span className="font-medium text-sm">{t('fwd_settings', 'Settings')}</span>
+        </button>
+        <button 
+          onClick={logout}
+          className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition-colors border-l-2 border-transparent"
+        >
+          <LogOut size={18} />
+          <span className="font-medium text-sm">{t('fwd_logout', 'Logout')}</span>
         </button>
       </div>
     </aside>
