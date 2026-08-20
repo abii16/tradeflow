@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { getAuthToken } from '../lib/apiClient';
+import { getAuthToken } from '@/lib/apiClient';
+import { io, Socket } from 'socket.io-client';
 
 export interface TruckTelemetry {
   id: string;
@@ -28,42 +29,38 @@ export interface TelemetryData {
   alerts: RiskAlert[];
 }
 
-const MAX_RECONNECT_ATTEMPTS = 10;
-const MAX_BACKOFF_MS = 30000; // Cap backoff at 30 seconds
-
-/**
- * Custom hook to manage a resilient WebSocket connection for live telemetry.
- * Implements exponential backoff with jitter to handle thundering herd problems
- * during high availability scale-ups (10,000+ concurrent connections).
- */
 export function useLiveTelemetry() {
   const [telemetry, setTelemetry] = useState<TelemetryData>({ trucks: [], alerts: [] });
   const [isConnected, setIsConnected] = useState(false);
   
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectAttempts = useRef(0);
-  const reconnectTimeoutRef = useRef<number | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const lastAlertTimeRef = useRef<number>(0);
 
   const connect = useCallback(() => {
     const token = getAuthToken();
-    const baseUrl = import.meta.env.VITE_WS_TELEMATICS_URL || 'ws://localhost:8000/ws/telematics';
-    const wsUrl = token ? `${baseUrl}?token=${token}` : baseUrl;
+    const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:4001';
     
-    // Prevent multiple parallel connections
-    if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) {
+    if (socketRef.current?.connected) {
       return;
     }
 
     try {
-      const socket = new WebSocket(wsUrl);
-      wsRef.current = socket;
+      const socket = io(serverUrl, {
+        auth: token ? { token } : {},
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 30000,
+        randomizationFactor: 0.5
+      });
+      
+      socketRef.current = socket;
 
-      socket.onopen = () => {
+      socket.on('connect', () => {
         setIsConnected(true);
-        reconnectAttempts.current = 0; // Reset on successful connection
+        socket.emit('join-room', 'general');
         
-        // Fallback static data if backend is offline or empty initially
+        // Fallback static data
         setTelemetry({
           trucks: [
             { id: 'ET-9021', lat: 11.652, lng: 42.493, speed: 64, cargo: '30T Rebar', driver: 'Yared Tekle', eta: '6.2h', status: 'SAFE' },
@@ -73,113 +70,92 @@ export function useLiveTelemetry() {
             { id: 'RISK-04', title: 'radar_risk_04_title', description: 'radar_risk_04_desc', lat: 11.794, lng: 41.008, radius: 25000 }
           ]
         });
-      };
+      });
 
-      socket.onclose = () => {
+      socket.on('disconnect', () => {
         setIsConnected(false);
-        wsRef.current = null;
-        
-        // Exponential backoff with jitter (avoids thundering herd)
-        const backoff = Math.min(1000 * Math.pow(2, reconnectAttempts.current), MAX_BACKOFF_MS);
-        const jitter = Math.random() * 500;
-        const delay = backoff + jitter;
-        
-        console.log(`[WebSocket] Reconnecting in ${Math.round(delay)}ms... (Attempt ${reconnectAttempts.current + 1})`);
-        
-        reconnectTimeoutRef.current = window.setTimeout(() => {
-          reconnectAttempts.current += 1;
-          connect();
-        }, delay);
-      };
+      });
 
-      socket.onerror = (error) => {
-        // Log errors to monitoring service in production
-        console.error("WebSocket encountered an error:", error);
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          // REAL-TIME AUDIO ALERTS & TOAST NOTIFICATIONS (FR-08 / NFR)
-          if (data.alert_triggered) {
-            const now = Date.now();
-            if (now - lastAlertTimeRef.current > 15000) { // Throttle to max once per 15 seconds
-              lastAlertTimeRef.current = now;
-              
-              try {
-                // Trigger a subtle browser audio beep using AudioContext
-                const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Subtle volume
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.2); // 200ms duration
-              } catch (err) {
-                console.warn("Audio alert failed", err);
-              }
-
-              // Display high-priority red Toast Notification
-              toast.error(data.alert_message || "CRITICAL: Security Alert or Geofence Breach Detected!", {
-                id: 'critical-geofence-alert', // Prevents toast stacking
-                position: 'top-right',
-                duration: 6000,
-                style: {
-                  background: '#DC2626',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  border: '1px solid #7F1D1D',
-                },
-                iconTheme: {
-                  primary: '#fff',
-                  secondary: '#DC2626',
-                },
-              });
-            }
+      socket.on('eta-updated', (data: any) => {
+        // Handle ETA updates from Node backend
+        setTelemetry(prev => {
+          // Just update the first truck as an example if we don't have truck IDs
+          const newTrucks = [...prev.trucks];
+          if (newTrucks.length > 0) {
+            newTrucks[0] = { 
+              ...newTrucks[0], 
+              eta: data.predicted_travel_hours ? `${data.predicted_travel_hours.toFixed(1)}h` : newTrucks[0].eta 
+            };
           }
+          return { ...prev, trucks: newTrucks };
+        });
+      });
+
+      socket.on('incident-alert', (data: any) => {
+        // Trigger alert for incident
+        const now = Date.now();
+        if (now - lastAlertTimeRef.current > 15000) {
+          lastAlertTimeRef.current = now;
           
-          // Clean state management: batched updates for performance
-          if (data.type === 'telemetry_update') {
-            setTelemetry(prev => ({
-              ...prev,
-              ...(data.payload || {})
-            }));
-          } else if (data.type === 'truck_update') {
-            const truck = data.payload as TruckTelemetry;
-            setTelemetry(prev => {
-              const existingIndex = prev.trucks.findIndex(t => t.id === truck.id);
-              if (existingIndex >= 0) {
-                const newTrucks = [...prev.trucks];
-                newTrucks[existingIndex] = truck;
-                return { ...prev, trucks: newTrucks };
-              } else {
-                return { ...prev, trucks: [...prev.trucks, truck] };
-              }
-            });
+          try {
+            const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.2);
+          } catch (err) {
+            console.warn("Audio alert failed", err);
           }
-        } catch (err) {
-          console.error("Failed to parse telemetry websocket message", err);
+
+          toast.error(`Incident Reported: ${data.incidentType}`, {
+            id: 'critical-geofence-alert',
+            position: 'top-right',
+            duration: 6000,
+            style: {
+              background: '#DC2626',
+              color: '#fff',
+              fontWeight: 'bold',
+              border: '1px solid #7F1D1D',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#DC2626',
+            },
+          });
+          
+          setTelemetry(prev => ({
+            ...prev,
+            alerts: [
+              ...prev.alerts,
+              { 
+                id: `inc-${Date.now()}`, 
+                title: data.incidentType, 
+                description: data.notes || 'Incident reported on route',
+                lat: data.latitude || 11.5,
+                lng: data.longitude || 42.0,
+                radius: 5000
+              }
+            ]
+          }));
         }
-      };
+      });
+
     } catch (err) {
-      console.error("Failed to initialize WebSocket", err);
+      console.error("Failed to initialize Socket.io", err);
     }
   }, []);
 
   useEffect(() => {
     connect();
 
-    // Cleanup phase: close socket and clear pending timeouts to prevent memory leaks
     return () => {
-      if (reconnectTimeoutRef.current !== null) {
-        window.clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
       }
     };
   }, [connect]);

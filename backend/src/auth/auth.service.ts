@@ -30,6 +30,13 @@ export class AuthService {
           full_name: data.fullName,
           phone: data.phone,
           role: data.role,
+          company_name: data.companyName,
+          tin_number: data.tinNumber,
+          trade_license: data.tradeLicense,
+          badge_id: data.badgeId,
+          fleet_name: data.fleetName,
+          operator_license: data.operatorLicense,
+          vehicle_capacity: data.vehicleCapacity,
         }
       }),
     });
@@ -42,12 +49,10 @@ export class AuthService {
       throw new Error('Registration failed');
     }
 
-    // Optionally handle profile creation here if it's not handled by another trigger
-    // e.g., if data.role === 'DRIVER', insert into driver_profiles via raw query or another service
-
     const userObj = result.user || result;
 
-    // Manually insert user into our public.users table since the Supabase trigger might not exist
+    // Fallback for local development where Supabase Auth is cloud-hosted but DB is local.
+    // In production, the Supabase Postgres trigger handles this automatically.
     try {
       await db.insert(users).values({
         id: userObj.id,
@@ -59,7 +64,10 @@ export class AuthService {
         tinNumber: data.tinNumber,
         tradeLicense: data.tradeLicense,
         badgeId: data.badgeId,
-      }).onConflictDoNothing(); // Prevent error if a trigger actually does exist
+        fleetName: data.fleetName,
+        operatorLicense: data.operatorLicense,
+        vehicleCapacity: data.vehicleCapacity,
+      }).onConflictDoNothing();
     } catch (dbErr) {
       console.error('Failed to insert user into public.users:', dbErr);
     }

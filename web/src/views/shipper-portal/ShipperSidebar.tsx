@@ -11,6 +11,8 @@ import {
   FileSignature
 } from 'lucide-react';
 
+import { useAuth } from '@/hooks/useAuth';
+
 interface ShipperSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -18,6 +20,7 @@ interface ShipperSidebarProps {
 
 export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSidebarProps) {
   const { t } = useTranslation();
+  const { logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
@@ -93,6 +96,7 @@ export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSideb
           {collapsed ? <span className="text-[11px]">?</span> : <span>{t('support')}</span>}
         </button>
         <button
+          onClick={logout}
           title={collapsed ? t('log_out') : undefined}
           className={`w-full flex items-center ${collapsed ? 'justify-center py-2' : 'space-x-2 py-1 px-2'} text-red-400 hover:text-red-300 rounded hover:bg-red-950/40 transition-colors`}
         >

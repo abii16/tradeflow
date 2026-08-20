@@ -1,7 +1,9 @@
+import { supabase } from './supabase';
 import axios, { AxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = 'http://localhost:4001';
 
+// Keep these for backward compatibility during transition if any other files use them
 export const getAuthToken = () => localStorage.getItem('tradeflow_token');
 export const setAuthToken = (token: string) => localStorage.setItem('tradeflow_token', token);
 export const removeAuthToken = () => localStorage.removeItem('tradeflow_token');
@@ -42,12 +44,21 @@ interface FetchOptions extends AxiosRequestConfig {}
 export async function apiClient<T = any>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { data, headers, ...customOptions } = options;
   const method = data ? 'POST' : (options.method || 'GET');
+
+  // Fetch the latest session securely from Supabase
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token || getAuthToken();
+
+  const finalHeaders = {
+    ...headers,
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  };
   
   const response = await axiosInstance({
     url: endpoint,
     method,
     data,
-    headers,
+    headers: finalHeaders,
     ...customOptions
   });
   

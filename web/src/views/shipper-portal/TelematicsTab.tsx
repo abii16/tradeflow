@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { AlertTriangle } from 'lucide-react';
-import { fetchRiskZones } from '../lib/apiClient';
-import { useLiveTelemetry } from '../hooks/useLiveTelemetry';
+import { fetchRiskZones } from '@/lib/apiClient';
+import { useLiveTelemetry } from '@/hooks/useLiveTelemetry';
 
 import L from 'leaflet';
 // @ts-ignore
