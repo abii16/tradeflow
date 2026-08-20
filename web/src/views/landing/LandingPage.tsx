@@ -73,23 +73,24 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           ================================================================================= */}
       <section className="relative w-full h-screen flex flex-col justify-between overflow-hidden">
         {/* Video Background */}
-        <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <video 
             autoPlay 
             loop 
             muted 
             playsInline 
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover"
           >
-            <source src="" type="video/mp4" />
+            <source src="/video.mp4" type="video/mp4" />
           </video>
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F17]/90 via-[#0B0F17]/75 to-[#0B0F17]/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0B0F17]"></div>
         </div>
 
         {/* TOP NAVIGATION HEADER */}
-        <header className="fixed top-0 left-0 w-full h-16 border-b border-white/10 px-8 flex items-center justify-between z-[60] bg-slate-900/90 backdrop-blur-md">
+        <header className="fixed top-0 left-0 w-full h-16 border-b border-white/10 px-8 flex items-center justify-between z-[60] bg-transparent">
           <div className="flex items-center">
-            <span className="font-bold text-[20px] text-white tracking-tight">TradeFlow</span>
+            <span className="font-bold text-[20px] text-white tracking-tight">TradeFlow<span className="text-cyan-400">.</span></span>
           </div>
           
           <nav className="hidden md:flex items-center space-x-2">
@@ -99,45 +100,44 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-xs font-medium text-slate-300 hover:text-white transition-colors px-4">Customs Sync</a>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setShowRegistration(true)}
-              className="text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:text-emerald-400 transition-colors"
-            >
-              Sign Up
-            </button>
+          <div className="flex items-center gap-4">
             {!isAuthenticated ? (
-              <button 
-                onClick={() => setShowLoginModal(true)}
-                className="bg-[#0F172A] text-white px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-slate-800 transition-colors shadow-lg border border-slate-700"
-              >
-                System Login
-              </button>
+              <>
+                <button 
+                  onClick={() => setShowLoginModal(true)}
+                  className="text-white text-sm font-semibold hover:text-slate-300 transition-colors"
+                >
+                  Sign In
+                </button>
+                <button 
+                  onClick={() => setShowRegistration(true)}
+                  className="bg-white text-slate-950 px-5 py-2.5 rounded-lg text-sm font-bold shadow-lg hover:bg-slate-100 transition-colors"
+                >
+                  Launch Platform
+                </button>
+              </>
             ) : (
-              <div className="flex items-center gap-2">
+              <>
+                <button 
+                  onClick={() => onSelectPortal('shipper')}
+                  className="bg-white text-slate-950 px-5 py-2.5 rounded-lg text-sm font-bold shadow-lg hover:bg-slate-100 transition-colors"
+                >
+                  Launch Platform
+                </button>
                 <button 
                   onClick={logout}
-                  className="text-slate-400 hover:text-white px-3 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors"
+                  className="text-slate-300 hover:text-white px-3 py-2.5 text-sm font-semibold transition-colors"
                 >
                   Logout
                 </button>
-              </div>
+              </>
             )}
-            <div className="flex items-center space-x-3 ml-4">
-              <button className="text-slate-300 hover:text-white relative">
-                <Bell size={18} />
-                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-slate-900"></span>
-              </button>
-              <button className="text-slate-300 hover:text-white">
-                <Settings size={18} />
-              </button>
-            </div>
           </div>
         </header>
 
         {/* LIVE CORRIDOR TICKER MARQUEE */}
-        <div className="absolute top-16 left-0 w-full h-8 bg-black/40 backdrop-blur-md border-b border-white/10 flex items-center overflow-hidden z-40">
-          <div className="animate-marquee whitespace-nowrap flex items-center space-x-6 text-[10px] font-mono text-emerald-400 font-medium tracking-wide">
+        <div className="absolute top-16 left-0 w-full py-2 bg-black/50 border-y border-white/10 backdrop-blur-md flex items-center overflow-hidden z-40">
+          <div className="animate-marquee whitespace-nowrap flex items-center space-x-6 text-xs font-mono text-emerald-400 font-medium tracking-wide">
             <span>DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 • GALAFI BORDER DWELL: 45 MINS • DIESEL INDEX: ETB 95.50/L • 12 CUSTOMS PASSES CLEARED</span>
             <span className="px-6 text-slate-500">•</span>
             <span>DJIBOUTI PORT -&gt; MODJO: ETB 356,229.54 • GALAFI BORDER DWELL: 45 MINS • DIESEL INDEX: ETB 95.50/L • 12 CUSTOMS PASSES CLEARED</span>
@@ -148,76 +148,55 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
         {/* FOREGROUND HERO METRIC CARD */}
         <div className="relative z-30 pt-48 px-12 md:px-24 max-w-4xl">
-          <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-full px-3 py-1.5 inline-flex items-center space-x-2 mb-6 backdrop-blur-sm">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-            <span className="text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest">
-              NEURAL LOGISTICS ENGINE ACTIVE (v4.0.2)
+          <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-full px-4 py-1.5 inline-flex items-center space-x-2 mb-6 backdrop-blur-sm">
+            <span className="text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest flex items-center gap-2">
+              [ <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div> NEURAL LOGISTICS ENGINE ACTIVE (V1.0) ]
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight leading-tight mb-6">
-            AI-Powered Freight Matching for East Africa's Principal Corridor.
+          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 max-w-3xl">
+            AI-Powered Freight Matching for East Africa's Principal Corridor
           </h1>
           <p className="text-lg text-slate-300 font-normal mb-10 max-w-2xl leading-relaxed">
             Optimizing the 810km Djibouti-Modjo artery through real-time telematics, dynamic spot pricing, and digital customs escrow.
           </p>
-        </div>
 
-        {/* Quick Portals Dock */}
-        <div className="relative z-30 pb-12 px-12 md:px-24 w-full">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="flex flex-wrap items-center gap-4 mb-16">
             <button 
               onClick={() => onSelectPortal('shipper')}
-              className="group bg-white p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 transition-all duration-300 shadow-xl shadow-black/20 hover:shadow-blue-900/20"
+              className="bg-white text-slate-950 font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-slate-100 transition-colors flex items-center gap-2"
             >
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Package size={20} />
-              </div>
-              <span className="text-sm font-bold text-slate-900 text-left">Launch Freight Marketplace</span>
+              Launch Freight Marketplace <span className="font-bold">-&gt;</span>
             </button>
-
-            <button 
-              onClick={() => onSelectPortal('forwarder')}
-              className="group bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 transition-all duration-300 hover:bg-white/20"
-            >
-              <div className="p-2 bg-slate-800 text-slate-300 rounded-lg group-hover:bg-slate-700 transition-colors">
-                <Compass size={20} />
-              </div>
-              <span className="text-sm font-bold text-white text-left">Forwarder Console</span>
-            </button>
-
             <button 
               onClick={() => onSelectPortal('finance')}
-              className="group bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 transition-all duration-300 hover:bg-white/20"
+              className="border border-white/20 text-white hover:bg-white/10 px-6 py-3 rounded-lg backdrop-blur-md transition-colors"
             >
-              <div className="p-2 bg-slate-800 text-slate-300 rounded-lg group-hover:bg-slate-700 transition-colors">
-                <FileText size={20} />
-              </div>
-              <span className="text-sm font-bold text-white text-left">Calculate Spot Quote</span>
-            </button>
-
-            <button 
-              onClick={() => onSelectPortal('admin')}
-              className="group bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 transition-all duration-300 hover:bg-white/20"
-            >
-              <div className="p-2 bg-slate-800 text-slate-300 rounded-lg group-hover:bg-slate-700 transition-colors">
-                <Monitor size={20} />
-              </div>
-              <span className="text-sm font-bold text-white text-left">Admin Control Tower</span>
-            </button>
-
-            <button 
-              onClick={() => onSelectPortal('customs')}
-              className="group bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex flex-col items-start gap-3 hover:-translate-y-1 transition-all duration-300 hover:bg-white/20"
-            >
-              <div className="p-2 bg-slate-800 text-slate-300 rounded-lg group-hover:bg-slate-700 transition-colors">
-                <ShieldCheck size={20} />
-              </div>
-              <span className="text-sm font-bold text-white text-left">Customs Terminal</span>
+              Calculate Spot Quote
             </button>
           </div>
-          
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce opacity-50 cursor-pointer" onClick={(e) => handleSmoothScroll(e as any, 'system-pillars')}>
+
+          <div className="flex flex-wrap items-center gap-8">
+            <div className="flex flex-col gap-1">
+              <span className="text-white font-mono text-sm font-bold">[ 810 KM ]</span>
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Principal Corridor Artery</span>
+            </div>
+            <div className="w-px h-8 bg-white/10"></div>
+            <div className="flex flex-col gap-1">
+              <span className="text-white font-mono text-sm font-bold">[ ETB 356K ]</span>
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Avg Spot Rate Index</span>
+            </div>
+            <div className="w-px h-8 bg-white/10"></div>
+            <div className="flex flex-col gap-1">
+              <span className="text-white font-mono text-sm font-bold">[ 98.28% ]</span>
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">PyTorch ETA Precision</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Explore Down Arrow */}
+        <div className="relative z-30 pb-8 w-full flex justify-center">
+          <div className="flex flex-col items-center animate-bounce opacity-50 cursor-pointer" onClick={(e) => handleSmoothScroll(e as any, 'system-pillars')}>
             <span className="text-[10px] text-white font-mono uppercase tracking-widest mb-1">Explore</span>
             <ChevronDown size={16} className="text-white" />
           </div>
