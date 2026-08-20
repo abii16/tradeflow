@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = 'http://localhost:4001';
 
 export const getAuthToken = () => localStorage.getItem('tradeflow_token');
 export const setAuthToken = (token: string) => localStorage.setItem('tradeflow_token', token);
@@ -52,4 +52,8 @@ export async function apiClient<T = any>(endpoint: string, options: FetchOptions
   });
   
   return response.data;
+}
+
+export async function fetchRiskZones() {
+  return apiClient('/risk-zones', { method: 'GET' });
 }

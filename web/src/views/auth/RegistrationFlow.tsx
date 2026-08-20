@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Truck, Briefcase, ChevronRight, CheckCircle2, UploadCloud, X, Loader2 } from 'lucide-react';
+import { Building2, Truck, Briefcase, ChevronRight, CheckCircle2, UploadCloud, X, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface RegistrationFlowProps {
@@ -11,6 +11,7 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form State
   const [role, setRole] = useState<'shipper' | 'transporter' | 'forwarder' | null>(null);
@@ -132,7 +133,23 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
         </div>
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">Password</label>
-          <input type="password" name="password" value={formData.password} onChange={handleChange} className="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="Minimum 8 characters" />
+          <div className="relative">
+            <input 
+              type={showPassword ? 'text' : 'password'} 
+              name="password" 
+              value={formData.password} 
+              onChange={handleChange} 
+              className="w-full border border-slate-300 rounded-lg p-2.5 pr-10 text-sm" 
+              placeholder="Min 8 chars, 1 special char (!@#$)" 
+            />
+            <button 
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
       </div>
 
