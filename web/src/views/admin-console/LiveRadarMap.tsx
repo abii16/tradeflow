@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { Radar } from 'lucide-react';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useLiveTelemetry } from '../../hooks/useLiveTelemetry';
+import { useRiskZones } from '../../hooks/useRiskZones';
 
 const DJIBOUTI_PORT: [number, number] = [11.588, 43.145];
 const GALAFI: [number, number] = [11.716, 41.838];
@@ -54,6 +55,7 @@ const MapController = () => {
 export default function LiveRadarMap() {
   const { t } = useTranslation();
   const { telemetry, isConnected } = useLiveTelemetry();
+  const { riskZones } = useRiskZones();
 
   return (
     <div className="relative w-full h-full min-h-[480px]">
@@ -75,7 +77,44 @@ export default function LiveRadarMap() {
           pathOptions={{ color: "#38BDF8", weight: 4, opacity: 0.85, dashArray: "8, 4" }} 
         />
 
-        {/* Hazard Zones */}
+        {/* API Fetched Risk Zones (Static / Long-term) */}
+        {riskZones.map((zone, idx) => {
+          const key = zone.id || `api-rz-${idx}`;
+          const title = zone.title || zone.name || 'Risk Zone';
+          const desc = zone.description || '';
+          
+          if (zone.polygon && zone.polygon.length > 0) {
+            return (
+              <Polygon 
+                key={key}
+                positions={zone.polygon} 
+                pathOptions={{ color: "#FBBF24", fillColor: "#B45309", fillOpacity: 0.25, weight: 2, dashArray: "5, 5" }} 
+              >
+                <Popup>
+                  <div className="font-bold text-amber-600 text-sm mb-1">{t(title) || title}</div>
+                  <div className="text-xs text-slate-600">{t(desc) || desc}</div>
+                </Popup>
+              </Polygon>
+            );
+          } else if (zone.lat && zone.lng && zone.radius) {
+            return (
+              <Circle 
+                key={key}
+                center={[zone.lat, zone.lng]} 
+                radius={zone.radius} 
+                pathOptions={{ color: "#FBBF24", fillColor: "#B45309", fillOpacity: 0.25, weight: 2, dashArray: "5, 5" }} 
+              >
+                <Popup>
+                  <div className="font-bold text-amber-600 text-sm mb-1">{t(title) || title}</div>
+                  <div className="text-xs text-slate-600">{t(desc) || desc}</div>
+                </Popup>
+              </Circle>
+            );
+          }
+          return null;
+        })}
+
+        {/* Live Hazard Alerts from Telemetry */}
         {telemetry.alerts.map(alert => (
           alert.polygon ? (
             <Polygon 
