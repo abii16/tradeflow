@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiClient, setAuthToken, removeAuthToken, getAuthToken } from '../lib/apiClient';
+import { supabase } from '../lib/supabase';
+import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { removeAuthToken } from '../lib/apiClient';
 
 export interface User {
   id: string;
@@ -15,63 +17,74 @@ interface AuthContextType {
   isLoading: boolean;
   login: (data: any) => Promise<void>;
   register: (data: any) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      const token = getAuthToken();
-      if (token) {
-        try {
-          const res = await apiClient<{ user: User }>('/auth/me');
-          setUser(res.user);
-        } catch (error) {
-          console.error('Failed to restore session:', error);
-          removeAuthToken();
-          setUser(null);
-        }
-      }
+    // 1. Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user?.user_metadata as User || null);
       setIsLoading(false);
-    };
+    });
 
-    initAuth();
-
-    // Listen for unauthorized events from apiClient
-    const handleUnauthorized = () => {
-      setUser(null);
-    };
-    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    // 2. Listen for auth changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user?.user_metadata as User || null);
+      setIsLoading(false);
+    });
 
     return () => {
-      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      subscription.unsubscribe();
     };
   }, []);
 
   const login = async (data: any) => {
-    const res = await apiClient<{ token: string; user: User }>('/auth/login', { data });
-    setAuthToken(res.token);
-    setUser(res.user);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+    
+    if (error) throw error;
   };
 
   const register = async (data: any) => {
-    // Optionally automatically login after register, depending on backend behavior.
-    // If backend returns a token on register:
-    const res = await apiClient<{ token: string; user: User }>('/auth/register', { data });
-    if (res.token) {
-      setAuthToken(res.token);
-      setUser(res.user);
-    }
+    // Supabase sign-up and pass KYC data into metadata
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          full_name: data.fullName,
+          phone: data.phone,
+          role: data.role,
+          company_name: data.companyName,
+          tin_number: data.tinNumber,
+          trade_license: data.tradeLicense,
+          badge_id: data.badgeId,
+          fleet_name: data.fleetName,
+          operator_license: data.operatorLicense,
+          vehicle_capacity: data.vehicleCapacity,
+        }
+      }
+    });
+
+    if (error) throw error;
   };
 
-  const logout = () => {
-    removeAuthToken();
+  const logout = async () => {
+    await supabase.auth.signOut();
+    removeAuthToken(); // Cleanup any legacy token usage in apiClient
     setUser(null);
+    setSession(null);
   };
 
   return (

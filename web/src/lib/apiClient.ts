@@ -1,5 +1,8 @@
+import { supabase } from './supabase';
+
 const API_BASE_URL = 'http://localhost:4001';
 
+// Keep these for backward compatibility during transition if any other files use them
 export const getAuthToken = () => localStorage.getItem('tradeflow_token');
 export const setAuthToken = (token: string) => localStorage.setItem('tradeflow_token', token);
 export const removeAuthToken = () => localStorage.removeItem('tradeflow_token');
@@ -11,7 +14,9 @@ interface FetchOptions extends RequestInit {
 export async function apiClient<T = any>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { data, headers: customHeaders, ...customOptions } = options;
 
-  const token = getAuthToken();
+  // Fetch the latest session securely from Supabase
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token || getAuthToken();
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
