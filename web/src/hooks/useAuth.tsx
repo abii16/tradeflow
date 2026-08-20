@@ -5,7 +5,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: 'SHIPPER' | 'TRANSPORTER' | 'DRIVER' | 'CUSTOMS_BROKER' | 'FINANCE_ADMIN' | 'SYSTEM_ADMIN';
+  role: 'SHIPPER' | 'TRANSPORTER' | 'FORWARDER' | 'CUSTOMS_OFFICER' | 'ADMIN';
   [key: string]: any;
 }
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import FreightOrderForm from '../components/FreightOrderForm';
-import ActiveShipment from '../components/ActiveShipment';
+import FreightOrderForm from './components/FreightOrderForm';
+import ActiveShipment from './components/ActiveShipment';
 
 export default function ShipperDashboard() {
   return (

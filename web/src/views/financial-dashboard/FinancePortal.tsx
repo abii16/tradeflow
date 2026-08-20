@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FinanceSidebar from './FinanceSidebar';
-import FinanceHeader from './FinanceHeader';
+import UniversalTopBar from '@/components/layout/UniversalTopBar';
 import OverviewTab from './OverviewTab';
 import SpotPricingCalculator from './SpotPricingCalculator';
 import SettlementCenter from './SettlementCenter';
@@ -118,11 +118,7 @@ export default function FinancePortal({ onSwitchPortal }: FinancePortalProps) {
         setCurrency={setCurrency}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <FinanceHeader
-          onSwitchPortal={onSwitchPortal}
-          currency={currency}
-          formatMoney={formatMoney}
-        />
+        <UniversalTopBar />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
           <div className="max-w-[1320px] mx-auto space-y-5">
             {/* Header */}

@@ -10,7 +10,7 @@ import {
   Zap,
   AlertCircle
 } from 'lucide-react';
-import DisputeFormModal from '../../components/DisputeFormModal';
+import DisputeFormModal from '@/components/modals/DisputeFormModal';
 
 interface SettlementCenterProps {
   currency: 'ETB' | 'USD' | 'DJF';

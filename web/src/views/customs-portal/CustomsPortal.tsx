@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CustomsSidebar from './CustomsSidebar';
-import CustomsHeader from './CustomsHeader';
+import UniversalTopBar from '@/components/layout/UniversalTopBar';
 import CustomsWorkspace from './CustomsWorkspace';
 import CustomsInspections from './CustomsInspections';
 import CustomsReports from './CustomsReports';
@@ -42,7 +42,7 @@ export default function CustomsPortal({ onSwitchPortal }: CustomsPortalProps) {
       <div className="flex-1 flex flex-col relative min-w-0">
         
         {/* Global Identity & Notification Bar */}
-        <CustomsHeader onSwitchPortal={onSwitchPortal} />
+        <UniversalTopBar />
 
         {/* Dynamic Workspace Canvas */}
         <main className="flex-1 bg-[#F8FAFC] relative overflow-hidden">

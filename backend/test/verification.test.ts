@@ -59,7 +59,7 @@ describe('Verification Queue APIs', () => {
       email: 'admin_verify_test@test.com',
       fullName: 'System Admin',
       phone: '0911000002',
-      role: 'SYSTEM_ADMIN',
+      role: 'ADMIN',
     }).returning();
     adminId = admin.id;
   });
@@ -96,7 +96,7 @@ describe('Verification Queue APIs', () => {
     const res = await request(app)
       .get('/admin/verifications/pending')
       .set('x-mock-id', adminId)
-      .set('x-mock-role', 'SYSTEM_ADMIN');
+      .set('x-mock-role', 'ADMIN');
     
     expect(res.status).toBe(200);
     expect(res.body.data.length).toBeGreaterThan(0);
@@ -110,7 +110,7 @@ describe('Verification Queue APIs', () => {
     const res = await request(app)
       .post(`/admin/verifications/${verification.id}/review`)
       .set('x-mock-id', adminId)
-      .set('x-mock-role', 'SYSTEM_ADMIN')
+      .set('x-mock-role', 'ADMIN')
       .send({ status: 'VERIFIED' });
     
     expect(res.status).toBe(200);

@@ -23,7 +23,7 @@ describe('Route Optimizer (FR-05) & WebSocket Tests', () => {
   beforeEach(() => {
     const httpServer = createServer();
     io = new Server(httpServer);
-    socketGateway = new SocketGateway(io);
+    socketGateway = new SocketGateway(io as any);
     jest.clearAllMocks();
   });
 
@@ -82,8 +82,8 @@ describe('Route Optimizer (FR-05) & WebSocket Tests', () => {
       shipmentId: 'shp-123',
       reporterId: 'drv-456',
       incidentType: 'ACCIDENT',
-      latitude: 9.01,
-      longitude: 38.75,
+      latitude: '9.01',
+      longitude: '38.75',
       severity: 'HIGH',
       notes: 'Road blocked',
       reportedAt: new Date().toISOString()
@@ -99,7 +99,7 @@ describe('Route Optimizer (FR-05) & WebSocket Tests', () => {
       severity: payload.severity,
       notes: payload.notes,
       reportedAt: new Date(payload.reportedAt)
-    });
+    } as any);
 
     // Simulate fetch to AI engine
     await fetch('http://127.0.0.1:8000/api/v1/route/incident', {
