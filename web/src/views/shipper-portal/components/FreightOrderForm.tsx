@@ -3,16 +3,55 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MapPin, Scale, Package } from 'lucide-react';
+import { postLoad } from '@/lib/apiClient';
 
 export default function FreightOrderForm() {
   const { t } = useTranslation();
   const [quoteGenerated, setQuoteGenerated] = useState(false);
   const [leadTime, setLeadTime] = useState('24h');
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    origin: 'Djibouti Container Terminal',
+    cargoType: '30T Construction Rebar (Flatbed)',
+    destination: 'Modjo Dry Port, Ethiopia',
+    weightKg: '32000'
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleRequestQuote = (e: React.FormEvent) => {
     e.preventDefault();
     setQuoteGenerated(true);
   };
+
+  const handleConfirmBroadcast = async () => {
+    try {
+      setLoading(true);
+      await postLoad({
+        title: `Freight: ${formData.cargoType}`,
+        description: `Deliver ${formData.cargoType} from ${formData.origin} to ${formData.destination}`,
+        origin: formData.origin,
+        destination: formData.destination,
+        weightKg: Number(formData.weightKg),
+        cargoType: formData.cargoType,
+        budgetAmount: 348000,
+        currency: 'ETB',
+        expiryHours: leadTime === '12h' ? 12 : leadTime === '24h' ? 24 : 48
+      });
+      alert('Order broadcasted to exchange successfully!');
+      setQuoteGenerated(false);
+      // Optional: trigger refresh in parent
+      window.dispatchEvent(new Event('shipper:load_posted'));
+    } catch (error) {
+      console.error(error);
+      alert('Failed to broadcast order');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-4">
@@ -28,7 +67,7 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-medium text-slate-700 mb-1 block">Origin</Label>
               <div className="relative">
                 <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" defaultValue="Djibouti Container Terminal" />
+                <Input name="origin" value={formData.origin} onChange={handleChange} required className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" />
               </div>
             </div>
 
@@ -36,7 +75,7 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-medium text-slate-700 mb-1 block">Cargo Details</Label>
               <div className="relative">
                 <Package size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" defaultValue="30T Construction Rebar (Flatbed)" />
+                <Input name="cargoType" value={formData.cargoType} onChange={handleChange} required className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" />
               </div>
             </div>
 
@@ -44,7 +83,7 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-medium text-slate-700 mb-1 block">Destination</Label>
               <div className="relative">
                 <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" defaultValue="Modjo Dry Port, Ethiopia" />
+                <Input name="destination" value={formData.destination} onChange={handleChange} required className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" />
               </div>
             </div>
 
@@ -52,7 +91,7 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-medium text-slate-700 mb-1 block">Weight & Volume</Label>
               <div className="relative">
                 <Scale size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" defaultValue="32,000 kg" />
+                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" placeholder="Weight in kg" />
               </div>
             </div>
           </div>
@@ -124,9 +163,11 @@ export default function FreightOrderForm() {
 
           <button
             type="button"
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-md text-xs font-medium transition-colors"
+            onClick={handleConfirmBroadcast}
+            disabled={loading}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
           >
-            Confirm & Broadcast Order to Exchange
+            {loading ? 'Broadcasting...' : 'Confirm & Broadcast Order to Exchange'}
           </button>
         </div>
       )}
