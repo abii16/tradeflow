@@ -1,37 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { UploadCloud, CheckCircle2, Clock } from 'lucide-react';
+import { getCustomsDocuments, uploadCustomsDocument } from '@/lib/apiClient';
 
 export default function CustomsTab() {
   const { t } = useTranslation();
 
-  const documents = [
-    {
-      type: 'Commercial Invoice',
-      status: 'verified',
-      statusLabel: 'Uploaded — Hash Verified',
-      file: 'inv_88204_ethio.pdf',
-    },
-    {
-      type: 'Bill of Lading (MBL/HBL)',
-      status: 'cleared',
-      statusLabel: 'Uploaded — Cleared',
-      file: 'bl_dj_mod_9921.pdf',
-    },
-    {
-      type: 'Packing List',
-      status: 'pending',
-      statusLabel: 'Pending Upload',
-      file: null,
-    },
-    {
-      type: 'Certificate of Origin',
-      status: 'review',
-      statusLabel: 'Under Review',
-      file: 'cert_org_991.pdf',
-    },
-  ];
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const shipmentId = '00000000-0000-0000-0000-000000000000'; // Mock UUID for demo
+
+  const fetchDocs = async () => {
+    try {
+      setLoading(true);
+      const data = await getCustomsDocuments(shipmentId);
+      setDocuments(data.documents || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocs();
+  }, []);
+
+  const handleUploadClick = () => {
+    // Quick mock for upload action
+    const invoiceFile = new File(["dummy content"], "invoice.pdf", { type: "application/pdf" });
+    const packingListFile = new File(["dummy content"], "packing_list.pdf", { type: "application/pdf" });
+    
+    const formData = new FormData();
+    formData.append('invoice', invoiceFile);
+    formData.append('packing_list', packingListFile);
+    formData.append('loadId', shipmentId);
+    
+    uploadCustomsDocument(formData).then(() => {
+      alert('Documents uploaded successfully!');
+      fetchDocs();
+    }).catch(err => {
+      console.error(err);
+      alert('Failed to upload document');
+    });
+  };
 
   return (
     <div className="max-w-[1320px] mx-auto space-y-5">
@@ -48,6 +62,7 @@ export default function CustomsTab() {
           </div>
           <button
             type="button"
+            onClick={handleUploadClick}
             className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-slate-800 transition-colors"
           >
             <UploadCloud size={14} /> Upload Document
@@ -64,39 +79,42 @@ export default function CustomsTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {documents.length === 0 && !loading && (
+              <TableRow><TableCell colSpan={4} className="text-center text-xs text-slate-500 py-4">No documents found. Click upload.</TableCell></TableRow>
+            )}
             {documents.map((doc, idx) => (
-              <TableRow key={idx} className="border-slate-100 hover:bg-slate-50/50">
-                <TableCell className="font-medium text-xs text-slate-900">{doc.type}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border ${
-                      doc.status === 'cleared'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                        : doc.status === 'verified'
-                        ? 'bg-blue-50 text-blue-700 border-blue-100'
-                        : doc.status === 'review'
-                        ? 'bg-amber-50 text-amber-700 border-amber-100'
-                        : 'bg-slate-100 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    {doc.status === 'cleared' || doc.status === 'verified' ? (
-                      <CheckCircle2 size={11} />
-                    ) : (
-                      <Clock size={11} />
-                    )}
-                    {doc.statusLabel}
-                  </span>
-                </TableCell>
-                <TableCell className="text-xs font-mono text-slate-500">{doc.file || '—'}</TableCell>
-                <TableCell className="text-right">
-                  <button
-                    type="button"
-                    className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors"
-                  >
-                    {doc.file ? 'View / Replace' : 'Upload'}
-                  </button>
-                </TableCell>
-              </TableRow>
+              <React.Fragment key={idx}>
+                {/* Invoice Row */}
+                <TableRow className="border-slate-100 hover:bg-slate-50/50">
+                  <TableCell className="font-medium text-xs text-slate-900">Commercial Invoice</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
+                      <CheckCircle2 size={11} /> Uploaded
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs font-mono text-slate-500 truncate max-w-[150px]">{doc.invoiceUrl.split('/').pop()}</TableCell>
+                  <TableCell className="text-right">
+                    <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
+                      View
+                    </button>
+                  </TableCell>
+                </TableRow>
+                {/* Packing List Row */}
+                <TableRow className="border-slate-100 hover:bg-slate-50/50">
+                  <TableCell className="font-medium text-xs text-slate-900">Packing List</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
+                      <CheckCircle2 size={11} /> Uploaded
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs font-mono text-slate-500 truncate max-w-[150px]">{doc.packingListUrl.split('/').pop()}</TableCell>
+                  <TableCell className="text-right">
+                    <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
+                      View
+                    </button>
+                  </TableCell>
+                </TableRow>
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>
