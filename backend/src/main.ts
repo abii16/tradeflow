@@ -42,6 +42,7 @@ import { customsRoutes } from './routes/customs.routes';
 import { pricingRoutes } from './routes/pricing.routes';
 import { verificationRoutes } from './routes/verification.routes';
 import { adminRoutes } from './routes/admin.routes';
+import { shipperRoutes } from './routes/shipper.routes';
 import { etaRoutes } from './routes/eta.routes';
 import { paymentsRoutes } from './routes/payments.routes';
 import { offlineSyncRoutes } from './routes/offline-sync.routes';
@@ -57,6 +58,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 
 app.use('/auth', AuthController);
+app.use('/api/v1/shipper', JwtAuthGuard, RolesGuard(['SHIPPER']), shipperRoutes);
 app.use('/api/v1/loads', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), loadsRoutes);
 app.use('/api/v1/bids', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SHIPPER', 'ADMIN']), bidsRoutes);
 app.use('/api/v1/customs', JwtAuthGuard, RolesGuard(['CUSTOMS_OFFICER', 'FORWARDER', 'ADMIN']), customsRoutes);
