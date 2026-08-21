@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Truck, Star } from 'lucide-react';
 import RatingModal from '@/components/modals/RatingModal';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { getShipperActiveShipment } from '@/lib/apiClient';
 
 import L from 'leaflet';
 // @ts-ignore
@@ -22,6 +23,29 @@ L.Marker.prototype.options.icon = DefaultIcon;
 export default function ActiveShipment() {
   const { t } = useTranslation();
   const [showRatingModal, setShowRatingModal] = useState(false);
+  const [shipment, setShipment] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadShipment() {
+      try {
+        const data = await getShipperActiveShipment();
+        setShipment(data.shipment);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadShipment();
+
+    const handleRefresh = () => loadShipment();
+    window.addEventListener('shipper:load_posted', handleRefresh);
+    return () => window.removeEventListener('shipper:load_posted', handleRefresh);
+  }, []);
+
+  if (loading) return <div className="p-4 text-xs text-slate-500">Loading active shipment...</div>;
+  if (!shipment) return <div className="p-4 bg-white border border-slate-200 rounded-md text-xs text-slate-500 text-center">No active shipments in transit.</div>;
 
   const djibouti = [11.5890, 43.1458] as [number, number];
   const galafi = [11.7200, 41.8333] as [number, number];
@@ -44,7 +68,7 @@ export default function ActiveShipment() {
       <div className="p-3.5 border-b border-slate-100 flex justify-between items-center">
         <div>
           <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Live Shipment Track</span>
-          <h2 className="text-sm font-semibold text-slate-900">SHP-9021-DJM</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{shipment?.trackingNumber || 'SHP-9021-DJM'}</h2>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -54,7 +78,7 @@ export default function ActiveShipment() {
             <Star size={11} className="fill-amber-500 text-amber-500" /> Rate Carrier
           </button>
           <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-medium rounded border border-blue-100">
-            In Transit (Awash)
+            {shipment?.status === 'IN_TRANSIT' ? 'In Transit' : shipment?.status || 'In Transit'}
           </span>
         </div>
       </div>
