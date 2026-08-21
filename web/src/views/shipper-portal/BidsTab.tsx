@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Star, ChevronDown } from 'lucide-react';
@@ -106,13 +106,15 @@ export default function BidsTab() {
                 />
                 <div>
                   <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{load.id}</span>
-                  <h3 className="text-sm font-semibold text-slate-900">{load.cargo}</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">{load.title || load.cargoType || load.cargo}</h3>
                 </div>
               </div>
 
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <span className="text-xs font-medium text-slate-700">{load.origin} → {load.destination}</span>
+                  <span className="text-xs font-medium text-slate-700">
+                    {typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin} → {typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination}
+                  </span>
                   <p className="text-[11px] text-slate-400 font-mono">{load.bids?.length || 0} active bids received</p>
                 </div>
                 <span
