@@ -21,7 +21,8 @@ import {
   fetchCorridorSummary,
   fetchCorridorRoutes,
   fetchEtaProjections,
-  recalculateYield
+  recalculateYield,
+  getAllLoads
 } from '../../lib/apiClient';
 
 export default function ControlTowerDashboard() {
@@ -29,6 +30,7 @@ export default function ControlTowerDashboard() {
   const { telemetry } = useLiveTelemetry();
   const [verifications, setVerifications] = useState<any[]>([]);
   const [loadingVerifications, setLoadingVerifications] = useState(true);
+  const [loads, setLoads] = useState<any[]>([]);
   
   // Live states
   const [summary, setSummary] = useState({ activeAssets: 0, corridorStatus: 'OPERATIONAL', activeAlerts: 0 });
@@ -39,16 +41,18 @@ export default function ControlTowerDashboard() {
   useEffect(() => {
     async function loadAll() {
       try {
-        const [vRes, sumRes, routeRes, etaRes] = await Promise.all([
+        const [vRes, sumRes, routeRes, etaRes, loadsRes] = await Promise.all([
           getPendingVerifications(),
           fetchCorridorSummary(),
           fetchCorridorRoutes(),
-          fetchEtaProjections()
+          fetchEtaProjections(),
+          getAllLoads()
         ]);
         setVerifications(vRes.data || []);
         setSummary(sumRes);
         setRoutes(routeRes.routes || []);
         setEtaData(etaRes.projections || []);
+        setLoads(loadsRes?.loads || []);
       } catch (err) {
         console.error('Failed to load dashboard data', err);
       } finally {
@@ -56,6 +60,14 @@ export default function ControlTowerDashboard() {
       }
     }
     loadAll();
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'tradeflow_load_posted') {
+        loadAll();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const handleRecalculate = async () => {
@@ -97,7 +109,9 @@ export default function ControlTowerDashboard() {
         {/* Metric 2 */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
           <div>
-            <div className="text-xl font-mono font-bold text-slate-900 mb-1">ETB 356,229.54</div>
+            <div className="text-xl font-mono font-bold text-slate-900 mb-1">
+              ETB {loads.length > 0 ? Math.round(loads.reduce((acc, curr) => acc + Number(curr.budgetAmount || 0), 0) / loads.length).toLocaleString() : '356,229'}
+            </div>
             <div className="text-xs font-semibold text-slate-600 mb-0.5">{t('kpi_avg_spot_rate')}</div>
             <div className="text-[11px] text-slate-400">{t('kpi_baseline')}</div>
           </div>
@@ -121,7 +135,7 @@ export default function ControlTowerDashboard() {
         {/* Metric 4 */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
           <div>
-            <div className="text-2xl font-mono font-bold text-slate-900 mb-1">12 {t('kpi_cleared')}</div>
+            <div className="text-2xl font-mono font-bold text-slate-900 mb-1">{verifications.length} {t('kpi_pending', 'Pending')}</div>
             <div className="text-xs font-semibold text-slate-600 mb-0.5">{t('kpi_customs_queue')}</div>
             <div className="text-[11px] text-slate-400">{t('kpi_galafi_throughput')}</div>
           </div>
@@ -219,67 +233,137 @@ export default function ControlTowerDashboard() {
 
       </div>
 
-      {/* Row 3: Verification Registry Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-        <div className="p-5 border-b border-slate-200 flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-slate-900 text-sm">{t('vr_title')}</h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">{t('vr_desc')}</p>
-          </div>
-          <span className="bg-slate-100 border border-slate-200 text-slate-600 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
-            {t('vr_queue')}
-            <span className="bg-slate-600 text-white text-[10px] px-1.5 rounded-full">{verifications.length}</span>
-          </span>
-        </div>
+      {/* Row 3 & 4: Live Feed & Verification Registry */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-3 font-semibold">{t('vr_app_id')}</th>
-                <th className="px-6 py-3 font-semibold">{t('vr_entity')}</th>
-                <th className="px-6 py-3 font-semibold">{t('vr_license')}</th>
-                <th className="px-6 py-3 font-semibold">{t('vr_status')}</th>
-                <th className="px-6 py-3 text-right font-semibold">{t('vr_action')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loadingVerifications ? (
+        {/* Live Global Order Book */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col max-h-[500px]">
+          <div className="p-5 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div>
+              <h3 className="font-semibold text-slate-900 text-sm">Live Global Order Book</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">Real-time freight orders broadcasted by shippers</p>
+            </div>
+            <span className="bg-slate-100 border border-slate-200 text-slate-600 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
+              Active Loads
+              <span className="bg-indigo-600 text-white text-[10px] px-1.5 rounded-full">{loads.filter(l => l.status !== 'COMPLETED').length}</span>
+            </span>
+          </div>
+
+          <div className="overflow-x-auto flex-1">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200 sticky top-0 z-10">
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
-                    Loading verifications...
-                  </td>
+                  <th className="px-4 py-3 font-semibold">Load ID</th>
+                  <th className="px-4 py-3 font-semibold">Cargo / Weight</th>
+                  <th className="px-4 py-3 font-semibold">Route</th>
+                  <th className="px-4 py-3 text-right font-semibold">Status</th>
                 </tr>
-              ) : verifications.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
-                    No pending verifications at this time.
-                  </td>
-                </tr>
-              ) : (
-                verifications.map((v) => (
-                  <tr key={v.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-mono font-semibold text-slate-900">
-                      REQ-{v.id.toString().slice(0, 8).toUpperCase()}
-                    </td>
-                    <td className="px-6 py-4 font-medium text-slate-900">{v.userFullName || 'Unknown Entity'}</td>
-                    <td className="px-6 py-4 font-mono text-xs">{v.taxId || v.tradeLicenseNumber || 'N/A'}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                        {t('vr_pending')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="text-blue-600 font-semibold text-xs hover:text-blue-700 flex items-center justify-end gap-1 ml-auto">
-                        {t('vr_review')} <ChevronRight size={14} />
-                      </button>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {loadingVerifications ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-500">
+                      Loading order book...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : loads.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-500">
+                      No active freight orders in the network.
+                    </td>
+                  </tr>
+                ) : (
+                  loads.map((load) => (
+                    <tr key={load.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-4 font-mono font-semibold text-slate-900">
+                        TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
+                      </td>
+                      <td className="px-4 py-4 font-medium text-slate-900">
+                        <div className="text-xs truncate max-w-[120px]" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
+                        <div className="text-[10px] text-slate-500">{load.weightKg} kg • ETB {Number(load.budgetAmount).toLocaleString()}</div>
+                      </td>
+                      <td className="px-4 py-4 text-[11px] max-w-[150px] truncate" title={`${typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin} → ${typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination}`}>
+                        {String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')} →<br/>{String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          load.status === 'POSTED' ? 'bg-emerald-50 text-emerald-700' :
+                          load.status === 'IN_TRANSIT' ? 'bg-blue-50 text-blue-700' :
+                          'bg-slate-100 text-slate-600'
+                        }`}>
+                          {load.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Verification Registry Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col max-h-[500px]">
+          <div className="p-5 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div>
+              <h3 className="font-semibold text-slate-900 text-sm">{t('vr_title')}</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">{t('vr_desc')}</p>
+            </div>
+            <span className="bg-slate-100 border border-slate-200 text-slate-600 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
+              {t('vr_queue')}
+              <span className="bg-slate-600 text-white text-[10px] px-1.5 rounded-full">{verifications.length}</span>
+            </span>
+          </div>
+
+          <div className="overflow-x-auto flex-1">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 font-semibold">{t('vr_app_id')}</th>
+                  <th className="px-6 py-3 font-semibold">{t('vr_entity')}</th>
+                  <th className="px-6 py-3 font-semibold">{t('vr_license')}</th>
+                  <th className="px-6 py-3 font-semibold">{t('vr_status')}</th>
+                  <th className="px-6 py-3 text-right font-semibold">{t('vr_action')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {loadingVerifications ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
+                      Loading verifications...
+                    </td>
+                  </tr>
+                ) : verifications.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
+                      No pending verifications at this time.
+                    </td>
+                  </tr>
+                ) : (
+                  verifications.map((v) => (
+                    <tr key={v.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 font-mono font-semibold text-slate-900">
+                        REQ-{v.id.toString().slice(0, 8).toUpperCase()}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-slate-900">{v.userFullName || 'Unknown Entity'}</td>
+                      <td className="px-6 py-4 font-mono text-xs">{v.taxId || v.tradeLicenseNumber || 'N/A'}</td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                          {t('vr_pending')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="text-blue-600 font-semibold text-xs hover:text-blue-700 flex items-center justify-end gap-1 ml-auto">
+                          {t('vr_review')} <ChevronRight size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

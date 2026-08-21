@@ -162,6 +162,10 @@ export async function postLoad(data: any) {
   return apiClient('/loads', { method: 'POST', data });
 }
 
+export async function getAllLoads() {
+  return apiClient('/loads', { method: 'GET' });
+}
+
 export async function getShipperActiveShipment() {
   return apiClient('/shipper/shipments/active', { method: 'GET' });
 }
