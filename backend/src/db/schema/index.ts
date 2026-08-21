@@ -13,3 +13,5 @@ export * from './incidents';
 export * from './offline_sync';
 export * from './risk_zones';
 export * from './driver_geofence_logs';
+export * from './pricing_policies';
+export * from './disputes';
