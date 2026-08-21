@@ -1,60 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Database, Download, Search, Filter, Calendar } from 'lucide-react';
+import { fetchAuditLogs, exportAuditLogs } from '../../lib/apiClient';
+import toast from 'react-hot-toast';
 
 export default function AuditLogs() {
   const { t } = useTranslation();
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionFilter, setActionFilter] = useState('');
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
 
-  const logs = [
-    {
-      time: "2026-08-16 14:31:02 EAT",
-      action: "AUTH",
-      actor: "Admin Habtamu Zewde",
-      message: "Approved verification for TransHorn Logistics (TIN-ET-99421A)",
-      ip: "196.189.15.22",
-      status: "SUCCESS"
-    },
-    {
-      time: "2026-08-16 14:15:44 EAT",
-      action: "PRICING_ENGINE",
-      actor: "System Auto-Trigger",
-      message: "Spot rate recalculated (+4.8% fuel adjustment applied to Djibouti-Modjo route)",
-      ip: "10.0.4.12",
-      status: "SUCCESS"
-    },
-    {
-      time: "2026-08-16 13:58:10 EAT",
-      action: "ESCROW_MUTATION",
-      actor: "TeleBirr Gateway API",
-      message: "Webhook received for SHP-9021-DJM (ETB 348,500.00 locked)",
-      ip: "197.156.99.102",
-      status: "SUCCESS"
-    },
-    {
-      time: "2026-08-16 13:42:05 EAT",
-      action: "GEO_FENCE_ALERT",
-      actor: "System Radar",
-      message: "RISK-04 detour triggered at Semera (Radius: 25km)",
-      ip: "10.0.4.18",
-      status: "WARNING"
-    },
-    {
-      time: "2026-08-16 13:10:55 EAT",
-      action: "AUTH_FAILED",
-      actor: "Unknown",
-      message: "Failed login attempt for admin console (Invalid 2FA)",
-      ip: "192.168.1.45",
-      status: "FAILED"
-    },
-    {
-      time: "2026-08-16 12:45:00 EAT",
-      action: "DISPUTE_RAISED",
-      actor: "Ethio-Trading PLC",
-      message: "Opened dispute ticket #DSP-204 vs Abyssinia Logistics (Weight discrepancy)",
-      ip: "196.188.10.5",
-      status: "SUCCESS"
+  const loadData = async () => {
+    try {
+      const response = await fetchAuditLogs(actionFilter ? { actionType: actionFilter } : undefined);
+      setLogs(response.logs || []);
+    } catch (err) {
+      toast.error('Failed to fetch audit logs');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [actionFilter]);
+
+  const handleExport = async (format: 'csv' | 'pdf') => {
+    if (format === 'csv') setExportingCSV(true);
+    if (format === 'pdf') setExportingPDF(true);
+    
+    try {
+      await exportAuditLogs(format);
+      toast.success(`${format.toUpperCase()} export generated`);
+    } catch (err) {
+      toast.error('Failed to export logs');
+    } finally {
+      if (format === 'csv') setExportingCSV(false);
+      if (format === 'pdf') setExportingPDF(false);
+    }
+  };
 
   return (
     <div className="h-full flex flex-col space-y-6">
@@ -70,11 +56,19 @@ export default function AuditLogs() {
         </div>
         
         <div className="flex items-center gap-3">
-          <button className="bg-white text-slate-700 hover:text-slate-900 font-semibold py-2 px-4 border border-slate-200 hover:border-slate-300 rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2">
-            <Download size={16} /> {t('al_export_csv')}
+          <button 
+            onClick={() => handleExport('csv')}
+            disabled={exportingCSV}
+            className="bg-white text-slate-700 hover:text-slate-900 font-semibold py-2 px-4 border border-slate-200 hover:border-slate-300 rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            <Download size={16} /> {exportingCSV ? 'Exporting...' : t('al_export_csv')}
           </button>
-          <button className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2">
-            <Download size={16} /> {t('al_export_pdf')}
+          <button 
+            onClick={() => handleExport('pdf')}
+            disabled={exportingPDF}
+            className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            <Download size={16} /> {exportingPDF ? 'Exporting...' : t('al_export_pdf')}
           </button>
         </div>
       </div>
@@ -98,11 +92,16 @@ export default function AuditLogs() {
 
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <select className="w-40 pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg bg-white appearance-none cursor-pointer">
-                <option>{t('al_filter_all')}</option>
-                <option>AUTH</option>
-                <option>ESCROW_MUTATION</option>
-                <option>PRICING_ENGINE</option>
+              <select 
+                value={actionFilter}
+                onChange={(e) => setActionFilter(e.target.value)}
+                className="w-40 pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg bg-white appearance-none cursor-pointer"
+              >
+                <option value="">{t('al_filter_all')}</option>
+                <option value="AUTH">AUTH</option>
+                <option value="ESCROW_MUTATION">ESCROW_MUTATION</option>
+                <option value="PRICING_ENGINE">PRICING_ENGINE</option>
+                <option value="DISPUTE_RAISED">DISPUTE</option>
               </select>
             </div>
           </div>
@@ -123,18 +122,25 @@ export default function AuditLogs() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs font-mono">
+              {loading && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-slate-500 font-sans">
+                    Loading logs...
+                  </td>
+                </tr>
+              )}
               
-              {logs.map((log, index) => (
+              {!loading && logs.map((log, index) => (
                 <tr key={index} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-6 py-3 text-slate-400">[{log.time}]</td>
+                  <td className="px-6 py-3 text-slate-400">[{new Date(log.timestamp).toLocaleString()}]</td>
                   <td className="px-6 py-3">
                     <span className="font-bold text-slate-700">{log.action}</span>
                   </td>
-                  <td className="px-6 py-3 font-semibold text-slate-800">{log.actor}</td>
-                  <td className="px-6 py-3 text-slate-600 max-w-md truncate" title={log.message}>
-                    {log.message}
+                  <td className="px-6 py-3 font-semibold text-slate-800">{log.actorId}</td>
+                  <td className="px-6 py-3 text-slate-600 max-w-md truncate" title={log.message || log.details}>
+                    {log.message || log.details || '-'}
                   </td>
-                  <td className="px-6 py-3 text-slate-400">{log.ip}</td>
+                  <td className="px-6 py-3 text-slate-400">{log.ipAddress || '10.0.4.12'}</td>
                   <td className="px-6 py-3 text-right">
                     {log.status === 'SUCCESS' && <span className="text-emerald-600 font-bold">{t('al_status_success')}</span>}
                     {log.status === 'WARNING' && <span className="text-amber-600 font-bold">{t('al_status_warning')}</span>}
@@ -143,17 +149,13 @@ export default function AuditLogs() {
                 </tr>
               ))}
 
-              {/* Extra mock rows to fill space */}
-              {[...Array(10)].map((_, i) => (
-                <tr key={`mock-${i}`} className="hover:bg-slate-50/80 transition-colors opacity-50">
-                  <td className="px-6 py-3 text-slate-400">[2026-08-16 11:{59 - i}:00 EAT]</td>
-                  <td className="px-6 py-3 font-bold text-slate-700">READ_QUERY</td>
-                  <td className="px-6 py-3 font-semibold text-slate-800">System Analytics</td>
-                  <td className="px-6 py-3 text-slate-600">Batch export of corridor spot rates</td>
-                  <td className="px-6 py-3 text-slate-400">10.0.1.55</td>
-                  <td className="px-6 py-3 text-right text-emerald-600 font-bold">{t('al_status_success')}</td>
+              {!loading && logs.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-slate-500 font-sans">
+                    No logs found.
+                  </td>
                 </tr>
-              ))}
+              )}
 
             </tbody>
           </table>
