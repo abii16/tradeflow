@@ -153,3 +153,57 @@ export async function fetchAuditLogs(filter?: any) {
 export async function exportAuditLogs(format: 'csv' | 'pdf') {
   return apiClient('/admin/audit-logs/export', { method: 'POST', data: { format } });
 }
+
+// ==========================================
+// SHIPPER PORTAL APIs
+// ==========================================
+
+export async function postLoad(data: any) {
+  return apiClient('/loads', { method: 'POST', data });
+}
+
+export async function getShipperActiveShipment() {
+  return apiClient('/shipper/shipments/active', { method: 'GET' });
+}
+
+export async function getShipperLoads() {
+  return apiClient('/shipper/loads', { method: 'GET' });
+}
+
+export async function acceptBidEscrow(bidId: string) {
+  return apiClient(`/shipper/bids/${bidId}/accept-escrow`, { method: 'POST' });
+}
+
+export async function getContractRates() {
+  return apiClient('/shipper/contract-rates', { method: 'GET' });
+}
+
+export async function createContractRate(data: any) {
+  return apiClient('/shipper/contract-rates', { method: 'POST', data });
+}
+
+export async function renegotiateContract(id: string) {
+  return apiClient(`/shipper/contract-rates/${id}/renegotiate`, { method: 'POST' });
+}
+
+export async function getCustomsDocuments(shipmentId: string) {
+  return apiClient(`/customs/shipments/${shipmentId}/documents`, { method: 'GET' });
+}
+
+export async function uploadCustomsDocument(data: FormData) {
+  return apiClient('/customs/upload', { 
+    method: 'POST', 
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+}
+
+export async function getShipperOrganization() {
+  return apiClient('/shipper/organization', { method: 'GET' });
+}
+
+export async function updateShipperOrganization(data: any) {
+  return apiClient('/shipper/organization', { method: 'PUT', data });
+}
