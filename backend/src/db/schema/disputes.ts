@@ -1,8 +1,9 @@
-import { pgTable, uuid, varchar, timestamp, numeric, jsonb, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, numeric, jsonb } from 'drizzle-orm/pg-core';
 import { users } from './users';
 import { shipments } from './shipments';
+import { disputeStatusEnum } from './payments';
 
-export const disputeStatusEnum = pgEnum('dispute_status', ['OPEN', 'ESCALATED', 'RESOLVED']);
+// Exporting table
 
 export const disputes = pgTable('disputes', {
   id: uuid('id').primaryKey().defaultRandom(),
