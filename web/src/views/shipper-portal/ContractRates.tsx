@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FileSignature, TrendingUp, AlertTriangle } from 'lucide-react';
 import { getContractRates, renegotiateContract, createContractRate } from '@/lib/apiClient';
-import { FileSignature, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function ContractRates() {
   const { t } = useTranslation();
