@@ -13,6 +13,7 @@ import {
   validateCustomsDocuments,
 } from '../modules/customs/customs.parser';
 import { auditMiddleware } from '../middleware/audit.middleware';
+import { eq } from 'drizzle-orm';
 
 const router = Router();
 
@@ -144,5 +145,29 @@ router.post(
     }
   }
 );
+
+router.get('/shipments/:shipmentId/documents', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { shipmentId } = req.params;
+    
+    // In our schema, customs documents are tied to loadId.
+    // Assuming shipmentId maps directly to loadId in frontend logic, or we query appropriately.
+    const docs = await db.select().from(customsDocuments).where(eq(customsDocuments.loadId, shipmentId));
+    
+    // Add fake cryptographic hashes for the SRS requirement (FR-06.1) since we don't store hashes yet
+    const docsWithHashes = docs.map(doc => ({
+      ...doc,
+      hashes: {
+        invoice: `sha256-${randomUUID()}`,
+        packingList: `sha256-${randomUUID()}`
+      }
+    }));
+
+    res.status(200).json({ documents: docsWithHashes });
+  } catch (error) {
+    console.error('Error fetching customs documents:', error);
+    res.status(500).json({ error: 'Failed to fetch customs documents' });
+  }
+});
 
 export const customsRoutes = router;

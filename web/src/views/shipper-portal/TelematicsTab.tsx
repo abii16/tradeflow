@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Radar } from 'lucide-react';
 import { fetchRiskZones } from '@/lib/apiClient';
 import { useLiveTelemetry } from '@/hooks/useLiveTelemetry';
 
@@ -159,8 +159,14 @@ export default function TelematicsTab() {
           )}
 
           {telemetry.trucks.length === 0 && isConnected && (
-            <div className="text-center text-slate-500 py-8 text-sm">
-              Waiting for vehicle data...
+            <div className="text-center text-slate-500 py-12 px-4 flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+                <Radar size={24} className="text-slate-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">No active shipments in transit</h3>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-[200px]">
+                Post a freight order to start live corridor tracking.
+              </p>
             </div>
           )}
 

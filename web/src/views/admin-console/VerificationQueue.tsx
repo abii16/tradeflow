@@ -1,41 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, AlertTriangle, FileText, CheckCircle, XCircle, Search, FileSignature, X, Image as ImageIcon } from 'lucide-react';
+import { getPendingVerifications, reviewVerification } from '../../lib/apiClient';
+import toast from 'react-hot-toast';
 
 export default function VerificationQueue() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('pending');
-  const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const requests = [
-    {
-      id: 'REQ-8492',
-      entity: 'TransHorn Logistics',
-      tin: 'TIN-ET-99421A',
-      fleet: '14 Trucks',
-      status: t('vq_status_roadworthy'),
-      statusType: 'success',
-      type: 'pending'
-    },
-    {
-      id: 'REQ-8491',
-      entity: 'BlueNile Freighters',
-      tin: 'LIC-DJ-44219B',
-      fleet: '8 Trucks',
-      status: t('vq_status_mismatch'),
-      statusType: 'error',
-      type: 'mismatch'
-    },
-    {
-      id: 'REQ-8490',
-      entity: 'Afar Transport Co.',
-      tin: 'TIN-ET-11093C',
-      fleet: '22 Trucks',
-      status: t('vq_status_pending_doc'),
-      statusType: 'warning',
-      type: 'pending'
+  const loadVerifications = async () => {
+    try {
+      const response = await getPendingVerifications();
+      setRequests(response.data || []);
+    } catch (err) {
+      toast.error('Failed to load verifications');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    loadVerifications();
+  }, []);
+
+  const handleReview = async (id: string, status: string, rejectionReason?: string) => {
+    setActionLoading(true);
+    try {
+      await reviewVerification(id, { status, rejectionReason });
+      toast.success(`Verification ${status.toLowerCase()} successfully`);
+      setSelectedRequest(null);
+      loadVerifications();
+    } catch (err) {
+      toast.error('Failed to submit review');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <div className="h-full flex flex-col space-y-6">
@@ -50,15 +54,15 @@ export default function VerificationQueue() {
         <div className="flex items-center gap-3">
           <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-            <span className="text-xs font-semibold text-slate-700">12 {t('vq_pending_metric')}</span>
+            <span className="text-xs font-semibold text-slate-700">{requests.length} {t('vq_pending_metric')}</span>
           </div>
           <div className="bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-            <span className="text-xs font-semibold text-emerald-800">48 {t('vq_verified_metric')}</span>
+            <span className="text-xs font-semibold text-emerald-800">0 {t('vq_verified_metric')}</span>
           </div>
           <div className="bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-            <span className="text-xs font-semibold text-rose-800">2 {t('vq_suspended_metric')}</span>
+            <span className="text-xs font-semibold text-rose-800">0 {t('vq_suspended_metric')}</span>
           </div>
         </div>
       </div>
@@ -96,45 +100,29 @@ export default function VerificationQueue() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
+                {requests.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No pending verifications</td>
+                  </tr>
+                )}
                 {requests.map((req) => (
-                  <tr key={req.id} className={`transition-colors hover:bg-slate-50 ${selectedRequest === req.id ? 'bg-blue-50/50' : ''}`}>
-                    <td className="px-6 py-4 font-mono font-bold text-slate-900">{req.id}</td>
-                    <td className="px-6 py-4 font-medium text-slate-900">{req.entity}</td>
-                    <td className="px-6 py-4 font-mono text-xs">{req.tin}</td>
-                    <td className="px-6 py-4">{req.fleet}</td>
+                  <tr key={req.id} className={`transition-colors hover:bg-slate-50 ${selectedRequest?.id === req.id ? 'bg-blue-50/50' : ''}`}>
+                    <td className="px-6 py-4 font-mono font-bold text-slate-900">{req.id.substring(0,8)}</td>
+                    <td className="px-6 py-4 font-medium text-slate-900">{req.userFullName || 'N/A'}</td>
+                    <td className="px-6 py-4 font-mono text-xs">{req.taxId || 'N/A'}</td>
+                    <td className="px-6 py-4">{req.tradeLicenseNumber || 'N/A'}</td>
                     <td className="px-6 py-4">
-                      {req.statusType === 'success' && (
-                        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <CheckCircle size={12} className="text-emerald-500" /> {req.status}
-                        </span>
-                      )}
-                      {req.statusType === 'error' && (
-                        <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <AlertTriangle size={12} className="text-rose-500" /> {req.status}
-                        </span>
-                      )}
-                      {req.statusType === 'warning' && (
-                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <FileText size={12} className="text-amber-500" /> {req.status}
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                        <FileText size={12} className="text-amber-500" /> Pending Review
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {req.statusType === 'error' ? (
-                        <button 
-                          onClick={() => setSelectedRequest(req.id)}
-                          className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded transition-colors inline-flex items-center gap-1"
-                        >
-                          {t('vq_action_escalate')}
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => setSelectedRequest(req.id)}
-                          className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors inline-flex items-center gap-1"
-                        >
-                          {t('vq_action_review')}
-                        </button>
-                      )}
+                      <button 
+                        onClick={() => setSelectedRequest(req)}
+                        className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors inline-flex items-center gap-1"
+                      >
+                        {t('vq_action_review')}
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -154,7 +142,7 @@ export default function VerificationQueue() {
             </button>
             
             <div className="p-5 border-b border-slate-200">
-              <h3 className="font-bold text-slate-900 mb-1">{t('vq_app_title')} {selectedRequest}</h3>
+              <h3 className="font-bold text-slate-900 mb-1">{t('vq_app_title')} {selectedRequest.id.substring(0,8)}</h3>
               <p className="text-xs text-slate-500">{t('vq_drawer_inspection')}</p>
             </div>
 
@@ -165,15 +153,15 @@ export default function VerificationQueue() {
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-slate-500">{t('vq_drawer_legal_name')}</span>
-                    <span className="font-semibold text-slate-900">TransHorn Logistics</span>
+                    <span className="font-semibold text-slate-900">{selectedRequest.userFullName}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">{t('vq_drawer_tin')}</span>
-                    <span className="font-mono font-semibold text-slate-900">TIN-ET-99421A</span>
+                    <span className="font-mono font-semibold text-slate-900">{selectedRequest.taxId}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">{t('vq_drawer_fleet')}</span>
-                    <span className="font-semibold text-slate-900">14 Heavy Trucks</span>
+                    <span className="text-slate-500">Trade License</span>
+                    <span className="font-semibold text-slate-900">{selectedRequest.tradeLicenseNumber}</span>
                   </div>
                 </div>
               </div>
@@ -209,10 +197,18 @@ export default function VerificationQueue() {
             </div>
 
             <div className="p-5 border-t border-slate-200 bg-slate-50 rounded-b-xl flex gap-3">
-              <button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-sm transition-colors flex items-center justify-center gap-2">
-                <CheckCircle size={16} /> {t('vq_btn_approve')}
+              <button 
+                disabled={actionLoading}
+                onClick={() => handleReview(selectedRequest.id, 'VERIFIED')}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <CheckCircle size={16} /> {actionLoading ? 'Saving...' : t('vq_btn_approve')}
               </button>
-              <button className="flex-1 bg-white hover:bg-rose-50 text-rose-600 font-bold py-2.5 rounded-lg text-sm shadow-sm border border-slate-200 hover:border-rose-200 transition-colors flex items-center justify-center gap-2">
+              <button 
+                disabled={actionLoading}
+                onClick={() => handleReview(selectedRequest.id, 'REJECTED', 'Documents failed review')}
+                className="flex-1 bg-white hover:bg-rose-50 text-rose-600 font-bold py-2.5 rounded-lg text-sm shadow-sm border border-slate-200 hover:border-rose-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
                 <XCircle size={16} /> {t('vq_btn_reject')}
               </button>
             </div>

@@ -23,7 +23,30 @@ function getPortalFromPath(): PortalView {
   return 'selector';
 }
 
-export default function App() {
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen w-full bg-slate-900 flex flex-col items-center justify-center text-white p-8">
+          <h1 className="text-3xl font-bold text-red-500 mb-4">Runtime Error</h1>
+          <pre className="bg-slate-800 p-4 rounded text-sm text-slate-300 max-w-2xl overflow-auto border border-red-900/50">
+            {this.state.error?.message}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function AppContent() {
   const [portal, setPortalState] = useState<PortalView>(getPortalFromPath);
   const { isLoading, isAuthenticated, user } = useAuth();
 
@@ -36,7 +59,7 @@ export default function App() {
         'CUSTOMS_OFFICER': 'customs',
         'ADMIN': 'admin'
       };
-      const target = targetMap[user.role];
+      const target = targetMap[user?.role as string];
       if (target) {
         setPortalState(target);
         const paths: Record<PortalView, string> = {
@@ -123,8 +146,15 @@ export default function App() {
       );
     default:
       return (
-        // Only show LandingPage if not authenticated on root path
         <LandingPage onSelectPortal={handleSelectPortal} />
       );
   }
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
+  );
 }

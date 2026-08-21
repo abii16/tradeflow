@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShieldAlert, Map, AlertOctagon, TriangleAlert, Info, Radio, Crosshair, Navigation, FileSignature, CheckCircle, Clock } from 'lucide-react';
 import MiniIncidentMap from './MiniIncidentMap';
+import { fetchRiskZones, broadcastRiskZone, resolveRiskZone, fetchSecurityHistory } from '../../lib/apiClient';
+import toast from 'react-hot-toast';
 
 export default function SecurityDetours() {
   const { t } = useTranslation();
@@ -10,13 +12,71 @@ export default function SecurityDetours() {
   const [lng, setLng] = useState<number | null>(null);
   const [radius, setRadius] = useState<number>(5000);
   const [severity, setSeverity] = useState<'low' | 'medium' | 'critical'>('low');
+  const [name, setName] = useState('');
+  const [incidentType, setIncidentType] = useState('Road Closure');
+  const [description, setDescription] = useState('');
 
-  const resolvedIncidents = [
-    { id: 'INC-7702', segment: 'Galafi Border Approach', type: 'Customs Checkpoint Delay', severity: 'Critical', duration: '3h 45m', fleets: '22 Hauls Rerouted', time: '2026-08-15 18:20 EAT' },
-    { id: 'INC-7698', segment: 'Awash Curve', type: 'Road Closure / Accident', severity: 'Critical', duration: '6h 10m', fleets: '45 Hauls Rerouted', time: '2026-08-14 09:15 EAT' },
-    { id: 'INC-7685', segment: 'Mille Bypass', type: 'Weather Hazard (Flooding)', severity: 'Warning', duration: '12h 00m', fleets: 'Speed Limits Enforced', time: '2026-08-12 14:30 EAT' },
-    { id: 'INC-7650', segment: 'Dire Dawa Intersection', type: 'Fuel Outage', severity: 'Warning', duration: '1d 4h', fleets: 'Advisory Broadcasted', time: '2026-08-10 08:45 EAT' },
-  ];
+  const [activeZones, setActiveZones] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [broadcasting, setBroadcasting] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const [zonesRes, historyRes] = await Promise.all([
+        fetchRiskZones(),
+        fetchSecurityHistory()
+      ]);
+      setActiveZones(zonesRes.geofences || []);
+      setHistory(historyRes.history || []);
+    } catch (err) {
+      console.error('Failed to load security data', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleBroadcast = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lat || !lng || !name) {
+      toast.error('Please select location and enter name');
+      return;
+    }
+    setBroadcasting(true);
+    try {
+      await broadcastRiskZone({
+        name,
+        type: incidentType,
+        severity,
+        radiusKm: radius / 1000,
+        lat,
+        lng,
+        description
+      });
+      toast.success('Geofence broadcasted successfully');
+      setName('');
+      setDescription('');
+      loadData();
+    } catch (err) {
+      toast.error('Failed to broadcast geofence');
+    } finally {
+      setBroadcasting(false);
+    }
+  };
+
+  const handleResolve = async (id: string) => {
+    try {
+      await resolveRiskZone(id);
+      toast.success('Incident resolved');
+      loadData();
+    } catch (err) {
+      toast.error('Failed to resolve incident');
+    }
+  };
 
   return (
     <div className="h-full flex flex-col space-y-6">
@@ -39,86 +99,46 @@ export default function SecurityDetours() {
             {t('sec_active_geofences')}
           </h3>
           
-          {/* Alert 1 */}
-          <div className="bg-white rounded-xl border border-rose-200 shadow-sm overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
-            <div className="p-4 bg-rose-50/50 flex justify-between items-start border-b border-rose-100">
-              <div className="flex gap-3 items-start">
-                <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-                  <AlertOctagon size={16} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-0.5">[RISK-04] Critical</div>
-                  <h4 className="font-semibold text-slate-900 text-sm">Semera Highway Congestion / Checkpoint Delay</h4>
-                </div>
-              </div>
+          {activeZones.length === 0 && !loading && (
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-slate-500 text-sm">
+              No active security incidents or geofences.
             </div>
-            <div className="p-4 space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded-full border border-amber-200">
-                  8 Active Trucks Impacted
-                </span>
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
-                  <CheckCircle size={12} /> 14 Trucks Successfully Diverted
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2 text-xs font-mono text-slate-600">
-                <Crosshair size={14} className="text-slate-400" /> Lat: 11.794, Lng: 41.008 | Radius: 25 km
-              </div>
-              
-              <div className="bg-rose-50 text-rose-800 text-xs p-3 rounded-lg border border-rose-100 flex items-start gap-2">
-                <Navigation size={14} className="shrink-0 mt-0.5 text-rose-600" />
-                <div>
-                  <span className="font-bold">Active Reroute Enforced:</span> All inbound traffic diverted via Mille Bypass (+12m ETA penalty).
-                </div>
-              </div>
-              
-              <div className="flex gap-2">
-                <button className="text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded transition-colors">Edit Radius</button>
-                <button className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2 rounded transition-colors shadow-sm">Resolve Incident</button>
-              </div>
-            </div>
-          </div>
+          )}
 
-          {/* Alert 2 */}
-          <div className="bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
-            <div className="p-4 bg-amber-50/50 flex justify-between items-start border-b border-amber-100">
-              <div className="flex gap-3 items-start">
-                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                  <TriangleAlert size={16} />
+          {activeZones.map((zone) => (
+            <div key={zone.id} className={`bg-white rounded-xl border shadow-sm overflow-hidden relative ${zone.severity === 'critical' ? 'border-rose-200' : zone.severity === 'medium' ? 'border-amber-200' : 'border-blue-200'}`}>
+              <div className={`absolute top-0 left-0 w-1 h-full ${zone.severity === 'critical' ? 'bg-rose-500' : zone.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
+              <div className={`p-4 flex justify-between items-start border-b ${zone.severity === 'critical' ? 'bg-rose-50/50 border-rose-100' : zone.severity === 'medium' ? 'bg-amber-50/50 border-amber-100' : 'bg-blue-50/50 border-blue-100'}`}>
+                <div className="flex gap-3 items-start">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${zone.severity === 'critical' ? 'bg-rose-100 text-rose-600' : zone.severity === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                    {zone.severity === 'critical' ? <AlertOctagon size={16} /> : zone.severity === 'medium' ? <TriangleAlert size={16} /> : <Info size={16} />}
+                  </div>
+                  <div>
+                    <div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${zone.severity === 'critical' ? 'text-rose-600' : zone.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`}>[{zone.type}] {zone.severity}</div>
+                    <h4 className="font-semibold text-slate-900 text-sm">{zone.name}</h4>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-0.5">[FUEL-02] Warning</div>
-                  <h4 className="font-semibold text-slate-900 text-sm">Awash Fuel Station Stock Depletion</h4>
+              </div>
+              <div className="p-4 space-y-4">
+                <div className="flex items-center gap-2 text-xs font-mono text-slate-600">
+                  <Crosshair size={14} className="text-slate-400" /> Lat: {Number(zone.latitude).toFixed(3)}, Lng: {Number(zone.longitude).toFixed(3)} | Radius: {zone.radiusKm} km
+                </div>
+                
+                {zone.description && (
+                  <div className={`text-xs p-3 rounded-lg border flex items-start gap-2 ${zone.severity === 'critical' ? 'bg-rose-50 text-rose-800 border-rose-100' : zone.severity === 'medium' ? 'bg-amber-50 text-amber-800 border-amber-100' : 'bg-blue-50 text-blue-800 border-blue-100'}`}>
+                    <Navigation size={14} className={`shrink-0 mt-0.5 ${zone.severity === 'critical' ? 'text-rose-600' : zone.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`} />
+                    <div>{zone.description}</div>
+                  </div>
+                )}
+                
+                <div className="flex gap-2">
+                  <button onClick={() => handleResolve(zone.id)} className={`text-xs font-bold px-4 py-2 rounded transition-colors shadow-sm ${zone.severity === 'critical' ? 'text-rose-600 bg-rose-50 hover:bg-rose-100' : zone.severity === 'medium' ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-blue-600 bg-blue-50 hover:bg-blue-100'}`}>
+                    Resolve Incident
+                  </button>
                 </div>
               </div>
             </div>
-            <div className="p-4 space-y-4">
-               <div className="flex flex-wrap items-center gap-3">
-                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded-full border border-amber-200">
-                  5 Vehicles in Warning Zone (Radius: 2 km)
-                </span>
-              </div>
-
-               <div className="flex items-center gap-2 text-xs font-mono text-slate-600">
-                <Crosshair size={14} className="text-slate-400" /> Lat: 8.983, Lng: 40.166 | Radius: 2 km
-              </div>
-
-              <div className="bg-amber-50 text-amber-800 text-xs p-3 rounded-lg border border-amber-100 flex items-start gap-2">
-                <Info size={14} className="shrink-0 mt-0.5 text-amber-600" />
-                <div>
-                  <span className="font-bold">Status:</span> Advisory broadcasted — Suggested refueling at Dire Dawa intersection.
-                </div>
-              </div>
-              
-              <div className="flex gap-2">
-                <button className="text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded transition-colors">Edit Radius</button>
-                <button className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2 rounded transition-colors shadow-sm">Resolve Incident</button>
-              </div>
-            </div>
-          </div>
+          ))}
 
         </div>
 
@@ -142,7 +162,12 @@ export default function SecurityDetours() {
               />
             </div>
 
-            <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-5" onSubmit={handleBroadcast}>
+              
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Incident Name</label>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Semera Highway Blockage" className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:border-blue-500" required />
+              </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -190,7 +215,11 @@ export default function SecurityDetours() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">{t('sec_incident_type')}</label>
-                  <select className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 appearance-none bg-white font-medium">
+                  <select 
+                    value={incidentType}
+                    onChange={(e) => setIncidentType(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 appearance-none bg-white font-medium"
+                  >
                     <option>Road Closure</option>
                     <option>Security / Conflict</option>
                     <option>Fuel Outage</option>
@@ -203,14 +232,20 @@ export default function SecurityDetours() {
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">{t('sec_message')}</label>
                 <textarea 
                   rows={2} 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="Enter message to push to driver mobile terminals..."
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 resize-none"
                 ></textarea>
               </div>
 
               <div className="pt-1">
-                <button className="w-full bg-[#0F172A] hover:bg-slate-800 text-white font-bold py-3 rounded-lg text-xs shadow-md transition-all flex items-center justify-center gap-2">
-                  <Radio size={16} className="text-blue-400" /> {t('sec_btn_broadcast')}
+                <button 
+                  type="submit"
+                  disabled={broadcasting}
+                  className="w-full bg-[#0F172A] hover:bg-slate-800 text-white font-bold py-3 rounded-lg text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Radio size={16} className="text-blue-400" /> {broadcasting ? 'Broadcasting...' : t('sec_btn_broadcast')}
                 </button>
               </div>
 
@@ -242,26 +277,32 @@ export default function SecurityDetours() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {resolvedIncidents.map((inc) => (
+              {history.map((inc) => (
                 <tr key={inc.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-3 font-mono font-bold text-slate-800">{inc.id}</td>
-                  <td className="px-6 py-3 font-semibold text-slate-700">{inc.segment}</td>
+                  <td className="px-6 py-3 font-mono font-bold text-slate-800">{inc.id.substring(0,8)}</td>
+                  <td className="px-6 py-3 font-semibold text-slate-700">{inc.name}</td>
                   <td className="px-6 py-3">
                     <div className="font-semibold text-slate-900">{inc.type}</div>
                     <div className="text-[10px] text-slate-500 uppercase">{inc.severity}</div>
                   </td>
                   <td className="px-6 py-3">
-                    <div className="font-semibold text-slate-700 flex items-center gap-1"><Clock size={12}/> {inc.duration}</div>
-                    <div className="text-[10px] text-slate-500">{inc.fleets}</div>
+                    <div className="font-semibold text-slate-700 flex items-center gap-1"><Clock size={12}/> {new Date(inc.createdAt).toLocaleString()}</div>
                   </td>
-                  <td className="px-6 py-3 font-mono text-slate-500">{inc.time}</td>
+                  <td className="px-6 py-3 font-mono text-slate-500">{new Date(inc.updatedAt).toLocaleString()}</td>
                   <td className="px-6 py-3 text-right">
                     <span className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap">
-                      <CheckCircle size={12} className="text-emerald-500" /> Resolved & Normal Route Restored
+                      <CheckCircle size={12} className="text-emerald-500" /> Resolved
                     </span>
                   </td>
                 </tr>
               ))}
+              {history.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-slate-500 text-sm">
+                    No historical incidents found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

@@ -44,10 +44,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
     }} />;
   }
 
-  if (!allowedRoles.includes(user.role as any)) {
-    const defaultRoute = ROLE_DEFAULT_ROUTES[user.role] || '/';
+  if (!allowedRoles.includes(user?.role as any)) {
+    const defaultRoute = user?.role ? ROLE_DEFAULT_ROUTES[user.role] : '/';
     if (window.location.pathname !== defaultRoute) {
-      window.history.replaceState(null, '', defaultRoute);
+      window.history.replaceState(null, '', defaultRoute || '/');
       window.dispatchEvent(new Event('popstate'));
     }
     return null;

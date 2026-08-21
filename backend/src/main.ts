@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 4000;
 // Strict CORS whitelist (allow localhost for dev, add prod domains later)
 const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.indexOf(origin) !== -1) {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    if (!origin || whitelist.indexOf(origin) !== -1 || origin.startsWith('http://localhost:')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -42,6 +42,8 @@ import { customsRoutes } from './routes/customs.routes';
 import { pricingRoutes } from './routes/pricing.routes';
 import { verificationRoutes } from './routes/verification.routes';
 import { adminRoutes } from './routes/admin.routes';
+import { shipperRoutes } from './routes/shipper.routes';
+import { etaRoutes } from './routes/eta.routes';
 import { paymentsRoutes } from './routes/payments.routes';
 import { offlineSyncRoutes } from './routes/offline-sync.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
@@ -56,12 +58,14 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 
 app.use('/auth', AuthController);
-app.use('/loads', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), loadsRoutes);
-app.use('/bids', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SHIPPER', 'ADMIN']), bidsRoutes);
-app.use('/customs', JwtAuthGuard, RolesGuard(['CUSTOMS_OFFICER', 'FORWARDER', 'ADMIN']), customsRoutes);
-app.use('/pricing', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), pricingRoutes);
-app.use('/verification', JwtAuthGuard, RolesGuard(['ADMIN']), verificationRoutes);
-app.use('/admin', JwtAuthGuard, RolesGuard(['ADMIN']), adminRoutes);
+app.use('/api/v1/shipper', JwtAuthGuard, RolesGuard(['SHIPPER']), shipperRoutes);
+app.use('/api/v1/loads', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), loadsRoutes);
+app.use('/api/v1/bids', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SHIPPER', 'ADMIN']), bidsRoutes);
+app.use('/api/v1/customs', JwtAuthGuard, RolesGuard(['CUSTOMS_OFFICER', 'FORWARDER', 'ADMIN']), customsRoutes);
+app.use('/api/v1/pricing', pricingRoutes); // Route itself checks JWT & Roles inside
+app.use('/api/v1/eta', etaRoutes);
+app.use('/api/v1/verification', JwtAuthGuard, verificationRoutes);
+app.use('/api/v1/admin', JwtAuthGuard, RolesGuard(['ADMIN', 'SYSTEM_ADMIN']), adminRoutes);
 app.use('/payments', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), paymentsRoutes);
 app.use('/sync', JwtAuthGuard, offlineSyncRoutes);
 app.use('/offline-sync', JwtAuthGuard, offlineSyncRoutes);

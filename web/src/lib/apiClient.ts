@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import axios, { AxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = 'http://localhost:4001';
+const API_BASE_URL = 'http://localhost:4001/api/v1';
 
 // Keep these for backward compatibility during transition if any other files use them
 export const getAuthToken = () => localStorage.getItem('tradeflow_token');
@@ -66,5 +66,148 @@ export async function apiClient<T = any>(endpoint: string, options: FetchOptions
 }
 
 export async function fetchRiskZones() {
-  return apiClient('/risk-zones', { method: 'GET' });
+  return apiClient('/security/geofences', { method: 'GET' });
+}
+
+export async function broadcastRiskZone(data: any) {
+  return apiClient('/security/broadcast-geofence', { method: 'POST', data });
+}
+
+export async function resolveRiskZone(id: string) {
+  return apiClient(`/security/geofences/${id}/resolve`, { method: 'PATCH' });
+}
+
+export async function fetchSecurityHistory() {
+  return apiClient('/security/history', { method: 'GET' });
+}
+
+// Verification Queue (Tab 2)
+export async function getPendingVerifications() {
+  return apiClient('/admin/verifications/pending', { method: 'GET' });
+}
+
+export async function reviewVerification(id: string, data: { status: string; rejectionReason?: string }) {
+  return apiClient(`/admin/verifications/${id}/review`, { method: 'POST', data });
+}
+
+export async function submitVerification(data: { tradeLicenseNumber: string; taxId: string; documentUrls?: string[] }) {
+  return apiClient('/verification/submit', { method: 'POST', data });
+}
+
+// Telematics (Tab 1)
+export async function fetchCorridorSummary() {
+  return apiClient('/admin/telematics/corridor-summary', { method: 'GET' });
+}
+
+export async function fetchLiveAssets() {
+  return apiClient('/admin/telematics/live-assets', { method: 'GET' });
+}
+
+export async function fetchCorridorRoutes() {
+  return apiClient('/pricing/corridor-routes', { method: 'GET' });
+}
+
+export async function fetchEtaProjections() {
+  return apiClient('/eta/projections', { method: 'GET' });
+}
+
+export async function recalculateYield() {
+  return apiClient('/pricing/recalculate-yield', { method: 'POST' });
+}
+
+// Dynamic Pricing (Tab 3)
+export async function fetchPricingGovernance() {
+  return apiClient('/pricing/governance', { method: 'GET' });
+}
+
+export async function updatePricingGovernance(data: any) {
+  return apiClient('/pricing/governance/update', { method: 'POST', data });
+}
+
+export async function publishRates() {
+  return apiClient('/pricing/publish-rates', { method: 'POST' });
+}
+
+// Fuel Analytics (Tab 4)
+export async function fetchFuelAnalytics() {
+  return apiClient('/admin/analytics/fuel', { method: 'GET' });
+}
+
+export async function exportFuelReport() {
+  return apiClient('/admin/analytics/fuel/export', { method: 'POST' });
+}
+
+// Disputes & Audit (Tab 6)
+export async function fetchDisputes() {
+  return apiClient('/admin/disputes', { method: 'GET' });
+}
+
+export async function resolveDispute(id: string, data: any) {
+  return apiClient(`/admin/disputes/${id}/resolve`, { method: 'POST', data });
+}
+
+export async function fetchAuditLogs(filter?: any) {
+  return apiClient('/admin/audit-logs', { method: 'GET', params: filter });
+}
+
+export async function exportAuditLogs(format: 'csv' | 'pdf') {
+  return apiClient('/admin/audit-logs/export', { method: 'POST', data: { format } });
+}
+
+// ==========================================
+// SHIPPER PORTAL APIs
+// ==========================================
+
+export async function postLoad(data: any) {
+  return apiClient('/loads', { method: 'POST', data });
+}
+
+export async function getAllLoads() {
+  return apiClient('/loads', { method: 'GET' });
+}
+
+export async function getShipperActiveShipment() {
+  return apiClient('/shipper/shipments/active', { method: 'GET' });
+}
+
+export async function getShipperLoads() {
+  return apiClient('/shipper/loads', { method: 'GET' });
+}
+
+export async function acceptBidEscrow(bidId: string) {
+  return apiClient(`/shipper/bids/${bidId}/accept-escrow`, { method: 'POST' });
+}
+
+export async function getContractRates() {
+  return apiClient('/shipper/contract-rates', { method: 'GET' });
+}
+
+export async function createContractRate(data: any) {
+  return apiClient('/shipper/contract-rates', { method: 'POST', data });
+}
+
+export async function renegotiateContract(id: string) {
+  return apiClient(`/shipper/contract-rates/${id}/renegotiate`, { method: 'POST' });
+}
+
+export async function getCustomsDocuments(shipmentId: string) {
+  return apiClient(`/customs/shipments/${shipmentId}/documents`, { method: 'GET' });
+}
+
+export async function uploadCustomsDocument(data: FormData) {
+  return apiClient('/customs/upload', { 
+    method: 'POST', 
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+}
+
+export async function getShipperOrganization() {
+  return apiClient('/shipper/organization', { method: 'GET' });
+}
+
+export async function updateShipperOrganization(data: any) {
+  return apiClient('/shipper/organization', { method: 'PUT', data });
 }

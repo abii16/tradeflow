@@ -1,12 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, Settings2, Activity, Zap, ArrowRight, BarChart2, Shield } from 'lucide-react';
+import { fetchPricingGovernance, updatePricingGovernance, publishRates } from '../../lib/apiClient';
+import toast from 'react-hot-toast';
 
 export default function DynamicPricing() {
   const { t } = useTranslation();
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
   const [floorBound, setFloorBound] = useState(-15);
   const [ceilBound, setCeilBound] = useState(45);
   const [dieselIndex, setDieselIndex] = useState(95.50);
+  const [demandMultiplier, setDemandMultiplier] = useState(1.24);
+
+  const [segments, setSegments] = useState({ segment1: 160500, segment2: 195729, total: 356229 });
+  const [yieldMetrics, setYieldMetrics] = useState({ networkYield: 2420000, variancePercent: 8.4, totalActiveFreight: 142 });
+  const [historicalTrend, setHistoricalTrend] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await fetchPricingGovernance();
+        if (data.policy) {
+          setFloorBound(Number(data.policy.spotRateFloor));
+          setCeilBound(Number(data.policy.spotRateCeiling));
+          setDieselIndex(Number(data.policy.dieselPrice));
+          setDemandMultiplier(Number(data.policy.demandMultiplier));
+        }
+        if (data.segments) setSegments(data.segments);
+        if (data.yieldMetrics) setYieldMetrics(data.yieldMetrics);
+        if (data.historicalTrend) setHistoricalTrend(data.historicalTrend);
+      } catch (err) {
+        toast.error('Failed to load pricing governance');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  // Debounced save for sliders
+  useEffect(() => {
+    if (loading) return;
+    const timer = setTimeout(async () => {
+      try {
+        setSaving(true);
+        await updatePricingGovernance({
+          spotRateFloor: floorBound,
+          spotRateCeiling: ceilBound,
+          dieselPrice: dieselIndex,
+          demandMultiplier
+        });
+      } catch (err) {
+        toast.error('Failed to update parameters');
+      } finally {
+        setSaving(false);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [floorBound, ceilBound, dieselIndex, demandMultiplier, loading]);
+
+  const handleSync = async () => {
+    try {
+      setSyncing(true);
+      await publishRates();
+      toast.success(t('dp_btn_sync') + ' Successful');
+    } catch (err) {
+      toast.error('Failed to publish rates');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <div className="h-full flex flex-col space-y-6">
@@ -20,9 +87,13 @@ export default function DynamicPricing() {
           </h2>
           <p className="text-xs text-slate-500 mt-1">{t('dp_desc')}</p>
         </div>
-        <button className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold py-2 px-6 rounded-lg text-sm shadow-md transition-all flex items-center gap-2">
+        <button 
+          onClick={handleSync}
+          disabled={syncing || saving}
+          className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold py-2 px-6 rounded-lg text-sm shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+        >
           <Zap size={16} className="text-amber-400" />
-          {t('dp_btn_sync')}
+          {syncing ? 'Syncing...' : t('dp_btn_sync')}
         </button>
       </div>
 
@@ -95,24 +166,25 @@ export default function DynamicPricing() {
             </div>
           </div>
 
-          <div className="bg-[#0F172A] rounded-xl border border-slate-800 shadow-sm p-5 text-white">
+          <div className="bg-[#0F172A] rounded-xl border border-slate-800 shadow-sm p-5 text-white relative">
+            {saving && <div className="absolute top-2 right-2 text-[10px] text-slate-400">Saving...</div>}
             <h3 className="font-bold text-slate-300 mb-4 flex items-center gap-2 text-sm">
               <Activity size={16} className="text-emerald-400" />
               {t('dp_yield_title')}
             </h3>
-            <div className="text-3xl font-mono font-bold mb-1">ETB 2.42M</div>
+            <div className="text-3xl font-mono font-bold mb-1">ETB {(yieldMetrics.networkYield / 1000000).toFixed(2)}M</div>
             <div className="text-xs font-semibold text-emerald-400 flex items-center gap-1 mb-4">
-              <TrendingUp size={14} /> +8.4% {t('dp_yield_vs')}
+              <TrendingUp size={14} /> +{yieldMetrics.variancePercent}% {t('dp_yield_vs')}
             </div>
             
             <div className="space-y-2 mt-4 text-xs font-mono">
               <div className="flex justify-between items-center bg-white/5 p-2 rounded">
                 <span className="text-slate-400">{t('dp_surge_mult')}</span>
-                <span className="font-bold">1.24x</span>
+                <span className="font-bold">{demandMultiplier}x</span>
               </div>
               <div className="flex justify-between items-center bg-white/5 p-2 rounded">
                 <span className="text-slate-400">{t('dp_active_freight')}</span>
-                <span className="font-bold">142 TEUs</span>
+                <span className="font-bold">{yieldMetrics.totalActiveFreight} TEUs</span>
               </div>
             </div>
           </div>
@@ -182,7 +254,7 @@ export default function DynamicPricing() {
 
             <div className="bg-slate-900 p-4 rounded-b-xl flex justify-between items-center text-white">
               <span className="font-semibold text-sm">{t('dp_computed_total')}</span>
-              <span className="font-mono text-xl font-bold text-emerald-400">ETB 356,229.54</span>
+              <span className="font-mono text-xl font-bold text-emerald-400">ETB {segments.total.toLocaleString()}</span>
             </div>
           </div>
 
@@ -211,19 +283,24 @@ export default function DynamicPricing() {
               <div className="absolute left-0 bottom-[60%] -translate-y-1/2 text-[9px] font-mono text-slate-400">300K</div>
               <div className="absolute left-0 bottom-[30%] -translate-y-1/2 text-[9px] font-mono text-slate-400">200K</div>
 
-              {/* Bars */}
-              {[40, 45, 42, 50, 55, 60, 58, 65, 70, 75, 72, 80, 85, 90, 88].map((h, i) => (
-                <div key={i} className="relative flex-1 group flex justify-center h-full items-end">
-                  <div 
-                    style={{ height: `${h}%` }} 
-                    className="w-full max-w-[12px] bg-blue-500/80 rounded-t-sm hover:bg-blue-600 transition-colors relative"
-                  >
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-mono px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 z-20 pointer-events-none">
-                      {Math.round(200 + h * 2)}K
+              {/* Bars based on historicalTrend */}
+              {historicalTrend.map((data, i) => {
+                const maxVal = Math.max(...historicalTrend.map(d => Math.max(d.algorithmic, d.market)));
+                const h = (data.algorithmic / maxVal) * 100;
+                
+                return (
+                  <div key={i} className="relative flex-1 group flex justify-center h-full items-end">
+                    <div 
+                      style={{ height: `${h}%` }} 
+                      className="w-full max-w-[12px] bg-blue-500/80 rounded-t-sm hover:bg-blue-600 transition-colors relative"
+                    >
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-mono px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 z-20 pointer-events-none">
+                        {(data.algorithmic / 1000).toFixed(0)}K
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Gradient Background */}

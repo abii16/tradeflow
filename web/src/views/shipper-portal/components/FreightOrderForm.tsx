@@ -3,16 +3,68 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MapPin, Scale, Package } from 'lucide-react';
+import { postLoad } from '@/lib/apiClient';
 
 export default function FreightOrderForm() {
   const { t } = useTranslation();
   const [quoteGenerated, setQuoteGenerated] = useState(false);
   const [leadTime, setLeadTime] = useState('24h');
+  const [loading, setLoading] = useState(false);
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [formData, setFormData] = useState({
+    origin: 'Djibouti Port / Doraleh Container Terminal (DCT)',
+    cargoType: '30T Construction Rebar (Flatbed)',
+    destination: 'Modjo Dry Port & Terminal, Ethiopia',
+    weightKg: '32000'
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleRequestQuote = (e: React.FormEvent) => {
     e.preventDefault();
+    const baseRatePerKg = 8.7; // ~8.7 ETB per kg base rate
+    let multiplier = 1.0;
+    if (leadTime === '12h') multiplier = 1.4;
+    if (leadTime === '48h') multiplier = 0.85;
+    
+    const weight = Number(formData.weightKg) || 0;
+    const finalPrice = Math.round(weight * baseRatePerKg * multiplier);
+    setCalculatedPrice(finalPrice);
     setQuoteGenerated(true);
   };
+
+  const handleConfirmBroadcast = async () => {
+    try {
+      setLoading(true);
+      await postLoad({
+        title: `Freight: ${formData.cargoType}`,
+        description: `Deliver ${formData.cargoType} from ${formData.origin} to ${formData.destination}`,
+        origin: { address: formData.origin, city: 'Djibouti' },
+        destination: { address: formData.destination, city: 'Modjo' },
+        weightKg: Number(formData.weightKg),
+        cargoType: formData.cargoType,
+        budgetAmount: calculatedPrice,
+        currency: 'ETB',
+        expiryHours: leadTime === '12h' ? 12 : leadTime === '24h' ? 24 : 48
+      });
+      alert('Order posted successfully!');
+      setQuoteGenerated(false);
+      
+      // Navigate to Bids Exchange tab
+      window.dispatchEvent(new Event('shipper:load_posted'));
+      localStorage.setItem('tradeflow_load_posted', Date.now().toString());
+      window.history.pushState({ tab: 'bids' }, '', '/shipper/bids');
+      window.dispatchEvent(new Event('popstate'));
+    } catch (error: any) {
+      console.error(error);
+      alert('Failed to post order: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-4">
@@ -28,7 +80,17 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-medium text-slate-700 mb-1 block">Origin</Label>
               <div className="relative">
                 <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" defaultValue="Djibouti Container Terminal" />
+                <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                  <option value="Djibouti Port / Doraleh Container Terminal (DCT)">Djibouti Port / Doraleh Container Terminal (DCT)</option>
+                  <option value="Djibouti Free Trade Zone (DFTZ)">Djibouti Free Trade Zone (DFTZ)</option>
+                  <option value="Galafi Border Terminal (Inbound)">Galafi Border Terminal (Inbound)</option>
+                  <option value="Modjo Dry Port & Terminal (Outbound Export)">Modjo Dry Port & Terminal (Outbound Export)</option>
+                  <option value="Addis Ababa / Kality Customs Branch">Addis Ababa / Kality Customs Branch</option>
+                  <option value="Dire Dawa Dry Port">Dire Dawa Dry Port</option>
+                  <option value="Semera Logistics Hub">Semera Logistics Hub</option>
+                  <option value="Kombolcha Dry Port">Kombolcha Dry Port</option>
+                  <option value="Hawassa Industrial Park Terminal">Hawassa Industrial Park Terminal</option>
+                </select>
               </div>
             </div>
 
@@ -36,7 +98,16 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-medium text-slate-700 mb-1 block">Cargo Details</Label>
               <div className="relative">
                 <Package size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" defaultValue="30T Construction Rebar (Flatbed)" />
+                <select name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                  <option value="30T Construction Rebar (Flatbed)">30T Construction Rebar (Flatbed)</option>
+                  <option value="20ft Standard Dry Container (FCL)">20ft Standard Dry Container (FCL)</option>
+                  <option value="40ft High Cube Container (FCL)">40ft High Cube Container (FCL)</option>
+                  <option value="40T Bulk Agricultural / Coffee Beans (High-Side)">40T Bulk Agricultural / Coffee Beans (High-Side)</option>
+                  <option value="Heavy Machinery / Industrial Equipment (Lowbed)">Heavy Machinery / Industrial Equipment (Lowbed)</option>
+                  <option value="Refrigerated Perishables / Pharma (Reefer)">Refrigerated Perishables / Pharma (Reefer)</option>
+                  <option value="Bulk Petroleum / Fuel Tanker">Bulk Petroleum / Fuel Tanker</option>
+                  <option value="General Palletized Merchandise (Box Truck)">General Palletized Merchandise (Box Truck)</option>
+                </select>
               </div>
             </div>
 
@@ -44,7 +115,17 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-medium text-slate-700 mb-1 block">Destination</Label>
               <div className="relative">
                 <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" defaultValue="Modjo Dry Port, Ethiopia" />
+                <select name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                  <option value="Modjo Dry Port & Terminal, Ethiopia">Modjo Dry Port & Terminal, Ethiopia</option>
+                  <option value="Addis Ababa / Kality Customs Clearance Center">Addis Ababa / Kality Customs Clearance Center</option>
+                  <option value="Djibouti Container Terminal (Export Exit)">Djibouti Container Terminal (Export Exit)</option>
+                  <option value="Dire Dawa Free Trade Zone">Dire Dawa Free Trade Zone</option>
+                  <option value="Semera Freight Hub">Semera Freight Hub</option>
+                  <option value="Kombolcha Dry Port">Kombolcha Dry Port</option>
+                  <option value="Hawassa Industrial Park">Hawassa Industrial Park</option>
+                  <option value="Mekelle Hub">Mekelle Hub</option>
+                  <option value="Adama Industrial Hub">Adama Industrial Hub</option>
+                </select>
               </div>
             </div>
 
@@ -52,7 +133,24 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-medium text-slate-700 mb-1 block">Weight & Volume</Label>
               <div className="relative">
                 <Scale size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" defaultValue="32,000 kg" />
+                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" placeholder="Weight in kg" />
+              </div>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {[
+                  { value: '18000', label: '18,000 kg (20ft)' },
+                  { value: '28000', label: '28,000 kg (40ft)' },
+                  { value: '32000', label: '32,000 kg (Rebar)' },
+                  { value: '40000', label: '40,000 kg (Bulk)' }
+                ].map(preset => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, weightKg: preset.value }))}
+                    className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors border border-slate-200"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -102,31 +200,34 @@ export default function FreightOrderForm() {
               <h3 className="text-base font-semibold mt-0.5">Calculated Corridor Benchmark</h3>
             </div>
             <div className="text-right">
-              <span className="text-xl font-bold font-mono text-emerald-400">348,000 ETB</span>
-              <p className="text-[11px] text-slate-400">~$2,950 USD</p>
+              <span className="text-xl font-bold font-mono text-emerald-400">{calculatedPrice.toLocaleString()} ETB</span>
+              <p className="text-[11px] text-slate-400">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-xs border-t border-slate-800 pt-3">
-            <div>
-              <span className="text-slate-400 text-[11px] block">Transit Estimate</span>
-              <span className="font-semibold text-slate-200">18 - 22 Hours</span>
-            </div>
-            <div>
-              <span className="text-slate-400 text-[11px] block">Verified Fleet Capacity</span>
-              <span className="font-semibold text-slate-200">14 Carriers in Galafi</span>
-            </div>
-            <div>
-              <span className="text-slate-400 text-[11px] block">Smart Contract Status</span>
-              <span className="font-semibold text-emerald-400">Escrow Ready</span>
-            </div>
+          <div className="bg-slate-800 rounded p-2 text-[11px] font-mono flex items-center justify-between mt-3 text-slate-300">
+             <div className="flex items-center gap-1.5">
+                <span>Corridor Base: {Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
+                <span className="text-slate-500">+</span>
+                <span>Fuel Index: {Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
+                <span className="text-slate-500">+</span>
+                <span>Dwell Surcharge: {Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
+             </div>
+             <div className="flex items-center gap-1.5">
+                <span className="text-slate-500">=</span>
+                <span className="text-emerald-400 font-bold">Total: {calculatedPrice.toLocaleString()} ETB</span>
+             </div>
           </div>
+
+
 
           <button
             type="button"
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-md text-xs font-medium transition-colors"
+            onClick={handleConfirmBroadcast}
+            disabled={loading}
+            className="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
           >
-            Confirm & Broadcast Order to Exchange
+            {loading ? 'Posting...' : 'Confirm & Post Load'}
           </button>
         </div>
       )}

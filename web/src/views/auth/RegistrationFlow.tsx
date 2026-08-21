@@ -14,7 +14,7 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   // Form State
-  const [role, setRole] = useState<'shipper' | 'transporter' | 'forwarder' | null>(null);
+  const [role, setRole] = useState<'shipper' | 'transporter' | 'forwarder' | 'customs_officer' | 'admin' | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -39,7 +39,9 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
       // Map frontend role to backend enum
       let mappedRole = 'SHIPPER';
       if (role === 'transporter') mappedRole = 'TRANSPORTER';
-      if (role === 'forwarder') mappedRole = 'CUSTOMS_BROKER';
+      if (role === 'forwarder') mappedRole = 'FORWARDER';
+      if (role === 'customs_officer') mappedRole = 'CUSTOMS_OFFICER';
+      if (role === 'admin') mappedRole = 'ADMIN';
 
       await register({
         email: formData.email,
@@ -63,44 +65,21 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
     <div className="space-y-4">
       <h3 className="text-xl font-bold text-slate-900 mb-6">Select your primary role</h3>
       
-      <button 
-        onClick={() => setRole('shipper')}
-        className={`w-full flex items-center gap-4 p-4 rounded-xl border ${role === 'shipper' ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-400'} text-left transition-colors`}
-      >
-        <div className={`p-3 rounded-lg ${role === 'shipper' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
-          <Building2 size={24} />
-        </div>
-        <div>
-          <div className="font-bold text-slate-900">Shipper / Importer</div>
-          <div className="text-xs text-slate-500">I want to post cargo and get transport rates</div>
-        </div>
-      </button>
-
-      <button 
-        onClick={() => setRole('forwarder')}
-        className={`w-full flex items-center gap-4 p-4 rounded-xl border ${role === 'forwarder' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-400'} text-left transition-colors`}
-      >
-        <div className={`p-3 rounded-lg ${role === 'forwarder' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
-          <Briefcase size={24} />
-        </div>
-        <div>
-          <div className="font-bold text-slate-900">Freight Forwarder</div>
-          <div className="text-xs text-slate-500">I manage cargo and customs for multiple clients</div>
-        </div>
-      </button>
-
-      <button 
-        onClick={() => setRole('transporter')}
-        className={`w-full flex items-center gap-4 p-4 rounded-xl border ${role === 'transporter' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-emerald-400'} text-left transition-colors`}
-      >
-        <div className={`p-3 rounded-lg ${role === 'transporter' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
-          <Truck size={24} />
-        </div>
-        <div>
-          <div className="font-bold text-slate-900">Transporter / Fleet Owner</div>
-          <div className="text-xs text-slate-500">I have trucks and want to accept freight loads</div>
-        </div>
-      </button>
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">Primary Role</label>
+        <select 
+          className="w-full border border-slate-300 rounded-lg p-3 text-sm bg-white"
+          value={role || ''}
+          onChange={(e) => setRole(e.target.value as any)}
+        >
+          <option value="" disabled>Select a role...</option>
+          <option value="shipper">Shipper / Importer</option>
+          <option value="forwarder">Freight Forwarder</option>
+          <option value="transporter">Transporter / Fleet Owner</option>
+          <option value="customs_officer">Customs Officer</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
 
       <div className="pt-4 flex justify-end">
         <button 
