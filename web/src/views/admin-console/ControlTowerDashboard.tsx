@@ -1,5 +1,5 @@
-import React from 'react';
-import { Toaster } from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { 
   Truck, 
@@ -16,10 +16,59 @@ import {
 } from 'lucide-react';
 import LiveRadarMap from './LiveRadarMap';
 import { useLiveTelemetry } from '../../hooks/useLiveTelemetry';
+import { 
+  getPendingVerifications,
+  fetchCorridorSummary,
+  fetchCorridorRoutes,
+  fetchEtaProjections,
+  recalculateYield
+} from '../../lib/apiClient';
 
 export default function ControlTowerDashboard() {
   const { t } = useTranslation();
   const { telemetry } = useLiveTelemetry();
+  const [verifications, setVerifications] = useState<any[]>([]);
+  const [loadingVerifications, setLoadingVerifications] = useState(true);
+  
+  // Live states
+  const [summary, setSummary] = useState({ activeAssets: 0, corridorStatus: 'OPERATIONAL', activeAlerts: 0 });
+  const [routes, setRoutes] = useState<any[]>([]);
+  const [etaData, setEtaData] = useState<any[]>([]);
+  const [recalculating, setRecalculating] = useState(false);
+
+  useEffect(() => {
+    async function loadAll() {
+      try {
+        const [vRes, sumRes, routeRes, etaRes] = await Promise.all([
+          getPendingVerifications(),
+          fetchCorridorSummary(),
+          fetchCorridorRoutes(),
+          fetchEtaProjections()
+        ]);
+        setVerifications(vRes.data || []);
+        setSummary(sumRes);
+        setRoutes(routeRes.routes || []);
+        setEtaData(etaRes.projections || []);
+      } catch (err) {
+        console.error('Failed to load dashboard data', err);
+      } finally {
+        setLoadingVerifications(false);
+      }
+    }
+    loadAll();
+  }, []);
+
+  const handleRecalculate = async () => {
+    setRecalculating(true);
+    try {
+      await recalculateYield();
+      toast.success('Yield recalculated successfully');
+    } catch (err) {
+      toast.error('Failed to recalculate yield');
+    } finally {
+      setRecalculating(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -32,7 +81,7 @@ export default function ControlTowerDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl font-mono font-bold text-slate-900">{telemetry.trucks.length > 0 ? telemetry.trucks.length : 142}</span>
+              <span className="text-2xl font-mono font-bold text-slate-900">{telemetry.trucks.length > 0 ? telemetry.trucks.length : summary.activeAssets}</span>
               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full">
                 +12.5%
               </span>
@@ -105,32 +154,29 @@ export default function ControlTowerDashboard() {
             </div>
 
             <div className="space-y-3 flex-1">
-              <div className="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-slate-50 relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
-                <div>
-                  <div className="text-xs font-semibold text-slate-900">{t('spo_route_a')}</div>
-                  <div className="text-[10px] text-slate-500">{t('route_a_desc')}</div>
+              {routes.map((route, i) => (
+                <div key={route.id} className={`flex items-center justify-between p-3 border border-slate-200 rounded-lg ${i === 0 ? 'bg-slate-50 relative overflow-hidden' : ''}`}>
+                  {i === 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>}
+                  <div>
+                    <div className="text-xs font-semibold text-slate-900">{route.name}</div>
+                    <div className="text-[10px] text-slate-500">{i === 0 ? t('route_a_desc') : t('route_b_desc')}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-mono font-bold text-slate-900">ETB {route.price.toLocaleString()}</div>
+                    <div className={`text-[10px] font-semibold ${route.variance < 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {route.variance > 0 ? '+' : ''}{route.variance}% {t('spo_variance')}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-mono font-bold text-slate-900">ETB 345,000</div>
-                  <div className="text-[10px] text-emerald-600 font-semibold">-5.0% {t('spo_variance')}</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                <div>
-                  <div className="text-xs font-semibold text-slate-900">{t('spo_route_b')}</div>
-                  <div className="text-[10px] text-slate-500">{t('route_b_desc')}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-mono font-bold text-slate-900">ETB 362,500</div>
-                  <div className="text-[10px] text-rose-600 font-semibold">+4.8% {t('spo_variance')}</div>
-                </div>
-              </div>
+              ))}
             </div>
 
-            <button className="w-full mt-4 bg-[#0F172A] text-white text-xs font-medium py-2.5 rounded-lg hover:bg-slate-800 transition-colors">
-              {t('spo_recalc')}
+            <button 
+              onClick={handleRecalculate}
+              disabled={recalculating}
+              className="w-full mt-4 bg-[#0F172A] text-white text-xs font-medium py-2.5 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+            >
+              {recalculating ? 'Recalculating...' : t('spo_recalc')}
             </button>
           </div>
 
@@ -144,40 +190,29 @@ export default function ControlTowerDashboard() {
             </div>
             
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center">
-                  <MapPin size={14} className="text-slate-500" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-end mb-1">
-                    <span className="text-xs font-semibold text-slate-900">{t('eta_modjo')}</span>
-                    <span className="text-xs font-mono font-bold text-blue-600">{t('eta_est')} 14:30 EAT</span>
+              {etaData.map((eta, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center">
+                    <MapPin size={14} className="text-slate-500" />
                   </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 w-[85%] rounded-full"></div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-end mb-1">
+                      <span className="text-xs font-semibold text-slate-900">{eta.destination}</span>
+                      <span className={`text-xs font-mono font-bold ${i === 0 ? 'text-blue-600' : 'text-slate-700'}`}>{t('eta_est')} {eta.estimatedArrival}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className={`h-full ${i === 0 ? 'bg-blue-500' : 'bg-slate-300'} rounded-full`} style={{ width: `${eta.progressPercent}%` }}></div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
 
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center">
-                  <MapPin size={14} className="text-slate-500" />
+              {etaData.length > 0 && (
+                <div className="pt-2 border-t border-slate-100 flex justify-between items-center">
+                  <span className="text-[11px] text-slate-500">{t('eta_confidence')}</span>
+                  <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{etaData[0].confidence}</span>
                 </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-end mb-1">
-                    <span className="text-xs font-semibold text-slate-900">{t('eta_galafi')}</span>
-                    <span className="text-xs font-mono font-bold text-slate-700">{t('eta_est')} 21:00 EAT</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-slate-300 w-[30%] rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 flex justify-between items-center">
-                <span className="text-[11px] text-slate-500">{t('eta_confidence')}</span>
-                <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">99.1%</span>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -193,7 +228,7 @@ export default function ControlTowerDashboard() {
           </div>
           <span className="bg-slate-100 border border-slate-200 text-slate-600 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
             {t('vr_queue')}
-            <span className="bg-slate-600 text-white text-[10px] px-1.5 rounded-full">12</span>
+            <span className="bg-slate-600 text-white text-[10px] px-1.5 rounded-full">{verifications.length}</span>
           </span>
         </div>
 
@@ -209,58 +244,40 @@ export default function ControlTowerDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              
-              <tr className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 font-mono font-semibold text-slate-900">REQ-8492</td>
-                <td className="px-6 py-4 font-medium text-slate-900">TransHorn Logistics</td>
-                <td className="px-6 py-4 font-mono text-xs">TIN-ET-99421A</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                    {t('vr_pending')}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-blue-600 font-semibold text-xs hover:text-blue-700 flex items-center justify-end gap-1 ml-auto">
-                    {t('vr_review')} <ChevronRight size={14} />
-                  </button>
-                </td>
-              </tr>
-
-              <tr className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 font-mono font-semibold text-slate-900">REQ-8491</td>
-                <td className="px-6 py-4 font-medium text-slate-900">Addis Freightways</td>
-                <td className="px-6 py-4 font-mono text-xs">TIN-ET-10294B</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                    <AlertTriangle size={10} className="text-rose-500" />
-                    {t('vr_mismatch')}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-blue-600 font-semibold text-xs hover:text-blue-700 flex items-center justify-end gap-1 ml-auto">
-                    {t('vr_review')} <ChevronRight size={14} />
-                  </button>
-                </td>
-              </tr>
-
-              <tr className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 font-mono font-semibold text-slate-900">REQ-8488</td>
-                <td className="px-6 py-4 font-medium text-slate-900">Ethio-Djibouti Carriers</td>
-                <td className="px-6 py-4 font-mono text-xs">TIN-DJ-55102C</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                    <ShieldCheck size={10} className="text-emerald-500" />
-                    {t('vr_verified')}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-slate-400 hover:text-slate-600">
-                    <MoreHorizontal size={18} />
-                  </button>
-                </td>
-              </tr>
-
+              {loadingVerifications ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
+                    Loading verifications...
+                  </td>
+                </tr>
+              ) : verifications.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
+                    No pending verifications at this time.
+                  </td>
+                </tr>
+              ) : (
+                verifications.map((v) => (
+                  <tr key={v.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-mono font-semibold text-slate-900">
+                      REQ-{v.id.toString().slice(0, 8).toUpperCase()}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-slate-900">{v.userFullName || 'Unknown Entity'}</td>
+                    <td className="px-6 py-4 font-mono text-xs">{v.taxId || v.tradeLicenseNumber || 'N/A'}</td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        {t('vr_pending')}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button className="text-blue-600 font-semibold text-xs hover:text-blue-700 flex items-center justify-end gap-1 ml-auto">
+                        {t('vr_review')} <ChevronRight size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
