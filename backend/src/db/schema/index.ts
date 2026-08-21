@@ -15,3 +15,4 @@ export * from './risk_zones';
 export * from './driver_geofence_logs';
 export * from './pricing_policies';
 export * from './disputes';
+export * from './contracts';
