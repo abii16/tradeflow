@@ -1,16 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Droplet, TrendingDown, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { fetchFuelAnalytics, exportFuelReport } from '../../lib/apiClient';
+import toast from 'react-hot-toast';
 
 export default function FuelAnalytics() {
   const { t } = useTranslation();
 
-  const vehicles = [
-    { id: 'TRK-9021', driver: 'Abebe B.', route: 'Djibouti -> Modjo', estimated: 245, actual: 252, variance: '+2.8%', status: 'Normal' },
-    { id: 'TRK-1144', driver: 'Kassa T.', route: 'Djibouti -> Dire Dawa', estimated: 180, actual: 215, variance: '+19.4%', status: 'Flagged' },
-    { id: 'TRK-7732', driver: 'Dawit M.', route: 'Modjo -> Awassa', estimated: 95, actual: 92, variance: '-3.1%', status: 'Efficient' },
-    { id: 'TRK-8991', driver: 'Samuel K.', route: 'Galafi -> Semera', estimated: 60, actual: 61, variance: '+1.6%', status: 'Normal' },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [metrics, setMetrics] = useState({
+    totalFuelBurned: 42590,
+    variancePercent: 3.1,
+    flaggedVehiclesCount: 12
+  });
+  const [vehicles, setVehicles] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await fetchFuelAnalytics();
+        setMetrics({
+          totalFuelBurned: data.totalFuelBurned,
+          variancePercent: data.variancePercent,
+          flaggedVehiclesCount: data.flaggedVehiclesCount
+        });
+        setVehicles(data.activeVehicles || []);
+      } catch (err) {
+        toast.error('Failed to load fuel analytics');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportFuelReport();
+      toast.success('Report exported successfully');
+    } catch (err) {
+      toast.error('Failed to export report');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="max-w-[1320px] mx-auto space-y-6 pb-10">
@@ -30,8 +65,12 @@ export default function FuelAnalytics() {
             <option>This Week</option>
             <option>Today</option>
           </select>
-          <button className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-slate-800 transition-colors">
-            Export Report
+          <button 
+            onClick={handleExport}
+            disabled={exporting}
+            className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-slate-800 transition-colors disabled:opacity-50"
+          >
+            {exporting ? 'Exporting...' : 'Export Report'}
           </button>
         </div>
       </div>
@@ -41,7 +80,7 @@ export default function FuelAnalytics() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Fuel Burned</div>
-              <div className="text-3xl font-black text-slate-900">42,590 <span className="text-sm font-normal text-slate-500">Liters</span></div>
+              <div className="text-3xl font-black text-slate-900">{metrics.totalFuelBurned.toLocaleString()} <span className="text-sm font-normal text-slate-500">Liters</span></div>
             </div>
             <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
               <Droplet size={20} />
@@ -56,7 +95,7 @@ export default function FuelAnalytics() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg Variance</div>
-              <div className="text-3xl font-black text-slate-900">+3.1%</div>
+              <div className="text-3xl font-black text-slate-900">+{metrics.variancePercent}%</div>
             </div>
             <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
               <AlertTriangle size={20} />
@@ -69,7 +108,7 @@ export default function FuelAnalytics() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Flagged Vehicles</div>
-              <div className="text-3xl font-black text-slate-900">12</div>
+              <div className="text-3xl font-black text-slate-900">{metrics.flaggedVehiclesCount}</div>
             </div>
             <div className="p-2 bg-rose-50 rounded-lg text-rose-600">
               <AlertTriangle size={20} />
@@ -96,40 +135,40 @@ export default function FuelAnalytics() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {vehicles.map((v) => {
-                const percent = Math.min(100, Math.round((v.actual / v.estimated) * 100));
+              {vehicles.map((v, idx) => {
+                const percent = Math.min(100, Math.round((v.actualLiters / v.estimatedLiters) * 100));
                 return (
-                  <tr key={v.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="font-mono text-sm font-bold text-slate-900">{v.id}</div>
-                      <div className="text-[11px] text-slate-500">{v.driver}</div>
+                      <div className="font-mono text-sm font-bold text-slate-900">{v.vehicleId}</div>
+                      <div className="text-[11px] text-slate-500">{v.driverName}</div>
                     </td>
-                    <td className="px-6 py-4 text-xs font-medium text-slate-700">{v.route}</td>
-                    <td className="px-6 py-4 font-mono">{v.estimated}</td>
-                    <td className="px-6 py-4 font-mono font-bold">{v.actual}</td>
+                    <td className="px-6 py-4 text-xs font-medium text-slate-700">{v.activeRoute}</td>
+                    <td className="px-6 py-4 font-mono">{v.estimatedLiters}</td>
+                    <td className="px-6 py-4 font-mono font-bold">{v.actualLiters}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                           <div 
-                            className={`h-full rounded-full ${v.status === 'Flagged' ? 'bg-red-500' : 'bg-blue-500'}`}
+                            className={`h-full rounded-full ${v.status === 'FLAGGED' ? 'bg-red-500' : 'bg-blue-500'}`}
                             style={{ width: `${percent}%` }}
                           ></div>
                         </div>
-                        <span className="text-xs font-mono font-bold w-10 text-right">{v.variance}</span>
+                        <span className="text-xs font-mono font-bold w-10 text-right">{v.burnProgressVariance}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {v.status === 'Flagged' && (
+                      {v.status === 'FLAGGED' && (
                         <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
                           <AlertTriangle size={12} /> Flagged
                         </span>
                       )}
-                      {v.status === 'Normal' && (
+                      {v.status === 'NORMAL' && (
                         <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
                           Normal
                         </span>
                       )}
-                      {v.status === 'Efficient' && (
+                      {v.status === 'EFFICIENT' && (
                         <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
                           <CheckCircle2 size={12} /> Efficient
                         </span>
