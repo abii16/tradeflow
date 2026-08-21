@@ -10,6 +10,7 @@ export default function FreightOrderForm() {
   const [quoteGenerated, setQuoteGenerated] = useState(false);
   const [leadTime, setLeadTime] = useState('24h');
   const [loading, setLoading] = useState(false);
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [formData, setFormData] = useState({
     origin: 'Djibouti Container Terminal',
     cargoType: '30T Construction Rebar (Flatbed)',
@@ -23,6 +24,14 @@ export default function FreightOrderForm() {
 
   const handleRequestQuote = (e: React.FormEvent) => {
     e.preventDefault();
+    const baseRatePerKg = 8.7; // ~8.7 ETB per kg base rate
+    let multiplier = 1.0;
+    if (leadTime === '12h') multiplier = 1.4;
+    if (leadTime === '48h') multiplier = 0.85;
+    
+    const weight = Number(formData.weightKg) || 0;
+    const finalPrice = Math.round(weight * baseRatePerKg * multiplier);
+    setCalculatedPrice(finalPrice);
     setQuoteGenerated(true);
   };
 
@@ -32,11 +41,11 @@ export default function FreightOrderForm() {
       await postLoad({
         title: `Freight: ${formData.cargoType}`,
         description: `Deliver ${formData.cargoType} from ${formData.origin} to ${formData.destination}`,
-        origin: formData.origin,
-        destination: formData.destination,
+        origin: { address: formData.origin, city: 'Djibouti' },
+        destination: { address: formData.destination, city: 'Modjo' },
         weightKg: Number(formData.weightKg),
         cargoType: formData.cargoType,
-        budgetAmount: 348000,
+        budgetAmount: calculatedPrice,
         currency: 'ETB',
         expiryHours: leadTime === '12h' ? 12 : leadTime === '24h' ? 24 : 48
       });
@@ -141,8 +150,8 @@ export default function FreightOrderForm() {
               <h3 className="text-base font-semibold mt-0.5">Calculated Corridor Benchmark</h3>
             </div>
             <div className="text-right">
-              <span className="text-xl font-bold font-mono text-emerald-400">348,000 ETB</span>
-              <p className="text-[11px] text-slate-400">~$2,950 USD</p>
+              <span className="text-xl font-bold font-mono text-emerald-400">{calculatedPrice.toLocaleString()} ETB</span>
+              <p className="text-[11px] text-slate-400">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
             </div>
           </div>
 
