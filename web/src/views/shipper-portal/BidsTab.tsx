@@ -5,36 +5,7 @@ import { Star, ChevronDown } from 'lucide-react';
 
 type FilterStatus = 'all' | 'open' | 'transit' | 'completed';
 
-const LOADS = [
-  {
-    id: 'TF-LOAD-8821',
-    cargo: '40T Structural Steel',
-    route: 'Djibouti → Dire Dawa',
-    status: 'open' as const,
-    bids: [
-      { transporter: 'TransHorn Logistics', rating: 4.9, efficiency: 'Class A', proximity: '2h away', amount: 340000 },
-      { transporter: 'BlueNile Freighters', rating: 4.7, efficiency: 'Class B+', proximity: '4h away', amount: 352000 },
-    ],
-  },
-  {
-    id: 'TF-LOAD-8819',
-    cargo: '25T Coffee Beans',
-    route: 'Modjo → Djibouti',
-    status: 'transit' as const,
-    bids: [
-      { transporter: 'Horn Express', rating: 4.8, efficiency: 'Class A', proximity: 'En route', amount: 285000 },
-    ],
-  },
-  {
-    id: 'TF-LOAD-8812',
-    cargo: '18T Textile Goods',
-    route: 'Djibouti → Addis Ababa',
-    status: 'completed' as const,
-    bids: [
-      { transporter: 'Ethio Carriers', rating: 4.6, efficiency: 'Class B', proximity: 'Delivered', amount: 410000 },
-    ],
-  },
-];
+import { getShipperLoads, acceptBidEscrow } from '@/lib/apiClient';
 
 const FILTER_OPTIONS: { value: FilterStatus; label: string; count: number }[] = [
   { value: 'all', label: 'All Loads', count: 14 },
@@ -46,12 +17,54 @@ const FILTER_OPTIONS: { value: FilterStatus; label: string; count: number }[] = 
 export default function BidsTab() {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<FilterStatus>('all');
-  const [expandedLoad, setExpandedLoad] = useState<string | null>('TF-LOAD-8821');
+  const [expandedLoad, setExpandedLoad] = useState<string | null>(null);
+  const [loads, setLoads] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredLoads = LOADS.filter((load) => {
+  const fetchLoads = async () => {
+    try {
+      const data = await getShipperLoads();
+      setLoads(data.loads || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLoads();
+    const handleRefresh = () => fetchLoads();
+    window.addEventListener('shipper:load_posted', handleRefresh);
+    return () => window.removeEventListener('shipper:load_posted', handleRefresh);
+  }, []);
+
+  const handleAcceptBid = async (bidId: string) => {
+    try {
+      setLoading(true);
+      await acceptBidEscrow(bidId);
+      alert('Bid accepted and locked into escrow successfully!');
+      fetchLoads();
+    } catch (error) {
+      console.error(error);
+      alert('Failed to accept bid');
+      setLoading(false);
+    }
+  };
+
+  const filteredLoads = loads.filter((load) => {
     if (filter === 'all') return true;
-    return load.status === filter;
+    if (filter === 'open') return load.status === 'POSTED' || load.status === 'OPEN_FOR_BIDDING';
+    if (filter === 'transit') return load.status === 'IN_TRANSIT' || load.status === 'ASSIGNED';
+    if (filter === 'completed') return load.status === 'COMPLETED';
+    return true;
   });
+
+  const getStatusLabel = (status: string) => {
+    if (status === 'POSTED' || status === 'OPEN_FOR_BIDDING') return 'open';
+    if (status === 'IN_TRANSIT' || status === 'ASSIGNED') return 'transit';
+    return 'completed';
+  };
 
   return (
     <div className="max-w-[1320px] mx-auto space-y-5">
@@ -99,19 +112,19 @@ export default function BidsTab() {
 
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <span className="text-xs font-medium text-slate-700">{load.route}</span>
-                  <p className="text-[11px] text-slate-400 font-mono">{load.bids.length} active bids received</p>
+                  <span className="text-xs font-medium text-slate-700">{load.origin} → {load.destination}</span>
+                  <p className="text-[11px] text-slate-400 font-mono">{load.bids?.length || 0} active bids received</p>
                 </div>
                 <span
                   className={`px-2 py-0.5 text-[11px] font-medium rounded border capitalize ${
-                    load.status === 'open'
+                    getStatusLabel(load.status) === 'open'
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                      : load.status === 'transit'
+                      : getStatusLabel(load.status) === 'transit'
                       ? 'bg-blue-50 text-blue-700 border-blue-100'
                       : 'bg-slate-100 text-slate-600 border-slate-200'
                   }`}
                 >
-                  {load.status}
+                  {getStatusLabel(load.status)}
                 </span>
               </div>
             </div>
@@ -129,28 +142,30 @@ export default function BidsTab() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {load.bids.map((bid, i) => (
-                      <TableRow key={i} className="border-slate-100 bg-white hover:bg-slate-50/80">
+                    {load.bids?.map((bid: any, i: number) => (
+                      <TableRow key={bid.id || i} className="border-slate-100 bg-white hover:bg-slate-50/80">
                         <TableCell className="font-medium text-xs text-slate-900">
-                          {bid.transporter}
+                          {bid.transporterName || bid.transporter}
                           <span className="ml-2 px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded font-mono">
-                            {bid.efficiency}
+                            {bid.efficiency || 'Class A'}
                           </span>
                         </TableCell>
                         <TableCell className="text-xs">
                           <div className="flex items-center gap-1 text-amber-600 font-medium">
                             <Star size={12} className="fill-amber-500 text-amber-500" />
-                            {bid.rating}
+                            {bid.transporterRating || bid.rating || '4.8'}
                           </div>
                         </TableCell>
-                        <TableCell className="text-xs text-slate-500 font-mono">{bid.proximity}</TableCell>
+                        <TableCell className="text-xs text-slate-500 font-mono">{bid.proximity || '2h away'}</TableCell>
                         <TableCell className="text-xs font-semibold font-mono text-slate-900">
-                          {bid.amount.toLocaleString()} ETB
+                          {Number(bid.amount).toLocaleString()} {bid.currency || 'ETB'}
                         </TableCell>
                         <TableCell className="text-right">
                           <button
                             type="button"
-                            className="bg-slate-900 hover:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-md font-medium transition-colors"
+                            onClick={() => handleAcceptBid(bid.id)}
+                            disabled={loading || load.status !== 'POSTED'}
+                            className="bg-slate-900 hover:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-50"
                           >
                             Accept & Lock Escrow
                           </button>
