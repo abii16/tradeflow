@@ -33,6 +33,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user?.user_metadata as User || null);
       setIsLoading(false);
+    }).catch(err => {
+      console.error('Failed to get session:', err);
+      setIsLoading(false);
     });
 
     // 2. Listen for auth changes (login, logout, token refresh)
