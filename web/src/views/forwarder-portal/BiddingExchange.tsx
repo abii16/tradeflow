@@ -4,16 +4,33 @@ import { Star, Truck, MapPin, Clock, ArrowRight } from 'lucide-react';
 export default function BiddingExchange() {
   const [showFlash, setShowFlash] = useState(false);
 
-  useEffect(() => {
-    // Simulate a live bid arriving after 3 seconds
-    const timer = setTimeout(() => {
-      setShowFlash(true);
-      setTimeout(() => setShowFlash(false), 5000);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
+  const [cargoCards, setCargoCards] = useState<any[]>([]);
 
-  const cargoCards: any[] = [];
+  useEffect(() => {
+    async function fetchCargo() {
+      try {
+        const { getAllLoads } = await import('@/lib/apiClient');
+        const res = await getAllLoads();
+        const loads = res.loads || [];
+        
+        const formatted = loads.filter((l: any) => l.status === 'POSTED').map((load: any) => {
+          const originAddr = load.origin?.address || load.origin || 'Unknown';
+          const destAddr = load.destination?.address || load.destination || 'Unknown';
+          return {
+            title: load.title || 'Untitled Load',
+            route: `${originAddr} -> ${destAddr}`,
+            targetRate: load.budgetAmount ? parseInt(load.budgetAmount) : 0,
+            pickup: new Date(load.createdAt).toLocaleDateString(),
+            bids: [] // We can fetch bids here later, or leave empty
+          };
+        });
+        setCargoCards(formatted);
+      } catch (err) {
+        console.error('Failed to load cargo for bidding', err);
+      }
+    }
+    fetchCargo();
+  }, []);
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-10 flex flex-col h-full">
