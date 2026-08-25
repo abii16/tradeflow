@@ -4,12 +4,7 @@ import { AlertTriangle, Lock, Map, Search, Filter, CheckCircle2, FileText, FileB
 export default function CustomsWorkspace() {
   const [activeManifestId, setActiveManifestId] = useState('TFM-9943');
 
-  const queue = [
-    { id: 'TFM-9942', forwarder: 'Horn of Africa Logistics', eta: '14:30 EAT', status: 'Under Review', color: 'amber' },
-    { id: 'TFM-9943', forwarder: 'Red Sea Transport', eta: '15:00 EAT', status: 'Rejected / Flagged', color: 'rose' },
-    { id: 'TFM-9944', forwarder: 'Ethio-Djibouti Freight', eta: '16:15 EAT', status: 'Under Review', color: 'amber' },
-    { id: 'TFM-9940', forwarder: 'Abyssinia Transit', eta: '12:10 EAT', status: 'Cleared', color: 'emerald' },
-  ];
+  const queue: any[] = [];
 
   const getStatusClasses = (color: string) => {
     switch (color) {
