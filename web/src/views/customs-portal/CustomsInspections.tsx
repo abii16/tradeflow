@@ -109,9 +109,9 @@ export default function CustomsInspections() {
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Bay 01 (Security / E-Seals)</span>
             </div>
-            <div className="flex items-center gap-1.5 text-amber-600 text-sm font-bold">
-              <CircleDot size={14} className="fill-amber-500" />
-              Occupied (TFM-9921)
+            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-bold">
+              <CircleDot size={14} className="fill-emerald-500" />
+              Available
             </div>
           </div>
           <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
@@ -127,9 +127,9 @@ export default function CustomsInspections() {
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Bay 03 (Heavy Axle Scale)</span>
             </div>
-            <div className="flex items-center gap-1.5 text-rose-600 text-sm font-bold">
-              <CircleDot size={14} className="fill-rose-500 animate-pulse" />
-              Active Inspection (TFM-9943)
+            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-bold">
+              <CircleDot size={14} className="fill-emerald-500" />
+              Available
             </div>
           </div>
         </div>

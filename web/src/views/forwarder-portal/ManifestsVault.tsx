@@ -96,7 +96,7 @@ export default function ManifestsVault() {
         {/* Pagination Dock */}
         <div className="p-4 border-t border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50 rounded-b-xl">
           <div className="text-sm font-medium text-slate-500">
-            Showing <span className="font-bold text-slate-900">1–5</span> of <span className="font-bold text-slate-900">142</span> Master Manifests
+            Showing <span className="font-bold text-slate-900">0</span> of <span className="font-bold text-slate-900">0</span> Master Manifests
           </div>
           <div className="flex items-center gap-1">
             <button className="px-3 py-1.5 rounded text-sm font-medium text-slate-500 hover:bg-slate-100 flex items-center gap-1 transition-colors">

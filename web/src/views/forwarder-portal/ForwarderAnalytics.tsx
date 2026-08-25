@@ -3,10 +3,10 @@ import { Package, Clock, ShieldCheck, DollarSign, TrendingUp, TrendingDown, Acti
 
 export default function ForwarderAnalytics() {
   const kpis = [
-    { label: 'Total TEU Volume', value: '1,240 TEUs', change: '+14.2%', changeType: 'positive', icon: Package, subtitle: 'MoM Growth' },
-    { label: 'Avg Customs Clearance Time', value: '4.2 Hours', change: '-4.3h', changeType: 'positive', icon: Clock, subtitle: 'Down from 8.5h' },
-    { label: 'Carrier Compliance Rate', value: '96.4%', change: '+2.1%', changeType: 'positive', icon: ShieldCheck, subtitle: 'On-time delivery' },
-    { label: 'Total Escrow Facilitated', value: 'ETB 18.45M', change: '+8.4%', changeType: 'positive', icon: DollarSign, subtitle: 'Active Escrow' },
+    { label: 'Total TEU Volume', value: '--', change: '--', changeType: 'positive', icon: Package, subtitle: 'No Data' },
+    { label: 'Avg Customs Clearance Time', value: '--', change: '--', changeType: 'positive', icon: Clock, subtitle: 'No Data' },
+    { label: 'Carrier Compliance Rate', value: '--', change: '--', changeType: 'positive', icon: ShieldCheck, subtitle: 'No Data' },
+    { label: 'Total Escrow Facilitated', value: '--', change: '--', changeType: 'positive', icon: DollarSign, subtitle: 'No Data' },
   ];
 
   return (
@@ -62,10 +62,10 @@ export default function ForwarderAnalytics() {
             {/* Bars */}
             <div className="relative w-full h-full flex justify-between items-end px-4 gap-8 z-10">
               {[
-                { month: 'Jan', dj: { h: '60%', val: 300 }, gl: { h: '40%', val: 200 } },
-                { month: 'Feb', dj: { h: '70%', val: 350 }, gl: { h: '45%', val: 225 } },
-                { month: 'Mar', dj: { h: '85%', val: 425 }, gl: { h: '55%', val: 275 } },
-                { month: 'Apr', dj: { h: '95%', val: 475 }, gl: { h: '75%', val: 375 } },
+                { month: 'Jan', dj: { h: '0%', val: 0 }, gl: { h: '0%', val: 0 } },
+                { month: 'Feb', dj: { h: '0%', val: 0 }, gl: { h: '0%', val: 0 } },
+                { month: 'Mar', dj: { h: '0%', val: 0 }, gl: { h: '0%', val: 0 } },
+                { month: 'Apr', dj: { h: '0%', val: 0 }, gl: { h: '0%', val: 0 } },
               ].map((data, i) => (
                 <div key={i} className="flex-1 flex justify-center items-end gap-1.5 sm:gap-3 h-full group relative">
                   {/* DJ Bar */}
@@ -102,14 +102,7 @@ export default function ForwarderAnalytics() {
           
           <div className="flex-1 overflow-y-auto pr-3 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-50">
             <ul className="space-y-4">
-              {[
-                { name: 'Kangaroo Freight', score: 98, incidents: 0, rating: 4.9 },
-                { name: 'Tana Logistics', score: 94, incidents: 1, rating: 4.8 },
-                { name: 'Abyssinia Transit', score: 88, incidents: 2, rating: 4.7 },
-                { name: 'BlueNile Freighters', score: 82, incidents: 3, rating: 4.5 },
-                { name: 'Ethio-Djibouti Line', score: 76, incidents: 5, rating: 4.2 },
-                { name: 'Rift Valley Carriers', score: 72, incidents: 6, rating: 4.0 },
-              ].map((carrier, idx) => (
+              {[].map((carrier: any, idx: number) => (
                 <li key={idx} className="flex flex-col gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md transition-all">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-slate-900">{carrier.name}</span>

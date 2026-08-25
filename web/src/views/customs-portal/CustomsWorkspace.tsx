@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, Lock, Map, Search, Filter, CheckCircle2, FileText, FileBadge, FileSpreadsheet } from 'lucide-react';
 
 export default function CustomsWorkspace() {
-  const [activeManifestId, setActiveManifestId] = useState('TFM-9943');
+  const [activeManifestId, setActiveManifestId] = useState<string | null>(null);
 
   const queue: any[] = [];
 
