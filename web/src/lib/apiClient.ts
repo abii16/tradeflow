@@ -139,7 +139,7 @@ export async function exportFuelReport() {
 
 // Disputes & Audit (Tab 6)
 export async function fetchDisputes() {
-  return apiClient('/admin/disputes', { method: 'GET' });
+  return apiClient('/payments/disputes', { method: 'GET' });
 }
 
 export async function resolveDispute(id: string, data: any) {
