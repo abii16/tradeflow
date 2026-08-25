@@ -109,6 +109,7 @@ export class DisputeService {
         resolvedById: paymentDisputes.resolvedById,
         resolvedAt: paymentDisputes.resolvedAt,
         createdAt: paymentDisputes.createdAt,
+        amount: payments.amount,
         raisedByUser: {
           email: users.email,
           fullName: users.fullName,
@@ -117,6 +118,7 @@ export class DisputeService {
       })
       .from(paymentDisputes)
       .leftJoin(users, eq(paymentDisputes.raisedById, users.id))
+      .leftJoin(payments, eq(paymentDisputes.paymentId, payments.id))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(paymentDisputes.createdAt));
   }
