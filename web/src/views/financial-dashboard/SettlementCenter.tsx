@@ -35,81 +35,52 @@ interface EscrowReleaseItem {
   telebirrTxId?: string;
 }
 
-const INITIAL_RELEASES: EscrowReleaseItem[] = [
-  {
-    id: 'rel-1',
-    waybillId: 'WB-902-A',
-    shipmentRef: 'TF-LOAD-8821',
-    carrierName: 'Abyssinia Heavy Logistics',
-    driverName: 'Kassahun Bekele (ETH-4592)',
-    telebirrPhone: '0911-238-892',
-    cargo: 'Fertilizer (Urea) • 40.5 MT',
-    grossAmount: 340000,
-    platformFee: 10200,
-    netPayout: 329800,
-    podSigned: true,
-    podSignatureTime: '2026-08-16 11:32 AM',
-    customsCleared: true,
-    status: 'eligible',
-  },
-  {
-    id: 'rel-2',
-    waybillId: 'WB-903-B',
-    shipmentRef: 'TF-LOAD-8815',
-    carrierName: 'TransHorn Logistics PLC',
-    driverName: 'Mohammed Seid (ETH-1104)',
-    telebirrPhone: '0920-114-550',
-    cargo: 'Steel Billets • 38.0 MT',
-    grossAmount: 240000,
-    platformFee: 7200,
-    netPayout: 232800,
-    podSigned: true,
-    podSignatureTime: '2026-08-16 12:15 PM',
-    customsCleared: true,
-    status: 'eligible',
-  },
-  {
-    id: 'rel-3',
-    waybillId: 'WB-899-C',
-    shipmentRef: 'TF-LOAD-8809',
-    carrierName: 'BlueNile Freighters',
-    driverName: 'Tewodros Haile (ETH-9921)',
-    telebirrPhone: '0933-771-002',
-    cargo: 'Containers (2x20ft) • 44.0 MT',
-    grossAmount: 580000,
-    platformFee: 17400,
-    netPayout: 562600,
-    podSigned: true,
-    podSignatureTime: '2026-08-16 09:40 AM',
-    customsCleared: true,
-    status: 'released',
-    telebirrTxId: 'TB-20260816-89912',
-  },
-  {
-    id: 'rel-4',
-    waybillId: 'WB-910-D',
-    shipmentRef: 'TF-LOAD-8840',
-    carrierName: 'Ethio-Djibouti Haulers',
-    driverName: 'Abdi Ahmed (ETH-3032)',
-    telebirrPhone: '0912-990-112',
-    cargo: 'Industrial Machinery • 28.5 MT',
-    grossAmount: 420000,
-    platformFee: 12600,
-    netPayout: 407400,
-    podSigned: false,
-    customsCleared: true,
-    status: 'in_transit',
-  }
-];
+
 
 export default function SettlementCenter({
   currency,
   formatMoney
 }: SettlementCenterProps) {
-  const [releases, setReleases] = useState<EscrowReleaseItem[]>(INITIAL_RELEASES);
+  const [releases, setReleases] = useState<EscrowReleaseItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [inspectItem, setInspectItem] = useState<EscrowReleaseItem | null>(null);
   const [disputeItem, setDisputeItem] = useState<EscrowReleaseItem | null>(null);
+
+  React.useEffect(() => {
+    async function loadSettlements() {
+      try {
+        setLoading(true);
+        const { fetchPayments } = await import('@/lib/apiClient');
+        const res = await fetchPayments();
+        
+        const mapped: EscrowReleaseItem[] = (res.data || []).map((p: any) => ({
+          id: p.id,
+          waybillId: p.shipmentId || 'N/A',
+          shipmentRef: p.shipmentId || 'N/A',
+          carrierName: p.payeeId || 'Unknown',
+          driverName: 'Driver (Assigned)',
+          telebirrPhone: '09xx-xxx-xxx',
+          cargo: 'General Cargo',
+          grossAmount: Number(p.amount) || 0,
+          platformFee: (Number(p.amount) || 0) * 0.03,
+          netPayout: (Number(p.amount) || 0) * 0.97,
+          podSigned: p.status === 'PAID' || p.status === 'ESCROW_HELD',
+          podSignatureTime: p.createdAt ? new Date(p.createdAt).toISOString() : undefined,
+          customsCleared: true,
+          status: p.status === 'PAID' ? 'released' : p.status === 'ESCROW_HELD' ? 'eligible' : 'in_transit',
+          telebirrTxId: p.transactionRef
+        }));
+        
+        setReleases(mapped);
+      } catch (err) {
+        console.error('Failed to load settlements:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSettlements();
+  }, []);
 
   const eligibleCount = releases.filter(r => r.status === 'eligible').length;
   const totalEligibleAmount = releases
