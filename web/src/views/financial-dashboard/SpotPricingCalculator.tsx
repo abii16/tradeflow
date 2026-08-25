@@ -46,6 +46,8 @@ export default function SpotPricingCalculator({
   const [demandSurgeScore, setDemandSurgeScore] = useState(1.08);
   const [lockedSuccess, setLockedSuccess] = useState(false);
 
+  const [quoteData, setQuoteData] = useState<any>(null);
+
   const selectedRoute = useMemo(() => 
     CORRIDOR_ROUTES.find(r => r.id === selectedRouteId) || CORRIDOR_ROUTES[0],
     [selectedRouteId]
@@ -56,9 +58,58 @@ export default function SpotPricingCalculator({
     [selectedCargoId]
   );
 
+  React.useEffect(() => {
+    async function fetchQuote() {
+      try {
+        const { calculateSpotRate } = await import('@/lib/apiClient');
+        const weight = parseFloat(cargoWeight) || selectedCargo.defaultWeight;
+        const [originCity, destCity] = selectedRoute.name.split(' → ').map(s => s.trim());
+        
+        const payload = {
+          origin: { city: originCity },
+          destination: { city: destCity },
+          cargoType: 'dry',
+          weightKg: weight * 1000,
+          customFuelPrice: fuelIndexModifier * 95.5,
+          urgency: demandSurgeScore > 1.05 ? 'high' : 'standard'
+        };
+
+        const res = await calculateSpotRate(payload);
+        setQuoteData(res.quote || res);
+      } catch (err) {
+        console.error('Failed to fetch spot rate quote', err);
+      }
+    }
+    const timeoutId = setTimeout(fetchQuote, 500);
+    return () => clearTimeout(timeoutId);
+  }, [selectedRoute, selectedCargo, cargoWeight, fuelIndexModifier, demandSurgeScore]);
+
   // Dynamic Spot Calculation Equation (FR-04)
   const calculation = useMemo(() => {
     const weight = parseFloat(cargoWeight) || selectedCargo.defaultWeight;
+    
+    // If backend returns a quote, use its values
+    if (quoteData && quoteData.totalAmount) {
+      const finalSpotRate = Math.round(Number(quoteData.totalAmount));
+      const platformCommission = Math.round(finalSpotRate * 0.03);
+      
+      return {
+        weight,
+        baseDistanceTariff: Math.round(Number(quoteData.baseRate)),
+        fuelSurcharge: Math.round(Number(quoteData.fuelSurcharge)),
+        demandSurgeAmount: Math.round(Number(quoteData.surgeAmount)),
+        riskSurcharge: Math.round(Number(quoteData.riskSurcharge) || 0),
+        finalSpotRate,
+        contractBaseline: 0,
+        divergencePercent: 0,
+        platformCommission,
+        netCarrierPayout: finalSpotRate - platformCommission,
+        confidenceScore: 96.4,
+        fuelBurnLiters: Math.round((selectedRoute.distanceKm / 100) * 32.4)
+      };
+    }
+    
+    // Fallback to local calculation while loading or if error
     const baseDistanceTariff = selectedRoute.distanceKm * selectedRoute.baseRatePerKm;
     const weightTonnageFactor = 1 + (weight - 20) * 0.015;
     const fuelAdjustedBase = baseDistanceTariff * fuelIndexModifier * selectedCargo.multiplier;
@@ -85,7 +136,7 @@ export default function SpotPricingCalculator({
       confidenceScore: 96.4,
       fuelBurnLiters: Math.round((selectedRoute.distanceKm / 100) * 32.4)
     };
-  }, [selectedRoute, selectedCargo, cargoWeight, fuelIndexModifier, demandSurgeScore]);
+  }, [quoteData, selectedRoute, selectedCargo, cargoWeight, fuelIndexModifier, demandSurgeScore]);
 
   const handleLockQuote = () => {
     setLockedSuccess(true);
