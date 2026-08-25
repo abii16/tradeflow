@@ -6,13 +6,7 @@ export default function CustomsReports() {
   const [isHashModalOpen, setIsHashModalOpen] = useState(false);
   const [activeHashRow, setActiveHashRow] = useState<any>(null);
 
-  const ledgerRows = [
-    { time: '14:32:10', officer: 'GA-772', action: 'Flagged for Inspection (Weight)', id: 'TFM-9943', hash: '0x9a8f4c2e1b3d7f9a8f4c2e1b3d7f9a8f' },
-    { time: '14:28:45', officer: 'GA-409', action: 'Clearance Issued', id: 'TFM-9940', hash: '0x1c3d9a8f4c2e1b3d7f9a8f4c2e1b3d7f' },
-    { time: '14:15:22', officer: 'GA-112', action: 'Penalty Assessed (ETB 45,000)', id: 'TFM-9915', hash: '0x7b4a1c3d9a8f4c2e1b3d7f9a8f4c2e1b' },
-    { time: '13:55:01', officer: 'AUTO-SYS', action: 'Manifest Submitted (API)', id: 'TFM-9944', hash: '0x3d2e7b4a1c3d9a8f4c2e1b3d7f9a8f4c' },
-    { time: '13:42:19', officer: 'GA-772', action: 'Clearance Issued', id: 'TFM-9938', hash: '0x8f9c3d2e7b4a1c3d9a8f4c2e1b3d7f9a' },
-  ];
+  const ledgerRows: any[] = [];
 
   // Auto-dismiss toast
   useEffect(() => {
