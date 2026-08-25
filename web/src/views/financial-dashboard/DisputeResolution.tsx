@@ -21,65 +21,63 @@ interface DisputeItem {
   resolutionOutcome?: string;
 }
 
-const INITIAL_DISPUTES: DisputeItem[] = [
-  {
-    id: 'disp-1',
-    waybillId: 'WB-875-D',
-    shipmentRef: 'TF-LOAD-8755',
-    shipper: 'Ethio-Trading PLC',
-    transporter: 'Abyssinia Heavy Logistics',
-    disputedAmountETB: 45000,
-    reason: 'Demurrage Surcharge: 48h Terminal Delay at Modjo Dry Port Gate 3',
-    evidence: 'Port Entry Timestamp Slip + GPS Geofence log (48.2h idle)',
-    status: 'In Review'
-  },
-  {
-    id: 'disp-2',
-    waybillId: 'WB-862-K',
-    shipmentRef: 'TF-LOAD-8712',
-    shipper: 'Dire Dawa Textiles Corp',
-    transporter: 'TransHorn Logistics PLC',
-    disputedAmountETB: 28000,
-    reason: 'Unplanned Semera Security Detour Fuel Spike (+120km)',
-    evidence: 'ERA Highway Advisory Notice #402 + Telematics Reroute Record',
-    status: 'Open'
-  },
-  {
-    id: 'disp-3',
-    waybillId: 'WB-840-A',
-    shipmentRef: 'TF-LOAD-8680',
-    shipper: 'Horizon Agritech Ethiopia',
-    transporter: 'BlueNile Freighters',
-    disputedAmountETB: 35000,
-    reason: 'Fertilizer Bag Rain Damage Claim (Partial Cargo Wetness)',
-    evidence: 'Galafi Checkpoint Inspection Photo + Surveyor Report',
-    status: 'Resolved',
-    resolutionOutcome: 'Shipper refunded 35,000 ETB; Transporter cleared remaining 320,000 ETB.'
-  }
-];
-
 export default function DisputeResolution({
   currency,
   formatMoney
 }: DisputeResolutionProps) {
-  const [disputes, setDisputes] = useState<DisputeItem[]>(INITIAL_DISPUTES);
+  const [disputes, setDisputes] = useState<DisputeItem[]>([]);
 
-  const handleResolve = (id: string, outcome: string) => {
-    setDisputes(prev => prev.map(d => {
-      if (d.id === id) {
-        return {
-          ...d,
-          status: 'Resolved',
-          resolutionOutcome: outcome
-        };
+  React.useEffect(() => {
+    async function loadDisputes() {
+      try {
+        const { fetchDisputes } = await import('@/lib/apiClient');
+        const res = await fetchDisputes();
+        const data = res.data || [];
+        
+        // Map backend dispute format to frontend DisputeItem
+        const formattedDisputes: DisputeItem[] = data.map((d: any) => ({
+          id: d.id,
+          waybillId: d.shipmentId || 'Unknown Waybill',
+          shipmentRef: 'General Cargo',
+          shipper: d.raisedByUser?.fullName || 'Unknown Shipper',
+          transporter: 'Pending',
+          disputedAmountETB: d.amount || 0, // Fallback to 0 if not joined with payment amount
+          reason: d.reason || 'No reason provided',
+          evidence: d.evidenceUrl || 'No evidence attached',
+          status: d.status === 'OPEN' ? 'Open' : d.status === 'UNDER_REVIEW' ? 'In Review' : 'Resolved',
+          resolutionOutcome: d.resolutionNotes
+        }));
+        
+        setDisputes(formattedDisputes);
+      } catch (err) {
+        console.error('Failed to load disputes', err);
       }
-      return d;
-    }));
+    }
+    loadDisputes();
+  }, []);
+
+  const handleResolve = async (id: string, outcome: string) => {
+    try {
+      const { resolveDispute } = await import('@/lib/apiClient');
+      await resolveDispute(id, { outcome });
+      setDisputes(prev => prev.map(d => {
+        if (d.id === id) {
+          return {
+            ...d,
+            status: 'Resolved',
+            resolutionOutcome: outcome
+          };
+        }
+        return d;
+      }));
+    } catch (err) {
+      console.error('Failed to resolve dispute', err);
+    }
   };
 
   const totalDisputed = disputes
     .filter(d => d.status !== 'Resolved')
-    .reduce((acc, curr) => acc + curr.disputedAmountETB, 0);
+    .reduce((acc, curr) => acc + (Number(curr.disputedAmountETB) || 0), 0);
 
   return (
     <div className="space-y-4">
