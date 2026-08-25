@@ -13,29 +13,7 @@ export default function BiddingExchange() {
     return () => clearTimeout(timer);
   }, []);
 
-  const cargoCards = [
-    {
-      title: '30T Rebar',
-      route: 'Djibouti -> Modjo',
-      pickup: '24h',
-      targetRate: 850,
-      bids: [
-        { carrier: 'Kangaroo Freight', rating: 4.9, rate: 820, eta: '12h' },
-        { carrier: 'Tana Logistics', rating: 4.8, rate: 850, eta: '24h' },
-        { carrier: 'Ethio-Djibouti Line', rating: 4.2, rate: 910, eta: '72h' },
-      ]
-    },
-    {
-      title: '20T Agricultural Equipment',
-      route: 'Galafi -> Modjo',
-      pickup: '48h',
-      targetRate: 780,
-      bids: [
-        { carrier: 'Abyssinia Transit', rating: 4.7, rate: 760, eta: '18h' },
-        { carrier: 'BlueNile Freighters', rating: 4.6, rate: 790, eta: '24h' },
-      ]
-    }
-  ];
+  const cargoCards: any[] = [];
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-10 flex flex-col h-full">
