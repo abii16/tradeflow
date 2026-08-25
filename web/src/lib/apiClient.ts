@@ -155,6 +155,26 @@ export async function exportAuditLogs(format: 'csv' | 'pdf') {
 }
 
 // ==========================================
+// FINANCIAL DASHBOARD APIs
+// ==========================================
+
+export async function fetchPayments(query: any = {}) {
+  return apiClient('/payments', { method: 'GET', params: query });
+}
+
+export async function calculateSpotRate(data: any) {
+  return apiClient('/pricing/quote', { method: 'POST', data });
+}
+
+export async function processBatchPayouts(batchSize: number = 20) {
+  return apiClient('/payments/payouts/process-batch', { method: 'POST', data: { batchSize } });
+}
+
+export async function refundPayment(id: string, reason: string) {
+  return apiClient(`/payments/${id}/refund`, { method: 'POST', data: { reason } });
+}
+
+// ==========================================
 // SHIPPER PORTAL APIs
 // ==========================================
 
