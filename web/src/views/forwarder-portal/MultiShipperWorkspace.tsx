@@ -2,18 +2,35 @@ import React from 'react';
 import { Search, Filter, Plus, FileText, CheckCircle2, AlertTriangle, ArrowRight, Star, ChevronRight } from 'lucide-react';
 
 export default function MultiShipperWorkspace() {
-  const manifests = [
-    { mbl: 'MSC-99281-DJ', hbl: 'ETH-0019', importer: 'Habesha Steel PLC', route: 'DJB -> MDJ', status: 'Cleared', badge: 'bg-emerald-100 text-emerald-700', action: 'View Docs' },
-    { mbl: 'MAE-44120-DJ', hbl: 'MULTI-4', importer: 'Ethio Telecom', route: 'DJB -> KLT', status: 'In Transit', badge: 'bg-sky-100 text-sky-700', action: 'Track Leg' },
-    { mbl: 'CMA-77312-GL', hbl: 'AGRI-92', importer: 'Oromia Agri Co.', route: 'GLF -> MDJ', status: 'Doc Error', badge: 'bg-rose-100 text-rose-700', action: 'Resolve' },
-    { mbl: 'ZIM-11029-DJ', hbl: 'TX-882', importer: 'Awash Textiles', route: 'DJB -> HAW', status: 'Pending', badge: 'bg-amber-100 text-amber-700', action: 'Inspect' },
-  ];
+  const [manifests, setManifests] = React.useState<any[]>([]);
+  const bids: any[] = [];
 
-  const bids = [
-    { carrier: 'Tana Logistics', rating: 4.8, rate: '$850', lead: '24h' },
-    { carrier: 'Kangaroo Freight', rating: 4.9, rate: '$820', lead: '12h' },
-    { carrier: 'Ethio-Djibouti Line', rating: 4.2, rate: '$910', lead: '72h' },
-  ];
+  React.useEffect(() => {
+    async function loadManifests() {
+      try {
+        const { getAllLoads } = await import('@/lib/apiClient');
+        const res = await getAllLoads();
+        // Assume res is an object with a loads array
+        const fetchedManifests = (res.loads || []).map((load: any) => {
+          const originAddr = load.origin?.address || load.origin || 'Unknown Origin';
+          const destAddr = load.destination?.address || load.destination || 'Unknown Destination';
+          return {
+            mbl: load.id || 'N/A',
+            hbl: load.cargoType || 'N/A',
+            importer: load.shipperId || 'Unknown Shipper',
+            route: `${originAddr} -> ${destAddr}`,
+            status: load.status || 'Pending',
+            badge: 'bg-slate-100 text-slate-700',
+            action: 'View'
+          };
+        });
+        setManifests(fetchedManifests);
+      } catch (err) {
+        console.error('Failed to load manifests:', err);
+      }
+    }
+    loadManifests();
+  }, []);
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-10 flex flex-col h-full">
@@ -60,7 +77,7 @@ export default function MultiShipperWorkspace() {
         <div className="lg:col-span-3 bg-white border border-[#E2E8F0] rounded-xl shadow-sm flex flex-col h-full overflow-hidden">
           <div className="p-6 border-b border-slate-100 shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-lg font-bold text-slate-900 font-inter">Active Manifests <span className="text-slate-400 font-medium text-sm ml-1">(Total: 142)</span></h2>
+              <h2 className="text-lg font-bold text-slate-900 font-inter">Active Manifests <span className="text-slate-400 font-medium text-sm ml-1">(Total: {manifests.length})</span></h2>
               <div className="flex flex-wrap gap-2">
                 <button className="px-3 py-1 bg-slate-900 text-white rounded-full text-xs font-semibold">All</button>
                 <button className="px-3 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-full text-xs font-semibold transition-colors">Cleared</button>
@@ -124,18 +141,18 @@ export default function MultiShipperWorkspace() {
                   <CheckCircle2 className="text-emerald-500 shrink-0" size={18} />
                   <div>
                     <div className="text-sm font-bold text-slate-800">Commercial Invoice Match</div>
-                    <div className="text-xs text-slate-500 font-medium mt-0.5">142/142 Validated</div>
+                    <div className="text-xs text-slate-500 font-medium mt-0.5">{manifests.length}/{manifests.length} Validated</div>
                   </div>
                 </div>
                 <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
               </button>
               
-              <button className="w-full text-left flex items-center justify-between gap-3 bg-white hover:bg-amber-50/50 p-3.5 rounded-lg border border-slate-200 hover:border-amber-200 transition-colors group">
+              <button className="w-full text-left flex items-center justify-between gap-3 bg-white hover:bg-slate-50 p-3.5 rounded-lg border border-slate-200 transition-colors group">
                 <div className="flex items-center gap-3">
-                  <AlertTriangle className="text-amber-500 shrink-0" size={18} />
+                  <CheckCircle2 className="text-emerald-500 shrink-0" size={18} />
                   <div>
                     <div className="text-sm font-bold text-slate-800">Packing List Discrepancy</div>
-                    <div className="text-xs text-amber-600 font-semibold mt-0.5">3 Pending Review</div>
+                    <div className="text-xs text-slate-500 font-medium mt-0.5">0 Pending Review</div>
                   </div>
                 </div>
                 <ChevronRight size={16} className="text-slate-300 group-hover:text-amber-500 transition-colors" />
