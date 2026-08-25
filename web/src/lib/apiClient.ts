@@ -139,7 +139,7 @@ export async function exportFuelReport() {
 
 // Disputes & Audit (Tab 6)
 export async function fetchDisputes() {
-  return apiClient('/admin/disputes', { method: 'GET' });
+  return apiClient('/payments/disputes', { method: 'GET' });
 }
 
 export async function resolveDispute(id: string, data: any) {
@@ -152,6 +152,26 @@ export async function fetchAuditLogs(filter?: any) {
 
 export async function exportAuditLogs(format: 'csv' | 'pdf') {
   return apiClient('/admin/audit-logs/export', { method: 'POST', data: { format } });
+}
+
+// ==========================================
+// FINANCIAL DASHBOARD APIs
+// ==========================================
+
+export async function fetchPayments(query: any = {}) {
+  return apiClient('/payments', { method: 'GET', params: query });
+}
+
+export async function calculateSpotRate(data: any) {
+  return apiClient('/pricing/quote', { method: 'POST', data });
+}
+
+export async function processBatchPayouts(batchSize: number = 20) {
+  return apiClient('/payments/payouts/process-batch', { method: 'POST', data: { batchSize } });
+}
+
+export async function refundPayment(id: string, reason: string) {
+  return apiClient(`/payments/${id}/refund`, { method: 'POST', data: { reason } });
 }
 
 // ==========================================

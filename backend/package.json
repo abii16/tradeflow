@@ -34,6 +34,7 @@
     "socket.io": "^4.7.5",
     "speakeasy": "^2.0.0",
     "tesseract.js": "^7.0.0",
+    "uuid": "^14.0.2",
     "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
@@ -48,6 +49,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/speakeasy": "^2.0.10",
     "@types/supertest": "^7.2.1",
+    "@types/uuid": "^10.0.0",
     "bs-logger": "^0.2.6",
     "drizzle-kit": "^0.21.4",
     "jest": "^29.7.0",

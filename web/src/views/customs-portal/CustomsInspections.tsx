@@ -6,11 +6,7 @@ export default function CustomsInspections() {
   const [activeInspection, setActiveInspection] = useState<string | null>(null);
   const [toggles, setToggles] = useState({ visual: false, tamper: false, eSeal: false });
 
-  const inspections = [
-    { id: 'TFM-9943 / CONT-8841', transporter: 'Red Sea Transport', trigger: 'Weight Variance (+6.73%)', bay: 'Bay 03 (Heavy Scale)', officer: 'Officer GA-772', action: 'Log Inspection Result', color: 'rose' },
-    { id: 'TFM-9921 / CONT-1102', transporter: 'Abyssinia Logistics', trigger: 'Broken E-Seal Warning', bay: 'Bay 01 (Security)', officer: 'Officer GA-409', action: 'Inspect E-Seal', color: 'amber' },
-    { id: 'TFM-9915 / CONT-5590', transporter: 'TransHorn Freight', trigger: 'Valuation Discrepancy', bay: 'Bay 02 (Doc Bay)', officer: 'Officer GA-772', action: 'Verify Invoice', color: 'blue' },
-  ];
+  const inspections: any[] = [];
 
   const getTriggerClass = (color: string) => {
     switch (color) {
@@ -113,9 +109,9 @@ export default function CustomsInspections() {
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Bay 01 (Security / E-Seals)</span>
             </div>
-            <div className="flex items-center gap-1.5 text-amber-600 text-sm font-bold">
-              <CircleDot size={14} className="fill-amber-500" />
-              Occupied (TFM-9921)
+            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-bold">
+              <CircleDot size={14} className="fill-emerald-500" />
+              Available
             </div>
           </div>
           <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
@@ -131,9 +127,9 @@ export default function CustomsInspections() {
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Bay 03 (Heavy Axle Scale)</span>
             </div>
-            <div className="flex items-center gap-1.5 text-rose-600 text-sm font-bold">
-              <CircleDot size={14} className="fill-rose-500 animate-pulse" />
-              Active Inspection (TFM-9943)
+            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-bold">
+              <CircleDot size={14} className="fill-emerald-500" />
+              Available
             </div>
           </div>
         </div>

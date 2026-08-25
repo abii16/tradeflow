@@ -6,13 +6,7 @@ export default function CustomsReports() {
   const [isHashModalOpen, setIsHashModalOpen] = useState(false);
   const [activeHashRow, setActiveHashRow] = useState<any>(null);
 
-  const ledgerRows = [
-    { time: '14:32:10', officer: 'GA-772', action: 'Flagged for Inspection (Weight)', id: 'TFM-9943', hash: '0x9a8f4c2e1b3d7f9a8f4c2e1b3d7f9a8f' },
-    { time: '14:28:45', officer: 'GA-409', action: 'Clearance Issued', id: 'TFM-9940', hash: '0x1c3d9a8f4c2e1b3d7f9a8f4c2e1b3d7f' },
-    { time: '14:15:22', officer: 'GA-112', action: 'Penalty Assessed (ETB 45,000)', id: 'TFM-9915', hash: '0x7b4a1c3d9a8f4c2e1b3d7f9a8f4c2e1b' },
-    { time: '13:55:01', officer: 'AUTO-SYS', action: 'Manifest Submitted (API)', id: 'TFM-9944', hash: '0x3d2e7b4a1c3d9a8f4c2e1b3d7f9a8f4c' },
-    { time: '13:42:19', officer: 'GA-772', action: 'Clearance Issued', id: 'TFM-9938', hash: '0x8f9c3d2e7b4a1c3d9a8f4c2e1b3d7f9a' },
-  ];
+  const ledgerRows: any[] = [];
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -85,8 +79,8 @@ export default function CustomsReports() {
           </div>
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Daily Clearance Volume</div>
-            <div className="text-xl font-bold text-slate-900">142 Containers</div>
-            <div className="text-xs font-bold text-emerald-600 mt-1">+8.5% vs yesterday</div>
+            <div className="text-xl font-bold text-slate-900">0 Containers</div>
+            <div className="text-xs font-bold text-emerald-600 mt-1">-- vs yesterday</div>
           </div>
         </div>
         
@@ -96,8 +90,8 @@ export default function CustomsReports() {
           </div>
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg Checkpoint Dwell</div>
-            <div className="text-xl font-bold text-slate-900">45 Minutes</div>
-            <div className="text-xs font-bold text-emerald-600 mt-1">Down from 3.2 hours</div>
+            <div className="text-xl font-bold text-slate-900">-- Minutes</div>
+            <div className="text-xs font-bold text-emerald-600 mt-1">--</div>
           </div>
         </div>
 
@@ -107,8 +101,8 @@ export default function CustomsReports() {
           </div>
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Discrepancy Flag Rate</div>
-            <div className="text-xl font-bold text-slate-900">2.1%</div>
-            <div className="text-xs font-medium text-slate-500 mt-1">Within national target</div>
+            <div className="text-xl font-bold text-slate-900">0.0%</div>
+            <div className="text-xs font-medium text-slate-500 mt-1">--</div>
           </div>
         </div>
 
@@ -118,7 +112,7 @@ export default function CustomsReports() {
           </div>
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tariff & Fines</div>
-            <div className="text-xl font-mono font-bold text-slate-900">ETB 1,420,500</div>
+            <div className="text-xl font-mono font-bold text-slate-900">ETB 0</div>
             <div className="text-xs font-medium text-slate-500 mt-1">Collected today</div>
           </div>
         </div>
@@ -145,11 +139,11 @@ export default function CustomsReports() {
               {/* Djibouti */}
               <div className="flex flex-col items-center justify-end h-full w-12 group cursor-pointer">
                 <div className="w-full flex items-end gap-1">
-                  <div className="w-full bg-slate-300 h-[60%] rounded-t-sm group-hover:bg-slate-400 transition-colors relative">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] py-1 px-2 rounded">Historical: 2.4h</div>
+                  <div className="w-full bg-slate-300 h-0 rounded-t-sm group-hover:bg-slate-400 transition-colors relative">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] py-1 px-2 rounded">No Data</div>
                   </div>
-                  <div className="w-full bg-blue-500 h-[30%] rounded-t-sm group-hover:bg-blue-600 transition-colors relative">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-blue-800 text-white text-[10px] py-1 px-2 rounded">Avg: 1.2h</div>
+                  <div className="w-full bg-blue-500 h-0 rounded-t-sm group-hover:bg-blue-600 transition-colors relative">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-blue-800 text-white text-[10px] py-1 px-2 rounded">No Data</div>
                   </div>
                 </div>
                 <span className="text-[9px] font-bold text-slate-500 mt-3 text-center leading-tight absolute -bottom-8 w-16">Djibouti Doraleh</span>
@@ -158,11 +152,11 @@ export default function CustomsReports() {
               {/* Galafi */}
               <div className="flex flex-col items-center justify-end h-full w-12 group cursor-pointer">
                 <div className="w-full flex items-end gap-1">
-                  <div className="w-full bg-slate-300 h-[80%] rounded-t-sm group-hover:bg-slate-400 transition-colors relative">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] py-1 px-2 rounded">Historical Peak: 3.2h</div>
+                  <div className="w-full bg-slate-300 h-0 rounded-t-sm group-hover:bg-slate-400 transition-colors relative">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] py-1 px-2 rounded">No Data</div>
                   </div>
-                  <div className="w-full bg-blue-500 h-[18%] rounded-t-sm group-hover:bg-blue-600 transition-colors relative">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-blue-800 text-white text-[10px] py-1 px-2 rounded">Average Dwell: 45m</div>
+                  <div className="w-full bg-blue-500 h-0 rounded-t-sm group-hover:bg-blue-600 transition-colors relative">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-blue-800 text-white text-[10px] py-1 px-2 rounded">No Data</div>
                   </div>
                 </div>
                 <span className="text-[9px] font-bold text-slate-500 mt-3 text-center leading-tight absolute -bottom-8 w-16">Galafi Border</span>
@@ -171,11 +165,11 @@ export default function CustomsReports() {
               {/* Mille */}
               <div className="flex flex-col items-center justify-end h-full w-12 group cursor-pointer">
                 <div className="w-full flex items-end gap-1">
-                  <div className="w-full bg-slate-300 h-[40%] rounded-t-sm group-hover:bg-slate-400 transition-colors relative">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] py-1 px-2 rounded">Historical: 1.6h</div>
+                  <div className="w-full bg-slate-300 h-0 rounded-t-sm group-hover:bg-slate-400 transition-colors relative">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] py-1 px-2 rounded">No Data</div>
                   </div>
-                  <div className="w-full bg-blue-500 h-[10%] rounded-t-sm group-hover:bg-blue-600 transition-colors relative">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-blue-800 text-white text-[10px] py-1 px-2 rounded">Avg: 24m</div>
+                  <div className="w-full bg-blue-500 h-0 rounded-t-sm group-hover:bg-blue-600 transition-colors relative">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-blue-800 text-white text-[10px] py-1 px-2 rounded">No Data</div>
                   </div>
                 </div>
                 <span className="text-[9px] font-bold text-slate-500 mt-3 text-center leading-tight absolute -bottom-8 w-16">Mille Station</span>
@@ -184,11 +178,11 @@ export default function CustomsReports() {
               {/* Modjo */}
               <div className="flex flex-col items-center justify-end h-full w-12 group cursor-pointer">
                 <div className="w-full flex items-end gap-1">
-                  <div className="w-full bg-slate-300 h-[50%] rounded-t-sm group-hover:bg-slate-400 transition-colors relative">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] py-1 px-2 rounded">Historical: 2.0h</div>
+                  <div className="w-full bg-slate-300 h-0 rounded-t-sm group-hover:bg-slate-400 transition-colors relative">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] py-1 px-2 rounded">No Data</div>
                   </div>
-                  <div className="w-full bg-blue-500 h-[20%] rounded-t-sm group-hover:bg-blue-600 transition-colors relative">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-blue-800 text-white text-[10px] py-1 px-2 rounded">Avg: 48m</div>
+                  <div className="w-full bg-blue-500 h-0 rounded-t-sm group-hover:bg-blue-600 transition-colors relative">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap bg-blue-800 text-white text-[10px] py-1 px-2 rounded">No Data</div>
                   </div>
                 </div>
                 <span className="text-[9px] font-bold text-slate-500 mt-3 text-center leading-tight absolute -bottom-8 w-16">Modjo Dry Port</span>

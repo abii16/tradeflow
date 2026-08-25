@@ -5,33 +5,7 @@ import CustomsDocumentUploadModal from '@/components/modals/CustomsDocumentUploa
 export default function ManifestsVault() {
   const [showModal, setShowModal] = useState<string | null>(null);
 
-  const manifests = [
-    { 
-      mbl: 'MSC-99281-DJ', hbl: 'ETH-0019', importer: 'Habesha Steel PLC', corridor: 'Djibouti -> Modjo', 
-      docs: { ci: 'valid', pl: 'valid', bl: 'valid', coo: 'valid' },
-      status: 'Cleared', badge: 'bg-emerald-100 text-emerald-700', action: 'Download Pass' 
-    },
-    { 
-      mbl: 'CMA-77312-GL', hbl: 'AGRI-92', importer: 'Oromia Agri Co.', corridor: 'Galafi -> Modjo', 
-      docs: { ci: 'valid', pl: 'error', bl: 'valid', coo: 'pending' },
-      status: 'Doc Error', badge: 'bg-rose-100 text-rose-700', action: 'Fix Documents' 
-    },
-    { 
-      mbl: 'ZIM-11029-DJ', hbl: 'TX-882', importer: 'Awash Textiles', corridor: 'Djibouti -> Hawassa', 
-      docs: { ci: 'valid', pl: 'valid', bl: 'pending', coo: 'valid' },
-      status: 'Pending Review', badge: 'bg-amber-100 text-amber-700', action: 'Upload Docs' 
-    },
-    { 
-      mbl: 'TFM-9945-DJ', hbl: 'CEM-104', importer: 'Ethio-Cement', corridor: 'Djibouti -> Modjo', 
-      docs: { ci: 'valid', pl: 'valid', bl: 'valid', coo: 'pending' },
-      status: 'Pending Review', badge: 'bg-amber-100 text-amber-700', action: 'Upload Docs' 
-    },
-    { 
-      mbl: 'TFM-9946-DJ', hbl: 'BGI-88', importer: 'BGI Ethiopia', corridor: 'Djibouti -> Modjo', 
-      docs: { ci: 'valid', pl: 'valid', bl: 'valid', coo: 'valid' },
-      status: 'Cleared', badge: 'bg-emerald-100 text-emerald-700', action: 'Download Pass' 
-    },
-  ];
+  const manifests: any[] = [];
 
   const renderDocBadge = (status: string, label: string, mbl: string) => {
     if (status === 'valid') return <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold"><Check size={10}/> {label}</span>;
@@ -122,7 +96,7 @@ export default function ManifestsVault() {
         {/* Pagination Dock */}
         <div className="p-4 border-t border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50 rounded-b-xl">
           <div className="text-sm font-medium text-slate-500">
-            Showing <span className="font-bold text-slate-900">1–5</span> of <span className="font-bold text-slate-900">142</span> Master Manifests
+            Showing <span className="font-bold text-slate-900">0</span> of <span className="font-bold text-slate-900">0</span> Master Manifests
           </div>
           <div className="flex items-center gap-1">
             <button className="px-3 py-1.5 rounded text-sm font-medium text-slate-500 hover:bg-slate-100 flex items-center gap-1 transition-colors">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Search, Download } from 'lucide-react';
@@ -24,92 +24,7 @@ interface LedgerEntry {
   status: 'Released' | 'Locked' | 'Disputed';
 }
 
-const LEDGER_DATA: LedgerEntry[] = [
-  {
-    id: 'tx-1',
-    txHash: '0x8f2a...991a',
-    date: '2026-08-16 14:12',
-    shipmentRef: 'TF-LOAD-8809',
-    waybillId: 'WB-899-C',
-    party: 'BlueNile Freighters',
-    category: 'Carrier Payout',
-    grossAmountETB: 580000,
-    platformFeeETB: 17400,
-    netDisbursedETB: 562600,
-    channel: 'TeleBirr',
-    status: 'Released'
-  },
-  {
-    id: 'tx-2',
-    txHash: '0x3c19...44ab',
-    date: '2026-08-16 10:45',
-    shipmentRef: 'TF-LOAD-8821',
-    waybillId: 'WB-902-A',
-    party: 'Abyssinia Heavy Logistics',
-    category: 'Escrow Lock',
-    grossAmountETB: 340000,
-    platformFeeETB: 10200,
-    netDisbursedETB: 329800,
-    channel: 'Internal Escrow',
-    status: 'Locked'
-  },
-  {
-    id: 'tx-3',
-    txHash: '0x7e44...881f',
-    date: '2026-08-15 16:30',
-    shipmentRef: 'TF-LOAD-8815',
-    waybillId: 'WB-903-B',
-    party: 'TransHorn Logistics PLC',
-    category: 'Escrow Lock',
-    grossAmountETB: 240000,
-    platformFeeETB: 7200,
-    netDisbursedETB: 232800,
-    channel: 'Internal Escrow',
-    status: 'Locked'
-  },
-  {
-    id: 'tx-4',
-    txHash: '0x9910...223c',
-    date: '2026-08-14 09:15',
-    shipmentRef: 'TF-LOAD-8790',
-    waybillId: 'WB-879-X',
-    party: 'RedSea Freightways',
-    category: 'Carrier Payout',
-    grossAmountETB: 490000,
-    platformFeeETB: 14700,
-    netDisbursedETB: 475300,
-    channel: 'TeleBirr',
-    status: 'Released'
-  },
-  {
-    id: 'tx-5',
-    txHash: '0x1128...77ea',
-    date: '2026-08-13 18:00',
-    shipmentRef: 'TF-LOAD-8755',
-    waybillId: 'WB-875-D',
-    party: 'Abyssinia Heavy',
-    category: 'Demurrage Surcharge',
-    grossAmountETB: 410000,
-    platformFeeETB: 12300,
-    netDisbursedETB: 397700,
-    channel: 'CBE Birr',
-    status: 'Disputed'
-  },
-  {
-    id: 'tx-6',
-    txHash: '0x55aa...3341',
-    date: '2026-08-12 11:20',
-    shipmentRef: 'TF-LOAD-8720',
-    waybillId: 'WB-872-A',
-    party: 'Ethio-Djibouti Rail Logistics',
-    category: 'Carrier Payout',
-    grossAmountETB: 1220000,
-    platformFeeETB: 36600,
-    netDisbursedETB: 1183400,
-    channel: 'TeleBirr',
-    status: 'Released'
-  }
-];
+
 
 export default function TransactionLedger({
   currency,
@@ -119,9 +34,48 @@ export default function TransactionLedger({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Released' | 'Locked' | 'Disputed'>('All');
   const [selectedTx, setSelectedTx] = useState<LedgerEntry | null>(null);
+  
+  const [ledgerData, setLedgerData] = useState<LedgerEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadPayments() {
+      try {
+        setLoading(true);
+        // We import fetchPayments dynamically or we should import it at the top. Let me import it.
+        // I will add the import in a separate replace_file_content call.
+        // For now, use any fetched data mapped to LedgerEntry.
+        const { fetchPayments } = await import('@/lib/apiClient');
+        const res = await fetchPayments();
+        
+        // Map backend payment data to LedgerEntry
+        const mapped: LedgerEntry[] = (res.data || []).map((p: any) => ({
+          id: p.id,
+          txHash: p.transactionRef || 'N/A',
+          date: new Date(p.createdAt).toISOString().replace('T', ' ').substring(0, 16),
+          shipmentRef: p.shipmentId || 'N/A',
+          waybillId: p.shipmentId || 'N/A',
+          party: p.payeeId || 'Unknown',
+          category: p.status === 'ESCROW_HELD' ? 'Escrow Lock' : 'Carrier Payout',
+          grossAmountETB: Number(p.amount) || 0,
+          platformFeeETB: (Number(p.amount) || 0) * 0.03, // 3% fee
+          netDisbursedETB: (Number(p.amount) || 0) * 0.97,
+          channel: p.provider || 'Internal Escrow',
+          status: p.status === 'PAID' ? 'Released' : p.status === 'ESCROW_HELD' ? 'Locked' : 'Disputed'
+        }));
+        
+        setLedgerData(mapped);
+      } catch (err) {
+        console.error('Failed to load payments:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadPayments();
+  }, []);
 
   const filteredEntries = useMemo(() => {
-    return LEDGER_DATA.filter((entry) => {
+    return ledgerData.filter((entry) => {
       const matchesStatus = statusFilter === 'All' || entry.status === statusFilter;
       const matchesSearch = 
         entry.txHash.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -131,7 +85,7 @@ export default function TransactionLedger({
 
       return matchesStatus && matchesSearch;
     });
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, ledgerData]);
 
   const handleExportCSV = () => {
     const headers = ['Date', 'TxHash', 'Waybill', 'Party', 'Category', 'Gross_ETB', 'Net_ETB', 'Status'];

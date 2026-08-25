@@ -271,7 +271,7 @@ export default function DynamicPricing() {
               </div>
             </div>
 
-            {/* CSS Based Chart Mockup for pure aesthetic */}
+            {/* Trend Chart (Data from API) */}
             <div className="flex-1 w-full flex items-end justify-between gap-1 relative z-10 pt-10 pb-6 px-4">
               {/* Horizontal Grid lines */}
               <div className="absolute inset-x-0 bottom-6 h-px bg-slate-100"></div>
