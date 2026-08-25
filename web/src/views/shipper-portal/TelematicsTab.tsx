@@ -144,8 +144,8 @@ export default function TelematicsTab() {
               <div className="flex items-start gap-2 text-xs">
                 <AlertTriangle size={16} className="text-red-600 shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-red-900 text-sm">{alert.title || 'Risk Alert'}</div>
-                  <p className="text-red-700 mt-1 leading-relaxed">{alert.description}</p>
+                  <div className="font-bold text-red-900 text-sm">{alert.title ? t(alert.title) : 'Risk Alert'}</div>
+                  <p className="text-red-700 mt-1 leading-relaxed">{alert.description ? t(alert.description) : ''}</p>
                 </div>
               </div>
             </div>
@@ -187,8 +187,15 @@ export default function TelematicsTab() {
                   <span className="font-bold text-slate-900">{truck.speed} km/h</span>
                 </div>
                 <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">Remaining</span>
+                  <span className="font-bold text-slate-900">{Math.round(Number(truck.speed) * 2.5)} km</span>
+                </div>
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">ETA</span>
                   <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{truck.eta}</span>
+                </div>
+                <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                   <div className="h-full bg-emerald-500" style={{ width: '65%' }}></div>
                 </div>
               </div>
             </div>
