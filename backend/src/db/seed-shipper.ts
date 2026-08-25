@@ -1,72 +1,78 @@
 import { db } from './index';
-import { users, user_profiles, loads, bids, shipments, contracts } from './schema';
-import { eq, or } from 'drizzle-orm';
+import { users, loads, bids, shipments, contracts } from './schema';
+import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 
 async function seed() {
-  console.log('Seeding Shipper data...');
+  console.log('Seeding data...');
 
   // 1. Get or Create a Shipper
   let shipperId = '';
   const existingShipper = await db.query.users.findFirst({ where: eq(users.role, 'SHIPPER') });
-  
   if (existingShipper) {
     shipperId = existingShipper.id;
-    console.log(`Found Shipper: ${existingShipper.email}`);
   } else {
     shipperId = uuidv4();
     await db.insert(users).values({
       id: shipperId,
-      email: 'shipper@test.com',
-      passwordHash: await bcrypt.hash('password123', 10),
+      email: 'shipper_seed@test.com',
+      fullName: 'John Shipper',
+      phone: '+251911123456',
       role: 'SHIPPER',
-      status: 'ACTIVE'
-    });
-    await db.insert(user_profiles).values({
-      id: uuidv4(),
-      userId: shipperId,
       companyName: 'Test Shipper Logistics',
+      isVerified: true
     });
-    console.log(`Created Shipper: shipper@test.com`);
   }
 
-  // 2. Get or Create a Transporter
+  // 2. Get or Create a Forwarder
+  let forwarderId = '';
+  const existingForwarder = await db.query.users.findFirst({ where: eq(users.role, 'FORWARDER') });
+  if (existingForwarder) {
+    forwarderId = existingForwarder.id;
+  } else {
+    forwarderId = uuidv4();
+    await db.insert(users).values({
+      id: forwarderId,
+      email: 'forwarder_seed@test.com',
+      fullName: 'Alice Forwarder',
+      phone: '+251911123457',
+      role: 'FORWARDER',
+      companyName: 'Ethio Forwarding PLC',
+      isVerified: true
+    });
+  }
+
+  // 3. Get or Create a Transporter
   let transporterId = '';
   const existingTransporter = await db.query.users.findFirst({ where: eq(users.role, 'TRANSPORTER') });
-  
   if (existingTransporter) {
     transporterId = existingTransporter.id;
-    console.log(`Found Transporter: ${existingTransporter.email}`);
   } else {
     transporterId = uuidv4();
     await db.insert(users).values({
       id: transporterId,
-      email: 'transporter@test.com',
-      passwordHash: await bcrypt.hash('password123', 10),
+      email: 'transporter_seed@test.com',
+      fullName: 'Bob Transporter',
+      phone: '+251911123458',
       role: 'TRANSPORTER',
-      status: 'ACTIVE'
-    });
-    await db.insert(user_profiles).values({
-      id: uuidv4(),
-      userId: transporterId,
       companyName: 'TransHorn Logistics',
+      isVerified: true
     });
-    console.log(`Created Transporter: transporter@test.com`);
   }
 
-  // 3. Create Loads
+  // 4. Create Loads (some linked to shipper, some to forwarder so they show up)
   const openLoadId = uuidv4();
   await db.insert(loads).values({
     id: openLoadId,
     shipperId: shipperId,
     title: '40T Structural Steel',
     description: 'Djibouti to Dire Dawa structural steel delivery',
-    origin: 'Djibouti Port',
-    destination: 'Dire Dawa',
-    weightKg: 40000,
+    origin: { address: 'Djibouti Port', city: 'Djibouti', lat: 11.6, lng: 43.1 },
+    destination: { address: 'Dire Dawa', city: 'Dire Dawa', lat: 9.6, lng: 41.8 },
+    weightKg: "40000",
     cargoType: 'Steel',
-    budgetAmount: 340000,
+    budgetAmount: "340000",
     currency: 'ETB',
     status: 'POSTED',
     expiresAt: new Date(Date.now() + 86400000)
@@ -75,48 +81,63 @@ async function seed() {
   const transitLoadId = uuidv4();
   await db.insert(loads).values({
     id: transitLoadId,
-    shipperId: shipperId,
+    shipperId: forwarderId, // to show in forwarder workspace
     title: '25T Coffee Beans',
     description: 'Modjo to Djibouti Export',
-    origin: 'Modjo Dry Port',
-    destination: 'Djibouti Port',
-    weightKg: 25000,
+    origin: { address: 'Modjo Dry Port', city: 'Modjo', lat: 8.6, lng: 39.1 },
+    destination: { address: 'Djibouti Port', city: 'Djibouti', lat: 11.6, lng: 43.1 },
+    weightKg: "25000",
     cargoType: 'Coffee',
-    budgetAmount: 285000,
+    budgetAmount: "285000",
     currency: 'ETB',
     status: 'IN_TRANSIT',
     expiresAt: new Date(Date.now() + 86400000)
   });
 
-  // 4. Create Bids for Open Load
+  // 5. Create Bids for Open Load
+  const bidId = uuidv4();
   await db.insert(bids).values({
-    id: uuidv4(),
+    id: bidId,
     loadId: openLoadId,
     transporterId: transporterId,
-    amount: 340000,
+    bidAmount: "340000",
     currency: 'ETB',
-    status: 'SUBMITTED',
-    estimatedTransitHours: 48
+    status: 'PENDING',
+    deliveryEta: new Date(Date.now() + 48 * 3600 * 1000)
   });
 
-  // 5. Create Active Shipment for Transit Load
+  // 5.5 Create Accepted Bid for Transit Load
+  const acceptedBidId = uuidv4();
+  await db.insert(bids).values({
+    id: acceptedBidId,
+    loadId: transitLoadId,
+    transporterId: transporterId,
+    bidAmount: "280000",
+    currency: 'ETB',
+    status: 'ACCEPTED',
+    deliveryEta: new Date(Date.now() + 48 * 3600 * 1000)
+  });
+
+  // 6. Create Active Shipment for Transit Load
   await db.insert(shipments).values({
     id: uuidv4(),
     loadId: transitLoadId,
+    acceptedBidId: acceptedBidId,
     transporterId: transporterId,
-    trackingNumber: 'SHP-9021-DJM',
+    driverId: transporterId, // using transporter as driver
     status: 'IN_TRANSIT',
-    currentLocation: { coordinates: [40.1667, 8.9833] } // Awash
+    currentLat: 8.9833,
+    currentLng: 40.1667
   });
 
-  // 6. Create Contract Rates
+  // 7. Create Contract Rates
   await db.insert(contracts).values({
     id: uuidv4(),
     shipperId: shipperId,
     transporterId: transporterId,
     origin: 'Djibouti Port',
     destination: 'Modjo Dry Port',
-    lockedRate: 345000,
+    lockedRate: "345000",
     status: 'ACTIVE',
     validUntil: new Date('2026-12-31')
   });
