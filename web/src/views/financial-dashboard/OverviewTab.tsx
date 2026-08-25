@@ -39,9 +39,42 @@ export default function OverviewTab({
   const [topUpSuccess, setTopUpSuccess] = useState(false);
 
   // Balances in base ETB
-  const [escrowLocked, setEscrowLocked] = useState(1850000);
-  const [availableBalance, setAvailableBalance] = useState(600000);
-  const [settledLifetime, setSettledLifetime] = useState(14280000);
+  const [escrowLocked, setEscrowLocked] = useState(0);
+  const [availableBalance, setAvailableBalance] = useState(0);
+  const [settledLifetime, setSettledLifetime] = useState(0);
+  const [pendingReleases, setPendingReleases] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    async function loadData() {
+      try {
+        const { fetchPayments } = await import('@/lib/apiClient');
+        const res = await fetchPayments();
+        const payments = res.data || [];
+        
+        let locked = 0;
+        let settled = 0;
+        let pending: any[] = [];
+        
+        payments.forEach((p: any) => {
+          const amt = Number(p.amount) || 0;
+          if (p.status === 'ESCROW_HELD') {
+            locked += amt;
+          } else if (p.status === 'COMPLETED') {
+            settled += amt;
+          } else if (p.payoutStatus === 'UNSCHEDULED' || p.payoutStatus === 'SCHEDULED') {
+            pending.push(p);
+          }
+        });
+        
+        setEscrowLocked(locked);
+        setSettledLifetime(settled);
+        setPendingReleases(pending);
+      } catch (err) {
+        console.error('Failed to load overview data', err);
+      }
+    }
+    loadData();
+  }, []);
 
   const handleTopUpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +102,7 @@ export default function OverviewTab({
             {formatMoney(escrowLocked)}
           </div>
           <div className="text-[11px] text-slate-500 pt-1">
-            4 in-transit corridor loads
+            --
           </div>
         </div>
 
@@ -99,7 +132,7 @@ export default function OverviewTab({
             {formatMoney(settledLifetime)}
           </div>
           <div className="text-[11px] text-slate-500 pt-1">
-            84 completed shipments
+            --
           </div>
         </div>
 
@@ -115,10 +148,10 @@ export default function OverviewTab({
             </button>
           </div>
           <div className="text-xl font-bold font-mono text-slate-900 tracking-tight">
-            {formatMoney(580000)}
+            {formatMoney(0)}
           </div>
           <div className="text-[11px] text-slate-500 pt-1">
-            2 verified PoD waybills
+            --
           </div>
         </div>
       </div>
@@ -133,41 +166,12 @@ export default function OverviewTab({
                 <h2 className="text-sm font-semibold text-slate-900">Corridor Transit Escrow Breakdown</h2>
                 <p className="text-xs text-slate-500">Funds locked along Djibouti Port → Galafi → Modjo Dry Port</p>
               </div>
-              <span className="text-xs font-mono text-slate-500">780 km N1</span>
+              <span className="text-xs font-mono text-slate-500"></span>
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 border border-slate-200 rounded-md bg-slate-50/50 text-xs hover:border-slate-300 transition-colors">
-                <div>
-                  <div className="font-semibold text-slate-900">1. Port Departure (Djibouti)</div>
-                  <div className="text-slate-500 text-[11px]">Doraleh Container Terminal</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-mono font-semibold text-slate-900">{formatMoney(650000)}</div>
-                  <div className="text-[11px] text-slate-500">Locked at origin</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 border border-slate-200 rounded-md bg-slate-50/50 text-xs">
-                <div>
-                  <div className="font-semibold text-slate-900">2. Customs Bond (Galafi Border)</div>
-                  <div className="text-slate-500 text-[11px]">Under customs transit inspection</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-mono font-semibold text-slate-900">{formatMoney(620000)}</div>
-                  <div className="text-[11px] text-slate-500">In customs transit</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 border border-slate-200 rounded-md bg-slate-50/50 text-xs">
-                <div>
-                  <div className="font-semibold text-slate-900">3. Delivery & PoD (Modjo Dry Port)</div>
-                  <div className="text-slate-500 text-[11px]">Consignee signed delivery canvas</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-mono font-semibold text-emerald-800">{formatMoney(580000)}</div>
-                  <div className="text-[11px] text-emerald-700 font-medium">Eligible for release</div>
-                </div>
+              <div className="p-4 text-center text-slate-500 text-xs">
+                No active escrows
               </div>
             </div>
           </div>
@@ -178,25 +182,25 @@ export default function OverviewTab({
           <div className="bg-white border border-slate-200 rounded-md p-4 space-y-3">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h2 className="text-sm font-semibold text-slate-900">Pending TeleBirr Releases</h2>
-              <span className="text-xs font-mono text-slate-500">2 queues</span>
+              <span className="text-xs font-mono text-slate-500">{pendingReleases.length} queues</span>
             </div>
 
             <div className="space-y-2">
-              <div className="p-3 border border-slate-200 rounded-md text-xs space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="font-mono font-semibold text-slate-900">WB-902-A</span>
-                  <span className="font-mono font-bold text-slate-900">{formatMoney(340000)}</span>
+              {pendingReleases.length === 0 ? (
+                <div className="p-4 text-center text-slate-500 text-xs border border-slate-200 rounded-md">
+                  No pending releases
                 </div>
-                <div className="text-slate-600 text-[11px]">Abyssinia Heavy Logistics • 0911-238-892</div>
-              </div>
-
-              <div className="p-3 border border-slate-200 rounded-md text-xs space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="font-mono font-semibold text-slate-900">WB-903-B</span>
-                  <span className="font-mono font-bold text-slate-900">{formatMoney(240000)}</span>
-                </div>
-                <div className="text-slate-600 text-[11px]">TransHorn Logistics • 0920-114-550</div>
-              </div>
+              ) : (
+                pendingReleases.map((p, idx) => (
+                  <div key={idx} className="p-3 border border-slate-200 rounded-md text-xs space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-mono font-semibold text-slate-900">{p.transactionRef || 'Pending'}</span>
+                      <span className="font-mono font-bold text-slate-900">{formatMoney(Number(p.amount) || 0)}</span>
+                    </div>
+                    <div className="text-slate-600 text-[11px]">{p.payeeId || 'Unknown'}</div>
+                  </div>
+                ))
+              )}
             </div>
 
             <button
