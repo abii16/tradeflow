@@ -59,9 +59,11 @@ export default function OverviewTab({
           const amt = Number(p.amount) || 0;
           if (p.status === 'ESCROW_HELD') {
             locked += amt;
-          } else if (p.status === 'COMPLETED') {
+          } 
+          if (p.status === 'COMPLETED') {
             settled += amt;
-          } else if (p.payoutStatus === 'UNSCHEDULED' || p.payoutStatus === 'SCHEDULED') {
+          } 
+          if (p.payoutStatus === 'UNSCHEDULED' || p.payoutStatus === 'SCHEDULED') {
             pending.push(p);
           }
         });
@@ -148,7 +150,7 @@ export default function OverviewTab({
             </button>
           </div>
           <div className="text-xl font-bold font-mono text-slate-900 tracking-tight">
-            {formatMoney(0)}
+            {formatMoney(pendingReleases.reduce((sum, p) => sum + (Number(p.amount) || 0), 0))}
           </div>
           <div className="text-[11px] text-slate-500 pt-1">
             --
