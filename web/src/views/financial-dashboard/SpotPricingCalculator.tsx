@@ -99,9 +99,9 @@ export default function SpotPricingCalculator({
         fuelSurcharge: Math.round(Number(quoteData.fuelSurcharge)),
         demandSurgeAmount: Math.round(Number(quoteData.surgeAmount)),
         riskSurcharge: Math.round(Number(quoteData.riskSurcharge) || 0),
+        cargoSurcharge: 0,
+        weightSurcharge: 0,
         finalSpotRate,
-        contractBaseline: 0,
-        divergencePercent: 0,
         platformCommission,
         netCarrierPayout: finalSpotRate - platformCommission,
         confidenceScore: 96.4,
@@ -109,15 +109,24 @@ export default function SpotPricingCalculator({
       };
     }
     
-    // Fallback to local calculation while loading or if error
+    // Fallback to local calculation: strictly additive components
     const baseDistanceTariff = selectedRoute.distanceKm * selectedRoute.baseRatePerKm;
-    const weightTonnageFactor = 1 + (weight - 20) * 0.015;
-    const fuelAdjustedBase = baseDistanceTariff * fuelIndexModifier * selectedCargo.multiplier;
-    const subtotal = fuelAdjustedBase * weightTonnageFactor * selectedRoute.riskFactor;
-    const finalSpotRate = Math.round(subtotal * demandSurgeScore / 500) * 500;
     
-    const contractBaseline = Math.round(baseDistanceTariff * selectedCargo.multiplier * 1.02 / 500) * 500;
-    const divergencePercent = ((finalSpotRate - contractBaseline) / contractBaseline) * 100;
+    // Additive surcharges
+    const cargoSurcharge = Math.round(baseDistanceTariff * (selectedCargo.multiplier - 1));
+    const weightSurcharge = Math.round(baseDistanceTariff * ((weight - 20) * 0.015));
+    const fuelSurcharge = Math.round(baseDistanceTariff * (fuelIndexModifier - 1));
+    const demandSurgeAmount = Math.round(baseDistanceTariff * (demandSurgeScore - 1));
+    const riskSurcharge = Math.round(baseDistanceTariff * (selectedRoute.riskFactor - 1));
+    
+    // Exact sum of all components
+    const exactTotal = baseDistanceTariff + cargoSurcharge + weightSurcharge + fuelSurcharge + demandSurgeAmount + riskSurcharge;
+    
+    // Final rate rounded to nearest 500 ETB
+    const finalSpotRate = Math.round(exactTotal / 500) * 500;
+    
+    // Absorb the rounding difference into demand surge to ensure math adds up visually
+    const adjustedDemandSurgeAmount = demandSurgeAmount + (finalSpotRate - exactTotal);
 
     const platformCommission = Math.round(finalSpotRate * 0.03);
     const netCarrierPayout = finalSpotRate - platformCommission;
@@ -125,12 +134,12 @@ export default function SpotPricingCalculator({
     return {
       weight,
       baseDistanceTariff,
-      fuelSurcharge: Math.round(baseDistanceTariff * (fuelIndexModifier - 1)),
-      demandSurgeAmount: Math.round(subtotal * (demandSurgeScore - 1)),
-      riskSurcharge: Math.round(subtotal * (selectedRoute.riskFactor - 1)),
+      fuelSurcharge,
+      demandSurgeAmount: adjustedDemandSurgeAmount,
+      riskSurcharge,
+      cargoSurcharge,
+      weightSurcharge,
       finalSpotRate,
-      contractBaseline,
-      divergencePercent,
       platformCommission,
       netCarrierPayout,
       confidenceScore: 96.4,
@@ -154,43 +163,47 @@ export default function SpotPricingCalculator({
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Input Form (7 Cols) */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white border border-slate-200 rounded-md p-4 space-y-4 text-xs hover:border-slate-300 transition-colors">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="font-semibold text-slate-900 text-sm">Route & Freight Parameters</h2>
-              <p className="text-slate-500">Configure transit corridor route, cargo specifications, and market indexes.</p>
+        <div className="lg:col-span-7 space-y-5">
+          <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5 sm:p-6 space-y-5 transition-all duration-200 hover:shadow-md">
+            <div className="border-b border-slate-100 pb-4">
+              <h2 className="font-bold text-slate-900 text-base tracking-tight">Route & Freight Parameters</h2>
+              <p className="text-slate-500 text-sm mt-0.5">Configure transit corridor route, cargo specifications, and market indexes.</p>
             </div>
 
             {/* Route Selection */}
             <div>
-              <label className="font-medium text-slate-700 block mb-1.5">
+              <label className="font-semibold text-slate-700 text-sm block mb-2">
                 Corridor Route
               </label>
-              <div className="space-y-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {CORRIDOR_ROUTES.map((route) => (
                   <button
                     key={route.id}
                     type="button"
                     onClick={() => setSelectedRouteId(route.id)}
-                    className={`w-full text-left p-2.5 border rounded-md flex items-center justify-between transition-colors ${
+                    className={`w-full text-left p-3 border rounded-lg flex flex-col gap-1 transition-all duration-200 ${
                       selectedRouteId === route.id
-                        ? 'border-slate-900 bg-slate-50 font-medium text-slate-900'
-                        : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                        ? 'border-indigo-600 bg-indigo-50/50 shadow-sm ring-1 ring-indigo-600/20'
+                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
-                    <span>{route.name}</span>
-                    <span className="font-mono text-slate-500 text-[11px]">{route.distanceKm} km</span>
+                    <span className={`text-sm font-medium ${selectedRouteId === route.id ? 'text-indigo-900' : 'text-slate-700'}`}>
+                      {route.name}
+                    </span>
+                    <span className={`font-mono text-xs ${selectedRouteId === route.id ? 'text-indigo-600' : 'text-slate-500'}`}>
+                      {route.distanceKm} km • Base: ETB {route.baseRatePerKm}/km
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Cargo Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div>
-                <label className="font-medium text-slate-700 block mb-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-2">
+                <label className="font-semibold text-slate-700 text-sm block">
                   Commodity Type
                 </label>
                 <select
@@ -200,7 +213,7 @@ export default function SpotPricingCalculator({
                     const c = CARGO_TYPES.find(item => item.id === e.target.value);
                     if (c) setCargoWeight(c.defaultWeight.toString());
                   }}
-                  className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs text-slate-800 focus:outline-none focus:border-slate-900 bg-white"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-shadow shadow-sm"
                 >
                   {CARGO_TYPES.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -208,27 +221,37 @@ export default function SpotPricingCalculator({
                 </select>
               </div>
 
-              <div>
-                <label className="font-medium text-slate-700 block mb-1">
+              <div className="space-y-2">
+                <label className="font-semibold text-slate-700 text-sm block">
                   Weight (Metric Tons)
                 </label>
-                <input
-                  type="number"
-                  value={cargoWeight}
-                  onChange={(e) => setCargoWeight(e.target.value)}
-                  min="5"
-                  max="60"
-                  className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md font-mono text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-900"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={cargoWeight}
+                    onChange={(e) => setCargoWeight(e.target.value)}
+                    min="5"
+                    max="60"
+                    className="w-full pl-3 pr-10 py-2 border border-slate-300 rounded-lg font-mono text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-shadow shadow-sm"
+                  />
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 text-sm font-medium">
+                    MT
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Modifiers */}
-            <div className="pt-2 border-t border-slate-100 space-y-3">
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-medium text-slate-700">Fuel Price Index:</span>
-                  <span className="font-mono text-slate-900">{Math.round(105 * fuelIndexModifier)} ETB/L</span>
+            <div className="pt-4 border-t border-slate-100 space-y-5">
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-2">
+                    <Fuel className="w-4 h-4 text-slate-500" />
+                    <span className="font-semibold text-slate-700 text-sm">Fuel Price Index</span>
+                  </div>
+                  <Badge variant="outline" className="font-mono text-xs bg-white text-slate-700">
+                    {Math.round(105 * fuelIndexModifier)} ETB/L
+                  </Badge>
                 </div>
                 <input
                   type="range"
@@ -237,14 +260,19 @@ export default function SpotPricingCalculator({
                   step="0.01"
                   value={fuelIndexModifier}
                   onChange={(e) => setFuelIndexModifier(parseFloat(e.target.value))}
-                  className="w-full accent-slate-900 h-1.5 bg-slate-200 rounded cursor-pointer"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-700 transition-all"
                 />
               </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-medium text-slate-700">Demand / Capacity Ratio:</span>
-                  <span className="font-mono text-slate-900">{demandSurgeScore.toFixed(2)}x</span>
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-slate-500" />
+                    <span className="font-semibold text-slate-700 text-sm">Demand / Capacity Ratio</span>
+                  </div>
+                  <Badge variant="outline" className="font-mono text-xs bg-white text-slate-700">
+                    {demandSurgeScore.toFixed(2)}x
+                  </Badge>
                 </div>
                 <input
                   type="range"
@@ -253,7 +281,7 @@ export default function SpotPricingCalculator({
                   step="0.01"
                   value={demandSurgeScore}
                   onChange={(e) => setDemandSurgeScore(parseFloat(e.target.value))}
-                  className="w-full accent-slate-900 h-1.5 bg-slate-200 rounded cursor-pointer"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-700 transition-all"
                 />
               </div>
             </div>
@@ -261,62 +289,87 @@ export default function SpotPricingCalculator({
         </div>
 
         {/* Right Column: Pricing Breakdown (5 Cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="bg-white border border-slate-200 rounded-md p-4 space-y-4 text-xs">
-            <div className="border-b border-slate-100 pb-3">
-              <div className="text-slate-500 font-medium">Guaranteed Spot Rate (FR-04)</div>
-              <div className="text-2xl font-bold font-mono text-slate-900 tracking-tight mt-1">
-                {formatMoney(calculation.finalSpotRate)}
+        <div className="lg:col-span-5">
+          <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl shadow-xl overflow-hidden text-slate-300 relative border border-slate-700/50">
+            {/* Decorative top pattern */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 via-indigo-500 to-emerald-400 opacity-80" />
+            
+            <div className="p-6 pb-0">
+              <div className="text-emerald-400/90 font-medium text-xs tracking-wider uppercase mb-1">
+                Guaranteed Spot Rate (FR-04)
               </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
-                Quote valid for 60 minutes • 96.4% confidence score
+              <div className="text-3xl font-bold font-mono text-white tracking-tight flex items-baseline gap-1">
+                <span className="text-lg text-slate-400 font-sans tracking-normal">ETB</span>
+                {calculation.finalSpotRate.toLocaleString()}
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between text-slate-600">
-                <span>Base Distance Tariff ({selectedRoute.distanceKm} km)</span>
-                <span className="font-mono text-slate-900">{formatMoney(calculation.baseDistanceTariff)}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Fuel Surcharge (~{calculation.fuelBurnLiters} L)</span>
-                <span className="font-mono text-slate-900">+{formatMoney(calculation.fuelSurcharge)}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Market Demand Adjustment</span>
-                <span className="font-mono text-slate-900">+{formatMoney(calculation.demandSurgeAmount)}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Route Risk & Checkpoint Buffer</span>
-                <span className="font-mono text-slate-900">+{formatMoney(calculation.riskSurcharge)}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-slate-100 font-medium text-slate-700">
-                <span>Platform Commission (3%)</span>
-                <span className="font-mono text-slate-900">{formatMoney(calculation.platformCommission)}</span>
-              </div>
-              <div className="flex justify-between text-emerald-800 font-semibold pt-1">
-                <span>Net Carrier Payout</span>
-                <span className="font-mono">{formatMoney(calculation.netCarrierPayout)}</span>
+              <div className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1.5 bg-slate-800/50 inline-flex px-2 py-1 rounded">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Quote valid for 60m • 96.4% confidence
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleLockQuote}
-              className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-md transition-colors flex items-center justify-center gap-1.5"
-            >
-              {lockedSuccess ? (
-                <>
-                  <Check size={14} />
-                  <span>Spot Rate Locked</span>
-                </>
-              ) : (
-                <>
-                  <Lock size={14} />
-                  <span>Lock Spot Rate</span>
-                </>
-              )}
-            </button>
+            <div className="p-6 space-y-4">
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Base Distance ({selectedRoute.distanceKm} km)</span>
+                  <span className="font-mono text-slate-200">{formatMoney(calculation.baseDistanceTariff)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Cargo Type Adj.</span>
+                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.cargoSurcharge)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Weight Surcharge (&gt;20t)</span>
+                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.weightSurcharge)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Fuel Surcharge</span>
+                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.fuelSurcharge)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Market Demand</span>
+                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.demandSurgeAmount)}</span>
+                </div>
+                <div className="flex justify-between items-center pb-3">
+                  <span className="text-slate-400">Route Risk Buffer</span>
+                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.riskSurcharge)}</span>
+                </div>
+
+                <div className="border-t border-dashed border-slate-600 pt-3 flex justify-between items-center text-slate-300">
+                  <span>Platform Fee (3%)</span>
+                  <span className="font-mono text-rose-400">- {formatMoney(calculation.platformCommission)}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-700 pt-4 mt-2">
+                <div className="flex justify-between items-end">
+                  <div className="text-sm font-medium text-slate-300">Net Carrier Payout</div>
+                  <div className="text-xl font-bold font-mono text-emerald-400 tracking-tight">
+                    {formatMoney(calculation.netCarrierPayout)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 pb-6 pt-2">
+              <button
+                type="button"
+                onClick={handleLockQuote}
+                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold text-sm rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2"
+              >
+                {lockedSuccess ? (
+                  <>
+                    <Check className="w-5 h-5" />
+                    <span>Rate Locked Successfully</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>Lock Spot Rate & Proceed</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
