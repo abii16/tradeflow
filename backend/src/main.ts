@@ -66,7 +66,7 @@ app.use('/api/v1/pricing', pricingRoutes); // Route itself checks JWT & Roles in
 app.use('/api/v1/eta', etaRoutes);
 app.use('/api/v1/verification', JwtAuthGuard, verificationRoutes);
 app.use('/api/v1/admin', JwtAuthGuard, RolesGuard(['ADMIN', 'SYSTEM_ADMIN']), adminRoutes);
-app.use('/payments', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), paymentsRoutes);
+app.use('/api/v1/payments', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), paymentsRoutes);
 app.use('/sync', JwtAuthGuard, offlineSyncRoutes);
 app.use('/offline-sync', JwtAuthGuard, offlineSyncRoutes);
 
