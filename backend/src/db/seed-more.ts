@@ -8,7 +8,7 @@ async function seedMore() {
 
   // Get Shipper and Transporter
   const shipper = await db.query.users.findFirst({ where: eq(users.role, 'SHIPPER') });
-  const transporter = await db.query.users.findFirst({ where: eq(users.role, 'TRANSPORTER') });
+  const transporter = await db.query.users.findFirst({ where: eq(users.email, 'trans@gmail.com') });
 
   if (!shipper || !transporter) {
     console.error('Missing Shipper or Transporter. Run the first seed script.');
@@ -32,18 +32,18 @@ async function seedMore() {
     shipmentId: shipment.id,
     payerId: shipper.id,
     payeeId: transporter.id,
-    amount: "280000",
+    amount: "150000",
     currency: "ETB",
-    amountInETB: "280000",
-    platformCommissionAmount: "14000", // 5%
-    netPayoutAmount: "266000",
+    amountInETB: "150000",
+    platformCommissionAmount: "7500", // 5%
+    netPayoutAmount: "142500",
     paymentMethod: "TELEBIRR",
-    outTradeNo: "TRX-" + Date.now(),
-    idempotencyKey: "IDEMP-" + Date.now(),
+    outTradeNo: "TRX-NEW-" + Date.now(),
+    idempotencyKey: "IDEMP-NEW-" + Date.now(),
     status: "COMPLETED",
     payoutStatus: "COMPLETED",
     payoutCompletedAt: new Date(),
-    createdAt: new Date(Date.now() - 2 * 86400000) // 2 days ago
+    createdAt: new Date(Date.now() - 1 * 86400000) // 1 day ago
   });
 
   const paymentId2 = uuidv4();
@@ -52,16 +52,16 @@ async function seedMore() {
     shipmentId: shipment.id,
     payerId: shipper.id,
     payeeId: transporter.id,
-    amount: "45000",
+    amount: "60000",
     currency: "ETB",
-    amountInETB: "45000",
-    platformCommissionAmount: "2250", 
-    netPayoutAmount: "42750",
+    amountInETB: "60000",
+    platformCommissionAmount: "3000", 
+    netPayoutAmount: "57000",
     paymentMethod: "TELEBIRR",
-    outTradeNo: "TRX-2-" + Date.now(),
-    idempotencyKey: "IDEMP-2-" + Date.now(),
+    outTradeNo: "TRX-NEW-2-" + Date.now(),
+    idempotencyKey: "IDEMP-NEW-2-" + Date.now(),
     status: "ESCROW_HELD",
-    payoutStatus: "UNSCHEDULED",
+    payoutStatus: "SCHEDULED", // Making it scheduled to appear in pending
   });
 
   // Insert a dispute
