@@ -33,6 +33,31 @@ export default function AuditLogs() {
     
     try {
       await exportAuditLogs(format);
+      
+      // Generate CSV content from the current logs on screen
+      const header = "Time,Action,Actor,Event,IP,Status\n";
+      const rows = logs.map(l => {
+        const time = new Date(l.createdAt || l.timestamp).toLocaleString().replace(/,/g, '');
+        const action = l.action || '';
+        const actor = l.actorEmail || l.actorId || '';
+        const event = (l.message || (typeof l.details === 'object' ? JSON.stringify(l.details) : l.details) || '').replace(/,/g, ';');
+        const ip = l.ipAddress || '';
+        const status = (l.statusCode && l.statusCode < 400) ? 'SUCCESS' : (l.status || 'FAILED');
+        return `${time},${action},${actor},${event},${ip},${status}`;
+      });
+      const csvContent = header + rows.join("\n");
+      
+      // Create a Blob and trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `audit_logs_${new Date().toISOString().slice(0,10)}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
       toast.success(`${format.toUpperCase()} export generated`);
     } catch (err) {
       toast.error('Failed to export logs');
@@ -132,19 +157,19 @@ export default function AuditLogs() {
               
               {!loading && logs.map((log, index) => (
                 <tr key={index} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-6 py-3 text-slate-400">[{new Date(log.timestamp).toLocaleString()}]</td>
+                  <td className="px-6 py-3 text-slate-400">[{new Date(log.createdAt || log.timestamp).toLocaleString()}]</td>
                   <td className="px-6 py-3">
                     <span className="font-bold text-slate-700">{log.action}</span>
                   </td>
-                  <td className="px-6 py-3 font-semibold text-slate-800">{log.actorId}</td>
-                  <td className="px-6 py-3 text-slate-600 max-w-md truncate" title={log.message || log.details}>
-                    {log.message || log.details || '-'}
+                  <td className="px-6 py-3 font-semibold text-slate-800">{log.actorEmail || log.actorId}</td>
+                  <td className="px-6 py-3 text-slate-600 max-w-md truncate" title={log.message || (typeof log.details === 'object' ? JSON.stringify(log.details) : log.details)}>
+                    {log.message || (typeof log.details === 'object' ? JSON.stringify(log.details) : log.details) || '-'}
                   </td>
                   <td className="px-6 py-3 text-slate-400">{log.ipAddress || '10.0.4.12'}</td>
                   <td className="px-6 py-3 text-right">
-                    {log.status === 'SUCCESS' && <span className="text-emerald-600 font-bold">{t('al_status_success')}</span>}
+                    {((log.statusCode && log.statusCode < 400) || log.status === 'SUCCESS') && <span className="text-emerald-600 font-bold">{t('al_status_success')}</span>}
                     {log.status === 'WARNING' && <span className="text-amber-600 font-bold">{t('al_status_warning')}</span>}
-                    {log.status === 'FAILED' && <span className="text-rose-600 font-bold">{t('al_status_failed')}</span>}
+                    {((log.statusCode && log.statusCode >= 400) || log.status === 'FAILED') && <span className="text-rose-600 font-bold">{t('al_status_failed')}</span>}
                   </td>
                 </tr>
               ))}

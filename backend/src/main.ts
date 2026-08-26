@@ -46,6 +46,7 @@ import { shipperRoutes } from './routes/shipper.routes';
 import { etaRoutes } from './routes/eta.routes';
 import { paymentsRoutes } from './routes/payments.routes';
 import { offlineSyncRoutes } from './routes/offline-sync.routes';
+import { telemetryRoutes } from './routes/telemetry.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
 import { startPayoutWorker } from './workers/payout.worker';
 import { SocketGateway } from './gateways/socket.gateway';
@@ -67,6 +68,7 @@ app.use('/api/v1/eta', etaRoutes);
 app.use('/api/v1/verification', JwtAuthGuard, verificationRoutes);
 app.use('/api/v1/admin', JwtAuthGuard, RolesGuard(['ADMIN', 'SYSTEM_ADMIN']), adminRoutes);
 app.use('/api/v1/payments', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), paymentsRoutes);
+app.use('/api/v1/telemetry', telemetryRoutes); // Route itself uses JwtAuthGuard
 app.use('/sync', JwtAuthGuard, offlineSyncRoutes);
 app.use('/offline-sync', JwtAuthGuard, offlineSyncRoutes);
 

@@ -8,6 +8,9 @@ import { eq, desc } from 'drizzle-orm';
 import { auditMiddleware } from '../middleware/audit.middleware';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { pricingPolicies } from '../db/schema/pricing_policies';
+import { loads } from '../db/schema/loads';
+import { users } from '../db/schema/users';
+import { auditLogs } from '../db/schema/audit_logs';
 
 const router = Router();
 
@@ -160,19 +163,28 @@ router.post('/governance/update', JwtAuthGuard, RolesGuard(['ADMIN']), async (re
  */
 router.get('/corridor-routes', async (req: Request, res: Response): Promise<void> => {
   try {
+    let policy = await db.query.pricingPolicies.findFirst({
+      orderBy: (policies, { desc }) => [desc(policies.updatedAt)]
+    });
+    
+    // Base prices + multiplier logic
+    const baseA = 340000;
+    const baseB = 355000;
+    const multiplier = policy ? parseFloat(policy.demandMultiplier) : 1.0;
+    
     res.status(200).json({
       routes: [
         {
           id: 'route_a',
           name: 'Direct: Djibouti -> Awash -> Modjo',
-          price: 345000,
-          variance: -5.0
+          price: baseA * multiplier,
+          variance: (multiplier - 1) * 100
         },
         {
           id: 'route_b',
           name: 'Bypass: Djibouti -> Dire Dawa -> Modjo',
-          price: 362500,
-          variance: 4.8
+          price: baseB * multiplier,
+          variance: (multiplier - 1) * 100 + 1.2
         }
       ]
     });
@@ -186,7 +198,32 @@ router.get('/corridor-routes', async (req: Request, res: Response): Promise<void
  */
 router.post('/recalculate-yield', JwtAuthGuard, RolesGuard(['ADMIN']), async (req: Request, res: Response): Promise<void> => {
   try {
-    res.status(200).json({ success: true, message: 'Yield recalculated successfully' });
+    const activeLoads = await db.select().from(loads).where(eq(loads.status, 'POSTED'));
+    const activeTransporters = await db.select().from(users).where(eq(users.role, 'TRANSPORTER'));
+    
+    let multiplier = 1.0;
+    if (activeTransporters.length > 0) {
+       // Demand / Capacity ratio
+       const ratio = activeLoads.length / activeTransporters.length;
+       if (ratio > 1.5) multiplier = 1.3;
+       else if (ratio > 1) multiplier = 1.15;
+       else if (ratio < 0.5) multiplier = 0.9;
+    }
+
+    // Persist new multiplier
+    let policy = await db.query.pricingPolicies.findFirst({
+      orderBy: (policies, { desc }) => [desc(policies.updatedAt)]
+    });
+    
+    await db.insert(pricingPolicies).values({
+      spotRateFloor: policy?.spotRateFloor || '-15.00',
+      spotRateCeiling: policy?.spotRateCeiling || '45.00',
+      dieselPrice: policy?.dieselPrice || '95.50',
+      demandMultiplier: multiplier.toString(),
+      updatedBy: req.user!.id
+    });
+
+    res.status(200).json({ success: true, message: 'Yield recalculated successfully based on live demand.' });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to recalculate yield' });
   }
@@ -197,6 +234,15 @@ router.post('/recalculate-yield', JwtAuthGuard, RolesGuard(['ADMIN']), async (re
  */
 router.post('/publish-rates', JwtAuthGuard, RolesGuard(['ADMIN']), async (req: Request, res: Response): Promise<void> => {
   try {
+    await db.insert(auditLogs).values({
+      action: 'PRICING_PUBLISHED',
+      method: 'POST',
+      endpoint: '/pricing/publish-rates',
+      statusCode: 200,
+      userId: req.user!.id,
+      userRole: 'ADMIN',
+      requestPayload: { action: 'Published live rates to marketplace' }
+    });
     res.status(200).json({ success: true, message: 'Rates published to marketplace successfully' });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to publish rates' });
