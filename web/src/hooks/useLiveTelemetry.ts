@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { getAuthToken } from '@/lib/apiClient';
+import { getAuthToken, apiClient } from '@/lib/apiClient';
 import { io, Socket } from 'socket.io-client';
 
 export interface TruckTelemetry {
@@ -56,20 +56,18 @@ export function useLiveTelemetry() {
       
       socketRef.current = socket;
 
-      socket.on('connect', () => {
+      socket.on('connect', async () => {
         setIsConnected(true);
         socket.emit('join-room', 'general');
         
-        // Fallback static data
-        setTelemetry({
-          trucks: [
-            { id: 'ET-9021', lat: 11.652, lng: 42.493, speed: 64, cargo: '30T Rebar', driver: 'Yared Tekle', eta: '6.2h', status: 'SAFE' },
-            { id: 'ET-7734', lat: 8.751, lng: 39.524, speed: 45, cargo: 'Medical Supplies', driver: 'Amanuel D.', eta: '1.5h', status: 'GEOFENCE_BREACH' }
-          ],
-          alerts: [
-            { id: 'RISK-04', title: 'radar_risk_04_title', description: 'radar_risk_04_desc', lat: 11.794, lng: 41.008, radius: 25000 }
-          ]
-        });
+        try {
+          const response = await apiClient('/telemetry/live-assets');
+          if (response && response.trucks) {
+            setTelemetry(prev => ({ ...prev, trucks: response.trucks }));
+          }
+        } catch (error) {
+          console.error('Failed to fetch initial telemetry:', error);
+        }
       });
 
       socket.on('disconnect', () => {
@@ -87,6 +85,21 @@ export function useLiveTelemetry() {
               eta: data.predicted_travel_hours ? `${data.predicted_travel_hours.toFixed(1)}h` : newTrucks[0].eta 
             };
           }
+          return { ...prev, trucks: newTrucks };
+        });
+      });
+
+      socket.on('telemetry-update', (data: TruckTelemetry) => {
+        setTelemetry(prev => {
+          const existingIndex = prev.trucks.findIndex(t => t.id === data.id);
+          const newTrucks = [...prev.trucks];
+          
+          if (existingIndex >= 0) {
+            newTrucks[existingIndex] = { ...newTrucks[existingIndex], ...data };
+          } else {
+            newTrucks.push(data);
+          }
+          
           return { ...prev, trucks: newTrucks };
         });
       });
