@@ -206,7 +206,7 @@ export default function LiveRadarMap() {
               </div>
               <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 text-center">
                 <div className="text-lg font-mono font-bold text-white leading-none">{telemetry.alerts.length}</div>
-                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-0.5">Corridor Alerts</div>
+                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-0.5">Active Corridors</div>
               </div>
             </div>
           </div>

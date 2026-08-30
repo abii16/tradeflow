@@ -284,9 +284,8 @@ export default function ControlTowerDashboard() {
                         <div className="text-xs max-w-[160px]" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
                         <div className="text-[10px] text-slate-500 mt-0.5">{load.weightKg} kg • ETB {Number(load.budgetAmount).toLocaleString()}</div>
                       </td>
-                      <td className="px-4 py-3 leading-normal text-[11px] max-w-[180px]" title={`${typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin} → ${typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination}`}>
-                        <span className="block truncate">{String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')}</span>
-                        <span className="block truncate text-slate-400">→ {String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}</span>
+                      <td className="px-4 py-3 leading-normal text-[11px] max-w-[220px]" title={`${typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin} → ${typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination}`}>
+                        <span className="block whitespace-normal text-xs text-slate-600 leading-tight">{String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')} → {String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}</span>
                       </td>
                       <td className="px-4 py-3 leading-normal text-right">
                         <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
@@ -327,15 +326,17 @@ export default function ControlTowerDashboard() {
 
           <div className="overflow-x-auto flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <table className="w-full text-left text-sm text-slate-600">
-              <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200 sticky top-0 z-10">
-                <tr>
-                  <th className="px-6 py-3 font-semibold">{t('vr_app_id')}</th>
-                  <th className="px-6 py-3 font-semibold">{t('vr_entity')}</th>
-                  <th className="px-6 py-3 font-semibold">{t('vr_license')}</th>
-                  <th className="px-6 py-3 font-semibold">{t('vr_status')}</th>
-                  <th className="px-6 py-3 text-right font-semibold">{t('vr_action')}</th>
-                </tr>
-              </thead>
+              {verifications.length > 0 && (
+                <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200 sticky top-0 z-10">
+                  <tr>
+                    <th className="px-6 py-3 font-semibold">{t('vr_app_id')}</th>
+                    <th className="px-6 py-3 font-semibold">{t('vr_entity')}</th>
+                    <th className="px-6 py-3 font-semibold">{t('vr_license')}</th>
+                    <th className="px-6 py-3 font-semibold">{t('vr_status')}</th>
+                    <th className="px-6 py-3 text-right font-semibold">{t('vr_action')}</th>
+                  </tr>
+                </thead>
+              )}
               <tbody className="divide-y divide-slate-100">
                 {loadingVerifications ? (
                   <tr>
