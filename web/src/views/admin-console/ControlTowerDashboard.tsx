@@ -17,7 +17,7 @@ import {
 import LiveRadarMap from './LiveRadarMap';
 import { useLiveTelemetry } from '../../hooks/useLiveTelemetry';
 import { 
-  getPendingVerifications,
+  getAllVerifications,
   fetchCorridorSummary,
   fetchCorridorRoutes,
   fetchEtaProjections,
@@ -42,13 +42,13 @@ export default function ControlTowerDashboard() {
     async function loadAll() {
       try {
         const [vRes, sumRes, routeRes, etaRes, loadsRes] = await Promise.all([
-          getPendingVerifications(),
+          getAllVerifications(),
           fetchCorridorSummary(),
           fetchCorridorRoutes(),
           fetchEtaProjections(),
           getAllLoads()
         ]);
-        setVerifications(vRes.data || []);
+        setVerifications((vRes.data || []).filter((v: any) => v.status === 'PENDING'));
         setSummary(sumRes);
         setRoutes(routeRes.routes || []);
         setEtaData(etaRes.projections || []);
