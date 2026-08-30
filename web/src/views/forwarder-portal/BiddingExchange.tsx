@@ -82,7 +82,7 @@ export default function BiddingExchange() {
                 Live Bids ({cargo.bids.length})
               </div>
               <ul className="divide-y divide-slate-100 overflow-auto flex-1">
-                {cargo.bids.map((bid, i) => {
+                {cargo.bids.map((bid: any, i: number) => {
                   const diff = cargo.targetRate - bid.rate;
                   const isBelow = diff > 0;
                   const isAbove = diff < 0;
