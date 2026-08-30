@@ -249,7 +249,7 @@ export default function ControlTowerDashboard() {
             </span>
           </div>
 
-          <div className="overflow-x-auto flex-1">
+          <div className="overflow-x-auto flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200 sticky top-0 z-10">
                 <tr>
@@ -275,19 +275,20 @@ export default function ControlTowerDashboard() {
                 ) : (
                   loads.map((load) => (
                     <tr key={load.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3 leading-normal">
                         <span className="font-mono text-xs font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
                           TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
                         </span>
                       </td>
-                      <td className="px-4 py-4 font-medium text-slate-900">
-                        <div className="text-xs truncate max-w-[120px]" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
-                        <div className="text-[10px] text-slate-500">{load.weightKg} kg • ETB {Number(load.budgetAmount).toLocaleString()}</div>
+                      <td className="px-4 py-3 leading-normal font-medium text-slate-900">
+                        <div className="text-xs max-w-[160px]" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
+                        <div className="text-[10px] text-slate-500 mt-0.5">{load.weightKg} kg • ETB {Number(load.budgetAmount).toLocaleString()}</div>
                       </td>
-                      <td className="px-4 py-4 text-[11px] max-w-[150px] truncate" title={`${typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin} → ${typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination}`}>
-                        {String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')} →<br/>{String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}
+                      <td className="px-4 py-3 leading-normal text-[11px] max-w-[180px]" title={`${typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin} → ${typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination}`}>
+                        <span className="block truncate">{String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')}</span>
+                        <span className="block truncate text-slate-400">→ {String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}</span>
                       </td>
-                      <td className="px-4 py-4 text-right">
+                      <td className="px-4 py-3 leading-normal text-right">
                         <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
                           load.status === 'IN_TRANSIT' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' :
                           load.status === 'POSTED' ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' :
@@ -324,7 +325,7 @@ export default function ControlTowerDashboard() {
             </span>
           </div>
 
-          <div className="overflow-x-auto flex-1">
+          <div className="overflow-x-auto flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200 sticky top-0 z-10">
                 <tr>
@@ -344,14 +345,22 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : verifications.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
-                      No pending verifications at this time.
+                    <td colSpan={5} className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                          <ShieldCheck size={22} className="text-emerald-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-700">All Clear</p>
+                          <p className="text-xs text-slate-400 mt-0.5 max-w-[240px] mx-auto">No pending entity KYC or vehicle verifications in queue.</p>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ) : (
                   verifications.map((v) => (
                     <tr key={v.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-3 leading-normal">
                         <span className="font-mono text-xs font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
                           REQ-{v.id.toString().slice(0, 8).toUpperCase()}
                         </span>

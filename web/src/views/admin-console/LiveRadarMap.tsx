@@ -192,16 +192,24 @@ export default function LiveRadarMap() {
             </div>
           </div>
           
-            <div className="space-y-2">
-              <div className="text-xs font-medium tracking-wide text-slate-300 flex justify-between items-center">
-                <span>{telemetry.trucks.length}</span>
-                <span>{t('radar_active_assets')}</span>
+          <div className="space-y-2">
+            <div className="text-[11px] flex justify-between items-center bg-slate-950/50 px-2 py-1.5 rounded border border-slate-800">
+              <span className="text-slate-400 uppercase tracking-wider font-semibold text-[10px]">{t('radar_corridor_status')}</span>
+              <span className={`font-bold font-mono text-[10px] ${isConnected ? 'text-emerald-400' : 'text-amber-500'}`}>
+                {isConnected ? t('radar_operational') : 'RECONNECTING...'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 text-center">
+                <div className="text-lg font-mono font-bold text-white leading-none">{telemetry.trucks.length}</div>
+                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-0.5">{t('radar_active_assets')}</div>
               </div>
-              <div className="text-xs font-medium tracking-wide text-slate-400 flex justify-between items-center">
-                <span>{telemetry.alerts.length}</span>
-                <span>Active Alerts</span>
+              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 text-center">
+                <div className="text-lg font-mono font-bold text-white leading-none">{telemetry.alerts.length}</div>
+                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-0.5">Corridor Alerts</div>
               </div>
             </div>
+          </div>
         </div>
       </div>
 
