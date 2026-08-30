@@ -41,7 +41,7 @@ router.post('/ingest', JwtAuthGuard, async (req: Request, res: Response): Promis
       // Broadcast live update via Socket.io
       const globalGateway = (global as any).socketGateway;
       if (globalGateway) {
-        globalGateway.server.to('general').emit('telemetry-update', {
+        globalGateway.emitToRoom('general', 'telemetry-update', {
           id: `TRK-${shipmentId.substring(0,4).toUpperCase()}`,
           lat,
           lng,
@@ -115,6 +115,31 @@ router.get('/live-assets', JwtAuthGuard, async (req: Request, res: Response): Pr
   } catch (error) {
     console.error('Error fetching live assets:', error);
     res.status(500).json({ error: 'Failed to fetch live assets' });
+  }
+});
+
+// GET /telemetry/simulate - Test endpoint to emit telemetry
+router.get('/simulate', async (req: Request, res: Response): Promise<void> => {
+  const globalGateway = (global as any).socketGateway;
+  if (globalGateway) {
+    // We will simulate a truck moving from Djibouti to Addis
+    const lat = Number(req.query.lat) || 11.588;
+    const lng = Number(req.query.lng) || 43.145;
+    const id = req.query.id || 'TRK-DEMO';
+    
+    globalGateway.emitToRoom('general', 'telemetry-update', {
+      id,
+      lat,
+      lng,
+      speed: 60,
+      cargo: 'Coffee Beans',
+      driver: 'Abebe Bikila',
+      status: 'SAFE',
+      eta: '4.5h'
+    });
+    res.json({ success: true });
+  } else {
+    res.status(500).json({ error: 'Gateway not ready' });
   }
 });
 
