@@ -63,12 +63,12 @@ export default function LiveRadarMap() {
         bounds={bounds}
         zoomControl={false}
         minZoom={6}
-        maxZoom={10}
+        maxZoom={18}
         className="absolute inset-0 z-0 bg-[#0B0F17]"
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+          attribution="&copy; Google"
         />
 
         {/* The 810km Artery */}
