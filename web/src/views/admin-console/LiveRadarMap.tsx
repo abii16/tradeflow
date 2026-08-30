@@ -192,31 +192,29 @@ export default function LiveRadarMap() {
             </div>
           </div>
           
-          <div className="space-y-3">
-            <div className="text-[11px] flex justify-between items-center bg-slate-950/50 px-2 py-1.5 rounded border border-slate-800">
-              <span className="text-slate-400 uppercase font-semibold">{t('radar_corridor_status')}</span>
-              <span className={`font-bold font-mono ${isConnected ? 'text-emerald-400' : 'text-amber-500'}`}>
-                {isConnected ? t('radar_operational') : 'RECONNECTING...'}
-              </span>
+            <div className="space-y-2">
+              <div className="text-xs font-medium tracking-wide text-slate-300 flex justify-between items-center">
+                <span>{telemetry.trucks.length}</span>
+                <span>{t('radar_active_assets')}</span>
+              </div>
+              <div className="text-xs font-medium tracking-wide text-slate-400 flex justify-between items-center">
+                <span>{telemetry.alerts.length}</span>
+                <span>Active Alerts</span>
+              </div>
             </div>
-            <div className="text-[10px] font-mono text-slate-400 text-center leading-relaxed">
-              {telemetry.trucks.length} {t('radar_active_assets')} <br />
-              {telemetry.alerts.length} Active Alerts
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Bottom Controls */}
       <div className="absolute bottom-4 right-4 z-[400] flex flex-col items-end gap-2 pointer-events-none">
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg p-1 flex gap-1 pointer-events-auto shadow-lg text-[10px] font-mono">
-          <button className="bg-slate-800 text-white px-2.5 py-1.5 rounded shadow-sm border border-slate-600 transition-colors hover:bg-slate-700">
+        <div className="bg-slate-900/85 backdrop-blur-md border border-slate-700/60 shadow-lg rounded-lg p-1 flex gap-1 pointer-events-auto text-[10px] font-semibold">
+          <button className="bg-white/10 text-white px-3 py-1.5 rounded-lg border border-slate-600/50 transition-colors hover:bg-white/20">
             {t('radar_btn_satellite')}
           </button>
-          <button className="text-slate-400 hover:text-white px-2.5 py-1.5 rounded transition-colors hover:bg-slate-800/50">
+          <button className="text-slate-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-800/60">
             {t('radar_btn_vector')}
           </button>
-          <button className="text-slate-400 hover:text-white px-2.5 py-1.5 rounded transition-colors hover:bg-slate-800/50">
+          <button className="text-slate-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-800/60">
             {t('radar_btn_weather')}
           </button>
         </div>

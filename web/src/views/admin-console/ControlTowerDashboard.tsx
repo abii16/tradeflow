@@ -90,7 +90,7 @@ export default function ControlTowerDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         
         {/* Metric 1 */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-2xl font-mono font-bold text-slate-900">{telemetry.trucks.length > 0 ? telemetry.trucks.length : summary.activeAssets}</span>
@@ -101,13 +101,13 @@ export default function ControlTowerDashboard() {
             <div className="text-xs font-semibold text-slate-600 mb-0.5">{t('kpi_active_assets')}</div>
             <div className="text-[11px] text-slate-400">{t('kpi_active_corridors')}</div>
           </div>
-          <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 text-slate-500">
+          <div className="bg-blue-50 text-blue-600 p-3 rounded-xl flex items-center justify-center">
             <Truck size={18} />
           </div>
         </div>
 
         {/* Metric 2 */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
           <div>
             <div className="text-xl font-mono font-bold text-slate-900 mb-1">
               ETB {loads.length > 0 ? Math.round(loads.reduce((acc, curr) => acc + Number(curr.budgetAmount || 0), 0) / loads.length).toLocaleString() : '356,229'}
@@ -115,31 +115,31 @@ export default function ControlTowerDashboard() {
             <div className="text-xs font-semibold text-slate-600 mb-0.5">{t('kpi_avg_spot_rate')}</div>
             <div className="text-[11px] text-slate-400">{t('kpi_baseline')}</div>
           </div>
-          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 text-blue-600">
+          <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl flex items-center justify-center">
             <CircleDollarSign size={18} />
           </div>
         </div>
 
         {/* Metric 3 */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
           <div>
             <div className="text-2xl font-mono font-bold text-slate-900 mb-1">98.28%</div>
             <div className="text-xs font-semibold text-slate-600 mb-0.5">{t('kpi_eta_reliability')}</div>
             <div className="text-[11px] text-slate-400">{t('kpi_mae_accuracy')}</div>
           </div>
-          <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center border border-indigo-100 text-indigo-600">
+          <div className="bg-indigo-50 text-indigo-600 p-3 rounded-xl flex items-center justify-center">
             <Clock size={18} />
           </div>
         </div>
 
         {/* Metric 4 */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
           <div>
             <div className="text-2xl font-mono font-bold text-slate-900 mb-1">{verifications.length} {t('kpi_pending', 'Pending')}</div>
             <div className="text-xs font-semibold text-slate-600 mb-0.5">{t('kpi_customs_queue')}</div>
             <div className="text-[11px] text-slate-400">{t('kpi_galafi_throughput')}</div>
           </div>
-          <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center border border-rose-100 text-rose-600">
+          <div className="bg-rose-50 text-rose-600 p-3 rounded-xl flex items-center justify-center">
             <ShieldCheck size={18} />
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function ControlTowerDashboard() {
                   <div className="text-right">
                     <div className="text-sm font-mono font-bold text-slate-900">ETB {route.price.toLocaleString()}</div>
                     <div className={`text-[10px] font-semibold ${route.variance < 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {route.variance > 0 ? '+' : ''}{route.variance}% {t('spo_variance')}
+                      {route.variance > 0 ? '+' : ''}{Number(route.variance).toFixed(1)}% {t('spo_variance')}
                     </div>
                   </div>
                 </div>
@@ -274,9 +274,11 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   loads.map((load) => (
-                    <tr key={load.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-4 font-mono font-semibold text-slate-900">
-                        TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
+                    <tr key={load.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-4 py-4">
+                        <span className="font-mono text-xs font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+                          TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
+                        </span>
                       </td>
                       <td className="px-4 py-4 font-medium text-slate-900">
                         <div className="text-xs truncate max-w-[120px]" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
@@ -286,11 +288,18 @@ export default function ControlTowerDashboard() {
                         {String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')} →<br/>{String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                          load.status === 'POSTED' ? 'bg-emerald-50 text-emerald-700' :
-                          load.status === 'IN_TRANSIT' ? 'bg-blue-50 text-blue-700' :
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                          load.status === 'IN_TRANSIT' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' :
+                          load.status === 'POSTED' ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' :
+                          load.status === 'MATCHED' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' :
+                          load.status === 'EXPIRED' || load.status === 'CANCELLED' ? 'bg-slate-100 text-slate-500 ring-1 ring-slate-200' :
                           'bg-slate-100 text-slate-600'
                         }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            load.status === 'IN_TRANSIT' ? 'bg-emerald-500' :
+                            load.status === 'POSTED' ? 'bg-blue-500' :
+                            load.status === 'MATCHED' ? 'bg-amber-500' : 'bg-slate-400'
+                          }`} />
                           {load.status}
                         </span>
                       </td>
@@ -341,15 +350,17 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   verifications.map((v) => (
-                    <tr key={v.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 font-mono font-semibold text-slate-900">
-                        REQ-{v.id.toString().slice(0, 8).toUpperCase()}
+                    <tr key={v.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="font-mono text-xs font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+                          REQ-{v.id.toString().slice(0, 8).toUpperCase()}
+                        </span>
                       </td>
                       <td className="px-6 py-4 font-medium text-slate-900">{v.userFullName || 'Unknown Entity'}</td>
                       <td className="px-6 py-4 font-mono text-xs">{v.taxId || v.tradeLicenseNumber || 'N/A'}</td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                           {t('vr_pending')}
                         </span>
                       </td>
