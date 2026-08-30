@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, AlertTriangle, FileText, CheckCircle, XCircle, Search, FileSignature, X, Image as ImageIcon } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, FileText, CheckCircle, XCircle, Search, FileSignature, X, Image as ImageIcon, Eye } from 'lucide-react';
 import { getAllVerifications, reviewVerification } from '../../lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -135,7 +135,7 @@ export default function VerificationQueue() {
                   </tr>
                 )}
                 {filteredRequests.map((req) => (
-                  <tr key={req.id} className={`transition-colors hover:bg-slate-50 ${selectedRequest?.id === req.id ? 'bg-blue-50/50' : ''}`}>
+                  <tr key={req.id} className={`transition-colors hover:bg-slate-50 border-l-4 ${selectedRequest?.id === req.id ? 'bg-indigo-50/50 border-indigo-600 font-medium' : 'border-transparent'}`}>
                     <td className="px-6 py-4 font-mono font-bold text-slate-900">{req.id.substring(0, 8)}</td>
                     <td className="px-6 py-4 font-medium text-slate-900">{req.userFullName || 'N/A'}</td>
                     <td className="px-6 py-4 font-mono text-xs">{req.taxId || 'N/A'}</td>
@@ -205,18 +205,18 @@ export default function VerificationQueue() {
 
               <div>
                 <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">{t('vq_drawer_entity_details')}</h4>
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">{t('vq_drawer_legal_name')}</span>
-                    <span className="font-semibold text-slate-900">{selectedRequest.userFullName}</span>
+                <div className="bg-slate-50 border border-slate-200/70 rounded-xl p-4 space-y-2.5 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-medium">{t('vq_drawer_legal_name')}</span>
+                    <span className="text-slate-900 font-semibold font-mono">{selectedRequest.userFullName}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">{t('vq_drawer_tin')}</span>
-                    <span className="font-mono font-semibold text-slate-900">{selectedRequest.taxId}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-medium">{t('vq_drawer_tin')}</span>
+                    <span className="text-slate-900 font-semibold font-mono">{selectedRequest.taxId}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Trade License</span>
-                    <span className="font-semibold text-slate-900">{selectedRequest.tradeLicenseNumber}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-medium">Trade License</span>
+                    <span className="text-slate-900 font-semibold font-mono">{selectedRequest.tradeLicenseNumber}</span>
                   </div>
                 </div>
               </div>
@@ -233,6 +233,9 @@ export default function VerificationQueue() {
                       <div className="text-sm font-semibold text-slate-900">{t('vq_drawer_trade_license')}</div>
                       <div className="text-[10px] text-slate-500">{t('vq_drawer_pdf_size')}</div>
                     </div>
+                    <button className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all">
+                      <Eye size={16} />
+                    </button>
                   </div>
 
                   <div className="border border-slate-200 rounded-lg p-3 flex items-center gap-3 hover:border-blue-400 transition-colors cursor-pointer group">
@@ -243,7 +246,10 @@ export default function VerificationQueue() {
                       <div className="text-sm font-semibold text-slate-900">{t('vq_drawer_inspection_cert')}</div>
                       <div className="text-[10px] text-slate-500">{t('vq_drawer_scanned_size')}</div>
                     </div>
-                    <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">{t('vq_drawer_check_expiry')}</span>
+                    <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2 py-0.5 rounded-md font-semibold">{t('vq_drawer_check_expiry')}</span>
+                    <button className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all ml-1">
+                      <Eye size={16} />
+                    </button>
                   </div>
 
                 </div>
@@ -283,7 +289,14 @@ export default function VerificationQueue() {
             ) : (
               <div className="p-5 border-t border-slate-200 bg-slate-50 rounded-b-xl flex flex-col gap-3">
                  <div className="flex justify-between items-center w-full">
-                   <span className="text-sm font-semibold text-slate-500">Status: {selectedRequest.status}</span>
+                   <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                     selectedRequest.status === 'VERIFIED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                     selectedRequest.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                     selectedRequest.status === 'SUSPENDED' ? 'bg-slate-200 text-slate-700 border border-slate-300' :
+                     'bg-slate-100 text-slate-700 border border-slate-200'
+                   }`}>
+                     ● Status: {selectedRequest.status === 'VERIFIED' ? 'Verified' : selectedRequest.status === 'REJECTED' ? 'Rejected' : selectedRequest.status === 'SUSPENDED' ? 'Suspended' : selectedRequest.status}
+                   </span>
                    {selectedRequest.rejectionReason && (
                      <span className="text-xs text-rose-500 ml-2">Reason: {selectedRequest.rejectionReason}</span>
                    )}
@@ -297,7 +310,7 @@ export default function VerificationQueue() {
                          handleReview(selectedRequest.id, 'SUSPENDED', reason);
                        }
                      }}
-                     className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-sm border border-slate-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+                     className="w-full bg-rose-600 hover:bg-rose-700 transition shadow-sm text-white font-bold py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
                    >
                      <AlertTriangle size={16} /> Suspend Account
                    </button>
