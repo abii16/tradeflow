@@ -87,8 +87,8 @@ export default function ActiveShipment() {
       <div className="h-44 w-full border-b border-slate-100 relative">
         <MapContainer center={[10.5, 41.5]} zoom={6} scrollWheelZoom={false} className="h-full w-full">
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution="&copy; Google"
+            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
           />
           <Polyline positions={routeLine} color="#2563eb" weight={3} dashArray="4, 4" />
           <Marker position={djibouti} />
