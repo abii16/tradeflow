@@ -37,14 +37,10 @@ export function useRiskZones() {
           setError(null);
         }
       } catch (err: any) {
-        console.error('[RiskZones API] Failed to fetch risk zones:', err);
+        console.warn('[RiskZones] Could not load risk zones, map will render without overlays:', err?.message || err);
         if (isMounted) {
-          setError(err);
-          // Trigger visual Toast notification for backend error states
-          toast.error('Failed to load active risk zones from server.', {
-            id: 'risk-zone-fetch-error',
-            position: 'bottom-right'
-          });
+          setRiskZones([]);
+          setError(null); // Don't surface this error to the user — map works fine without zones
         }
       } finally {
         if (isMounted) {
