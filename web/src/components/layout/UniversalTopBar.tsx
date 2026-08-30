@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bell, Globe, LogOut } from 'lucide-react';
+import { Bell, Globe, LogOut, User, Settings, ChevronDown } from 'lucide-react';
 import HeaderSearch from '@/components/common/HeaderSearch';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function UniversalTopBar() {
   const { i18n } = useTranslation();
   const { user, logout } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'am' : 'en');
@@ -59,10 +71,10 @@ export default function UniversalTopBar() {
 
         <div className="w-px h-4 bg-slate-200"></div>
 
-        {/* User Account */}
+        {/* User Account with Dropdown */}
         {user && (
-          <div className="flex items-center space-x-3">
-            <div className="flex flex-col items-end">
+          <div className="relative flex items-center space-x-3 ml-2" ref={dropdownRef}>
+            <div className="hidden sm:flex flex-col items-end">
               <span className="text-xs font-bold text-slate-900 leading-none mb-1">{user.fullName || user.email}</span>
               <span className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded border leading-none ${getRoleBadgeColor(user.role)}`}>
                 {getRoleDisplayName(user.role)}
@@ -70,12 +82,44 @@ export default function UniversalTopBar() {
             </div>
             
             <button 
-              onClick={logout}
-              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-              title="Sign Out"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-1 focus:outline-none"
             >
-              <LogOut size={16} />
+              <div className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden ring-1 ring-slate-200">
+                <img 
+                  src={`https://i.pravatar.cc/150?u=${user.email}`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <ChevronDown size={14} className="text-slate-400" />
             </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute top-10 right-0 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="px-4 py-2 border-b border-slate-100 sm:hidden">
+                  <p className="text-xs font-bold text-slate-900 truncate">{user.fullName || user.email}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{getRoleDisplayName(user.role)}</p>
+                </div>
+                
+                <button className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
+                  <User size={14} /> My Profile
+                </button>
+                <button className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
+                  <Settings size={14} /> Account Settings
+                </button>
+                
+                <div className="h-px bg-slate-100 my-1"></div>
+                
+                <button 
+                  onClick={logout}
+                  className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                >
+                  <LogOut size={14} /> Sign Out
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

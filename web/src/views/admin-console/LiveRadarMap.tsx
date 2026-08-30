@@ -63,12 +63,12 @@ export default function LiveRadarMap() {
         bounds={bounds}
         zoomControl={false}
         minZoom={6}
-        maxZoom={10}
+        maxZoom={18}
         className="absolute inset-0 z-0 bg-[#0B0F17]"
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+          attribution="&copy; Google"
         />
 
         {/* The 810km Artery */}
@@ -192,16 +192,22 @@ export default function LiveRadarMap() {
             </div>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="text-[11px] flex justify-between items-center bg-slate-950/50 px-2 py-1.5 rounded border border-slate-800">
-              <span className="text-slate-400 uppercase font-semibold">{t('radar_corridor_status')}</span>
-              <span className={`font-bold font-mono ${isConnected ? 'text-emerald-400' : 'text-amber-500'}`}>
+              <span className="text-slate-400 uppercase tracking-wider font-semibold text-[10px]">{t('radar_corridor_status')}</span>
+              <span className={`font-bold font-mono text-[10px] ${isConnected ? 'text-emerald-400' : 'text-amber-500'}`}>
                 {isConnected ? t('radar_operational') : 'RECONNECTING...'}
               </span>
             </div>
-            <div className="text-[10px] font-mono text-slate-400 text-center leading-relaxed">
-              {telemetry.trucks.length} {t('radar_active_assets')} <br />
-              {telemetry.alerts.length} Active Alerts
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 text-center">
+                <div className="text-lg font-mono font-bold text-white leading-none">{telemetry.trucks.length}</div>
+                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-0.5">{t('radar_active_assets')}</div>
+              </div>
+              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 text-center">
+                <div className="text-lg font-mono font-bold text-white leading-none">{telemetry.alerts.length}</div>
+                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-0.5">Active Corridors</div>
+              </div>
             </div>
           </div>
         </div>
@@ -209,14 +215,14 @@ export default function LiveRadarMap() {
 
       {/* Bottom Controls */}
       <div className="absolute bottom-4 right-4 z-[400] flex flex-col items-end gap-2 pointer-events-none">
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg p-1 flex gap-1 pointer-events-auto shadow-lg text-[10px] font-mono">
-          <button className="bg-slate-800 text-white px-2.5 py-1.5 rounded shadow-sm border border-slate-600 transition-colors hover:bg-slate-700">
+        <div className="bg-slate-900/85 backdrop-blur-md border border-slate-700/60 shadow-lg rounded-lg p-1 flex gap-1 pointer-events-auto text-[10px] font-semibold">
+          <button className="bg-white/10 text-white px-3 py-1.5 rounded-lg border border-slate-600/50 transition-colors hover:bg-white/20">
             {t('radar_btn_satellite')}
           </button>
-          <button className="text-slate-400 hover:text-white px-2.5 py-1.5 rounded transition-colors hover:bg-slate-800/50">
+          <button className="text-slate-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-800/60">
             {t('radar_btn_vector')}
           </button>
-          <button className="text-slate-400 hover:text-white px-2.5 py-1.5 rounded transition-colors hover:bg-slate-800/50">
+          <button className="text-slate-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-800/60">
             {t('radar_btn_weather')}
           </button>
         </div>

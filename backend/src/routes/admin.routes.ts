@@ -17,12 +17,12 @@ const router = Router();
 router.use(JwtAuthGuard, RolesGuard(['ADMIN']));
 
 /**
- * GET /admin/verifications/pending
- * List all pending user verifications
+ * GET /admin/verifications
+ * List all user verifications
  */
-router.get('/verifications/pending', async (req: Request, res: Response): Promise<void> => {
+router.get('/verifications', async (req: Request, res: Response): Promise<void> => {
   try {
-    const pendingVerifications = await db
+    const allVerifications = await db
       .select({
         id: verifications.id,
         userId: verifications.userId,
@@ -37,13 +37,12 @@ router.get('/verifications/pending', async (req: Request, res: Response): Promis
       })
       .from(verifications)
       .leftJoin(users, eq(verifications.userId, users.id))
-      .where(eq(verifications.status, 'PENDING'))
       .orderBy(desc(verifications.createdAt));
 
-    res.status(200).json({ data: pendingVerifications });
+    res.status(200).json({ data: allVerifications });
   } catch (error) {
-    console.error('Error fetching pending verifications:', error);
-    res.status(500).json({ error: 'Failed to fetch pending verifications' });
+    console.error('Error fetching verifications:', error);
+    res.status(500).json({ error: 'Failed to fetch verifications' });
   }
 });
 
@@ -91,6 +90,18 @@ router.post('/verifications/:id/review', async (req: Request, res: Response): Pr
         isVerified: userStatus === 'VERIFIED', // Maintain backwards compatibility
         updatedAt: new Date(),
       }).where(eq(users.id, verification.userId));
+
+      // 4. Log the action in the Admin Audit Ledger (FR-01.4)
+      await tx.insert(auditLogs).values({
+        userId: adminId,
+        userRole: 'ADMIN',
+        action: `VERIFICATION_${status}`,
+        method: 'POST',
+        endpoint: `/admin/verifications/${id}/review`,
+        statusCode: 200,
+        requestPayload: { status, rejectionReason, targetUserId: verification.userId },
+        ipAddress: req.ip || '0.0.0.0'
+      });
     });
 
     res.status(200).json({ message: `Verification successfully updated to ${status}` });
@@ -254,7 +265,7 @@ router.post('/disputes/:id/resolve', async (req: Request, res: Response): Promis
 
     await db.transaction(async (tx) => {
       await tx.update(disputes).set({
-        status: 'RESOLVED',
+        status: resolutionAction as any,
         resolutionNotes: notes,
         resolvedBy: req.user!.id,
         resolvedAt: new Date()

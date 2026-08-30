@@ -82,8 +82,8 @@ export async function fetchSecurityHistory() {
 }
 
 // Verification Queue (Tab 2)
-export async function getPendingVerifications() {
-  return apiClient('/admin/verifications/pending', { method: 'GET' });
+export async function getAllVerifications() {
+  return apiClient('/admin/verifications', { method: 'GET' });
 }
 
 export async function reviewVerification(id: string, data: { status: string; rejectionReason?: string }) {
