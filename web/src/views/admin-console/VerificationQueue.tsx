@@ -5,7 +5,7 @@ import { getAllVerifications, reviewVerification } from '../../lib/apiClient';
 import toast from 'react-hot-toast';
 
 export default function VerificationQueue() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [requests, setRequests] = useState<any[]>([]);
@@ -58,7 +58,7 @@ export default function VerificationQueue() {
     <div className="h-full flex flex-col space-y-6">
 
       {/* Top Header & Metrics */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
           <h2 className="text-lg font-bold text-slate-900">{t('vq_title')}</h2>
           <p className="text-xs text-slate-500 mt-1">{t('vq_desc')}</p>
@@ -84,38 +84,54 @@ export default function VerificationQueue() {
       <div className="flex-1 flex gap-6 relative min-h-[500px]">
 
         {/* Left/Main Column: Table */}
-        <div className={`flex-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col transition-all duration-300 ${selectedRequest ? 'lg:w-2/3' : 'w-full'}`}>
+        <div className={`flex-1 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col transition-all duration-300 p-6 ${selectedRequest ? 'lg:w-2/3' : 'w-full'}`}>
 
-          <div className="p-4 border-b border-slate-200 flex flex-wrap gap-2 items-center justify-between">
-            <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-              <button onClick={() => setActiveTab('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{t('vq_tab_all')} ({requests.length})</button>
-              <button onClick={() => setActiveTab('pending')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'pending' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{t('vq_tab_pending').replace(/\s*\(\d+\)/, '')} ({pendingRequests.length})</button>
-              <button onClick={() => setActiveTab('mismatch')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'mismatch' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{t('vq_tab_mismatch').replace(/\s*\(\d+\)/, '')} ({mismatchRequests.length})</button>
-              <button onClick={() => setActiveTab('verified')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'verified' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{t('vq_tab_verified')} ({verifiedRequests.length})</button>
+          <div className="pb-4 border-b border-slate-100 flex flex-wrap gap-4 items-center justify-between">
+            <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
+              <button onClick={() => setActiveTab('all')} className={`px-4 py-1.5 text-xs rounded-lg transition-colors ${activeTab === 'all' ? 'bg-slate-900 text-white font-medium shadow-sm' : 'text-slate-500 font-medium hover:text-slate-700'}`}>{t('vq_tab_all')} ({requests.length})</button>
+              <button onClick={() => setActiveTab('pending')} className={`px-4 py-1.5 text-xs rounded-lg transition-colors ${activeTab === 'pending' ? 'bg-slate-900 text-white font-medium shadow-sm' : 'text-slate-500 font-medium hover:text-slate-700'}`}>{t('vq_tab_pending').replace(/\s*\(\d+\)/, '')} ({pendingRequests.length})</button>
+              <button onClick={() => setActiveTab('mismatch')} className={`px-4 py-1.5 text-xs rounded-lg transition-colors ${activeTab === 'mismatch' ? 'bg-slate-900 text-white font-medium shadow-sm' : 'text-slate-500 font-medium hover:text-slate-700'}`}>{t('vq_tab_mismatch').replace(/\s*\(\d+\)/, '')} ({mismatchRequests.length})</button>
+              <button onClick={() => setActiveTab('verified')} className={`px-4 py-1.5 text-xs rounded-lg transition-colors ${activeTab === 'verified' ? 'bg-slate-900 text-white font-medium shadow-sm' : 'text-slate-500 font-medium hover:text-slate-700'}`}>{t('vq_tab_verified')} ({verifiedRequests.length})</button>
             </div>
 
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <input type="text" placeholder={t('vq_search')} className="pl-9 pr-4 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-64" />
+              <input type="text" placeholder={t('vq_search')} className="pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 w-64 bg-slate-50 transition-colors" />
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto mt-2">
             <table className="w-full text-left text-sm text-slate-600">
-              <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-200 font-semibold">
-                <tr>
-                  <th className="px-6 py-3">{t('vq_col_app_id')}</th>
-                  <th className="px-6 py-3">{t('vq_col_entity')}</th>
-                  <th className="px-6 py-3">{t('vq_col_tin')}</th>
-                  <th className="px-6 py-3">{t('vq_col_fleet')}</th>
-                  <th className="px-6 py-3">{t('vq_col_insurance')}</th>
-                  <th className="px-6 py-3 text-right">{t('vq_col_action')}</th>
-                </tr>
-              </thead>
+              {filteredRequests.length > 0 && (
+                <thead className="text-xs text-slate-500 bg-slate-50 uppercase border-b border-slate-100 font-semibold">
+                  <tr>
+                    <th className="px-6 py-3 rounded-tl-lg">{t('vq_col_app_id')}</th>
+                    <th className="px-6 py-3">{t('vq_col_entity')}</th>
+                    <th className="px-6 py-3">{t('vq_col_tin')}</th>
+                    <th className="px-6 py-3">{t('vq_col_fleet')}</th>
+                    <th className="px-6 py-3">{t('vq_col_insurance')}</th>
+                    <th className="px-6 py-3 text-right rounded-tr-lg">{t('vq_col_action')}</th>
+                  </tr>
+                </thead>
+              )}
               <tbody className="divide-y divide-slate-100">
                 {filteredRequests.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No verifications found</td>
+                    <td colSpan={6} className="px-6 py-16 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center ring-1 ring-emerald-100">
+                          <ShieldCheck size={32} />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[15px] font-bold text-slate-900">
+                            {t('vq_empty_title', { defaultValue: i18n.language === 'am' ? 'ሁሉም ግምገማዎች ተጠናቀዋል' : 'All Compliance Reviews Complete' })}
+                          </p>
+                          <p className="text-[13px] text-slate-500 max-w-[320px] mx-auto leading-relaxed">
+                            {t('vq_empty_desc', { defaultValue: i18n.language === 'am' ? 'በአሁኑ ጊዜ የሚጠብቁ የ KYC ወይም የተሽከርካሪ ግምገማ ጥያቄዎች የሉም።' : 'There are currently no entity KYC or fleet roadworthiness applications waiting for verification.' })}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
                   </tr>
                 )}
                 {filteredRequests.map((req) => (

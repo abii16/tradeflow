@@ -15,6 +15,8 @@ import {
   Droplet
 } from 'lucide-react';
 
+import { getAllVerifications } from '../../lib/apiClient';
+
 interface AdminSidebarProps {
   activeSubTab: string;
   setActiveSubTab: (tab: any) => void;
@@ -24,10 +26,28 @@ export default function AdminSidebar({ activeSubTab, setActiveSubTab }: AdminSid
   const { t } = useTranslation();
   const { logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [pendingCount, setPendingCount] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const response = await getAllVerifications();
+        const pending = (response.data || []).filter((r: any) => r.status === 'PENDING');
+        setPendingCount(pending.length);
+      } catch (err) {
+        console.error('Failed to fetch pending count', err);
+      }
+    };
+    fetchPendingCount();
+    
+    // Set up polling to keep the badge up-to-date
+    const interval = setInterval(fetchPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const menuItems = [
     { id: 'radar', name: t('admin_nav_radar'), icon: Radar },
-    { id: 'verification', name: t('admin_nav_verification'), icon: ClipboardCheck, badge: '12' },
+    { id: 'verification', name: t('admin_nav_verification'), icon: ClipboardCheck, badge: pendingCount > 0 ? pendingCount.toString() : null },
     { id: 'pricing', name: t('admin_nav_pricing'), icon: TrendingUp },
     { id: 'fuel', name: 'Fuel Analytics', icon: Droplet },
     { id: 'security', name: t('admin_nav_security'), icon: ShieldAlert },
