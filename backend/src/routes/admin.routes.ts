@@ -246,11 +246,16 @@ router.get('/security/geofences', async (req: Request, res: Response): Promise<v
 
 router.post('/security/broadcast-geofence', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, severity, radiusKm, lat, lng } = req.body;
+    const { name, severity, radiusKm, lat, lng, type, description } = req.body;
     
     await db.insert(riskZones).values({
       name,
       severity,
+      type: type || 'Security / Conflict',
+      description: description || '',
+      latitude: lat,
+      longitude: lng,
+      radiusKm,
       zone: { type: "Circle", coordinates: [lng, lat], radiusKm },
       isActive: true
     });
