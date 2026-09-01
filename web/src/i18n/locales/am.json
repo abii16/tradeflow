@@ -313,5 +313,15 @@
   "dp_audit_mult": "የፍላጎት ማባዣ",
   "dp_audit_final": "የመጨረሻ ዋጋ",
   "dp_audit_hash": "SHA-256 የአቋም ማረጋገጫ ሀሽ",
-  "dp_trend_title": "የቀጥታ ስፖት ዋጋ አዝማሚያ ትንተና"
+  "dp_trend_title": "የቀጥታ ስፖት ዋጋ አዝማሚያ ትንተና",
+  "dm_status_open": "ክፍት",
+  "dm_status_review": "በግምገማ ላይ",
+  "dm_status_resolved": "ተፈቷል",
+  "dm_vs": "ከ",
+  "dm_resolution_title": "የአስተዳዳሪ የውሳኔ እርምጃ",
+  "dm_resolution_note": "የግዴታ ኦዲት ማስታወሻ:",
+  "dm_resolution_note_placeholder": "ለዚህ የግልግል ዳኝነት እርምጃ ምክንያቱን እዚህ ያስገቡ...",
+  "dm_release_100": "100% ለአጓጓዥ ልቀቅ",
+  "dm_issue_refund": "በከፊል ተመላሽ ገንዘብ ስጥ",
+  "dm_escalate_legal": "ወደ ህጋዊ አሳድግ / አግድ"
 }
