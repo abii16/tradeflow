@@ -186,7 +186,7 @@
   "dp_ceil_label": "Spot Rate Surge Ceiling",
   "dp_diesel_label": "Current Diesel Baseline Index (ETB/L)",
   "dp_diesel_api": "Live API sync with National Petroleum Auth.",
-  "dp_yield_title": "Live Network Yield",
+  "dp_trend_title": "Live Spot Trend Analysis",
   "dp_yield_vs": "vs trailing 24h",
   "dp_surge_mult": "Demand Surge Mult:",
   "dp_active_freight": "Total Active Freight:",
