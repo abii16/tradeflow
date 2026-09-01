@@ -97,7 +97,7 @@ export default function DisputeMediation() {
                 <div className="flex justify-between items-start mb-1">
                   <span className={`text-xs font-bold font-mono ${selectedDispute?.id === d.id ? 'text-indigo-700' : 'text-slate-600'}`}>{d.id.substring(0,8)}</span>
                   {d.status === 'OPEN' && <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_open')}</span>}
-                  {d.status === 'IN_REVIEW' && <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_review')}</span>}
+                  {d.status === 'UNDER_REVIEW' && <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_review')}</span>}
                   {d.status.startsWith('RESOLVED') && <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_resolved')}</span>}
                   {d.status === 'ESCALATED_LEGAL' && <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">ESCALATED</span>}
                 </div>
