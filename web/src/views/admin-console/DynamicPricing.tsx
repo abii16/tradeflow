@@ -143,11 +143,18 @@ export default function DynamicPricing() {
   // Calculate Trend SVG Path
   const maxVal = Math.max(...historicalTrend.map(d => Math.max(d.algorithmic, d.market)), 1) * 1.35;
   let trendSvgPath = '';
+  let aiSvgPath = '';
+  
   historicalTrend.forEach((data, i) => {
-    const x = ((i + 0.5) / Math.max(1, historicalTrend.length)) * 100;
-    const y = 100 - (data.market / maxVal) * 100;
-    trendSvgPath += (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+    const x = (i / Math.max(1, historicalTrend.length - 1)) * 100;
+    const yMarket = 100 - (data.market / maxVal) * 100;
+    const yAi = 100 - (data.algorithmic / maxVal) * 100;
+    
+    trendSvgPath += (i === 0 ? `M ${x} ${yMarket}` : ` L ${x} ${yMarket}`);
+    aiSvgPath += (i === 0 ? `M ${x} ${yAi}` : ` L ${x} ${yAi}`);
   });
+
+  const aiAreaPath = `${aiSvgPath} L 100 100 L 0 100 Z`;
 
   return (
     <div className="bg-slate-50/70 min-h-screen text-slate-900 p-8 space-y-6">
@@ -162,14 +169,14 @@ export default function DynamicPricing() {
         <div className="flex items-center gap-2 h-10">
           <button 
             onClick={openAuditDrawer}
-            className="bg-indigo-50 hover:bg-indigo-100 text-slate-900 border border-indigo-200 shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
           >
             <Clock className="w-4 h-4 text-slate-900" /> {t('dp_btn_audit', 'Audit Logs')}
           </button>
           <button 
             onClick={handleOptimize}
             disabled={optimizing}
-            className="bg-indigo-50 hover:bg-indigo-100 text-slate-900 border border-indigo-200 shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
           >
             <Sparkles className={`w-4 h-4 text-slate-900 ${optimizing ? "animate-spin" : ""}`} />
             {optimizing ? t('dp_optimizing', 'Optimizing...') : t('dp_btn_optimize', 'Trigger AI Optimization')}
@@ -177,7 +184,7 @@ export default function DynamicPricing() {
           <button 
             onClick={handleSync}
             disabled={syncing || saving}
-            className="bg-indigo-50 hover:bg-indigo-100 text-slate-900 border border-indigo-200 shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
           >
             <Zap className="w-4 h-4 text-slate-900" />
             {syncing ? t('dp_syncing', 'Syncing...') : t('dp_btn_publish', 'Publish Rates to Marketplace')}
@@ -220,12 +227,12 @@ export default function DynamicPricing() {
               {t('dp_controls_title', 'Volatility & Baseline Controls')}
             </h3>
             
-            <div className="space-y-5 p-5">
+            <div className="space-y-4 p-5">
               {/* Multiplier Slider */}
-              <div className="w-full">
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('dp_demand_surge_label', 'Demand Surge Multiplier')}</label>
-                  <span className="font-mono font-bold text-[11px] px-2 py-1 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm">{demandMultiplier}x</span>
+              <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3.5 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <label className="font-semibold text-slate-700 uppercase tracking-wider">{t('dp_demand_surge_label', 'Demand Surge Multiplier')}</label>
+                  <span className="font-mono font-bold text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">{demandMultiplier}x</span>
                 </div>
                 <input 
                   type="range" 
@@ -234,15 +241,15 @@ export default function DynamicPricing() {
                   step="0.01"
                   value={demandMultiplier}
                   onChange={(e) => setDemandMultiplier(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 shadow-inner"
+                  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none accent-slate-800 cursor-pointer"
                 />
               </div>
 
               {/* Floor Slider */}
-              <div className="w-full">
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('dp_floor_bound', 'Spot Rate Floor Bound')}</label>
-                  <span className="font-mono font-bold text-[11px] px-2 py-1 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm">{floorBound}%</span>
+              <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3.5 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <label className="font-semibold text-slate-700 uppercase tracking-wider">{t('dp_floor_bound', 'Spot Rate Floor Bound')}</label>
+                  <span className="font-mono font-bold text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">{floorBound}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -250,15 +257,15 @@ export default function DynamicPricing() {
                   max="0" 
                   value={floorBound}
                   onChange={(e) => setFloorBound(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 shadow-inner"
+                  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none accent-slate-800 cursor-pointer"
                 />
               </div>
 
               {/* Ceiling Slider */}
-              <div className="w-full">
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('dp_ceil_bound', 'Spot Rate Surge Ceiling')}</label>
-                  <span className="font-mono font-bold text-[11px] px-2 py-1 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm">+{ceilBound}%</span>
+              <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3.5 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <label className="font-semibold text-slate-700 uppercase tracking-wider">{t('dp_ceil_bound', 'Spot Rate Surge Ceiling')}</label>
+                  <span className="font-mono font-bold text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">+{ceilBound}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -266,21 +273,21 @@ export default function DynamicPricing() {
                   max="85" 
                   value={ceilBound}
                   onChange={(e) => setCeilBound(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 shadow-inner"
+                  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none accent-slate-800 cursor-pointer"
                 />
               </div>
 
               {/* Fuel Index */}
               <div className="pt-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-3">{t('dp_diesel_baseline', 'Baseline Fuel Index')}</label>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">{t('dp_diesel_baseline', 'Baseline Fuel Index')}</label>
                 <div className="relative flex items-center">
                   <input 
                     type="number" 
                     value={dieselIndex}
                     onChange={(e) => setDieselIndex(Number(e.target.value))}
-                    className="w-full h-10 pl-4 pr-16 bg-white border border-slate-200 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm text-sm"
+                    className="w-full h-9 pl-3 pr-16 bg-white border border-slate-200 rounded-lg font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs"
                   />
-                  <span className="absolute right-4 text-xs font-semibold text-slate-500 bg-transparent">ETB / L</span>
+                  <span className="absolute right-3 text-[11px] font-semibold text-slate-500 bg-transparent">ETB / L</span>
                 </div>
                 <p className="text-[10px] text-slate-500 mt-2 font-medium">
                   {t('dp_fuel_helper', 'Live sync with National Petroleum Authority')}
@@ -313,7 +320,7 @@ export default function DynamicPricing() {
                     <span>{t('dp_base_rate', 'Base Rate')}</span>
                     <span className="text-slate-700">ETB {base1.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-indigo-600 bg-indigo-50/50 p-1.5 -mx-1.5 rounded">
+                  <div className="flex justify-between text-slate-900 bg-slate-100/50 p-1.5 -mx-1.5 rounded">
                     <span>{t('dp_surcharge', 'Surcharge')}</span>
                     <span className="font-bold">+ ETB {dwellSurcharge.toLocaleString()}</span>
                   </div>
@@ -335,7 +342,7 @@ export default function DynamicPricing() {
                     <span>{t('dp_base_rate', 'Base Rate')}</span>
                     <span className="text-slate-700">ETB {base2.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-indigo-600 bg-indigo-50/50 p-1.5 -mx-1.5 rounded">
+                  <div className="flex justify-between text-slate-900 bg-slate-100/50 p-1.5 -mx-1.5 rounded">
                     <span>{t('dp_fuel_adj', 'Fuel Adj')}</span>
                     <span className="font-bold">+ ETB {fuelAdj.toLocaleString()}</span>
                   </div>
@@ -350,9 +357,9 @@ export default function DynamicPricing() {
             </div>
 
             <div className="p-6 pt-0">
-              <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4 flex justify-between items-center">
-                <span className="font-bold text-sm text-indigo-900 uppercase tracking-wider">{t('dp_computed_total', 'Computed Corridor Total')}</span>
-                <span className="text-2xl font-black text-indigo-700 font-mono">
+              <div className="bg-slate-100/70 border border-slate-200 rounded-xl p-4 flex justify-between items-center">
+                <span className="font-bold text-sm text-slate-900 uppercase tracking-wider">{t('dp_computed_total', 'Computed Corridor Total')}</span>
+                <span className="text-2xl font-black text-slate-900 font-mono">
                   ETB {computedTotal.toLocaleString()}
                 </span>
               </div>
@@ -366,19 +373,33 @@ export default function DynamicPricing() {
                 {t('dp_trend_title', 'Live Spot Trend Analysis')}
               </h3>
               <div className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-wider">
-                <span className="flex items-center gap-1.5 text-slate-600"><div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-sm"></div> {t('dp_computed_rate', 'Algorithm Computed Rate')}</span>
+                <span className="flex items-center gap-1.5 text-slate-600"><div className="w-2.5 h-2.5 rounded-full bg-slate-1000 shadow-sm"></div> {t('dp_computed_rate', 'Algorithm Computed Rate')}</span>
                 <span className="flex items-center gap-1.5 text-slate-400"><div className="w-3 h-0.5 rounded-full bg-slate-400 border border-slate-400 border-dashed"></div> {t('dp_market_avg', 'Market Avg')}</span>
               </div>
             </div>
 
             <div className="flex-1 w-full flex items-end justify-between gap-2 md:gap-3 relative z-10 pt-10 pb-6 px-8">
-              {/* SVG Trend Line for Market Avg */}
+              {/* SVG Trend Lines & Area */}
               <div className="absolute inset-0 pt-10 pb-6 px-8 pointer-events-none">
-                <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+                <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+                  {/* AI Area Fill */}
+                  <path 
+                    d={aiAreaPath}
+                    fill="currentColor"
+                    className="text-slate-900/10"
+                  />
+                  {/* Market Line */}
                   <path 
                     d={trendSvgPath} 
                     fill="none" 
                     className="stroke-slate-400 stroke-[1.5] stroke-dasharray-[4,4]" 
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {/* AI Line */}
+                  <path 
+                    d={aiSvgPath} 
+                    fill="none" 
+                    className="stroke-slate-800 stroke-2 drop-shadow-sm" 
                     vectorEffect="non-scaling-stroke"
                   />
                 </svg>
@@ -395,22 +416,20 @@ export default function DynamicPricing() {
               <div className="absolute left-0 bottom-[60%] -translate-y-1/2 text-[11px] font-medium text-slate-400">300K</div>
               <div className="absolute left-0 bottom-[30%] -translate-y-1/2 text-[11px] font-medium text-slate-400">200K</div>
 
-              {historicalTrend.map((data, i) => {
-                const h = (data.algorithmic / maxVal) * 100;
-                
-                return (
-                  <div key={i} className="relative flex-1 group/bar flex justify-center h-full items-end z-10">
-                    <div 
-                      style={{ height: `${h}%` }} 
-                      className="w-1.5 md:w-2 bg-indigo-500/60 hover:bg-indigo-500/80 rounded-t-sm transition-all duration-200 relative cursor-pointer"
-                    >
-                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-mono font-bold px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 z-20 pointer-events-none whitespace-nowrap transition-opacity shadow-lg">
-                        ETB {(data.algorithmic / 1000).toFixed(0)}K
-                      </div>
+              {/* Interactive Hover Zones */}
+              <div className="absolute inset-0 pt-10 pb-6 px-8 flex">
+                {historicalTrend.map((data, i) => (
+                  <div key={i} className="flex-1 group/zone relative cursor-crosshair">
+                    {/* Tooltip */}
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-mono px-3 py-2 rounded opacity-0 group-hover/zone:opacity-100 z-30 pointer-events-none whitespace-nowrap transition-opacity shadow-lg flex flex-col gap-1 items-center">
+                      <span className="font-bold text-slate-200">Day {data.day}: ETB {(data.algorithmic).toLocaleString()} (AI)</span>
+                      <span className="text-slate-400">vs ETB {(data.market).toLocaleString()} (Market)</span>
                     </div>
+                    {/* Hover indicator line */}
+                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-slate-800/0 group-hover/zone:bg-slate-800/30 transition-colors z-20"></div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
             
             {/* X-Axis Labels */}
@@ -462,16 +481,16 @@ export default function DynamicPricing() {
                     <td className="px-6 py-4 font-mono text-slate-600">ETB {contract.currentSpot.toLocaleString()}</td>
                     <td className="px-6 py-4 font-mono font-bold text-rose-600">+{contract.divergencePct.toFixed(1)}%</td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase">
+                      <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase whitespace-nowrap">
                         {contract.status === 'FLAGGED_FOR_REVIEW' ? t('dp_status_flagged', 'FLAGGED_FOR_REVIEW') : contract.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => handleRenegotiate(contract.id)} className="bg-indigo-50 hover:bg-indigo-100 text-slate-900 border border-indigo-200 px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
+                        <button onClick={() => handleRenegotiate(contract.id)} className="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
                           {t('dp_action_renegotiate', 'Initiate Renegotiation')}
                         </button>
-                        <button onClick={() => handleDismiss(contract.id)} className="bg-indigo-50 hover:bg-indigo-100 text-slate-900 border border-indigo-200 px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
+                        <button onClick={() => handleDismiss(contract.id)} className="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
                           {t('dp_action_dismiss', 'Dismiss')}
                         </button>
                       </div>
@@ -528,7 +547,7 @@ export default function DynamicPricing() {
                       </div>
                       <div className="flex justify-between text-slate-600 font-bold">
                         <span>{t('dp_audit_final', 'Final Rate')}</span>
-                        <span className="text-indigo-600">ETB {log.details?.computedTotal?.toLocaleString() || 'N/A'}</span>
+                        <span className="text-slate-900">ETB {log.details?.computedTotal?.toLocaleString() || 'N/A'}</span>
                       </div>
                     </div>
                     <div className="mt-3 bg-slate-50 p-2 rounded border border-slate-100">

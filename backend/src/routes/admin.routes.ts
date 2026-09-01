@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { users } from '../db/schema/users';
 import { verifications } from '../db/schema/verifications';
-import { eq, desc, and, or } from 'drizzle-orm';
+import { eq, desc, and, or, gte } from 'drizzle-orm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AdminReviewVerificationSchema } from '../dto/verification.dto';
@@ -11,6 +11,7 @@ import { auditLogs } from '../db/schema/audit_logs';
 import { riskZones } from '../db/schema/risk_zones';
 import { shipments } from '../db/schema/shipments';
 import { pricingPolicies } from '../db/schema/pricing_policies';
+import { contracts } from '../db/schema/contracts';
 import { loads } from '../db/schema/loads';
 import { socketGateway } from '../main';
 import crypto from 'crypto';
@@ -155,25 +156,49 @@ router.get('/telematics/live-assets', async (req: Request, res: Response): Promi
 
 router.get('/analytics/fuel', async (req: Request, res: Response): Promise<void> => {
   try {
+    const { timeframe } = req.query;
+    let dateFilter = new Date(0); // default to all time essentially if not matching
+
+    if (timeframe === 'This Week') {
+      dateFilter = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    } else if (timeframe === 'Today') {
+      dateFilter = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    } else {
+      // Default 'Last 30 Days'
+      dateFilter = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    }
+
     const activeShipments = await db.select({
       shipmentId: shipments.id,
-      driverName: users.fullName
+      driverName: users.fullName,
+      estimatedLiters: shipments.estimatedFuelLiters,
+      actualLiters: shipments.actualFuelLiters,
+      recommendations: shipments.fuelRecommendations
     })
     .from(shipments)
     .leftJoin(users, eq(shipments.driverId, users.id))
-    .where(eq(shipments.status, 'IN_TRANSIT'))
+    // Note: since this is mock seed data, filtering by status is fine, 
+    // but we can add the date filter. If the seeds are recent, they will show up.
+    .where(and(eq(shipments.status, 'IN_TRANSIT'), gte(shipments.createdAt, dateFilter)))
     .limit(10);
 
     let totalFuelBurned = 0;
+    let totalEstimated = 0;
     let flaggedVehiclesCount = 0;
 
-    const activeVehicles = activeShipments.map((s, index) => {
-      const estimated = 200 + (index * 20);
-      const actual = estimated + (index % 3 === 0 ? 35 : 5);
-      const variance = ((actual - estimated) / estimated * 100).toFixed(1);
-      const isFlagged = parseFloat(variance) > 15;
+    const activeVehicles = activeShipments.map((s) => {
+      const estimated = s.estimatedLiters || 0;
+      const actual = s.actualLiters || 0;
+      
+      let variance = 0;
+      if (estimated > 0) {
+        variance = ((actual - estimated) / estimated) * 100;
+      }
+      
+      const isFlagged = variance > 15;
       
       totalFuelBurned += actual;
+      totalEstimated += estimated;
       if (isFlagged) flaggedVehiclesCount++;
 
       return {
@@ -182,14 +207,19 @@ router.get('/analytics/fuel', async (req: Request, res: Response): Promise<void>
         activeRoute: 'Djibouti -> Modjo',
         estimatedLiters: estimated,
         actualLiters: actual,
-        burnProgressVariance: `+${variance}%`,
-        status: isFlagged ? 'FLAGGED' : 'NORMAL'
+        burnProgressVariance: variance > 0 ? `+${variance.toFixed(1)}%` : `${variance.toFixed(1)}%`,
+        status: isFlagged ? 'FLAGGED' : (variance <= 0 ? 'EFFICIENT' : 'NORMAL'),
+        recommendations: s.recommendations || []
       };
     });
 
+    const avgVariance = totalEstimated > 0 
+      ? (((totalFuelBurned - totalEstimated) / totalEstimated) * 100).toFixed(1)
+      : '0.0';
+
     res.status(200).json({
-      totalFuelBurned: totalFuelBurned > 0 ? totalFuelBurned : 42590,
-      variancePercent: 3.1,
+      totalFuelBurned: totalFuelBurned,
+      variancePercent: parseFloat(avgVariance),
       flaggedVehiclesCount,
       activeVehicles
     });
@@ -374,10 +404,30 @@ router.get('/pricing/corridor-rates', async (req: Request, res: Response): Promi
       };
     });
 
-    const divergingContracts = [
-      { id: "CTR-902", shipperName: "Ethio Agri Export", lockedRate: 270000, currentSpot: total, divergencePct: ((total - 270000) / 270000) * 100, status: "FLAGGED_FOR_REVIEW" },
-      { id: "CTR-904", shipperName: "Global Trade Logistics", lockedRate: 290000, currentSpot: total, divergencePct: ((total - 290000) / 290000) * 100, status: "FLAGGED_FOR_REVIEW" }
-    ].filter(c => c.divergencePct > 15);
+    const activeContractsList = await db
+      .select({
+        id: contracts.id,
+        shipperName: users.companyName,
+        lockedRate: contracts.lockedRate,
+        status: contracts.status
+      })
+      .from(contracts)
+      .innerJoin(users, eq(contracts.shipperId, users.id))
+      .where(eq(contracts.status, 'ACTIVE'));
+
+    const divergingContracts = activeContractsList.map(c => {
+      const lockedRate = parseFloat(c.lockedRate || '0');
+      const divergencePct = lockedRate > 0 ? ((total - lockedRate) / lockedRate) * 100 : 0;
+      
+      return {
+        id: "CTR-" + c.id.substring(0, 4).toUpperCase(),
+        shipperName: c.shipperName || 'Unknown Shipper',
+        lockedRate,
+        currentSpot: total,
+        divergencePct,
+        status: divergencePct > 15 ? "FLAGGED_FOR_REVIEW" : c.status
+      };
+    }).filter(c => c.divergencePct > 15);
 
     res.status(200).json({
       confidenceScore: 94.2,

@@ -129,8 +129,9 @@ export async function publishRates(data: any) {
 }
 
 // Fuel Analytics (Tab 4)
-export async function fetchFuelAnalytics() {
-  return apiClient('/admin/analytics/fuel', { method: 'GET' });
+export async function fetchFuelAnalytics(timeframe?: string) {
+  const query = timeframe ? `?timeframe=${encodeURIComponent(timeframe)}` : '';
+  return apiClient(`/admin/analytics/fuel${query}`, { method: 'GET' });
 }
 
 export async function exportFuelReport() {

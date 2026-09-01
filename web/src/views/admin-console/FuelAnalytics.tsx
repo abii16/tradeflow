@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Droplet, TrendingDown, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Droplet, TrendingDown, AlertTriangle, CheckCircle2, Lightbulb } from 'lucide-react';
 import { fetchFuelAnalytics, exportFuelReport } from '../../lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -9,6 +9,7 @@ export default function FuelAnalytics() {
 
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [timeframe, setTimeframe] = useState('Last 30 Days');
   const [metrics, setMetrics] = useState({
     totalFuelBurned: 42590,
     variancePercent: 3.1,
@@ -18,8 +19,9 @@ export default function FuelAnalytics() {
 
   useEffect(() => {
     async function loadData() {
+      setLoading(true);
       try {
-        const data = await fetchFuelAnalytics();
+        const data = await fetchFuelAnalytics(timeframe);
         setMetrics({
           totalFuelBurned: data.totalFuelBurned,
           variancePercent: data.variancePercent,
@@ -33,7 +35,7 @@ export default function FuelAnalytics() {
       }
     }
     loadData();
-  }, []);
+  }, [timeframe]);
 
   const handleExport = async () => {
     setExporting(true);
@@ -60,10 +62,14 @@ export default function FuelAnalytics() {
           </p>
         </div>
         <div className="flex gap-2">
-          <select className="border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white">
-            <option>Last 30 Days</option>
-            <option>This Week</option>
-            <option>Today</option>
+          <select 
+            className="border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-slate-900"
+            value={timeframe}
+            onChange={(e) => setTimeframe(e.target.value)}
+          >
+            <option value="Last 30 Days">Last 30 Days</option>
+            <option value="This Week">This Week</option>
+            <option value="Today">Today</option>
           </select>
           <button 
             onClick={handleExport}
@@ -138,43 +144,62 @@ export default function FuelAnalytics() {
               {vehicles.map((v, idx) => {
                 const percent = Math.min(100, Math.round((v.actualLiters / v.estimatedLiters) * 100));
                 return (
-                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-mono text-sm font-bold text-slate-900">{v.vehicleId}</div>
-                      <div className="text-[11px] text-slate-500">{v.driverName}</div>
-                    </td>
-                    <td className="px-6 py-4 text-xs font-medium text-slate-700">{v.activeRoute}</td>
-                    <td className="px-6 py-4 font-mono">{v.estimatedLiters}</td>
-                    <td className="px-6 py-4 font-mono font-bold">{v.actualLiters}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full ${v.status === 'FLAGGED' ? 'bg-red-500' : 'bg-blue-500'}`}
-                            style={{ width: `${percent}%` }}
-                          ></div>
+                  <React.Fragment key={idx}>
+                    <tr className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-mono text-sm font-bold text-slate-900">{v.vehicleId}</div>
+                        <div className="text-[11px] text-slate-500">{v.driverName}</div>
+                      </td>
+                      <td className="px-6 py-4 text-xs font-medium text-slate-700">{v.activeRoute}</td>
+                      <td className="px-6 py-4 font-mono">{v.estimatedLiters}</td>
+                      <td className="px-6 py-4 font-mono font-bold">{v.actualLiters}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full ${v.status === 'FLAGGED' ? 'bg-red-500' : 'bg-blue-500'}`}
+                              style={{ width: `${percent}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-xs font-mono font-bold w-10 text-right">{v.burnProgressVariance}</span>
                         </div>
-                        <span className="text-xs font-mono font-bold w-10 text-right">{v.burnProgressVariance}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {v.status === 'FLAGGED' && (
-                        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                          <AlertTriangle size={12} /> Flagged
-                        </span>
-                      )}
-                      {v.status === 'NORMAL' && (
-                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                          Normal
-                        </span>
-                      )}
-                      {v.status === 'EFFICIENT' && (
-                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                          <CheckCircle2 size={12} /> Efficient
-                        </span>
-                      )}
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4">
+                        {v.status === 'FLAGGED' && (
+                          <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            <AlertTriangle size={12} /> Flagged
+                          </span>
+                        )}
+                        {v.status === 'NORMAL' && (
+                          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            Normal
+                          </span>
+                        )}
+                        {v.status === 'EFFICIENT' && (
+                          <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            <CheckCircle2 size={12} /> Efficient
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                    {v.recommendations && v.recommendations.length > 0 && (
+                      <tr className="bg-indigo-50/30">
+                        <td colSpan={6} className="px-6 py-3 border-t border-indigo-100/50">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb size={16} className="text-indigo-600 mt-0.5 shrink-0" />
+                            <div>
+                              <div className="text-[11px] font-bold text-indigo-900 uppercase tracking-wider mb-1">AI Efficiency Insights (FR-07.2)</div>
+                              <ul className="list-disc pl-4 text-xs text-indigo-700 space-y-0.5">
+                                {v.recommendations.map((rec: string, rIdx: number) => (
+                                  <li key={rIdx}>{rec}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </tbody>
