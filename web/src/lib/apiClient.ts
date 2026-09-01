@@ -112,20 +112,20 @@ export async function fetchEtaProjections() {
 }
 
 export async function recalculateYield() {
-  return apiClient('/pricing/recalculate-yield', { method: 'POST' });
+  return apiClient('/admin/pricing/optimize', { method: 'POST' });
 }
 
 // Dynamic Pricing (Tab 3)
 export async function fetchPricingGovernance() {
-  return apiClient('/pricing/governance', { method: 'GET' });
+  return apiClient('/admin/pricing/corridor-rates', { method: 'GET' });
 }
 
 export async function updatePricingGovernance(data: any) {
   return apiClient('/pricing/governance/update', { method: 'POST', data });
 }
 
-export async function publishRates() {
-  return apiClient('/pricing/publish-rates', { method: 'POST' });
+export async function publishRates(data: any) {
+  return apiClient('/admin/pricing/publish', { method: 'POST', data });
 }
 
 // Fuel Analytics (Tab 4)
