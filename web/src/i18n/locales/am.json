@@ -312,5 +312,6 @@
   "dp_audit_fuel": "የነዳጅ መሰረት",
   "dp_audit_mult": "የፍላጎት ማባዣ",
   "dp_audit_final": "የመጨረሻ ዋጋ",
-  "dp_audit_hash": "SHA-256 የአቋም ማረጋገጫ ሀሽ"
+  "dp_audit_hash": "SHA-256 የአቋም ማረጋገጫ ሀሽ",
+  "dp_trend_title": "የቀጥታ ስፖት ዋጋ አዝማሚያ ትንተና"
 }
