@@ -40,8 +40,27 @@ export default function FuelAnalytics() {
   const handleExport = async () => {
     setExporting(true);
     try {
-      await exportFuelReport();
-      toast.success('Report exported successfully');
+      await exportFuelReport(); // Logs the export on backend
+      
+      // Generate CSV
+      const headers = ['Vehicle ID', 'Driver', 'Route', 'Estimated Liters', 'Actual Liters', 'Variance', 'Status'];
+      const csvContent = [
+        headers.join(','),
+        ...vehicles.map(v => 
+          `"${v.vehicleId}","${v.driverName}","${v.activeRoute}",${v.estimatedLiters},${v.actualLiters},"${v.burnProgressVariance}","${v.status}"`
+        )
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `fuel_analytics_report_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Report downloaded successfully');
     } catch (err) {
       toast.error('Failed to export report');
     } finally {
