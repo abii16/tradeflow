@@ -312,5 +312,15 @@
   "dp_audit_fuel": "Fuel Baseline",
   "dp_audit_mult": "Demand Mult.",
   "dp_audit_final": "Final Rate",
-  "dp_audit_hash": "SHA-256 Integrity Hash"
+  "dp_audit_hash": "SHA-256 Integrity Hash",
+  "dm_status_open": "OPEN",
+  "dm_status_review": "UNDER REVIEW",
+  "dm_status_resolved": "RESOLVED",
+  "dm_vs": "vs",
+  "dm_resolution_title": "Admin Resolution Action (FR-10.3)",
+  "dm_resolution_note": "Mandatory Audit Note:",
+  "dm_resolution_note_placeholder": "Document the rationale for this mediation action...",
+  "dm_release_100": "Release 100% to Transporter",
+  "dm_issue_refund": "Issue Pro-Rata Partial Refund",
+  "dm_escalate_legal": "Escalate / Freeze to Legal"
 }
