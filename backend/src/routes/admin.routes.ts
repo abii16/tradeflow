@@ -2,7 +2,8 @@ import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { users } from '../db/schema/users';
 import { verifications } from '../db/schema/verifications';
-import { eq, desc, and, or } from 'drizzle-orm';
+import { eq, desc, and, or, gte } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AdminReviewVerificationSchema } from '../dto/verification.dto';
@@ -10,6 +11,11 @@ import { disputes } from '../db/schema/disputes';
 import { auditLogs } from '../db/schema/audit_logs';
 import { riskZones } from '../db/schema/risk_zones';
 import { shipments } from '../db/schema/shipments';
+import { pricingPolicies } from '../db/schema/pricing_policies';
+import { contracts } from '../db/schema/contracts';
+import { loads } from '../db/schema/loads';
+import { socketGateway } from '../main';
+import crypto from 'crypto';
 
 const router = Router();
 
@@ -151,25 +157,49 @@ router.get('/telematics/live-assets', async (req: Request, res: Response): Promi
 
 router.get('/analytics/fuel', async (req: Request, res: Response): Promise<void> => {
   try {
+    const { timeframe } = req.query;
+    let dateFilter = new Date(0); // default to all time essentially if not matching
+
+    if (timeframe === 'This Week') {
+      dateFilter = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    } else if (timeframe === 'Today') {
+      dateFilter = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    } else {
+      // Default 'Last 30 Days'
+      dateFilter = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    }
+
     const activeShipments = await db.select({
       shipmentId: shipments.id,
-      driverName: users.fullName
+      driverName: users.fullName,
+      estimatedLiters: shipments.estimatedFuelLiters,
+      actualLiters: shipments.actualFuelLiters,
+      recommendations: shipments.fuelRecommendations
     })
     .from(shipments)
     .leftJoin(users, eq(shipments.driverId, users.id))
-    .where(eq(shipments.status, 'IN_TRANSIT'))
+    // Note: since this is mock seed data, filtering by status is fine, 
+    // but we can add the date filter. If the seeds are recent, they will show up.
+    .where(and(eq(shipments.status, 'IN_TRANSIT'), gte(shipments.createdAt, dateFilter)))
     .limit(10);
 
     let totalFuelBurned = 0;
+    let totalEstimated = 0;
     let flaggedVehiclesCount = 0;
 
-    const activeVehicles = activeShipments.map((s, index) => {
-      const estimated = 200 + (index * 20);
-      const actual = estimated + (index % 3 === 0 ? 35 : 5);
-      const variance = ((actual - estimated) / estimated * 100).toFixed(1);
-      const isFlagged = parseFloat(variance) > 15;
+    const activeVehicles = activeShipments.map((s) => {
+      const estimated = s.estimatedLiters || 0;
+      const actual = s.actualLiters || 0;
+      
+      let variance = 0;
+      if (estimated > 0) {
+        variance = ((actual - estimated) / estimated) * 100;
+      }
+      
+      const isFlagged = variance > 15;
       
       totalFuelBurned += actual;
+      totalEstimated += estimated;
       if (isFlagged) flaggedVehiclesCount++;
 
       return {
@@ -178,14 +208,19 @@ router.get('/analytics/fuel', async (req: Request, res: Response): Promise<void>
         activeRoute: 'Djibouti -> Modjo',
         estimatedLiters: estimated,
         actualLiters: actual,
-        burnProgressVariance: `+${variance}%`,
-        status: isFlagged ? 'FLAGGED' : 'NORMAL'
+        burnProgressVariance: variance > 0 ? `+${variance.toFixed(1)}%` : `${variance.toFixed(1)}%`,
+        status: isFlagged ? 'FLAGGED' : (variance <= 0 ? 'EFFICIENT' : 'NORMAL'),
+        recommendations: s.recommendations || []
       };
     });
 
+    const avgVariance = totalEstimated > 0 
+      ? (((totalFuelBurned - totalEstimated) / totalEstimated) * 100).toFixed(1)
+      : '0.0';
+
     res.status(200).json({
-      totalFuelBurned: totalFuelBurned > 0 ? totalFuelBurned : 42590,
-      variancePercent: 3.1,
+      totalFuelBurned: totalFuelBurned,
+      variancePercent: parseFloat(avgVariance),
       flaggedVehiclesCount,
       activeVehicles
     });
@@ -212,11 +247,16 @@ router.get('/security/geofences', async (req: Request, res: Response): Promise<v
 
 router.post('/security/broadcast-geofence', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, severity, radiusKm, lat, lng } = req.body;
+    const { name, severity, radiusKm, lat, lng, type, description } = req.body;
     
     await db.insert(riskZones).values({
       name,
       severity,
+      type: type || 'Security / Conflict',
+      description: description || '',
+      latitude: lat,
+      longitude: lng,
+      radiusKm,
       zone: { type: "Circle", coordinates: [lng, lat], radiusKm },
       isActive: true
     });
@@ -251,9 +291,27 @@ router.get('/security/history', async (req: Request, res: Response): Promise<voi
 
 router.get('/disputes', async (req: Request, res: Response): Promise<void> => {
   try {
-    const allDisputes = await db.select().from(disputes).orderBy(desc(disputes.createdAt));
-    res.status(200).json({ disputes: allDisputes });
+    const shippers = alias(users, 'shipper');
+    const transporters = alias(users, 'transporter');
+
+    const allDisputes = await db.select({
+      id: disputes.id,
+      shipperName: shippers.fullName,
+      transporterName: transporters.fullName,
+      amountDisputed: disputes.amountLocked,
+      reason: disputes.reason,
+      status: disputes.status,
+      createdAt: disputes.createdAt,
+      jobId: disputes.shipmentId,
+    })
+    .from(disputes)
+    .leftJoin(shippers, eq(disputes.shipperId, shippers.id))
+    .leftJoin(transporters, eq(disputes.transporterId, transporters.id))
+    .orderBy(desc(disputes.createdAt));
+
+    res.status(200).json({ data: allDisputes });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to fetch disputes' });
   }
 });
@@ -325,6 +383,171 @@ router.post('/audit-logs/export', async (req: Request, res: Response): Promise<v
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to export audit logs' });
+  }
+});
+// ----------------- TAB 3: DYNAMIC PRICING ----------------- //
+
+router.get('/pricing/corridor-rates', async (req: Request, res: Response): Promise<void> => {
+  try {
+    let policy = await db.query.pricingPolicies.findFirst({
+      orderBy: (policies, { desc }) => [desc(policies.updatedAt)]
+    });
+
+    if (!policy) {
+      policy = {
+        id: 'default',
+        spotRateFloor: '-15.00',
+        spotRateCeiling: '45.00',
+        dieselPrice: '95.50',
+        demandMultiplier: '1.24',
+        updatedBy: null,
+        updatedAt: new Date()
+      } as any;
+    }
+
+    const demandMultiplierNum = parseFloat(policy?.demandMultiplier || '1.24');
+    const dieselPriceNum = parseFloat(policy?.dieselPrice || '95.50');
+
+    const base1 = 142000;
+    const base2 = 175000;
+    const dwellSurcharge = Math.round(18500 * demandMultiplierNum);
+    const fuelAdj = Math.round(20000 * (dieselPriceNum / 100));
+    
+    const segment1 = base1 + dwellSurcharge;
+    const segment2 = base2 + fuelAdj;
+    const total = segment1 + segment2;
+
+    const historicalTrend = Array.from({ length: 30 }).map((_, i) => {
+      const day = i + 1;
+      const market = 345000 + (Math.sin(i) * 10000);
+      const algorithmic = market * demandMultiplierNum * (1 + (dieselPriceNum - 100) / 1000);
+      return {
+        day: day.toString(),
+        algorithmic: Math.round(algorithmic),
+        market: Math.round(market)
+      };
+    });
+
+    const activeContractsList = await db
+      .select({
+        id: contracts.id,
+        shipperName: users.companyName,
+        lockedRate: contracts.lockedRate,
+        status: contracts.status
+      })
+      .from(contracts)
+      .innerJoin(users, eq(contracts.shipperId, users.id))
+      .where(eq(contracts.status, 'ACTIVE'));
+
+    const divergingContracts = activeContractsList.map(c => {
+      const lockedRate = parseFloat(c.lockedRate || '0');
+      const divergencePct = lockedRate > 0 ? ((total - lockedRate) / lockedRate) * 100 : 0;
+      
+      return {
+        id: "CTR-" + c.id.substring(0, 4).toUpperCase(),
+        shipperName: c.shipperName || 'Unknown Shipper',
+        lockedRate,
+        currentSpot: total,
+        divergencePct,
+        status: divergencePct > 15 ? "FLAGGED_FOR_REVIEW" : c.status
+      };
+    }).filter(c => c.divergencePct > 15);
+
+    res.status(200).json({
+      confidenceScore: 94.2,
+      demandMultiplier: demandMultiplierNum,
+      activeTeus: Math.round(142 * demandMultiplierNum),
+      networkYield24h: 2420000 * demandMultiplierNum,
+      volatilityBounds: { 
+        floor: parseFloat(policy?.spotRateFloor || '-15'), 
+        ceiling: parseFloat(policy?.spotRateCeiling || '45') 
+      },
+      dieselBaselineIndex: dieselPriceNum,
+      segments: [
+        { id: "seg_1", name: "Djibouti ➔ Galafi", baseRate: base1, dwellSurcharge: dwellSurcharge, subtotal: segment1 },
+        { id: "seg_2", name: "Galafi ➔ Modjo", baseRate: base2, fuelIndexAdj: fuelAdj, subtotal: segment2 }
+      ],
+      computedTotal: total,
+      historicalTrends: historicalTrend,
+      divergingContracts
+    });
+  } catch (error: any) {
+    console.error('Error fetching corridor rates:', error);
+    res.status(500).json({ error: 'Failed to fetch corridor rates' });
+  }
+});
+
+router.post('/pricing/publish', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { volatilityBounds, dieselBaselineIndex, demandMultiplier, computedTotal } = req.body;
+    
+    await db.insert(pricingPolicies).values({
+      spotRateFloor: volatilityBounds.floor.toString(),
+      spotRateCeiling: volatilityBounds.ceiling.toString(),
+      dieselPrice: dieselBaselineIndex.toString(),
+      demandMultiplier: demandMultiplier.toString(),
+      updatedBy: req.user!.id
+    });
+
+    const payloadString = JSON.stringify({ volatilityBounds, dieselBaselineIndex, demandMultiplier, computedTotal });
+    const hash = crypto.createHash('sha256').update(payloadString).digest('hex');
+
+    await db.insert(auditLogs).values({
+      userId: req.user!.id,
+      userRole: 'ADMIN',
+      action: 'PRICING_PUBLISHED',
+      method: 'POST',
+      endpoint: '/admin/pricing/publish',
+      statusCode: 200,
+      requestPayload: { ...req.body, integrityHash: hash },
+      ipAddress: req.ip || '0.0.0.0'
+    });
+
+    if (socketGateway) {
+      socketGateway.broadcast('pricing_update', {
+        demandMultiplier,
+        computedTotal,
+        dieselBaselineIndex,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    res.status(200).json({ success: true, message: 'Corridor rates published and synced across active marketplace.' });
+  } catch (error: any) {
+    console.error('Error publishing rates:', error);
+    res.status(500).json({ error: 'Failed to publish rates' });
+  }
+});
+
+router.post('/pricing/optimize', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const activeLoads = await db.select().from(loads).where(eq(loads.status, 'POSTED'));
+    const activeTransporters = await db.select().from(users).where(eq(users.role, 'TRANSPORTER'));
+    
+    let multiplier = 1.0;
+    if (activeTransporters.length > 0) {
+       const ratio = activeLoads.length / activeTransporters.length;
+       if (ratio > 1.5) multiplier = 1.3;
+       else if (ratio > 1) multiplier = 1.15;
+       else if (ratio < 0.5) multiplier = 0.9;
+    }
+
+    let policy = await db.query.pricingPolicies.findFirst({
+      orderBy: (policies, { desc }) => [desc(policies.updatedAt)]
+    });
+    
+    await db.insert(pricingPolicies).values({
+      spotRateFloor: policy?.spotRateFloor || '-15.00',
+      spotRateCeiling: policy?.spotRateCeiling || '45.00',
+      dieselPrice: policy?.dieselPrice || '95.50',
+      demandMultiplier: multiplier.toString(),
+      updatedBy: req.user!.id
+    });
+
+    res.status(200).json({ success: true, message: 'AI optimization complete.' });
+  } catch (error: any) {
+    console.error('Error optimizing pricing:', error);
+    res.status(500).json({ error: 'Failed to optimize pricing' });
   }
 });
 

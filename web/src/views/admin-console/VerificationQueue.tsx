@@ -143,22 +143,22 @@ export default function VerificationQueue() {
                     <td className="px-6 py-4">
                       {req.status === 'PENDING' && (
                         <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <FileText size={12} className="text-amber-500" /> Pending Review
+                          <FileText size={12} className="text-amber-500" /> {t('vq_status_pending', 'Pending Review')}
                         </span>
                       )}
                       {req.status === 'VERIFIED' && (
                         <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <CheckCircle size={12} className="text-emerald-500" /> Verified
+                          <CheckCircle size={12} className="text-emerald-500" /> {t('vq_status_verified', 'Verified')}
                         </span>
                       )}
                       {req.status === 'REJECTED' && (
                         <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <AlertTriangle size={12} className="text-rose-500" /> Mismatch Flagged
+                          <AlertTriangle size={12} className="text-rose-500" /> {t('vq_status_mismatch', 'Mismatch Flagged')}
                         </span>
                       )}
                       {req.status === 'SUSPENDED' && (
                         <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <XCircle size={12} className="text-slate-500" /> Suspended
+                          <XCircle size={12} className="text-slate-500" /> {t('vq_status_suspended', 'Suspended')}
                         </span>
                       )}
                     </td>
@@ -168,14 +168,14 @@ export default function VerificationQueue() {
                           onClick={() => setSelectedRequest(req)}
                           className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors inline-flex items-center gap-1"
                         >
-                          {t('vq_action_review')}
+                          {t('vq_action_review', 'Review')}
                         </button>
                       ) : (
                         <button
                           onClick={() => setSelectedRequest(req)}
                           className="text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded transition-colors inline-flex items-center gap-1 border border-slate-200"
                         >
-                          View Details
+                          {t('vq_action_view', 'View Details')}
                         </button>
                       )}
                     </td>
@@ -215,7 +215,7 @@ export default function VerificationQueue() {
                     <span className="text-slate-900 font-semibold font-mono">{selectedRequest.taxId}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 font-medium">Trade License</span>
+                    <span className="text-slate-500 font-medium">{t('vq_drawer_trade_license', 'Trade License')}</span>
                     <span className="text-slate-900 font-semibold font-mono">{selectedRequest.tradeLicenseNumber}</span>
                   </div>
                 </div>
@@ -276,18 +276,18 @@ export default function VerificationQueue() {
                 <button
                   disabled={actionLoading}
                   onClick={() => {
-                    const reason = window.prompt("Enter optional reason for suspension:", "Non-compliant KYC");
+                    const reason = window.prompt(t('vq_prompt_suspend', "Enter optional reason for suspension:"), "Non-compliant KYC");
                     if (reason !== null) {
                       handleReview(selectedRequest.id, 'SUSPENDED', reason);
                     }
                   }}
                   className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <AlertTriangle size={16} /> Reject & Suspend
+                  <AlertTriangle size={16} /> {t('vq_btn_reject_suspend', 'Reject & Suspend')}
                 </button>
               </div>
             ) : (
-              <div className="p-5 border-t border-slate-200 bg-slate-50 rounded-b-xl flex flex-col gap-3">
+              <div className="p-6 pb-8 space-y-4 border-t border-slate-200 bg-slate-50 rounded-b-xl flex flex-col gap-3">
                  <div className="flex justify-between items-center w-full">
                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                      selectedRequest.status === 'VERIFIED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
@@ -295,24 +295,33 @@ export default function VerificationQueue() {
                      selectedRequest.status === 'SUSPENDED' ? 'bg-slate-200 text-slate-700 border border-slate-300' :
                      'bg-slate-100 text-slate-700 border border-slate-200'
                    }`}>
-                     ● Status: {selectedRequest.status === 'VERIFIED' ? 'Verified' : selectedRequest.status === 'REJECTED' ? 'Rejected' : selectedRequest.status === 'SUSPENDED' ? 'Suspended' : selectedRequest.status}
+                     ● {t('vq_status_label', 'Status')}: {selectedRequest.status === 'VERIFIED' ? t('vq_status_verified', 'Verified') : selectedRequest.status === 'REJECTED' ? t('vq_status_rejected', 'Rejected') : selectedRequest.status === 'SUSPENDED' ? t('vq_status_suspended', 'Suspended') : selectedRequest.status}
                    </span>
                    {selectedRequest.rejectionReason && (
-                     <span className="text-xs text-rose-500 ml-2">Reason: {selectedRequest.rejectionReason}</span>
+                     <span className="text-xs text-rose-500 ml-2">{t('vq_reason_label', 'Reason')}: {selectedRequest.rejectionReason}</span>
                    )}
                  </div>
-                 {selectedRequest.status !== 'SUSPENDED' && (
+                 {selectedRequest.status === 'VERIFIED' && (
                    <button 
                      disabled={actionLoading}
                      onClick={() => {
-                       const reason = window.prompt("Enter optional reason for suspension:", "Non-compliant KYC");
+                       const reason = window.prompt(t('vq_prompt_suspend', "Enter optional reason for suspension:"), "Non-compliant KYC");
                        if (reason !== null) {
                          handleReview(selectedRequest.id, 'SUSPENDED', reason);
                        }
                      }}
                      className="w-full bg-rose-600 hover:bg-rose-700 transition shadow-sm text-white font-bold py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
                    >
-                     <AlertTriangle size={16} /> Suspend Account
+                     <AlertTriangle size={16} /> {t('vq_btn_suspend', 'Suspend Account')}
+                   </button>
+                 )}
+                 {selectedRequest.status === 'SUSPENDED' && (
+                   <button 
+                     disabled={actionLoading}
+                     onClick={() => handleReview(selectedRequest.id, 'VERIFIED')}
+                     className="w-full bg-emerald-600 hover:bg-emerald-700 transition shadow-sm text-white font-bold py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+                   >
+                     <CheckCircle size={16} /> {t('vq_btn_lift_suspension', 'Lift Suspension / Re-activate Account')}
                    </button>
                  )}
               </div>

@@ -92,12 +92,12 @@ export default function DisputeMediation() {
               <div 
                 key={d.id}
                 onClick={() => setSelectedDispute(d)}
-                className={`p-4 border-b border-slate-200 cursor-pointer transition-colors ${selectedDispute?.id === d.id ? 'bg-indigo-50/50 border-l-4 border-l-indigo-600' : 'hover:bg-slate-50'}`}
+                className={`p-4 border-b border-slate-200 cursor-pointer transition-colors ${selectedDispute?.id === d.id ? 'bg-slate-50/90 border-l-4 border-slate-900 shadow-sm' : 'hover:bg-slate-50'}`}
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className={`text-xs font-bold font-mono ${selectedDispute?.id === d.id ? 'text-indigo-700' : 'text-slate-600'}`}>{d.id.substring(0,8)}</span>
                   {d.status === 'OPEN' && <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_open')}</span>}
-                  {d.status === 'IN_REVIEW' && <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_review')}</span>}
+                  {d.status === 'UNDER_REVIEW' && <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_review')}</span>}
                   {d.status.startsWith('RESOLVED') && <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_resolved')}</span>}
                   {d.status === 'ESCALATED_LEGAL' && <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">ESCALATED</span>}
                 </div>
@@ -190,27 +190,27 @@ export default function DisputeMediation() {
           </div>
 
           {/* Action / Resolution Panel */}
-          <div className="bg-[#0F172A] rounded-xl shadow-lg p-6 border border-slate-800">
-            <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
-              <Gavel size={16} className="text-indigo-400" /> {t('dm_resolution_title')}
+          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm p-6 space-y-4">
+            <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Gavel size={16} className="text-slate-900" /> {t('dm_resolution_title')}
             </h4>
             
-              <div className="mb-6">
-                <label className="block text-xs font-semibold text-slate-300 mb-2">{t('dm_resolution_note')}</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">{t('dm_resolution_note')}</label>
                 <textarea 
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none" 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-1 focus:ring-slate-900 transition-colors resize-none" 
                   rows={3}
                   placeholder={t('dm_resolution_note_placeholder')}
                 ></textarea>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                 <button 
                   disabled={actionLoading || selectedDispute.status.startsWith('RESOLVED')}
                   onClick={() => handleResolve('RESOLVED_FULL_PAYOUT', Number(selectedDispute.amountDisputed))}
-                  className="bg-[#059669] hover:bg-[#047857] text-white font-bold py-3 px-4 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm disabled:opacity-50"
                 >
                   <Unlock size={16} />
                   {t('dm_release_100')}
@@ -219,7 +219,7 @@ export default function DisputeMediation() {
                 <button 
                   disabled={actionLoading || selectedDispute.status.startsWith('RESOLVED')}
                   onClick={() => setIsRefundModalOpen(true)}
-                  className="bg-[#D97706] hover:bg-[#B45309] text-white font-bold py-3 px-4 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
                 >
                   <Scale size={16} />
                   {t('dm_issue_refund')}
@@ -228,7 +228,7 @@ export default function DisputeMediation() {
                 <button 
                   disabled={actionLoading || selectedDispute.status.startsWith('RESOLVED')}
                   onClick={() => handleResolve('ESCALATED_LEGAL')}
-                  className="bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold py-3 px-4 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
                 >
                   <Gavel size={16} />
                   {t('dm_escalate_legal')}
