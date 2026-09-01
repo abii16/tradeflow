@@ -3,6 +3,7 @@ import { db } from '../db';
 import { users } from '../db/schema/users';
 import { verifications } from '../db/schema/verifications';
 import { eq, desc, and, or, gte } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AdminReviewVerificationSchema } from '../dto/verification.dto';
@@ -290,9 +291,27 @@ router.get('/security/history', async (req: Request, res: Response): Promise<voi
 
 router.get('/disputes', async (req: Request, res: Response): Promise<void> => {
   try {
-    const allDisputes = await db.select().from(disputes).orderBy(desc(disputes.createdAt));
-    res.status(200).json({ disputes: allDisputes });
+    const shippers = alias(users, 'shipper');
+    const transporters = alias(users, 'transporter');
+
+    const allDisputes = await db.select({
+      id: disputes.id,
+      shipperName: shippers.fullName,
+      transporterName: transporters.fullName,
+      amountDisputed: disputes.amountLocked,
+      reason: disputes.reason,
+      status: disputes.status,
+      createdAt: disputes.createdAt,
+      jobId: disputes.shipmentId,
+    })
+    .from(disputes)
+    .leftJoin(shippers, eq(disputes.shipperId, shippers.id))
+    .leftJoin(transporters, eq(disputes.transporterId, transporters.id))
+    .orderBy(desc(disputes.createdAt));
+
+    res.status(200).json({ data: allDisputes });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to fetch disputes' });
   }
 });
