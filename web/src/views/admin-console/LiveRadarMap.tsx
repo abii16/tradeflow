@@ -58,7 +58,7 @@ export default function LiveRadarMap() {
   const { riskZones } = useRiskZones();
 
   return (
-    <div className="relative w-full h-full min-h-[480px]">
+    <div className="relative overflow-hidden w-full h-full min-h-[480px]">
       <MapContainer 
         bounds={bounds}
         zoomControl={false}
@@ -80,7 +80,7 @@ export default function LiveRadarMap() {
         {/* API Fetched Risk Zones (Static / Long-term) */}
         {riskZones.map((zone, idx) => {
           const key = zone.id || `api-rz-${idx}`;
-          const title = zone.title || zone.name || 'Risk Zone';
+          const title = zone.title || zone.name || t('radar_risk_zone', 'Risk Zone');
           const desc = zone.description || '';
           
           if (zone.polygon && zone.polygon.length > 0) {
@@ -160,9 +160,9 @@ export default function LiveRadarMap() {
                   <div className="flex justify-between"><strong>{t('radar_driver')}</strong> {truck.driver}</div>
                   {truck.status && (
                     <div className="flex justify-between">
-                      <strong>Status:</strong> 
+                      <strong>{t('radar_status', 'Status')}:</strong> 
                       <span className={truck.status === 'GEOFENCE_BREACH' ? 'text-red-500 font-bold' : 'text-emerald-500 font-bold'}>
-                        {truck.status}
+                        {truck.status === 'GEOFENCE_BREACH' ? t('radar_status_breach', 'GEOFENCE_BREACH') : t('radar_status_ok', truck.status)}
                       </span>
                     </div>
                   )}
@@ -180,7 +180,7 @@ export default function LiveRadarMap() {
 
       {/* Floating HUD */}
       <div className="absolute top-4 left-4 z-[400] pointer-events-none">
-        <div className="bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-lg p-4 shadow-xl text-slate-300 w-[280px] pointer-events-auto">
+        <div className="bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-lg p-4 shadow-xl text-slate-300 w-auto min-w-[300px] pointer-events-auto">
           <div className="flex justify-between items-center mb-3 border-b border-slate-700/50 pb-2">
             <h2 className="text-xs font-bold text-white tracking-widest flex items-center gap-2">
               <Radar size={14} className="text-blue-500 animate-pulse" />
@@ -196,17 +196,17 @@ export default function LiveRadarMap() {
             <div className="text-[11px] flex justify-between items-center bg-slate-950/50 px-2 py-1.5 rounded border border-slate-800">
               <span className="text-slate-400 uppercase tracking-wider font-semibold text-[10px]">{t('radar_corridor_status')}</span>
               <span className={`font-bold font-mono text-[10px] ${isConnected ? 'text-emerald-400' : 'text-amber-500'}`}>
-                {isConnected ? t('radar_operational') : 'RECONNECTING...'}
+                {isConnected ? t('radar_operational') : t('radar_reconnecting', 'RECONNECTING...')}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 text-center">
-                <div className="text-lg font-mono font-bold text-white leading-none">{telemetry.trucks.length}</div>
-                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-0.5">{t('radar_active_assets')}</div>
+              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 flex flex-col items-center justify-center text-center">
+                <div className="text-lg font-mono font-bold text-white leading-tight">{telemetry.trucks.length}</div>
+                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-1">{t('radar_active_assets')}</div>
               </div>
-              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 text-center">
-                <div className="text-lg font-mono font-bold text-white leading-none">{telemetry.alerts.length}</div>
-                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-0.5">Active Corridors</div>
+              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 flex flex-col items-center justify-center text-center">
+                <div className="text-lg font-mono font-bold text-white leading-tight">{telemetry.alerts.length}</div>
+                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-1">{t('radar_active_corridors', 'Active Corridors')}</div>
               </div>
             </div>
           </div>
