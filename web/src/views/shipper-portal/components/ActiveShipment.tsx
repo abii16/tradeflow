@@ -107,7 +107,7 @@ TradeFlow MVP Platform
       {/* Header */}
       <div className="p-3.5 border-b border-slate-100 flex justify-between items-center">
         <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Live Shipment Track</span>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{t('live_shipment_track')}</span>
           <h2 className="text-sm font-semibold text-slate-900">{shipment?.trackingNumber || 'SHP-9021-DJM'}</h2>
         </div>
         <div className="flex items-center gap-2">
@@ -115,10 +115,10 @@ TradeFlow MVP Platform
             onClick={() => setShowRatingModal(true)}
             className="flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-1 rounded transition-colors"
           >
-            <Star size={11} className="fill-amber-500 text-amber-500" /> Rate Carrier
+            <Star size={11} className="fill-amber-500 text-amber-500" /> {t('rate_carrier')}
           </button>
           <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-medium rounded border border-blue-100">
-            {shipment?.status === 'IN_TRANSIT' ? 'In Transit' : shipment?.status || 'In Transit'}
+            {shipment?.status === 'IN_TRANSIT' ? t('in_transit') : shipment?.status || t('in_transit')}
           </span>
         </div>
       </div>
@@ -144,8 +144,8 @@ TradeFlow MVP Platform
       <div className="p-4 space-y-4">
         <div>
           <div className="flex justify-between text-xs text-slate-600 mb-1.5 font-medium">
-            <span>Milestone Progress (68%)</span>
-            <span>ETA: Today, 17:30</span>
+            <span>{t('milestone_progress')} (68%)</span>
+            <span>{t('eta_today')}</span>
           </div>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
             <div className="bg-slate-900 h-full w-[68%]" />
@@ -157,10 +157,10 @@ TradeFlow MVP Platform
           <div className="relative pl-6 space-y-4">
             <div className="absolute top-2 bottom-2 left-[9px] w-[2px] bg-slate-100"></div>
             {[
-              { title: 'Djibouti Port Customs Cleared', time: 'Yesterday 14:00', state: 'done' },
-              { title: 'Galafi Border Crossing Verified', time: 'Today 06:15', state: 'done' },
-              { title: 'Awash RFID Toll Gate', time: 'Today 11:45', state: 'done' },
-              { title: 'Modjo Dry Port Ingate Scan', time: 'Est. 17:30', state: 'upcoming' },
+              { title: t('djibouti_cleared'), time: 'Yesterday 14:00', state: 'done' },
+              { title: t('galafi_verified'), time: 'Today 06:15', state: 'done' },
+              { title: t('awash_toll'), time: 'Today 11:45', state: 'done' },
+              { title: t('modjo_scan'), time: `${t('est')} 17:30`, state: 'upcoming' },
             ].map((m, idx) => (
               <div key={idx} className="relative flex items-center justify-between text-xs">
                 <div
@@ -194,7 +194,7 @@ TradeFlow MVP Platform
             onClick={handleDownloadWaybill}
             className="w-full bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
-            Download Smart e-CMR Waybill (TXT)
+            {t('download_waybill')}
           </button>
         </div>
       </div>

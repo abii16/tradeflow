@@ -93,13 +93,13 @@ export default function FreightOrderForm() {
     <div className="space-y-5">
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div className="bg-slate-50/50 border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-bold text-slate-800">Post New Freight Order</h2>
+          <h2 className="text-base font-bold text-slate-800">{t('post_new_freight_order')}</h2>
         </div>
 
         <form id="quote-form" onSubmit={handleRequestQuote} className="p-5 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">Origin</Label>
+              <Label className="text-xs font-semibold text-slate-700">{t('origin')}</Label>
               <div className="relative">
                 <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
@@ -118,7 +118,7 @@ export default function FreightOrderForm() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">Cargo Details</Label>
+              <Label className="text-xs font-semibold text-slate-700">{t('cargo_details')}</Label>
               <div className="relative">
                 <Package size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <select name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
@@ -136,7 +136,7 @@ export default function FreightOrderForm() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">Destination</Label>
+              <Label className="text-xs font-semibold text-slate-700">{t('destination')}</Label>
               <div className="relative">
                 <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <select name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
@@ -155,7 +155,7 @@ export default function FreightOrderForm() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">Weight & Volume</Label>
+              <Label className="text-xs font-semibold text-slate-700">{t('weight_volume')}</Label>
               <div className="relative flex items-center">
                 <Scale size={15} className="absolute left-3 text-slate-400" />
                 <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 pr-10 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Weight" />
@@ -164,7 +164,7 @@ export default function FreightOrderForm() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">Lead Time Window</Label>
+              <Label className="text-xs font-semibold text-slate-700">{t('lead_time_window')}</Label>
               <div className="relative">
                 <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <select 
@@ -174,9 +174,9 @@ export default function FreightOrderForm() {
                   required 
                   className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
                 >
-                  <option value="12h">Express (12h) - High priority surcharge</option>
-                  <option value="24h">Standard (24h) - Standard corridor rate</option>
-                  <option value="48h">Flexible (48h) - Backhaul discount</option>
+                  <option value="12h">{t('express_12h')}</option>
+                  <option value="24h">{t('standard_24h')}</option>
+                  <option value="48h">{t('flexible_48h')}</option>
                 </select>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
@@ -195,7 +195,7 @@ export default function FreightOrderForm() {
           disabled={loading}
           className="bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
         >
-          Generate Instant Spot Quote
+          {t('generate_instant_spot_quote')}
         </button>
       </div>
 
@@ -203,7 +203,7 @@ export default function FreightOrderForm() {
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex justify-between items-start">
             <div>
-              <span className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 mb-1.5">Dynamic Pricing Engine (FR-02.3)</span>
+              <span className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 mb-1.5">{t('dynamic_pricing_engine')}</span>
             </div>
             <div className="text-right">
               <span className="text-2xl font-black font-mono text-slate-800 tracking-tight">{calculatedPrice.toLocaleString()} ETB</span>
@@ -213,15 +213,15 @@ export default function FreightOrderForm() {
 
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono flex items-center justify-between">
              <div className="flex items-center gap-2 flex-wrap text-slate-600 font-medium">
-                <span>Base: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
+                <span>{t('base_fee')}: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
                 <span className="text-slate-300">+</span>
-                <span>Fuel: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
+                <span>{t('fuel')}: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
                 <span className="text-slate-300">+</span>
-                <span>Fees: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
+                <span>{t('fees')}: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
              </div>
              <div className="flex items-center gap-2 ml-4">
                 <span className="text-slate-300">=</span>
-                <span className="text-slate-800 font-bold whitespace-nowrap">Total: {calculatedPrice.toLocaleString()}</span>
+                <span className="text-slate-800 font-bold whitespace-nowrap">{t('total')}: {calculatedPrice.toLocaleString()}</span>
              </div>
           </div>
 
@@ -231,7 +231,7 @@ export default function FreightOrderForm() {
             disabled={loading}
             className="w-full bg-slate-900 border border-transparent hover:bg-slate-800 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
-            {loading ? 'Posting...' : 'Confirm & Post Load'}
+            {loading ? 'Posting...' : t('confirm_post_load')}
           </button>
         </div>
       )}
