@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { loads } from '../db/schema/loads';
+import { bids } from '../db/schema/bids';
+import { users } from '../db/schema/users';
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -37,6 +39,28 @@ router.post('/', JwtAuthGuard, RolesGuard(['SHIPPER', 'SYSTEM_ADMIN']), async (r
       expiresAt: expiresAt,
       status: 'POSTED',
     }).returning();
+
+    // --- MOCK BIDS GENERATION FOR DEMO PURPOSES ---
+    const transporters = await db.select().from(users).where(eq(users.role, 'TRANSPORTER')).limit(3);
+    
+    if (transporters.length > 0) {
+       const mockBids = transporters.map((t, index) => {
+         // Vary the bid amount around the budget
+         const variance = 1 - (index * 0.05); // e.g. 1.0, 0.95, 0.90 of budget
+         const bidAmount = (Number(data.budgetAmount) * variance).toString();
+         
+         return {
+           loadId: newLoad.id,
+           transporterId: t.id,
+           bidAmount,
+           currency: data.currency,
+           status: 'PENDING' as const,
+         };
+       });
+       
+       await db.insert(bids).values(mockBids);
+    }
+    // ----------------------------------------------
 
     res.status(201).json({ message: 'Load created successfully', load: newLoad });
   } catch (error) {
