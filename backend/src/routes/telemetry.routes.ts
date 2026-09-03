@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { telemetryLogs } from '../db/schema/telemetry_logs';
 import { shipments } from '../db/schema/shipments';
+import { users } from '../db/schema/users';
+import { loads } from '../db/schema/loads';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { eq } from 'drizzle-orm';
 
@@ -65,13 +67,17 @@ router.post('/ingest', JwtAuthGuard, async (req: Request, res: Response): Promis
 router.get('/live-assets', JwtAuthGuard, async (req: Request, res: Response): Promise<void> => {
   try {
     // For MVP, we get active shipments and simulate their location if no logs exist
-    const activeShipments = await db.query.shipments.findMany({
-      where: eq(shipments.status, 'IN_TRANSIT'),
-      with: {
-        driver: true,
-        load: true
-      }
-    }) as any[];
+    const activeShipments = await db.select({
+      id: shipments.id,
+      loadId: shipments.loadId,
+      driverName: users.fullName,
+      loadTitle: loads.title,
+      cargoType: loads.cargoType
+    })
+    .from(shipments)
+    .leftJoin(users, eq(shipments.driverId, users.id))
+    .leftJoin(loads, eq(shipments.loadId, loads.id))
+    .where(eq(shipments.status, 'IN_TRANSIT'));
 
     // Fetch the latest log for each shipment
     const trucks = await Promise.all(activeShipments.map(async (s, i) => {
@@ -90,8 +96,8 @@ router.get('/live-assets', JwtAuthGuard, async (req: Request, res: Response): Pr
           lat: log.lat,
           lng: log.lng,
           speed: log.speed || 0,
-          cargo: s.load?.title || 'Unknown Cargo',
-          driver: s.driver?.fullName || 'Unknown Driver',
+          cargo: s.loadTitle || s.cargoType || 'Unknown Cargo',
+          driver: s.driverName || 'Unknown Driver',
           eta: log.eta || 'Unknown',
           status: log.status || 'SAFE'
         };
@@ -103,8 +109,8 @@ router.get('/live-assets', JwtAuthGuard, async (req: Request, res: Response): Pr
           lat: 11.5 + (i * 0.05),
           lng: 42.5 - (i * 0.1),
           speed: 40 + (i * 5),
-          cargo: s.load?.title || 'Cargo',
-          driver: s.driver?.fullName || 'Driver',
+          cargo: s.loadTitle || s.cargoType || 'Cargo',
+          driver: s.driverName || 'Driver',
           eta: `${i+1}.5h`,
           status: isBreach ? 'GEOFENCE_BREACH' : 'SAFE'
         };

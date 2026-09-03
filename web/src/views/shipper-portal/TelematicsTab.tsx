@@ -65,7 +65,7 @@ export default function TelematicsTab() {
           <MapContainer center={[10.5, 41.0]} zoom={7} className="w-full h-full z-0">
             <TileLayer
               attribution="&copy; Google"
-              url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+              url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
             />
             <Polyline positions={routeLine} color="#cbd5e1" weight={2} dashArray="4, 4" />
 
