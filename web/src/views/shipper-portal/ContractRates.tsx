@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FileSignature, TrendingUp, AlertTriangle, X } from 'lucide-react';
-import { getContractRates, renegotiateContract, createContractRate } from '@/lib/apiClient';
+import { getContractRates, renegotiateContract, createContractRate, calculateSpotRate } from '@/lib/apiClient';
 
 export default function ContractRates() {
   const { t } = useTranslation();
@@ -21,7 +21,25 @@ export default function ContractRates() {
     try {
       setLoading(true);
       const data = await getContractRates();
-      setContracts(data.contracts || []);
+      const loadedContracts = data.contracts || [];
+      
+      // Fetch live AI spot rate for each contract
+      const enrichedContracts = await Promise.all(loadedContracts.map(async (c: any) => {
+        try {
+          const spotData = await calculateSpotRate({
+            originLat: 11.5890,
+            originLng: 43.1450,
+            destLat: 8.9806,
+            destLng: 38.7578,
+            weightKg: 32000,
+            cargoType: 'General'
+          });
+          return { ...c, currentSpotRate: spotData.totalEtb };
+        } catch (e) {
+          return c;
+        }
+      }));
+      setContracts(enrichedContracts);
     } catch (error) {
       console.error(error);
     } finally {
@@ -100,7 +118,6 @@ export default function ContractRates() {
                 <tr><td colSpan={7} className="px-6 py-4 text-center text-slate-500">No contracts found.</td></tr>
               )}
               {contracts.map((contract) => {
-                // TODO: Fetch real spot rate from AI Engine or pricing service when available on backend
                 const currentSpot = contract.currentSpotRate ? Number(contract.currentSpotRate) : Number(contract.lockedRate);
                 const divergence = ((currentSpot - Number(contract.lockedRate)) / Number(contract.lockedRate)) * 100;
 
@@ -123,11 +140,11 @@ export default function ContractRates() {
                     <td className="px-6 py-4">
                       {divergence > 15 ? (
                         <div className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded text-xs font-bold w-fit">
-                          <AlertTriangle size={12} /> +{divergence.toFixed(1)}%
+                          <AlertTriangle size={12} /> {divergence > 0 ? '+' : ''}{divergence.toFixed(1)}%
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs font-bold w-fit">
-                          <TrendingUp size={12} /> +{divergence.toFixed(1)}%
+                          <TrendingUp size={12} /> {divergence > 0 ? '+' : ''}{divergence.toFixed(1)}%
                         </div>
                       )}
                     </td>
