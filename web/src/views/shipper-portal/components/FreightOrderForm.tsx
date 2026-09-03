@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Scale, Package, ChevronDown } from 'lucide-react';
+import { MapPin, Scale, Package, ChevronDown, Clock } from 'lucide-react';
 import { postLoad, calculateSpotRate } from '@/lib/apiClient';
 
 export default function FreightOrderForm() {
@@ -160,48 +160,25 @@ export default function FreightOrderForm() {
                 <Scale size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Weight in kg" />
               </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {[
-                  { value: '18000', label: '18,000 kg (20ft)' },
-                  { value: '28000', label: '28,000 kg (40ft)' },
-                  { value: '32000', label: '32,000 kg (Rebar)' },
-                  { value: '40000', label: '40,000 kg (Bulk)' }
-                ].map(preset => (
-                  <button
-                    key={preset.value}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, weightKg: preset.value }))}
-                    className="px-2 py-1 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-colors border border-slate-200/60"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
 
-          <div className="space-y-2 pt-2 border-t border-slate-100">
+          <div className="space-y-1.5 pt-2 border-t border-slate-100">
             <Label className="text-xs font-semibold text-slate-700">Lead Time Window</Label>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { id: '12h', label: 'Express (12h)', desc: 'High priority surcharge' },
-                { id: '24h', label: 'Standard (24h)', desc: 'Standard corridor rate' },
-                { id: '48h', label: 'Flexible (48h)', desc: 'Backhaul discount' },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setLeadTime(opt.id)}
-                  className={`p-3 border rounded-lg text-left transition-all ${
-                    leadTime === opt.id
-                      ? 'border-slate-400 bg-slate-100 ring-1 ring-slate-300'
-                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
-                >
-                  <p className={`text-xs font-bold ${leadTime === opt.id ? 'text-slate-900' : 'text-slate-700'}`}>{opt.label}</p>
-                  <p className={`text-[10px] mt-1 ${leadTime === opt.id ? 'text-slate-600' : 'text-slate-500'}`}>{opt.desc}</p>
-                </button>
-              ))}
+            <div className="relative">
+              <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <select 
+                name="leadTime" 
+                value={leadTime} 
+                onChange={(e) => setLeadTime(e.target.value)} 
+                required 
+                className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
+              >
+                <option value="12h">Express (12h) - High priority surcharge</option>
+                <option value="24h">Standard (24h) - Standard corridor rate</option>
+                <option value="48h">Flexible (48h) - Backhaul discount</option>
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
           </div>
 
