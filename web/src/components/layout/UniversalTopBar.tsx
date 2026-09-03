@@ -5,7 +5,7 @@ import HeaderSearch from '@/components/common/HeaderSearch';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function UniversalTopBar() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -37,11 +37,11 @@ export default function UniversalTopBar() {
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
-      case 'SHIPPER': return 'Shipper';
-      case 'TRANSPORTER': return 'Transporter';
-      case 'FORWARDER': return 'Forwarder';
-      case 'CUSTOMS_OFFICER': return 'Customs';
-      case 'ADMIN': return 'Admin';
+      case 'SHIPPER': return t('role_shipper');
+      case 'TRANSPORTER': return t('role_transporter');
+      case 'FORWARDER': return t('role_forwarder');
+      case 'CUSTOMS_OFFICER': return t('role_customs');
+      case 'ADMIN': return t('role_admin');
       default: return role;
     }
   };
@@ -104,10 +104,10 @@ export default function UniversalTopBar() {
                 </div>
                 
                 <button className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
-                  <User size={14} /> My Profile
+                  <User size={14} /> {t('my_profile')}
                 </button>
                 <button className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
-                  <Settings size={14} /> Account Settings
+                  <Settings size={14} /> {t('account_settings')}
                 </button>
                 
                 <div className="h-px bg-slate-100 my-1"></div>
@@ -116,7 +116,7 @@ export default function UniversalTopBar() {
                   onClick={logout}
                   className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
                 >
-                  <LogOut size={14} /> Sign Out
+                  <LogOut size={14} /> {t('sign_out')}
                 </button>
               </div>
             )}

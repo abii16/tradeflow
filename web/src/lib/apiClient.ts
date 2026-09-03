@@ -30,7 +30,7 @@ axiosInstance.interceptors.response.use((response) => {
     removeAuthToken();
     window.dispatchEvent(new Event('auth:unauthorized'));
   }
-  
+
   let errorMessage = error.response?.data?.error || error.response?.statusText || error.message;
   if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
     const detailsText = error.response.data.details.map((d: any) => d.message).join(', ');
@@ -39,7 +39,7 @@ axiosInstance.interceptors.response.use((response) => {
   return Promise.reject(new Error(errorMessage));
 });
 
-interface FetchOptions extends AxiosRequestConfig {}
+interface FetchOptions extends AxiosRequestConfig { }
 
 export async function apiClient<T = any>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { data, headers, ...customOptions } = options;
@@ -53,7 +53,7 @@ export async function apiClient<T = any>(endpoint: string, options: FetchOptions
     ...headers,
     ...(token ? { Authorization: `Bearer ${token}` } : {})
   };
-  
+
   const response = await axiosInstance({
     url: endpoint,
     method,
@@ -61,7 +61,7 @@ export async function apiClient<T = any>(endpoint: string, options: FetchOptions
     headers: finalHeaders,
     ...customOptions
   });
-  
+
   return response.data;
 }
 
@@ -216,8 +216,8 @@ export async function getCustomsDocuments(shipmentId: string) {
 }
 
 export async function uploadCustomsDocument(data: FormData) {
-  return apiClient('/customs/upload', { 
-    method: 'POST', 
+  return apiClient('/customs/upload', {
+    method: 'POST',
     data,
     headers: {
       'Content-Type': 'multipart/form-data'
@@ -232,3 +232,17 @@ export async function getShipperOrganization() {
 export async function updateShipperOrganization(data: any) {
   return apiClient('/shipper/organization', { method: 'PUT', data });
 }
+
+export async function getCustomsQueue() {
+  return apiClient('/customs/queue', { method: 'GET' });
+}
+
+export async function getCustomsInspections() {
+  return apiClient('/customs/inspections', { method: 'GET' });
+}
+
+
+export async function updateCustomsStatus(id: string, status: string, rejectionReason?: string) {
+  return apiClient('/customs/' + id + '/status', { method: 'PATCH', data: { status, rejectionReason } });
+}
+
