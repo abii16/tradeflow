@@ -163,7 +163,7 @@ export default function FreightOrderForm() {
             </div>
           </div>
 
-          <div className="space-y-1.5 pt-2 border-t border-slate-100">
+          <div className="space-y-1.5 pt-2">
             <Label className="text-xs font-semibold text-slate-700">Lead Time Window</Label>
             <div className="relative">
               <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
