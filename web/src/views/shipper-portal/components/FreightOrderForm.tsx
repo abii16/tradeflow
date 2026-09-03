@@ -193,7 +193,7 @@ export default function FreightOrderForm() {
           type="submit"
           form="quote-form"
           disabled={loading}
-          className="bg-white text-slate-700 border border-slate-300 px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all active:scale-[0.98] disabled:opacity-50 shadow-sm"
+          className="bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
         >
           Generate Instant Spot Quote
         </button>
