@@ -159,11 +159,11 @@ router.post(
 router.get('/shipments/:shipmentId/documents', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { shipmentId } = req.params;
-    
+
     // In our schema, customs documents are tied to loadId.
     // Assuming shipmentId maps directly to loadId in frontend logic, or we query appropriately.
     const docs = await db.select().from(customsDocuments).where(eq(customsDocuments.loadId, shipmentId));
-    
+
     res.status(200).json({ documents: docs });
   } catch (error) {
     console.error('Error fetching customs documents:', error);
@@ -186,15 +186,37 @@ router.get('/queue', requireAuth, async (req: Request, res: Response): Promise<v
       loadTitle: loads.title,
       shipperId: loads.shipperId,
     })
-    .from(customsDocuments)
-    .leftJoin(loads, eq(customsDocuments.loadId, loads.id))
-    .where(inArray(customsDocuments.status, ['SUBMITTED', 'UNDER_REVIEW']))
-    .orderBy(desc(customsDocuments.createdAt));
+      .from(customsDocuments)
+      .leftJoin(loads, eq(customsDocuments.loadId, loads.id))
+      .where(inArray(customsDocuments.status, ['SUBMITTED', 'UNDER_REVIEW']))
+      .orderBy(desc(customsDocuments.createdAt));
 
     res.status(200).json({ queue: queueDocs });
   } catch (error) {
     console.error('Error fetching customs queue:', error);
     res.status(500).json({ error: 'Failed to fetch customs queue' });
+  }
+});
+
+router.get('/inspections', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const inspectionDocs = await db.select({
+      id: customsDocuments.id,
+      loadId: customsDocuments.loadId,
+      status: customsDocuments.status,
+      rejectionReason: customsDocuments.rejectionReason,
+      createdAt: customsDocuments.createdAt,
+      loadTitle: loads.title,
+    })
+      .from(customsDocuments)
+      .leftJoin(loads, eq(customsDocuments.loadId, loads.id))
+      .where(eq(customsDocuments.status, 'REJECTED'))
+      .orderBy(desc(customsDocuments.updatedAt));
+
+    res.status(200).json({ inspections: inspectionDocs });
+  } catch (error) {
+    console.error('Error fetching customs inspections:', error);
+    res.status(500).json({ error: 'Failed to fetch customs inspections' });
   }
 });
 

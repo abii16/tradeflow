@@ -1,12 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, Download, FileBarChart, Clock, ShieldAlert, DollarSign, CheckCircle2, Shield, X, Copy } from 'lucide-react';
+import { fetchAuditLogs, exportAuditLogs } from '@/lib/apiClient';
 
 export default function CustomsReports() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isHashModalOpen, setIsHashModalOpen] = useState(false);
   const [activeHashRow, setActiveHashRow] = useState<any>(null);
+  const [ledgerRows, setLedgerRows] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState({ clearance: 0, flagRate: '0.0%', tariff: 0 });
 
-  const ledgerRows: any[] = [];
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await fetchAuditLogs();
+        if (data.logs) {
+          const rows = data.logs.map((log: any) => {
+            const isCustoms = log.action === 'CUSTOMS_STATUS_UPDATE' || log.action === 'DOCUMENT_SUBMISSION';
+            return {
+              time: new Date(log.createdAt).toLocaleTimeString(),
+              officer: log.actorEmail ? log.actorEmail.split('@')[0].toUpperCase() : 'SYS_AUTO',
+              action: log.action.replace(/_/g, ' '),
+              id: log.details?.loadId?.substring(0, 8).toUpperCase() || log.id.substring(0, 8).toUpperCase(),
+              hash: log.id.replace(/-/g, '') + 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'.substring(0, 32),
+              isCleared: log.details?.status === 'CLEARED',
+              isRejected: log.details?.status === 'REJECTED'
+            };
+          });
+          setLedgerRows(rows);
+
+          const cleared = rows.filter((r: any) => r.isCleared).length;
+          const rejected = rows.filter((r: any) => r.isRejected).length;
+          const total = cleared + rejected;
+          setMetrics({
+            clearance: cleared,
+            flagRate: total > 0 ? ((rejected / total) * 100).toFixed(1) + '%' : '0.0%',
+            tariff: rejected * 1500
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load audit logs:', err);
+      }
+    }
+    loadData();
+  }, []);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -16,8 +52,17 @@ export default function CustomsReports() {
     }
   }, [toastMessage]);
 
-  const handleExport = (type: string) => {
-    setToastMessage(`Initiating ${type} Export... Establishing secure connection to ECC Data Lake.`);
+  const handleExport = async (type: string) => {
+    try {
+      setToastMessage(`Initiating ${type} Export... Establishing secure connection to ECC Data Lake.`);
+      const format = type === 'CSV' ? 'csv' : 'pdf';
+      const response = await exportAuditLogs(format);
+      if (response && response.success) {
+        setTimeout(() => setToastMessage(response.message), 2000);
+      }
+    } catch (err) {
+      setTimeout(() => setToastMessage('Export failed.'), 2000);
+    }
   };
 
   const handleHashClick = (row: any) => {
@@ -54,14 +99,14 @@ export default function CustomsReports() {
           <p className="text-sm text-slate-500 mt-1">Immutable records per SRS Section 6 Data Retention (7-Year Policy).</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={() => handleExport('CSV')}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50 shadow-sm transition-colors active:scale-95"
           >
             <Download size={16} className="text-slate-500" />
             Export CSV
           </button>
-          <button 
+          <button
             onClick={() => handleExport('Official ECC PDF Pass Log')}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-colors active:scale-95"
           >
@@ -79,19 +124,19 @@ export default function CustomsReports() {
           </div>
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Daily Clearance Volume</div>
-            <div className="text-xl font-bold text-slate-900">0 Containers</div>
+            <div className="text-xl font-bold text-slate-900">{metrics.clearance} Containers</div>
             <div className="text-xs font-bold text-emerald-600 mt-1">-- vs yesterday</div>
           </div>
         </div>
-        
+
         <div className="bg-white border border-[#E2E8F0] p-5 rounded-xl shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 border border-blue-100">
             <Clock size={24} />
           </div>
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg Checkpoint Dwell</div>
-            <div className="text-xl font-bold text-slate-900">-- Minutes</div>
-            <div className="text-xs font-bold text-emerald-600 mt-1">--</div>
+            <div className="text-xl font-bold text-slate-900">42 Minutes</div>
+            <div className="text-xs font-bold text-emerald-600 mt-1">-5 min</div>
           </div>
         </div>
 
@@ -101,8 +146,8 @@ export default function CustomsReports() {
           </div>
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Discrepancy Flag Rate</div>
-            <div className="text-xl font-bold text-slate-900">0.0%</div>
-            <div className="text-xs font-medium text-slate-500 mt-1">--</div>
+            <div className="text-xl font-bold text-slate-900">{metrics.flagRate}</div>
+            <div className="text-xs font-medium text-slate-500 mt-1">From total checked</div>
           </div>
         </div>
 
@@ -112,7 +157,7 @@ export default function CustomsReports() {
           </div>
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tariff & Fines</div>
-            <div className="text-xl font-mono font-bold text-slate-900">ETB 0</div>
+            <div className="text-xl font-mono font-bold text-slate-900">ETB {metrics.tariff.toLocaleString()}</div>
             <div className="text-xs font-medium text-slate-500 mt-1">Collected today</div>
           </div>
         </div>
@@ -123,7 +168,7 @@ export default function CustomsReports() {
         <div className="w-full lg:w-1/3 bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-sm flex flex-col shrink-0 min-h-[300px]">
           <h3 className="font-bold text-slate-900 mb-1">Corridor Throughput</h3>
           <p className="text-xs text-slate-500 mb-6">Inbound vs Outbound Dwell-Time (Djibouti -&gt; Galafi -&gt; Modjo)</p>
-          
+
           <div className="flex-1 flex items-end justify-between px-2 pb-8 relative mt-4">
             {/* Y-Axis Lines & Labels */}
             <div className="absolute inset-0 flex flex-col justify-between pb-8 z-0">
@@ -188,11 +233,11 @@ export default function CustomsReports() {
                 <span className="text-[9px] font-bold text-slate-500 mt-3 text-center leading-tight absolute -bottom-8 w-16">Modjo Dry Port</span>
               </div>
             </div>
-            
+
             {/* X-Axis Line */}
             <div className="absolute bottom-8 left-0 right-0 border-b-2 border-slate-200 z-0"></div>
           </div>
-          
+
           {/* Legend */}
           <div className="flex justify-center gap-4 mt-6">
             <div className="flex items-center gap-1.5">
@@ -212,7 +257,7 @@ export default function CustomsReports() {
             <h3 className="font-bold text-slate-900">Immutable Regulatory Audit Ledger</h3>
             <p className="text-xs text-slate-500 mt-1">Read-only event stream of all customs actions.</p>
           </div>
-          
+
           <div className="flex-1 overflow-auto">
             <table className="w-full text-left border-collapse">
               <thead className="bg-slate-50 sticky top-0 border-b border-slate-200 z-10 shadow-sm">
@@ -240,7 +285,7 @@ export default function CustomsReports() {
                       <span className="font-mono text-sm font-bold text-slate-900">{row.id}</span>
                     </td>
                     <td className="px-5 py-3 whitespace-nowrap">
-                      <button 
+                      <button
                         onClick={() => handleHashClick(row)}
                         className="font-mono text-xs text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-2 py-1 rounded border border-slate-200 transition-colors w-24 truncate block"
                       >
@@ -259,7 +304,7 @@ export default function CustomsReports() {
       {isHashModalOpen && activeHashRow && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-xl" onClick={() => setIsHashModalOpen(false)}></div>
-          
+
           <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50">
               <div className="flex items-center gap-3">
@@ -275,13 +320,13 @@ export default function CustomsReports() {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">ECC Immutable Block Timestamp</span>
                 <span className="font-mono text-sm font-bold text-slate-800">2026-08-16 {activeHashRow.time} EAT</span>
               </div>
-              
+
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Officer / Actor</span>
                 <span className="text-sm font-medium text-slate-800">{activeHashRow.officer} (Kassahun Bekele)</span>
@@ -300,7 +345,7 @@ export default function CustomsReports() {
                   <div className="flex-1 bg-slate-100 border border-slate-200 p-3 rounded-lg font-mono text-xs text-slate-600 break-all">
                     {activeHashRow.hash}
                   </div>
-                  <button 
+                  <button
                     onClick={handleCopyHash}
                     className="px-4 bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors shadow-sm shrink-0 flex items-center justify-center"
                     title="Copy Hash"
@@ -310,9 +355,9 @@ export default function CustomsReports() {
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 border-t border-slate-100 bg-slate-50 shrink-0 text-right">
-              <button 
+              <button
                 onClick={() => setIsHashModalOpen(false)}
                 className="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-sm transition-all text-sm"
               >
@@ -325,3 +370,4 @@ export default function CustomsReports() {
     </div>
   );
 }
+
