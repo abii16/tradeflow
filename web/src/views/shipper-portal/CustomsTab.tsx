@@ -14,16 +14,19 @@ export default function CustomsTab() {
   const [hashes, setHashes] = useState<{invoice: string | null, packingList: string | null, billOfLading: string | null, certificateOfOrigin: string | null}>({ invoice: null, packingList: null, billOfLading: null, certificateOfOrigin: null });
   
   const [shipmentId, setShipmentId] = useState<string | null>(null);
+  const [loadId, setLoadId] = useState<string | null>(null);
 
   const fetchDocs = async () => {
     try {
       setLoading(true);
       const activeShipmentRes = await getShipperActiveShipment();
       const currentShipmentId = activeShipmentRes?.shipment?.id;
+      const currentLoadId = activeShipmentRes?.shipment?.loadId;
       
-      if (currentShipmentId) {
+      if (currentShipmentId && currentLoadId) {
         setShipmentId(currentShipmentId);
-        const data = await getCustomsDocuments(currentShipmentId);
+        setLoadId(currentLoadId);
+        const data = await getCustomsDocuments(currentLoadId);
         setDocuments(data.documents || []);
       } else {
         setDocuments([]);
@@ -53,7 +56,7 @@ export default function CustomsTab() {
   const submitUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!files.invoice || !files.packingList || !files.billOfLading || !files.certificateOfOrigin) return;
-    if (!shipmentId) return alert('No active shipment found.');
+    if (!loadId) return alert('No active shipment found.');
     
     try {
       const invoiceHash = await computeSHA256(files.invoice);
@@ -66,7 +69,7 @@ export default function CustomsTab() {
       formData.append('packing_list', files.packingList);
       formData.append('bill_of_lading', files.billOfLading);
       formData.append('certificate_of_origin', files.certificateOfOrigin);
-      formData.append('loadId', shipmentId);
+      formData.append('loadId', loadId);
       
       await uploadCustomsDocument(formData);
       
