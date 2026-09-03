@@ -100,7 +100,7 @@ export default function ContractRates() {
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
               <tr>
@@ -138,27 +138,27 @@ export default function ContractRates() {
                       ETB {currentSpot.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </td>
                     <td className="px-6 py-4">
-                      {divergence > 15 ? (
+                      {Math.abs(divergence) > 15 ? (
                         <div className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded text-xs font-bold w-fit">
                           <AlertTriangle size={12} /> {divergence > 0 ? '+' : ''}{divergence.toFixed(1)}%
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs font-bold w-fit">
+                        <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold w-fit ${divergence > 0 ? 'text-emerald-600 bg-emerald-50' : 'text-emerald-600 bg-emerald-50'}`}>
                           <TrendingUp size={12} /> {divergence > 0 ? '+' : ''}{divergence.toFixed(1)}%
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                        divergence > 15
+                        contract.status === 'REVIEW_REQUIRED' || Math.abs(divergence) > 15
                           ? 'bg-amber-100 text-amber-700'
                           : 'bg-emerald-100 text-emerald-700'
                       }`}>
-                        {divergence > 15 ? 'REVIEW REQUIRED' : 'ACTIVE'}
+                        {contract.status === 'REVIEW_REQUIRED' ? 'REVIEW REQUIRED' : Math.abs(divergence) > 15 ? 'FLAGGED' : contract.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      {divergence > 15 && contract.status === 'ACTIVE' ? (
+                      {Math.abs(divergence) > 15 && contract.status === 'ACTIVE' ? (
                         <button onClick={() => handleRenegotiate(contract.id)} className="text-blue-600 hover:text-blue-800 text-xs font-bold">
                           Renegotiate
                         </button>
