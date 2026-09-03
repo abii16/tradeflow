@@ -7,11 +7,11 @@ type FilterStatus = 'all' | 'open' | 'transit' | 'completed';
 
 import { getShipperLoads, acceptBidEscrow } from '@/lib/apiClient';
 
-const FILTER_OPTIONS: { value: FilterStatus; label: string; count: number }[] = [
-  { value: 'all', label: 'All Loads', count: 14 },
-  { value: 'open', label: 'Open for Bidding', count: 6 },
-  { value: 'transit', label: 'In Transit', count: 5 },
-  { value: 'completed', label: 'Completed', count: 3 },
+const FILTER_OPTIONS: { value: FilterStatus; label: string }[] = [
+  { value: 'all', label: 'All Loads' },
+  { value: 'open', label: 'Open for Bidding' },
+  { value: 'transit', label: 'In Transit' },
+  { value: 'completed', label: 'Completed' },
 ];
 
 export default function BidsTab() {
@@ -53,31 +53,26 @@ export default function BidsTab() {
     }
   };
 
-  const enhancedLoads = loads.map(load => {
-    if ((load.status === 'POSTED' || load.status === 'OPEN_FOR_BIDDING') && (!load.bids || load.bids.length === 0)) {
-      return {
-        ...load,
-        bids: [
-          { id: `bid-${load.id}-1`, transporterName: 'TransHorn Logistics', rating: 4.9, proximity: '2h away', amount: 275000, currency: 'ETB', efficiency: 'Class A' },
-          { id: `bid-${load.id}-2`, transporterName: 'BlueNile Freighters', rating: 4.7, proximity: '4h away', amount: 280000, currency: 'ETB', efficiency: 'Class B+' }
-        ]
-      };
-    }
-    return load;
-  });
-
-  const filteredLoads = enhancedLoads.filter((load) => {
+  const filteredLoads = loads.filter((load) => {
     if (filter === 'all') return true;
-    if (filter === 'open') return load.status === 'POSTED' || load.status === 'OPEN_FOR_BIDDING';
-    if (filter === 'transit') return load.status === 'IN_TRANSIT' || load.status === 'ASSIGNED';
-    if (filter === 'completed') return load.status === 'COMPLETED';
+    if (filter === 'open') return load.status === 'POSTED' || load.status === 'OPEN_FOR_BIDDING' || load.status === 'MATCHED';
+    if (filter === 'transit') return load.status === 'IN_TRANSIT' || load.status === 'ASSIGNED' || load.status === 'DISPATCHED';
+    if (filter === 'completed') return load.status === 'COMPLETED' || load.status === 'DELIVERED';
     return true;
   });
 
   const getStatusLabel = (status: string) => {
-    if (status === 'POSTED' || status === 'OPEN_FOR_BIDDING') return 'open';
-    if (status === 'IN_TRANSIT' || status === 'ASSIGNED') return 'transit';
+    if (status === 'POSTED' || status === 'OPEN_FOR_BIDDING' || status === 'MATCHED') return 'open';
+    if (status === 'IN_TRANSIT' || status === 'ASSIGNED' || status === 'DISPATCHED') return 'transit';
     return 'completed';
+  };
+
+  const getFilterCount = (val: FilterStatus) => {
+    if (val === 'all') return loads.length;
+    if (val === 'open') return loads.filter(l => getStatusLabel(l.status) === 'open').length;
+    if (val === 'transit') return loads.filter(l => getStatusLabel(l.status) === 'transit').length;
+    if (val === 'completed') return loads.filter(l => getStatusLabel(l.status) === 'completed').length;
+    return 0;
   };
 
   return (
@@ -100,7 +95,7 @@ export default function BidsTab() {
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              {opt.label} ({opt.count})
+              {opt.label} ({getFilterCount(opt.value)})
             </button>
           ))}
         </div>
@@ -119,8 +114,8 @@ export default function BidsTab() {
                   className={`text-slate-400 transition-transform ${expandedLoad === load.id ? 'rotate-180' : ''}`}
                 />
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}</span>
-                  <h3 className="text-sm font-semibold text-slate-900">{load.title || load.cargoType || load.cargo}</h3>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">TF-LOAD-{load.id?.substring(0, 4)?.toUpperCase()}</span>
+                  <h3 className="text-sm font-semibold text-slate-900">{load.title || load.cargoType || 'Freight Order'}</h3>
                 </div>
               </div>
 
@@ -164,38 +159,46 @@ export default function BidsTab() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {[...(load.bids || [])].sort((a: any, b: any) => Number(a.amount) - Number(b.amount)).map((bid: any, i: number) => (
-                      <TableRow key={bid.id || i} className={`border-slate-100 bg-white hover:bg-slate-50/80 ${i === 0 ? 'ring-1 ring-indigo-500/20 shadow-sm relative z-10' : ''}`}>
-                        <TableCell className="font-medium text-xs text-slate-900">
-                          <div className="flex items-center gap-2">
-                            {bid.transporterName || bid.transporter}
-                          </div>
-                          <span className="mt-1 inline-block px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded font-mono">
-                            {bid.efficiency || (i === 0 ? 'Class A' : 'Class B+')}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          <div className="flex items-center gap-1 text-amber-600 font-medium">
-                            <Star size={12} className="fill-amber-500 text-amber-500" />
-                            {bid.transporterRating || bid.rating || (i === 0 ? '4.9' : '4.7')}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-500 font-mono">{bid.proximity || (i === 0 ? '2h away' : '4h away')}</TableCell>
-                        <TableCell className="text-xs font-semibold font-mono text-slate-900">
-                          {Number(bid.amount).toLocaleString()} {bid.currency || 'ETB'}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleAcceptBid(bid.id)}
-                            disabled={loading || (load.status !== 'POSTED' && load.status !== 'OPEN_FOR_BIDDING')}
-                            className="bg-slate-900 hover:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-50"
-                          >
-                            Accept & Lock Escrow
-                          </button>
+                    {(!load.bids || load.bids.length === 0) ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-6 text-sm text-slate-500">
+                          Waiting for incoming carrier bids...
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      [...(load.bids)].sort((a: any, b: any) => Number(a.amount) - Number(b.amount)).map((bid: any, i: number) => (
+                        <TableRow key={bid.id || i} className={`border-slate-100 bg-white hover:bg-slate-50/80 ${i === 0 ? 'ring-1 ring-indigo-500/20 shadow-sm relative z-10' : ''}`}>
+                          <TableCell className="font-medium text-xs text-slate-900">
+                            <div className="flex items-center gap-2">
+                              {bid.transporterName || bid.transporter || 'Unknown Transporter'}
+                            </div>
+                            <span className="mt-1 inline-block px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded font-mono">
+                              Class A
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <div className="flex items-center gap-1 text-amber-600 font-medium">
+                              <Star size={12} className="fill-amber-500 text-amber-500" />
+                              {bid.transporterRating || bid.rating || '4.5'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-slate-500 font-mono">{bid.proximity || 'Unknown'}</TableCell>
+                          <TableCell className="text-xs font-semibold font-mono text-slate-900">
+                            {Number(bid.amount || bid.bidAmount).toLocaleString()} {bid.currency || 'ETB'}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleAcceptBid(bid.id)}
+                              disabled={loading || (load.status !== 'POSTED' && load.status !== 'OPEN_FOR_BIDDING' && load.status !== 'MATCHED') || bid.status === 'REJECTED'}
+                              className="bg-slate-900 hover:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-50"
+                            >
+                              {bid.status === 'ACCEPTED' ? 'Accepted' : 'Accept & Lock Escrow'}
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
