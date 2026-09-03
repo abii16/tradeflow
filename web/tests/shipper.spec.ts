@@ -53,7 +53,7 @@ test.describe('Shipper Portal E2E Tests', () => {
       status: 200, 
       json: { 
         success: true,
-        contracts: [{ id: 'contract-123', lockedRate: 100000, validUntil: '2026-12-31', companyName: 'Test Carrier', origin: 'Origin', destination: 'Dest', status: 'ACTIVE' }]
+        contracts: [{ id: 'contract-123', lockedRate: 100000, currentSpotRate: 118000, validUntil: '2026-12-31', companyName: 'Test Carrier', origin: 'Origin', destination: 'Dest', status: 'ACTIVE' }]
       } 
     }));
     
@@ -73,12 +73,11 @@ test.describe('Shipper Portal E2E Tests', () => {
     // So any rate will trigger REVIEW REQUIRED if the frontend logic hasn't changed.
     await page.locator('input[type="number"]').fill('100000');
     
-    page.on('dialog', async dialog => {
-      expect(dialog.message()).toContain('Contract created');
-      await dialog.accept();
-    });
-
+    const dialogPromise = page.waitForEvent('dialog');
     await page.getByRole('button', { name: 'Create Contract Rate' }).click();
+    const dialog = await dialogPromise;
+    expect(dialog.message()).toContain('Contract created');
+    await dialog.accept();
 
     // Verify divergence badge
     await expect(page.getByText('REVIEW REQUIRED').first()).toBeVisible();
@@ -92,6 +91,7 @@ test.describe('Shipper Portal E2E Tests', () => {
       status: 200, 
       json: { 
         success: true,
+        shipment: { id: 'SHP-123' },
         documents: [{ invoiceUrl: '/test-invoice.pdf', packingListUrl: '/test-packing.pdf' }]
       } 
     }));
@@ -121,21 +121,34 @@ test.describe('Shipper Portal E2E Tests', () => {
       buffer: dummyBuffer
     });
 
+    const blInput = page.locator('label:has-text("Bill of Lading (PDF)") + input');
+    await blInput.setInputFiles({
+      name: 'bol.pdf',
+      mimeType: 'application/pdf',
+      buffer: dummyBuffer
+    });
+
+    const cooInput = page.locator('label:has-text("Certificate of Origin (PDF)") + input');
+    await cooInput.setInputFiles({
+      name: 'coo.pdf',
+      mimeType: 'application/pdf',
+      buffer: dummyBuffer
+    });
+
     // Wait for files to be ready, then submit
     const uploadBtn = page.getByRole('button', { name: 'Upload & Generate SHA-256 Hash' });
     await expect(uploadBtn).toBeEnabled();
 
-    page.on('dialog', async dialog => {
-      expect(dialog.message()).toContain('uploaded successfully');
-      await dialog.accept();
-    });
-
+    const uploadDialogPromise = page.waitForEvent('dialog');
     await uploadBtn.click();
+    const uploadDialog = await uploadDialogPromise;
+    expect(uploadDialog.message()).toContain('uploaded successfully');
+    await uploadDialog.accept();
 
     // Check for success status in the table
     // Since there are two rows (invoice and packing), we check if "Uploaded — Hash Verified" appears twice
     const verifiedStatuses = page.getByText('Uploaded — Hash Verified');
-    await expect(verifiedStatuses).toHaveCount(2);
+    await expect(verifiedStatuses).toHaveCount(4);
   });
 
 });
