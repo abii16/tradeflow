@@ -55,10 +55,7 @@ export default function BidsTab() {
 
   const filteredLoads = loads.filter((load) => {
     if (filter === 'all') return true;
-    if (filter === 'open') return load.status === 'POSTED' || load.status === 'OPEN_FOR_BIDDING' || load.status === 'MATCHED';
-    if (filter === 'transit') return load.status === 'IN_TRANSIT' || load.status === 'ASSIGNED' || load.status === 'DISPATCHED';
-    if (filter === 'completed') return load.status === 'COMPLETED' || load.status === 'DELIVERED';
-    return true;
+    return getStatusLabel(load.status) === filter;
   });
 
   const getStatusLabel = (status: string) => {
