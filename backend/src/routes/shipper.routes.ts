@@ -209,7 +209,9 @@ router.get('/organization', async (req: Request, res: Response): Promise<void> =
       phone: users.phone,
       companyName: users.companyName,
       tinNumber: users.tinNumber,
-      tradeLicense: users.tradeLicense
+      tradeLicense: users.tradeLicense,
+      verificationStatus: users.verificationStatus,
+      metadata: users.metadata
     })
     .from(users)
     .where(eq(users.id, req.user!.id));
@@ -223,13 +225,14 @@ router.get('/organization', async (req: Request, res: Response): Promise<void> =
 
 router.put('/organization', auditMiddleware('SHIPPER_UPDATE_ORG'), async (req: Request, res: Response): Promise<void> => {
   try {
-    const { companyName, phone, tinNumber, tradeLicense } = req.body;
+    const { companyName, phone, tinNumber, tradeLicense, metadata } = req.body;
     
     await db.update(users).set({
       companyName,
       phone,
       tinNumber,
       tradeLicense,
+      metadata: metadata || null,
       updatedAt: new Date()
     }).where(eq(users.id, req.user!.id));
 
