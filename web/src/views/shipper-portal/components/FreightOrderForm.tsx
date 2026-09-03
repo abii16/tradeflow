@@ -195,12 +195,12 @@ export default function FreightOrderForm() {
                   onClick={() => setLeadTime(opt.id)}
                   className={`p-3 border rounded-lg text-left transition-all ${
                     leadTime === opt.id
-                      ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-600'
-                      : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                      ? 'border-slate-400 bg-slate-100 ring-1 ring-slate-300'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  <p className={`text-xs font-bold ${leadTime === opt.id ? 'text-blue-700' : 'text-slate-700'}`}>{opt.label}</p>
-                  <p className={`text-[10px] mt-1 ${leadTime === opt.id ? 'text-blue-600/80' : 'text-slate-500'}`}>{opt.desc}</p>
+                  <p className={`text-xs font-bold ${leadTime === opt.id ? 'text-slate-900' : 'text-slate-700'}`}>{opt.label}</p>
+                  <p className={`text-[10px] mt-1 ${leadTime === opt.id ? 'text-slate-600' : 'text-slate-500'}`}>{opt.desc}</p>
                 </button>
               ))}
             </div>
@@ -211,7 +211,7 @@ export default function FreightOrderForm() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+              className="bg-slate-100 border border-slate-300 text-slate-800 px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-slate-200 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
             >
               Generate Instant Spot Quote
             </button>
@@ -223,11 +223,11 @@ export default function FreightOrderForm() {
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex justify-between items-start">
             <div>
-              <span className="inline-block bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-blue-100 mb-1.5">Dynamic Pricing Engine (FR-02.3)</span>
+              <span className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 mb-1.5">Dynamic Pricing Engine (FR-02.3)</span>
               <h3 className="text-sm font-bold text-slate-800">Calculated Corridor Benchmark</h3>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-black font-mono text-blue-700 tracking-tight">{calculatedPrice.toLocaleString()} ETB</span>
+              <span className="text-2xl font-black font-mono text-slate-800 tracking-tight">{calculatedPrice.toLocaleString()} ETB</span>
               <p className="text-[11px] font-medium text-slate-500">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
             </div>
           </div>
@@ -242,7 +242,7 @@ export default function FreightOrderForm() {
              </div>
              <div className="flex items-center gap-2 ml-4">
                 <span className="text-slate-300">=</span>
-                <span className="text-blue-800 font-bold whitespace-nowrap">Total: {calculatedPrice.toLocaleString()}</span>
+                <span className="text-slate-800 font-bold whitespace-nowrap">Total: {calculatedPrice.toLocaleString()}</span>
              </div>
           </div>
 
@@ -250,7 +250,7 @@ export default function FreightOrderForm() {
             type="button"
             onClick={handleConfirmBroadcast}
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-900 py-3 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? 'Posting...' : 'Confirm & Post Load'}
           </button>
