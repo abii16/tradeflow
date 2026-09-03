@@ -160,27 +160,27 @@ export default function FreightOrderForm() {
                 <Scale size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Weight in kg" />
               </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">Lead Time Window</Label>
+              <div className="relative">
+                <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select 
+                  name="leadTime" 
+                  value={leadTime} 
+                  onChange={(e) => setLeadTime(e.target.value)} 
+                  required 
+                  className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="12h">Express (12h) - High priority surcharge</option>
+                  <option value="24h">Standard (24h) - Standard corridor rate</option>
+                  <option value="48h">Flexible (48h) - Backhaul discount</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-1.5 pt-2">
-            <Label className="text-xs font-semibold text-slate-700">Lead Time Window</Label>
-            <div className="relative">
-              <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <select 
-                name="leadTime" 
-                value={leadTime} 
-                onChange={(e) => setLeadTime(e.target.value)} 
-                required 
-                className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
-              >
-                <option value="12h">Express (12h) - High priority surcharge</option>
-                <option value="24h">Standard (24h) - Standard corridor rate</option>
-                <option value="48h">Flexible (48h) - Backhaul discount</option>
-              </select>
-              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            </div>
-          </div>
+
 
           <div className="pt-5 border-t border-slate-100 flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Includes corridor tolls, fuel surcharge & VAT</span>
