@@ -94,7 +94,7 @@ TradeFlow MVP Platform
   const routeLine = [djibouti, galafi, awash, modjo];
 
   return (
-    <div className="bg-white border border-slate-200 rounded-md">
+    <div className="bg-white border border-slate-200 rounded-md shadow-lg shadow-slate-200/40">
       {showRatingModal && (
         <RatingModal
           transporterName="Kangaroo Freight"
@@ -159,18 +159,18 @@ TradeFlow MVP Platform
             {[
               { title: t('djibouti_cleared'), time: 'Yesterday 14:00', state: 'done' },
               { title: t('galafi_verified'), time: 'Today 06:15', state: 'done' },
-              { title: t('awash_toll'), time: 'Today 11:45', state: 'done' },
+              { title: t('awash_toll'), time: 'Today 11:45', state: 'active' },
               { title: t('modjo_scan'), time: `${t('est')} 17:30`, state: 'upcoming' },
             ].map((m, idx) => (
               <div key={idx} className="relative flex items-center justify-between text-xs">
                 <div
-                  className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-white ${
-                    m.state === 'done'
+                  className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-white transition-all ${
+                    m.state === 'done' || m.state === 'active'
                       ? 'border-emerald-500 text-emerald-600'
                       : 'border-slate-200 text-slate-300'
-                  }`}
+                  } ${m.state === 'active' ? 'shadow-[0_0_12px_rgba(16,185,129,0.4)] ring-4 ring-emerald-500/20' : ''}`}
                 >
-                  {m.state === 'done' ? (
+                  {m.state === 'done' || m.state === 'active' ? (
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -178,7 +178,7 @@ TradeFlow MVP Platform
                     <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
                   )}
                 </div>
-                <span className={`pl-2 truncate ${m.state === 'done' ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
+                <span className={`pl-2 truncate ${m.state === 'done' || m.state === 'active' ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
                   {m.title}
                 </span>
                 <span className="text-[11px] text-slate-400 font-medium shrink-0">{m.time}</span>
