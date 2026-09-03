@@ -53,16 +53,16 @@ export default function BidsTab() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    if (status === 'POSTED' || status === 'OPEN_FOR_BIDDING') return 'open';
+    if (status === 'MATCHED' || status === 'IN_TRANSIT' || status === 'ASSIGNED' || status === 'DISPATCHED') return 'transit';
+    return 'completed';
+  };
+
   const filteredLoads = loads.filter((load) => {
     if (filter === 'all') return true;
     return getStatusLabel(load.status) === filter;
   });
-
-  const getStatusLabel = (status: string) => {
-    if (status === 'POSTED' || status === 'OPEN_FOR_BIDDING' || status === 'MATCHED') return 'open';
-    if (status === 'IN_TRANSIT' || status === 'ASSIGNED' || status === 'DISPATCHED') return 'transit';
-    return 'completed';
-  };
 
   const getFilterCount = (val: FilterStatus) => {
     if (val === 'all') return loads.length;
