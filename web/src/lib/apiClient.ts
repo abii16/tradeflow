@@ -232,3 +232,13 @@ export async function getShipperOrganization() {
 export async function updateShipperOrganization(data: any) {
   return apiClient('/shipper/organization', { method: 'PUT', data });
 }
+
+export async function getCustomsQueue() {
+  return apiClient('/customs/queue', { method: 'GET' });
+}
+
+
+export async function updateCustomsStatus(id: string, status: string, rejectionReason?: string) {
+  return apiClient('/customs/' + id + '/status', { method: 'PATCH', data: { status, rejectionReason } });
+}
+
