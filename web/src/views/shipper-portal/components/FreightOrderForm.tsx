@@ -160,6 +160,8 @@ export default function FreightOrderForm() {
                 <Scale size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Weight in kg" />
               </div>
+            </div>
+
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-700">Lead Time Window</Label>
               <div className="relative">
