@@ -22,8 +22,9 @@ router.use(JwtAuthGuard, RolesGuard(['SHIPPER']));
 
 router.get('/shipments/active', async (req: Request, res: Response): Promise<void> => {
   try {
-    const activeShipments = await db.select().from(shipments)
-      .where(and(eq(shipments.shipperId, req.user!.id), eq(shipments.status, 'IN_TRANSIT')))
+    const activeShipments = await db.select({ shipment: shipments }).from(shipments)
+      .innerJoin(loads, eq(shipments.loadId, loads.id))
+      .where(and(eq(loads.shipperId, req.user!.id), eq(shipments.status, 'IN_TRANSIT')))
       .orderBy(desc(shipments.createdAt))
       .limit(1);
 
@@ -32,7 +33,7 @@ router.get('/shipments/active', async (req: Request, res: Response): Promise<voi
        return;
     }
 
-    res.status(200).json({ shipment: activeShipments[0] });
+    res.status(200).json({ shipment: activeShipments[0].shipment });
   } catch (error) {
     console.error('Error fetching active shipment:', error);
     res.status(500).json({ error: 'Failed to fetch active shipment' });
@@ -100,30 +101,28 @@ router.post('/bids/:bidId/accept-escrow', auditMiddleware('SHIPPER_ACCEPT_BID'),
       await tx.update(bids).set({ status: 'REJECTED', updatedAt: new Date() }).where(and(eq(bids.loadId, load.id), eq(bids.status, 'PENDING')));
       
       // 3. Update load status
-      await tx.update(loads).set({ status: 'ASSIGNED', updatedAt: new Date() }).where(eq(loads.id, load.id));
+      await tx.update(loads).set({ status: 'MATCHED', updatedAt: new Date() }).where(eq(loads.id, load.id));
 
-      // 4. Generate Shipment
-      await tx.insert(shipments).values({
+      const [newShipment] = await tx.insert(shipments).values({
         loadId: load.id,
+        acceptedBidId: bid.id,
         transporterId: bid.transporterId,
-        shipperId: shipperId,
-        origin: load.origin,
-        destination: load.destination,
-        currentLocation: load.origin,
-        status: 'IN_TRANSIT',
-        trackingNumber: `SHP-${Date.now()}`
-      });
+        driverId: bid.transporterId, // Typically assigned later, default to transporter for now
+        status: 'DISPATCHED'
+      }).returning({ id: shipments.id });
 
       // 5. Escrow Payment Record
       await tx.insert(payments).values({
-        shipmentId: load.id, // Usually linked to shipmentId, using load.id for simplicity if schema differs
+        shipmentId: newShipment.id,
         payerId: shipperId,
         payeeId: bid.transporterId,
-        amount: bid.amount,
+        amount: bid.bidAmount,
         currency: bid.currency,
+        amountInETB: bid.bidAmount,
         status: 'ESCROW_HELD',
-        provider: 'TELEBIRR',
-        transactionRef: `TB-ESCROW-${Math.floor(Math.random() * 1000000)}`,
+        paymentMethod: 'TELEBIRR',
+        outTradeNo: `TB-ESCROW-${Math.floor(Math.random() * 1000000)}`,
+        idempotencyKey: `IDEM-${Date.now()}-${bid.id}`,
       });
     });
 
@@ -210,7 +209,9 @@ router.get('/organization', async (req: Request, res: Response): Promise<void> =
       phone: users.phone,
       companyName: users.companyName,
       tinNumber: users.tinNumber,
-      tradeLicense: users.tradeLicense
+      tradeLicense: users.tradeLicense,
+      verificationStatus: users.verificationStatus,
+      metadata: users.metadata
     })
     .from(users)
     .where(eq(users.id, req.user!.id));
@@ -224,13 +225,14 @@ router.get('/organization', async (req: Request, res: Response): Promise<void> =
 
 router.put('/organization', auditMiddleware('SHIPPER_UPDATE_ORG'), async (req: Request, res: Response): Promise<void> => {
   try {
-    const { companyName, phone, tinNumber, tradeLicense } = req.body;
+    const { companyName, phone, tinNumber, tradeLicense, metadata } = req.body;
     
     await db.update(users).set({
       companyName,
       phone,
       tinNumber,
       tradeLicense,
+      metadata: metadata || null,
       updatedAt: new Date()
     }).where(eq(users.id, req.user!.id));
 

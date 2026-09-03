@@ -8,6 +8,12 @@ export default function SettingsTab() {
   const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState('UNVERIFIED');
+  const [notifications, setNotifications] = useState({
+    app: true,
+    sms: false,
+    email: true
+  });
   
   useEffect(() => {
     async function loadOrg() {
@@ -18,6 +24,10 @@ export default function SettingsTab() {
           setPhone(data.organization.phone || '');
           setTaxId(data.organization.tinNumber || '');
           setTradeLicense(data.organization.tradeLicense || '');
+          setVerificationStatus(data.organization.verificationStatus || 'UNVERIFIED');
+          if (data.organization.metadata?.notifications) {
+            setNotifications(data.organization.metadata.notifications);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -30,7 +40,13 @@ export default function SettingsTab() {
     e.preventDefault();
     setLoading(true);
     try {
-      await updateShipperOrganization({ companyName, phone, tinNumber: taxId, tradeLicense });
+      await updateShipperOrganization({ 
+        companyName, 
+        phone, 
+        tinNumber: taxId, 
+        tradeLicense,
+        metadata: { notifications }
+      });
       toast.success('Organization updated successfully!');
     } catch (err: any) {
       toast.error('Failed to update organization: ' + err.message);
@@ -49,8 +65,7 @@ export default function SettingsTab() {
     try {
       await submitVerification({ tradeLicenseNumber: tradeLicense, taxId: taxId });
       toast.success('Verification request submitted successfully!');
-      setTradeLicense('');
-      setTaxId('');
+      setVerificationStatus('PENDING');
     } catch (err: any) {
       toast.error('Failed to submit verification: ' + err.message);
     } finally {
@@ -66,9 +81,15 @@ export default function SettingsTab() {
       </div>
 
       <div className="bg-white border border-slate-200 rounded-md p-6 max-w-2xl space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold text-slate-900">Verification Request</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Submit your company details for platform verification.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-900">Verification Request</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Submit your company details for platform verification.</p>
+          </div>
+          {verificationStatus === 'VERIFIED' && <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-200">VERIFIED</span>}
+          {verificationStatus === 'PENDING' && <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-200">PENDING REVIEW</span>}
+          {verificationStatus === 'SUSPENDED' && <span className="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded border border-red-200">SUSPENDED</span>}
+          {verificationStatus === 'UNVERIFIED' && <span className="bg-slate-100 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200">UNVERIFIED</span>}
         </div>
 
         <form onSubmit={handleOrgSubmit} className="space-y-4 pt-2 border-t border-slate-100">
@@ -134,17 +155,53 @@ export default function SettingsTab() {
         </div>
 
         <div className="space-y-3 pt-2">
-          <label className="flex items-center gap-3 text-xs text-slate-700 cursor-pointer">
-            <input type="checkbox" defaultChecked className="rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
-            <span>Notify on new carrier bids and price quotes</span>
+          <label className="flex items-center justify-between p-3 border border-slate-200 rounded cursor-pointer hover:bg-slate-50 transition-colors">
+            <div>
+              <div className="text-xs font-bold text-slate-900">In-App Notifications</div>
+              <div className="text-[10px] text-slate-500">Receive real-time alerts while using the web or mobile app.</div>
+            </div>
+            <input 
+              type="checkbox" 
+              checked={notifications.app} 
+              onChange={e => {
+                const newSettings = { ...notifications, app: e.target.checked };
+                setNotifications(newSettings);
+                updateShipperOrganization({ companyName, phone, tinNumber: taxId, tradeLicense, metadata: { notifications: newSettings } }).catch(console.error);
+              }}
+              className="rounded border-slate-300 text-blue-600 focus:ring-blue-600" 
+            />
           </label>
-          <label className="flex items-center gap-3 text-xs text-slate-700 cursor-pointer">
-            <input type="checkbox" defaultChecked className="rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
-            <span>Notify on border checkpoint status changes (Galafi, Awash)</span>
+          <label className="flex items-center justify-between p-3 border border-slate-200 rounded cursor-pointer hover:bg-slate-50 transition-colors">
+            <div>
+              <div className="text-xs font-bold text-slate-900">SMS Alerts</div>
+              <div className="text-[10px] text-slate-500">Get critical milestone alerts via SMS on your registered phone.</div>
+            </div>
+            <input 
+              type="checkbox" 
+              checked={notifications.sms} 
+              onChange={e => {
+                const newSettings = { ...notifications, sms: e.target.checked };
+                setNotifications(newSettings);
+                updateShipperOrganization({ companyName, phone, tinNumber: taxId, tradeLicense, metadata: { notifications: newSettings } }).catch(console.error);
+              }}
+              className="rounded border-slate-300 text-blue-600 focus:ring-blue-600" 
+            />
           </label>
-          <label className="flex items-center gap-3 text-xs text-slate-700 cursor-pointer">
-            <input type="checkbox" defaultChecked className="rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
-            <span>Escrow milestone release confirmations</span>
+          <label className="flex items-center justify-between p-3 border border-slate-200 rounded cursor-pointer hover:bg-slate-50 transition-colors">
+            <div>
+              <div className="text-xs font-bold text-slate-900">Email Updates</div>
+              <div className="text-[10px] text-slate-500">Receive detailed daily summaries and important alerts via email.</div>
+            </div>
+            <input 
+              type="checkbox" 
+              checked={notifications.email} 
+              onChange={e => {
+                const newSettings = { ...notifications, email: e.target.checked };
+                setNotifications(newSettings);
+                updateShipperOrganization({ companyName, phone, tinNumber: taxId, tradeLicense, metadata: { notifications: newSettings } }).catch(console.error);
+              }}
+              className="rounded border-slate-300 text-blue-600 focus:ring-blue-600" 
+            />
           </label>
         </div>
       </div>

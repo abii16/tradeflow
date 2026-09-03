@@ -14,16 +14,19 @@ export default function CustomsTab() {
   const [hashes, setHashes] = useState<{invoice: string | null, packingList: string | null, billOfLading: string | null, certificateOfOrigin: string | null}>({ invoice: null, packingList: null, billOfLading: null, certificateOfOrigin: null });
   
   const [shipmentId, setShipmentId] = useState<string | null>(null);
+  const [loadId, setLoadId] = useState<string | null>(null);
 
   const fetchDocs = async () => {
     try {
       setLoading(true);
       const activeShipmentRes = await getShipperActiveShipment();
       const currentShipmentId = activeShipmentRes?.shipment?.id;
+      const currentLoadId = activeShipmentRes?.shipment?.loadId;
       
-      if (currentShipmentId) {
+      if (currentShipmentId && currentLoadId) {
         setShipmentId(currentShipmentId);
-        const data = await getCustomsDocuments(currentShipmentId);
+        setLoadId(currentLoadId);
+        const data = await getCustomsDocuments(currentLoadId);
         setDocuments(data.documents || []);
       } else {
         setDocuments([]);
@@ -53,7 +56,7 @@ export default function CustomsTab() {
   const submitUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!files.invoice || !files.packingList || !files.billOfLading || !files.certificateOfOrigin) return;
-    if (!shipmentId) return alert('No active shipment found.');
+    if (!loadId) return alert('No active shipment found.');
     
     try {
       const invoiceHash = await computeSHA256(files.invoice);
@@ -66,7 +69,7 @@ export default function CustomsTab() {
       formData.append('packing_list', files.packingList);
       formData.append('bill_of_lading', files.billOfLading);
       formData.append('certificate_of_origin', files.certificateOfOrigin);
-      formData.append('loadId', shipmentId);
+      formData.append('loadId', loadId);
       
       await uploadCustomsDocument(formData);
       
@@ -90,7 +93,7 @@ export default function CustomsTab() {
       <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">Shipment SHP-9021 Clearance Vault</h2>
+            <h2 className="text-sm font-semibold text-slate-900">Shipment {shipmentId ? shipmentId.substring(0, 8).toUpperCase() : '...'} Clearance Vault</h2>
             <p className="text-xs text-slate-500">Linked to Single-Window ERCA / ASYCUDA interface</p>
           </div>
           <button
@@ -115,28 +118,54 @@ export default function CustomsTab() {
             {documents.length === 0 && !loading && (
               <TableRow><TableCell colSpan={4} className="text-center text-xs text-slate-500 py-4">No documents found. Click upload.</TableCell></TableRow>
             )}
-            {documents.map((doc, idx) => (
+            {documents.map((doc, idx) => {
+              const renderStatus = () => {
+                switch (doc.status) {
+                  case 'CLEARED':
+                    return (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
+                        <CheckCircle2 size={11} /> Cleared
+                      </span>
+                    );
+                  case 'REJECTED':
+                    return (
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-red-50 text-red-700 border-red-100">
+                          <X size={11} /> Rejected
+                        </span>
+                        {doc.rejectionReason && (
+                          <span className="text-[10px] text-red-600 max-w-[150px] leading-tight" title={doc.rejectionReason}>
+                            {doc.rejectionReason}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  case 'UNDER_REVIEW':
+                    return (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-blue-50 text-blue-700 border-blue-100">
+                        <Clock size={11} /> Under Review
+                      </span>
+                    );
+                  case 'SUBMITTED':
+                  default:
+                    return (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-amber-50 text-amber-700 border-amber-100">
+                        <Clock size={11} /> Submitted
+                      </span>
+                    );
+                }
+              };
+
+              return (
               <React.Fragment key={idx}>
                 {/* Invoice Row */}
                 <TableRow className="border-slate-100 hover:bg-slate-50/50">
                   <TableCell className="font-medium text-xs text-slate-900">Commercial Invoice</TableCell>
                   <TableCell>
-                    {hashes.invoice ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
-                        <CheckCircle2 size={11} /> Uploaded — Hash Verified
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-amber-50 text-amber-700 border-amber-100">
-                        <Clock size={11} /> Under Review
-                      </span>
-                    )}
+                    {renderStatus()}
                   </TableCell>
                   <TableCell className="text-xs font-mono text-slate-500 truncate max-w-[150px]">
-                    {hashes.invoice ? (
-                      <span title={hashes.invoice}>{hashes.invoice.substring(0, 8)}...</span>
-                    ) : (
-                      doc.invoiceUrl.split('/').pop()
-                    )}
+                    {doc.invoiceUrl ? doc.invoiceUrl.split('/').pop() : 'Pending'}
                   </TableCell>
                   <TableCell className="text-right">
                     <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
@@ -148,22 +177,10 @@ export default function CustomsTab() {
                 <TableRow className="border-slate-100 hover:bg-slate-50/50">
                   <TableCell className="font-medium text-xs text-slate-900">Packing List</TableCell>
                   <TableCell>
-                    {hashes.packingList ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
-                        <CheckCircle2 size={11} /> Uploaded — Hash Verified
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-amber-50 text-amber-700 border-amber-100">
-                        <Clock size={11} /> Under Review
-                      </span>
-                    )}
+                    {renderStatus()}
                   </TableCell>
                   <TableCell className="text-xs font-mono text-slate-500 truncate max-w-[150px]">
-                    {hashes.packingList ? (
-                      <span title={hashes.packingList}>{hashes.packingList.substring(0, 8)}...</span>
-                    ) : (
-                      doc.packingListUrl.split('/').pop()
-                    )}
+                    {doc.packingListUrl ? doc.packingListUrl.split('/').pop() : 'Pending'}
                   </TableCell>
                   <TableCell className="text-right">
                     <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
@@ -175,22 +192,10 @@ export default function CustomsTab() {
                 <TableRow className="border-slate-100 hover:bg-slate-50/50">
                   <TableCell className="font-medium text-xs text-slate-900">Bill of Lading</TableCell>
                   <TableCell>
-                    {hashes.billOfLading ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
-                        <CheckCircle2 size={11} /> Uploaded — Hash Verified
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-amber-50 text-amber-700 border-amber-100">
-                        <Clock size={11} /> Under Review
-                      </span>
-                    )}
+                    {renderStatus()}
                   </TableCell>
                   <TableCell className="text-xs font-mono text-slate-500 truncate max-w-[150px]">
-                    {hashes.billOfLading ? (
-                      <span title={hashes.billOfLading}>{hashes.billOfLading.substring(0, 8)}...</span>
-                    ) : (
-                      doc.billOfLadingUrl?.split('/').pop() || 'Pending'
-                    )}
+                    {doc.billOfLadingUrl ? doc.billOfLadingUrl.split('/').pop() : 'Pending'}
                   </TableCell>
                   <TableCell className="text-right">
                     <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
@@ -202,22 +207,10 @@ export default function CustomsTab() {
                 <TableRow className="border-slate-100 hover:bg-slate-50/50">
                   <TableCell className="font-medium text-xs text-slate-900">Certificate of Origin</TableCell>
                   <TableCell>
-                    {hashes.certificateOfOrigin ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
-                        <CheckCircle2 size={11} /> Uploaded — Hash Verified
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-amber-50 text-amber-700 border-amber-100">
-                        <Clock size={11} /> Under Review
-                      </span>
-                    )}
+                    {renderStatus()}
                   </TableCell>
                   <TableCell className="text-xs font-mono text-slate-500 truncate max-w-[150px]">
-                    {hashes.certificateOfOrigin ? (
-                      <span title={hashes.certificateOfOrigin}>{hashes.certificateOfOrigin.substring(0, 8)}...</span>
-                    ) : (
-                      doc.certificateOfOriginUrl?.split('/').pop() || 'Pending'
-                    )}
+                    {doc.certificateOfOriginUrl ? doc.certificateOfOriginUrl.split('/').pop() : 'Pending'}
                   </TableCell>
                   <TableCell className="text-right">
                     <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
@@ -226,7 +219,8 @@ export default function CustomsTab() {
                   </TableCell>
                 </TableRow>
               </React.Fragment>
-            ))}
+            );
+          })}
           </TableBody>
         </Table>
       </div>

@@ -34,29 +34,31 @@ export default function AuditLogs() {
     try {
       await exportAuditLogs(format);
       
-      // Generate CSV content from the current logs on screen
-      const header = "Time,Action,Actor,Event,IP,Status\n";
-      const rows = logs.map(l => {
-        const time = new Date(l.createdAt || l.timestamp).toLocaleString().replace(/,/g, '');
-        const action = l.action || '';
-        const actor = l.actorEmail || l.actorId || '';
-        const event = (l.message || (typeof l.details === 'object' ? JSON.stringify(l.details) : l.details) || '').replace(/,/g, ';');
-        const ip = l.ipAddress || '';
-        const status = (l.statusCode && l.statusCode < 400) ? 'SUCCESS' : (l.status || 'FAILED');
-        return `${time},${action},${actor},${event},${ip},${status}`;
-      });
-      const csvContent = header + rows.join("\n");
-      
-      // Create a Blob and trigger download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `audit_logs_${new Date().toISOString().slice(0,10)}.${format}`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      if (format === 'csv') {
+        // Generate CSV content from the current logs on screen
+        const header = "Time,Action,Actor,Event,IP,Status\n";
+        const rows = logs.map(l => {
+          const time = new Date(l.createdAt || l.timestamp).toLocaleString().replace(/,/g, '');
+          const action = l.action || '';
+          const actor = l.actorEmail || l.actorId || '';
+          const event = (l.message || (typeof l.details === 'object' ? JSON.stringify(l.details) : l.details) || '').replace(/,/g, ';');
+          const ip = l.ipAddress || '';
+          const status = (l.statusCode && l.statusCode < 400) ? 'SUCCESS' : (l.status || 'FAILED');
+          return `${time},${action},${actor},${event},${ip},${status}`;
+        });
+        const csvContent = header + rows.join("\n");
+        
+        // Create a Blob and trigger download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `audit_logs_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
 
       toast.success(`${format.toUpperCase()} export generated`);
     } catch (err) {

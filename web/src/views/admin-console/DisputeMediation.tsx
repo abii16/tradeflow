@@ -37,9 +37,9 @@ export default function DisputeMediation() {
     setActionLoading(true);
     try {
       await resolveDispute(selectedDispute.id, {
-        status,
+        resolutionAction: status,
         finalEscrowPayout,
-        resolutionNotes
+        notes: resolutionNotes
       });
       toast.success('Dispute resolved successfully');
       setResolutionNotes('');

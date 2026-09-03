@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Scale, Package } from 'lucide-react';
-import { postLoad } from '@/lib/apiClient';
+import { MapPin, Scale, Package, ChevronDown, Clock } from 'lucide-react';
+import { postLoad, calculateSpotRate } from '@/lib/apiClient';
 
 export default function FreightOrderForm() {
   const { t } = useTranslation();
@@ -22,17 +22,40 @@ export default function FreightOrderForm() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleRequestQuote = (e: React.FormEvent) => {
+  const [quoteDetails, setQuoteDetails] = useState<any>(null);
+
+  const handleRequestQuote = async (e: React.FormEvent) => {
     e.preventDefault();
-    const baseRatePerKg = 8.7; // ~8.7 ETB per kg base rate
-    let multiplier = 1.0;
-    if (leadTime === '12h') multiplier = 1.4;
-    if (leadTime === '48h') multiplier = 0.85;
-    
-    const weight = Number(formData.weightKg) || 0;
-    const finalPrice = Math.round(weight * baseRatePerKg * multiplier);
-    setCalculatedPrice(finalPrice);
-    setQuoteGenerated(true);
+    try {
+      setLoading(true);
+      
+      const payload = {
+        origin: { 
+          name: formData.origin, 
+          city: formData.origin.toLowerCase().includes('djibouti') ? 'Djibouti' : formData.origin.toLowerCase().includes('addis') ? 'Addis Ababa' : 'Modjo' 
+        },
+        destination: { 
+          name: formData.destination, 
+          city: formData.destination.toLowerCase().includes('modjo') ? 'Modjo' : formData.destination.toLowerCase().includes('hawassa') ? 'Hawassa' : formData.destination.toLowerCase().includes('dire') ? 'Dire Dawa' : 'Addis Ababa' 
+        },
+        cargoType: 'dry',
+        weightKg: Number(formData.weightKg) || 0,
+        urgency: leadTime === '12h' ? 'high' : leadTime === '48h' ? 'low' : 'standard',
+        isUrgent: leadTime === '12h',
+        pickupWindowHours: leadTime === '12h' ? 12 : leadTime === '24h' ? 24 : 48,
+      };
+
+      const response = await calculateSpotRate(payload);
+      
+      setCalculatedPrice(response.spot_price);
+      setQuoteDetails(response);
+      setQuoteGenerated(true);
+    } catch (error: any) {
+      console.error(error);
+      alert('Failed to calculate spot price: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConfirmBroadcast = async () => {
@@ -41,8 +64,8 @@ export default function FreightOrderForm() {
       await postLoad({
         title: `Freight: ${formData.cargoType}`,
         description: `Deliver ${formData.cargoType} from ${formData.origin} to ${formData.destination}`,
-        origin: { address: formData.origin, city: 'Djibouti' },
-        destination: { address: formData.destination, city: 'Modjo' },
+        origin: { address: formData.origin, city: formData.origin.toLowerCase().includes('djibouti') ? 'Djibouti' : 'Modjo' },
+        destination: { address: formData.destination, city: formData.destination.toLowerCase().includes('modjo') ? 'Modjo' : 'Addis Ababa' },
         weightKg: Number(formData.weightKg),
         cargoType: formData.cargoType,
         budgetAmount: calculatedPrice,
@@ -51,6 +74,7 @@ export default function FreightOrderForm() {
       });
       alert('Order posted successfully!');
       setQuoteGenerated(false);
+      setQuoteDetails(null);
       
       // Navigate to Bids Exchange tab
       window.dispatchEvent(new Event('shipper:load_posted'));
@@ -65,22 +89,20 @@ export default function FreightOrderForm() {
     }
   };
 
-
   return (
-    <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-md p-4">
-        <div className="border-b border-slate-100 pb-3 mb-4">
-          <h2 className="text-sm font-semibold text-slate-900">Post New Freight Order</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Submit cargo details for corridor matching (FR-02)</p>
+    <div className="space-y-5">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-slate-50/50 border-b border-slate-200 px-5 py-4">
+          <h2 className="text-base font-bold text-slate-800">{t('post_new_freight_order')}</h2>
         </div>
 
-        <form onSubmit={handleRequestQuote} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            <div>
-              <Label className="text-xs font-medium text-slate-700 mb-1 block">Origin</Label>
+        <form id="quote-form" onSubmit={handleRequestQuote} className="p-5 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">{t('origin')}</Label>
               <div className="relative">
-                <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
                   <option value="Djibouti Port / Doraleh Container Terminal (DCT)">Djibouti Port / Doraleh Container Terminal (DCT)</option>
                   <option value="Djibouti Free Trade Zone (DFTZ)">Djibouti Free Trade Zone (DFTZ)</option>
                   <option value="Galafi Border Terminal (Inbound)">Galafi Border Terminal (Inbound)</option>
@@ -91,14 +113,15 @@ export default function FreightOrderForm() {
                   <option value="Kombolcha Dry Port">Kombolcha Dry Port</option>
                   <option value="Hawassa Industrial Park Terminal">Hawassa Industrial Park Terminal</option>
                 </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-slate-700 mb-1 block">Cargo Details</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">{t('cargo_details')}</Label>
               <div className="relative">
-                <Package size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                <Package size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
                   <option value="30T Construction Rebar (Flatbed)">30T Construction Rebar (Flatbed)</option>
                   <option value="20ft Standard Dry Container (FCL)">20ft Standard Dry Container (FCL)</option>
                   <option value="40ft High Cube Container (FCL)">40ft High Cube Container (FCL)</option>
@@ -108,14 +131,15 @@ export default function FreightOrderForm() {
                   <option value="Bulk Petroleum / Fuel Tanker">Bulk Petroleum / Fuel Tanker</option>
                   <option value="General Palletized Merchandise (Box Truck)">General Palletized Merchandise (Box Truck)</option>
                 </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-slate-700 mb-1 block">Destination</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">{t('destination')}</Label>
               <div className="relative">
-                <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
                   <option value="Modjo Dry Port & Terminal, Ethiopia">Modjo Dry Port & Terminal, Ethiopia</option>
                   <option value="Addis Ababa / Kality Customs Clearance Center">Addis Ababa / Kality Customs Clearance Center</option>
                   <option value="Djibouti Container Terminal (Export Exit)">Djibouti Container Terminal (Export Exit)</option>
@@ -126,108 +150,88 @@ export default function FreightOrderForm() {
                   <option value="Mekelle Hub">Mekelle Hub</option>
                   <option value="Adama Industrial Hub">Adama Industrial Hub</option>
                 </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-slate-700 mb-1 block">Weight & Volume</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">{t('weight_volume')}</Label>
+              <div className="relative flex items-center">
+                <Scale size={15} className="absolute left-3 text-slate-400" />
+                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 pr-10 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Weight" />
+                <span className="absolute right-3 text-xs font-medium text-slate-400 pointer-events-none">kg</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">{t('lead_time_window')}</Label>
               <div className="relative">
-                <Scale size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" placeholder="Weight in kg" />
-              </div>
-              <div className="mt-1.5 flex flex-wrap gap-1">
-                {[
-                  { value: '18000', label: '18,000 kg (20ft)' },
-                  { value: '28000', label: '28,000 kg (40ft)' },
-                  { value: '32000', label: '32,000 kg (Rebar)' },
-                  { value: '40000', label: '40,000 kg (Bulk)' }
-                ].map(preset => (
-                  <button
-                    key={preset.value}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, weightKg: preset.value }))}
-                    className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors border border-slate-200"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-xs font-medium text-slate-700 mb-1 block">Lead Time Window</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: '12h', label: 'Express (12h)', desc: 'High priority surcharge' },
-                { id: '24h', label: 'Standard (24h)', desc: 'Standard corridor rate' },
-                { id: '48h', label: 'Flexible (48h)', desc: 'Backhaul discount' },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setLeadTime(opt.id)}
-                  className={`p-2.5 border rounded-md text-left transition-all ${
-                    leadTime === opt.id
-                      ? 'border-slate-900 bg-slate-900 text-white'
-                      : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300'
-                  }`}
+                <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select 
+                  name="leadTime" 
+                  value={leadTime} 
+                  onChange={(e) => setLeadTime(e.target.value)} 
+                  required 
+                  className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
                 >
-                  <p className="text-xs font-semibold">{opt.label}</p>
-                  <p className={`text-[11px] mt-0.5 ${leadTime === opt.id ? 'text-slate-300' : 'text-slate-500'}`}>{opt.desc}</p>
-                </button>
-              ))}
+                  <option value="12h">{t('express_12h')}</option>
+                  <option value="24h">{t('standard_24h')}</option>
+                  <option value="48h">{t('flexible_48h')}</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-500">Includes corridor tolls, fuel surcharge & VAT</span>
-            <button
-              type="submit"
-              className="bg-slate-900 text-white px-4 py-2 rounded-md text-xs font-medium hover:bg-slate-800 transition-colors"
-            >
-              Generate Instant Spot Quote
-            </button>
-          </div>
+
+
         </form>
       </div>
 
+      <div className="flex items-center justify-end px-1 mt-2">
+        <button
+          type="submit"
+          form="quote-form"
+          disabled={loading}
+          className="bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+        >
+          {t('generate_instant_spot_quote')}
+        </button>
+      </div>
+
       {quoteGenerated && (
-        <div className="bg-slate-900 text-white rounded-md p-4 space-y-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Dynamic Pricing Engine (FR-02.3)</span>
-              <h3 className="text-base font-semibold mt-0.5">Calculated Corridor Benchmark</h3>
+              <span className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 mb-1.5">{t('dynamic_pricing_engine')}</span>
             </div>
             <div className="text-right">
-              <span className="text-xl font-bold font-mono text-emerald-400">{calculatedPrice.toLocaleString()} ETB</span>
-              <p className="text-[11px] text-slate-400">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
+              <span className="text-2xl font-black font-mono text-slate-800 tracking-tight">{calculatedPrice.toLocaleString()} ETB</span>
+              <p className="text-[11px] font-medium text-slate-500">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
             </div>
           </div>
 
-          <div className="bg-slate-800 rounded p-2 text-[11px] font-mono flex items-center justify-between mt-3 text-slate-300">
-             <div className="flex items-center gap-1.5">
-                <span>Corridor Base: {Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
-                <span className="text-slate-500">+</span>
-                <span>Fuel Index: {Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
-                <span className="text-slate-500">+</span>
-                <span>Dwell Surcharge: {Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono flex items-center justify-between">
+             <div className="flex items-center gap-2 flex-wrap text-slate-600 font-medium">
+                <span>{t('base_fee')}: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
+                <span className="text-slate-300">+</span>
+                <span>{t('fuel')}: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
+                <span className="text-slate-300">+</span>
+                <span>{t('fees')}: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
              </div>
-             <div className="flex items-center gap-1.5">
-                <span className="text-slate-500">=</span>
-                <span className="text-emerald-400 font-bold">Total: {calculatedPrice.toLocaleString()} ETB</span>
+             <div className="flex items-center gap-2 ml-4">
+                <span className="text-slate-300">=</span>
+                <span className="text-slate-800 font-bold whitespace-nowrap">{t('total')}: {calculatedPrice.toLocaleString()}</span>
              </div>
           </div>
-
-
 
           <button
             type="button"
             onClick={handleConfirmBroadcast}
             disabled={loading}
-            className="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
+            className="w-full bg-slate-900 border border-transparent hover:bg-slate-800 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
-            {loading ? 'Posting...' : 'Confirm & Post Load'}
+            {loading ? 'Posting...' : t('confirm_post_load')}
           </button>
         </div>
       )}

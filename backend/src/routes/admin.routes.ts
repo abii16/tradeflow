@@ -14,7 +14,7 @@ import { shipments } from '../db/schema/shipments';
 import { pricingPolicies } from '../db/schema/pricing_policies';
 import { contracts } from '../db/schema/contracts';
 import { loads } from '../db/schema/loads';
-import { socketGateway } from '../main';
+
 import crypto from 'crypto';
 
 const router = Router();
@@ -503,8 +503,9 @@ router.post('/pricing/publish', async (req: Request, res: Response): Promise<voi
       ipAddress: req.ip || '0.0.0.0'
     });
 
-    if (socketGateway) {
-      socketGateway.broadcast('pricing_update', {
+    const sg = (global as any).socketGateway;
+    if (sg) {
+      sg.broadcast('pricing_update', {
         demandMultiplier,
         computedTotal,
         dieselBaselineIndex,

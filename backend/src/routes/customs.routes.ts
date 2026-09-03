@@ -78,6 +78,8 @@ router.post(
   upload.fields([
     { name: 'invoice', maxCount: 1 },
     { name: 'packing_list', maxCount: 1 },
+    { name: 'bill_of_lading', maxCount: 1 },
+    { name: 'certificate_of_origin', maxCount: 1 },
   ]),
   auditMiddleware('DOCUMENT_SUBMISSION'),
   async (req: Request, res: Response): Promise<void> => {
@@ -85,11 +87,13 @@ router.post(
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       const invoiceFile = files?.['invoice']?.[0];
       const packingListFile = files?.['packing_list']?.[0];
+      const billOfLadingFile = files?.['bill_of_lading']?.[0];
+      const certificateOfOriginFile = files?.['certificate_of_origin']?.[0];
 
       const loadId = req.body.loadId;
 
-      if (!invoiceFile || !packingListFile) {
-        res.status(400).json({ error: 'Both invoice and packing_list files are required.' });
+      if (!invoiceFile || !packingListFile || !billOfLadingFile || !certificateOfOriginFile) {
+        res.status(400).json({ error: 'All 4 customs documents (invoice, packing list, bill of lading, certificate of origin) are required.' });
         return;
       }
 
@@ -122,6 +126,8 @@ router.post(
       // Step 3: Supabase Upload
       const invoiceUrl = await uploadToSupabase(invoiceFile, 'invoices');
       const packingListUrl = await uploadToSupabase(packingListFile, 'packing-lists');
+      const billOfLadingUrl = await uploadToSupabase(billOfLadingFile, 'bills-of-lading');
+      const certificateOfOriginUrl = await uploadToSupabase(certificateOfOriginFile, 'certificates-of-origin');
 
       // Step 4: Database Insert
       const [newCustomsDoc] = await db.insert(customsDocuments).values({
@@ -129,6 +135,9 @@ router.post(
         uploadedBy: req.user!.id,
         invoiceUrl,
         packingListUrl,
+        billOfLadingUrl,
+        certificateOfOriginUrl,
+        status: 'SUBMITTED',
         extractedData: {
           invoice: invoiceData,
           packingList: packingListData,
@@ -154,16 +163,7 @@ router.get('/shipments/:shipmentId/documents', requireAuth, async (req: Request,
     // Assuming shipmentId maps directly to loadId in frontend logic, or we query appropriately.
     const docs = await db.select().from(customsDocuments).where(eq(customsDocuments.loadId, shipmentId));
     
-    // Add fake cryptographic hashes for the SRS requirement (FR-06.1) since we don't store hashes yet
-    const docsWithHashes = docs.map(doc => ({
-      ...doc,
-      hashes: {
-        invoice: `sha256-${randomUUID()}`,
-        packingList: `sha256-${randomUUID()}`
-      }
-    }));
-
-    res.status(200).json({ documents: docsWithHashes });
+    res.status(200).json({ documents: docs });
   } catch (error) {
     console.error('Error fetching customs documents:', error);
     res.status(500).json({ error: 'Failed to fetch customs documents' });

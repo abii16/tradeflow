@@ -63,7 +63,7 @@ app.use('/auth', AuthController);
 app.use('/api/v1/shipper', JwtAuthGuard, RolesGuard(['SHIPPER']), shipperRoutes);
 app.use('/api/v1/loads', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), loadsRoutes);
 app.use('/api/v1/bids', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SHIPPER', 'ADMIN']), bidsRoutes);
-app.use('/api/v1/customs', JwtAuthGuard, RolesGuard(['CUSTOMS_OFFICER', 'FORWARDER', 'ADMIN']), customsRoutes);
+app.use('/api/v1/customs', JwtAuthGuard, RolesGuard(['CUSTOMS_OFFICER', 'FORWARDER', 'ADMIN', 'SHIPPER']), customsRoutes);
 app.use('/api/v1/pricing', pricingRoutes); // Route itself checks JWT & Roles inside
 app.use('/api/v1/eta', etaRoutes);
 app.use('/api/v1/verification', JwtAuthGuard, verificationRoutes);

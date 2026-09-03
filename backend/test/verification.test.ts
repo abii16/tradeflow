@@ -2,9 +2,10 @@ import { db } from '../src/db';
 import { users } from '../src/db/schema/users';
 import { verifications } from '../src/db/schema/verifications';
 import { vehicles } from '../src/db/schema/vehicles';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import request from 'supertest';
 import express from 'express';
+import { auditLogs } from '../src/db/schema/audit_logs';
 // Mock guards before importing routes
 jest.mock('../src/auth/guards/jwt-auth.guard', () => ({
   JwtAuthGuard: (req: any, res: any, next: any) => next(),
@@ -46,6 +47,16 @@ describe('Verification Queue APIs', () => {
   let adminId: string;
 
   beforeAll(async () => {
+    // Clean up any left over users from previous failed runs
+    const existingUsers = await db.select().from(users).where(or(eq(users.email, 'shipper_verify_test@test.com'), eq(users.email, 'admin_verify_test@test.com')));
+    if (existingUsers.length > 0) {
+      for (const user of existingUsers) {
+        await db.delete(auditLogs).where(eq(auditLogs.userId, user.id));
+        await db.delete(verifications).where(eq(verifications.userId, user.id));
+        await db.delete(users).where(eq(users.id, user.id));
+      }
+    }
+
     // Insert mock users
     const [shipper] = await db.insert(users).values({
       email: 'shipper_verify_test@test.com',
@@ -66,8 +77,11 @@ describe('Verification Queue APIs', () => {
 
   afterAll(async () => {
     // Clean up
-    await db.delete(users).where(eq(users.id, shipperId));
-    await db.delete(users).where(eq(users.id, adminId));
+    if (adminId && shipperId) {
+      await db.delete(auditLogs).where(or(eq(auditLogs.userId, adminId), eq(auditLogs.userId, shipperId)));
+      await db.delete(verifications).where(eq(verifications.userId, shipperId));
+      await db.delete(users).where(or(eq(users.id, shipperId), eq(users.id, adminId)));
+    }
   });
 
   it('should allow user to submit verification details', async () => {
@@ -94,7 +108,7 @@ describe('Verification Queue APIs', () => {
 
   it('should allow admin to see pending verifications', async () => {
     const res = await request(app)
-      .get('/admin/verifications/pending')
+      .get('/admin/verifications')
       .set('x-mock-id', adminId)
       .set('x-mock-role', 'ADMIN');
     
