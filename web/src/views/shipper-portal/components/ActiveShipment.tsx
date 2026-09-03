@@ -153,29 +153,38 @@ TradeFlow MVP Platform
         </div>
 
         {/* Milestones list */}
-        <div className="space-y-2 border-t border-slate-100 pt-3">
-          {[
-            { title: 'Djibouti Port Customs Cleared', time: 'Yesterday 14:00', state: 'done' },
-            { title: 'Galafi Border Crossing Verified', time: 'Today 06:15', state: 'done' },
-            { title: 'Awash RFID Toll Gate', time: 'Today 11:45', state: 'done' },
-            { title: 'Modjo Dry Port Ingate Scan', time: 'Est. 17:30', state: 'upcoming' },
-          ].map((m, idx) => (
-            <div key={idx} className="flex items-center gap-2.5 text-xs">
-              <div
-                className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] ${
-                  m.state === 'done'
-                    ? 'bg-emerald-100 text-emerald-700 font-bold'
-                    : 'bg-slate-100 text-slate-400'
-                }`}
-              >
-                {m.state === 'done' ? '✓' : idx + 1}
+        <div className="pt-2 border-t border-slate-100">
+          <div className="relative pl-6 space-y-4">
+            <div className="absolute top-2 bottom-2 left-[9px] w-[2px] bg-slate-100"></div>
+            {[
+              { title: 'Djibouti Port Customs Cleared', time: 'Yesterday 14:00', state: 'done' },
+              { title: 'Galafi Border Crossing Verified', time: 'Today 06:15', state: 'done' },
+              { title: 'Awash RFID Toll Gate', time: 'Today 11:45', state: 'done' },
+              { title: 'Modjo Dry Port Ingate Scan', time: 'Est. 17:30', state: 'upcoming' },
+            ].map((m, idx) => (
+              <div key={idx} className="relative flex items-center justify-between text-xs">
+                <div
+                  className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-white ${
+                    m.state === 'done'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-slate-200 text-slate-300'
+                  }`}
+                >
+                  {m.state === 'done' ? (
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                  )}
+                </div>
+                <span className={`pl-2 truncate ${m.state === 'done' ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
+                  {m.title}
+                </span>
+                <span className="text-[11px] text-slate-400 font-medium shrink-0">{m.time}</span>
               </div>
-              <span className={`flex-1 truncate ${m.state === 'done' ? 'text-slate-800 font-medium' : 'text-slate-400'}`}>
-                {m.title}
-              </span>
-              <span className="text-[11px] text-slate-500 font-mono shrink-0">{m.time}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Action button */}

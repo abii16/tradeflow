@@ -156,9 +156,10 @@ export default function FreightOrderForm() {
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-700">Weight & Volume</Label>
-              <div className="relative">
-                <Scale size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Weight in kg" />
+              <div className="relative flex items-center">
+                <Scale size={15} className="absolute left-3 text-slate-400" />
+                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 pr-10 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Weight" />
+                <span className="absolute right-3 text-xs font-medium text-slate-400 pointer-events-none">kg</span>
               </div>
             </div>
 
@@ -192,7 +193,7 @@ export default function FreightOrderForm() {
           type="submit"
           form="quote-form"
           disabled={loading}
-          className="bg-slate-300 text-slate-900 border border-black px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-slate-400 transition-all active:scale-[0.98] disabled:opacity-50"
+          className="bg-white text-slate-700 border border-slate-300 px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all active:scale-[0.98] disabled:opacity-50 shadow-sm"
         >
           Generate Instant Spot Quote
         </button>
@@ -228,7 +229,7 @@ export default function FreightOrderForm() {
             type="button"
             onClick={handleConfirmBroadcast}
             disabled={loading}
-            className="w-full bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-slate-900 border border-transparent hover:bg-slate-800 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? 'Posting...' : 'Confirm & Post Load'}
           </button>

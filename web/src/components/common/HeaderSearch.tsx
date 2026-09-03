@@ -199,7 +199,7 @@ export default function HeaderSearch() {
   };
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-sm">
+    <div ref={containerRef} className="relative w-full max-w-[400px]">
       {/* Search Input Bar */}
       <div className="relative flex items-center">
         <Search className="absolute left-2.5 text-slate-400 pointer-events-none" size={14} />
