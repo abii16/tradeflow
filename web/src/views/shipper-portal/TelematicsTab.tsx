@@ -59,9 +59,9 @@ export default function TelematicsTab() {
         </div>
       </div>
       
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 overflow-hidden">
         {/* Map */}
-        <div className="lg:col-span-3 rounded-md overflow-hidden border border-slate-200 relative z-0">
+        <div className="lg:col-span-3 rounded-md overflow-hidden border border-slate-200 relative z-0 h-[calc(100vh-16rem)] min-h-[400px]">
           <MapContainer center={[10.5, 41.0]} zoom={7} className="w-full h-full z-0">
             <TileLayer
               attribution="&copy; Google"
@@ -137,8 +137,9 @@ export default function TelematicsTab() {
           </MapContainer>
         </div>
 
-        {/* Side Panel */}
-        <div className="lg:col-span-1 space-y-3 overflow-y-auto pr-1">
+        {/* Side Panel Container with relative positioning for scroll indicator */}
+        <div className="lg:col-span-2 relative h-full flex flex-col min-h-0">
+          <div className="flex-1 space-y-3 overflow-y-auto min-h-0 pr-1 pb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {telemetry.alerts.map(alert => (
             <div key={alert.id} className="bg-red-50 border-l-4 border-l-red-500 border-y border-r border-slate-200 rounded-md p-3 shadow-sm animate-in fade-in slide-in-from-right-4">
               <div className="flex items-start gap-2 text-xs">
@@ -199,7 +200,17 @@ export default function TelematicsTab() {
                 </div>
               </div>
             </div>
-          ))}
+            ))}
+          </div>
+          
+          {/* Custom Scroll Indicator */}
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-slate-100 to-transparent pointer-events-none flex items-end justify-center pb-2">
+            <div className="bg-white/80 backdrop-blur shadow-sm rounded-full p-1 animate-bounce text-slate-400 border border-slate-200">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
     </div>
