@@ -187,13 +187,12 @@ export default function FreightOrderForm() {
         </form>
       </div>
 
-      <div className="flex items-center justify-between px-1">
-        <span className="text-xs font-medium text-slate-500">Includes corridor tolls, fuel surcharge & VAT</span>
+      <div className="flex items-center justify-end px-1 mt-2">
         <button
           type="submit"
           form="quote-form"
           disabled={loading}
-          className="bg-transparent text-slate-700 px-5 py-2 rounded-lg text-xs font-bold hover:bg-slate-200 hover:text-slate-900 transition-all active:scale-[0.98] disabled:opacity-50"
+          className="bg-slate-200 text-slate-900 border border-transparent px-5 py-2.5 rounded-lg text-xs font-bold hover:border-black hover:bg-slate-300 transition-all active:scale-[0.98] disabled:opacity-50"
         >
           Generate Instant Spot Quote
         </button>
@@ -230,7 +229,7 @@ export default function FreightOrderForm() {
             type="button"
             onClick={handleConfirmBroadcast}
             disabled={loading}
-            className="w-full bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-900 py-3 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-slate-200 border border-transparent hover:border-black hover:bg-slate-300 text-slate-900 py-3 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? 'Posting...' : 'Confirm & Post Load'}
           </button>
