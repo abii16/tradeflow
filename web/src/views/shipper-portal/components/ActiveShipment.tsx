@@ -88,7 +88,7 @@ export default function ActiveShipment() {
         <MapContainer center={[10.5, 41.5]} zoom={6} scrollWheelZoom={false} className="h-full w-full">
           <TileLayer
             attribution="&copy; Google"
-            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+            url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
           />
           <Polyline positions={routeLine} color="#2563eb" weight={3} dashArray="4, 4" />
           <Marker position={djibouti} />
