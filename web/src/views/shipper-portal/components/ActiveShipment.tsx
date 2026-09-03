@@ -183,7 +183,7 @@ TradeFlow MVP Platform
           <button
             type="button"
             onClick={handleDownloadWaybill}
-            className="w-full bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 py-3 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             Download Smart e-CMR Waybill (TXT)
           </button>
