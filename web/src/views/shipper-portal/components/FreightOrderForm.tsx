@@ -217,29 +217,29 @@ export default function FreightOrderForm() {
       </div>
 
       {quoteGenerated && (
-        <div className="bg-slate-900 text-white rounded-md p-4 space-y-3">
+        <div className="bg-white border border-slate-200 text-slate-900 rounded-md p-4 space-y-3 shadow-sm mt-4">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Dynamic Pricing Engine (FR-02.3)</span>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Dynamic Pricing Engine (FR-02.3)</span>
               <h3 className="text-base font-semibold mt-0.5">Calculated Corridor Benchmark</h3>
             </div>
             <div className="text-right">
-              <span className="text-xl font-bold font-mono text-emerald-400">{calculatedPrice.toLocaleString()} ETB</span>
-              <p className="text-[11px] text-slate-400">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
+              <span className="text-xl font-bold font-mono text-emerald-600">{calculatedPrice.toLocaleString()} ETB</span>
+              <p className="text-[11px] text-slate-500">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
             </div>
           </div>
 
-          <div className="bg-slate-800 rounded p-2 text-[11px] font-mono flex items-center justify-between mt-3 text-slate-300">
+          <div className="bg-slate-50 border border-slate-100 rounded p-2 text-[11px] font-mono flex items-center justify-between mt-3 text-slate-600">
              <div className="flex items-center gap-1.5 flex-wrap">
                 <span>Corridor Base: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
-                <span className="text-slate-500">+</span>
+                <span className="text-slate-400">+</span>
                 <span>Fuel Index: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
-                <span className="text-slate-500">+</span>
+                <span className="text-slate-400">+</span>
                 <span>Surcharges: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
              </div>
              <div className="flex items-center gap-1.5 ml-2">
-                <span className="text-slate-500">=</span>
-                <span className="text-emerald-400 font-bold whitespace-nowrap">Total: {calculatedPrice.toLocaleString()} ETB</span>
+                <span className="text-slate-400">=</span>
+                <span className="text-emerald-700 font-bold whitespace-nowrap">Total: {calculatedPrice.toLocaleString()} ETB</span>
              </div>
           </div>
 
