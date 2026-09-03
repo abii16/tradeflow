@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Scale, Package } from 'lucide-react';
+import { MapPin, Scale, Package, ChevronDown } from 'lucide-react';
 import { postLoad, calculateSpotRate } from '@/lib/apiClient';
 
 export default function FreightOrderForm() {
@@ -89,22 +89,21 @@ export default function FreightOrderForm() {
     }
   };
 
-
   return (
-    <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-md p-4">
-        <div className="border-b border-slate-100 pb-3 mb-4">
-          <h2 className="text-sm font-semibold text-slate-900">Post New Freight Order</h2>
+    <div className="space-y-5">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-slate-50/50 border-b border-slate-200 px-5 py-4">
+          <h2 className="text-base font-bold text-slate-800">Post New Freight Order</h2>
           <p className="text-xs text-slate-500 mt-0.5">Submit cargo details for corridor matching (FR-02)</p>
         </div>
 
-        <form onSubmit={handleRequestQuote} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            <div>
-              <Label className="text-xs font-medium text-slate-700 mb-1 block">Origin</Label>
+        <form onSubmit={handleRequestQuote} className="p-5 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">Origin</Label>
               <div className="relative">
-                <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
                   <option value="Djibouti Port / Doraleh Container Terminal (DCT)">Djibouti Port / Doraleh Container Terminal (DCT)</option>
                   <option value="Djibouti Free Trade Zone (DFTZ)">Djibouti Free Trade Zone (DFTZ)</option>
                   <option value="Galafi Border Terminal (Inbound)">Galafi Border Terminal (Inbound)</option>
@@ -115,14 +114,15 @@ export default function FreightOrderForm() {
                   <option value="Kombolcha Dry Port">Kombolcha Dry Port</option>
                   <option value="Hawassa Industrial Park Terminal">Hawassa Industrial Park Terminal</option>
                 </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-slate-700 mb-1 block">Cargo Details</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">Cargo Details</Label>
               <div className="relative">
-                <Package size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                <Package size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
                   <option value="30T Construction Rebar (Flatbed)">30T Construction Rebar (Flatbed)</option>
                   <option value="20ft Standard Dry Container (FCL)">20ft Standard Dry Container (FCL)</option>
                   <option value="40ft High Cube Container (FCL)">40ft High Cube Container (FCL)</option>
@@ -132,14 +132,15 @@ export default function FreightOrderForm() {
                   <option value="Bulk Petroleum / Fuel Tanker">Bulk Petroleum / Fuel Tanker</option>
                   <option value="General Palletized Merchandise (Box Truck)">General Palletized Merchandise (Box Truck)</option>
                 </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-slate-700 mb-1 block">Destination</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">Destination</Label>
               <div className="relative">
-                <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-8 pr-3 bg-slate-50/50 border border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors appearance-none">
+                <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
                   <option value="Modjo Dry Port & Terminal, Ethiopia">Modjo Dry Port & Terminal, Ethiopia</option>
                   <option value="Addis Ababa / Kality Customs Clearance Center">Addis Ababa / Kality Customs Clearance Center</option>
                   <option value="Djibouti Container Terminal (Export Exit)">Djibouti Container Terminal (Export Exit)</option>
@@ -150,16 +151,17 @@ export default function FreightOrderForm() {
                   <option value="Mekelle Hub">Mekelle Hub</option>
                   <option value="Adama Industrial Hub">Adama Industrial Hub</option>
                 </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-slate-700 mb-1 block">Weight & Volume</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">Weight & Volume</Label>
               <div className="relative">
-                <Scale size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-8 bg-slate-50/50 border-slate-200 h-8 text-xs font-medium rounded text-slate-900 focus:bg-white" placeholder="Weight in kg" />
+                <Scale size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Weight in kg" />
               </div>
-              <div className="mt-1.5 flex flex-wrap gap-1">
+              <div className="mt-2 flex flex-wrap gap-1.5">
                 {[
                   { value: '18000', label: '18,000 kg (20ft)' },
                   { value: '28000', label: '28,000 kg (40ft)' },
@@ -170,7 +172,7 @@ export default function FreightOrderForm() {
                     key={preset.value}
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, weightKg: preset.value }))}
-                    className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors border border-slate-200"
+                    className="px-2 py-1 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-colors border border-slate-200/60"
                   >
                     {preset.label}
                   </button>
@@ -179,9 +181,9 @@ export default function FreightOrderForm() {
             </div>
           </div>
 
-          <div>
-            <Label className="text-xs font-medium text-slate-700 mb-1 block">Lead Time Window</Label>
-            <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <Label className="text-xs font-semibold text-slate-700">Lead Time Window</Label>
+            <div className="grid grid-cols-3 gap-3">
               {[
                 { id: '12h', label: 'Express (12h)', desc: 'High priority surcharge' },
                 { id: '24h', label: 'Standard (24h)', desc: 'Standard corridor rate' },
@@ -191,24 +193,25 @@ export default function FreightOrderForm() {
                   key={opt.id}
                   type="button"
                   onClick={() => setLeadTime(opt.id)}
-                  className={`p-2.5 border rounded-md text-left transition-all ${
+                  className={`p-3 border rounded-lg text-left transition-all ${
                     leadTime === opt.id
-                      ? 'border-slate-900 bg-slate-900 text-white'
-                      : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300'
+                      ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-600'
+                      : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  <p className="text-xs font-semibold">{opt.label}</p>
-                  <p className={`text-[11px] mt-0.5 ${leadTime === opt.id ? 'text-slate-300' : 'text-slate-500'}`}>{opt.desc}</p>
+                  <p className={`text-xs font-bold ${leadTime === opt.id ? 'text-blue-700' : 'text-slate-700'}`}>{opt.label}</p>
+                  <p className={`text-[10px] mt-1 ${leadTime === opt.id ? 'text-blue-600/80' : 'text-slate-500'}`}>{opt.desc}</p>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-500">Includes corridor tolls, fuel surcharge & VAT</span>
+          <div className="pt-5 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500">Includes corridor tolls, fuel surcharge & VAT</span>
             <button
               type="submit"
-              className="bg-slate-900 text-white px-4 py-2 rounded-md text-xs font-medium hover:bg-slate-800 transition-colors"
+              disabled={loading}
+              className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
             >
               Generate Instant Spot Quote
             </button>
@@ -217,39 +220,37 @@ export default function FreightOrderForm() {
       </div>
 
       {quoteGenerated && (
-        <div className="bg-white border border-slate-200 text-slate-900 rounded-md p-4 space-y-3 shadow-sm mt-4">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Dynamic Pricing Engine (FR-02.3)</span>
-              <h3 className="text-base font-semibold mt-0.5">Calculated Corridor Benchmark</h3>
+              <span className="inline-block bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-blue-100 mb-1.5">Dynamic Pricing Engine (FR-02.3)</span>
+              <h3 className="text-sm font-bold text-slate-800">Calculated Corridor Benchmark</h3>
             </div>
             <div className="text-right">
-              <span className="text-xl font-bold font-mono text-emerald-600">{calculatedPrice.toLocaleString()} ETB</span>
-              <p className="text-[11px] text-slate-500">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
+              <span className="text-2xl font-black font-mono text-blue-700 tracking-tight">{calculatedPrice.toLocaleString()} ETB</span>
+              <p className="text-[11px] font-medium text-slate-500">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
             </div>
           </div>
 
-          <div className="bg-slate-50 border border-slate-100 rounded p-2 text-[11px] font-mono flex items-center justify-between mt-3 text-slate-600">
-             <div className="flex items-center gap-1.5 flex-wrap">
-                <span>Corridor Base: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
-                <span className="text-slate-400">+</span>
-                <span>Fuel Index: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
-                <span className="text-slate-400">+</span>
-                <span>Surcharges: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono flex items-center justify-between">
+             <div className="flex items-center gap-2 flex-wrap text-slate-600 font-medium">
+                <span>Base: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
+                <span className="text-slate-300">+</span>
+                <span>Fuel: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
+                <span className="text-slate-300">+</span>
+                <span>Fees: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
              </div>
-             <div className="flex items-center gap-1.5 ml-2">
-                <span className="text-slate-400">=</span>
-                <span className="text-emerald-700 font-bold whitespace-nowrap">Total: {calculatedPrice.toLocaleString()} ETB</span>
+             <div className="flex items-center gap-2 ml-4">
+                <span className="text-slate-300">=</span>
+                <span className="text-blue-800 font-bold whitespace-nowrap">Total: {calculatedPrice.toLocaleString()}</span>
              </div>
           </div>
-
-
 
           <button
             type="button"
             onClick={handleConfirmBroadcast}
             disabled={loading}
-            className="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? 'Posting...' : 'Confirm & Post Load'}
           </button>
