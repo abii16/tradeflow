@@ -4,7 +4,7 @@ import { telemetryLogs } from '../db/schema/telemetry_logs';
 import { shipments } from '../db/schema/shipments';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { eq } from 'drizzle-orm';
-import { socketGateway } from '../main';
+
 
 const router = Router();
 
@@ -35,13 +35,13 @@ router.post('/ingest', JwtAuthGuard, async (req: Request, res: Response): Promis
         driver: true,
         load: true
       }
-    });
+    }) as any;
 
     if (shipment) {
       // Broadcast live update via Socket.io
-      const globalGateway = (global as any).socketGateway;
-      if (globalGateway) {
-        globalGateway.emitToRoom('general', 'telemetry-update', {
+      const sg = (global as any).socketGateway;
+      if (sg) {
+        sg.broadcastToRoom(shipment.loadId, 'eta_update', {
           id: `TRK-${shipmentId.substring(0,4).toUpperCase()}`,
           lat,
           lng,
@@ -71,7 +71,7 @@ router.get('/live-assets', JwtAuthGuard, async (req: Request, res: Response): Pr
         driver: true,
         load: true
       }
-    });
+    }) as any[];
 
     // Fetch the latest log for each shipment
     const trucks = await Promise.all(activeShipments.map(async (s, i) => {
