@@ -212,7 +212,7 @@ export default function HeaderSearch() {
             setQuery(e.target.value);
             setIsOpen(true);
           }}
-          placeholder="Search loads, waybills, carriers... (Ctrl+K)"
+          placeholder={t('search_placeholder')}
           className="w-full pl-8 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded text-xs text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none placeholder:text-slate-400 transition-colors"
         />
         {query ? (
@@ -237,7 +237,7 @@ export default function HeaderSearch() {
         <div className="absolute left-0 top-full mt-1.5 w-full sm:w-[440px] bg-white border border-slate-200 rounded shadow-md z-50 overflow-hidden text-xs">
           {results.length === 0 ? (
             <div className="p-4 text-center text-xs text-slate-400">
-              No results found for "<span className="text-slate-700 font-medium">{query}</span>"
+              {t('no_results_found')} "<span className="text-slate-700 font-medium">{query}</span>"
             </div>
           ) : (
             <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
@@ -272,8 +272,8 @@ export default function HeaderSearch() {
           )}
 
           <div className="p-2 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400">
-            <span>Press <kbd className="font-mono bg-white px-1 py-0.5 border border-slate-200 rounded">ESC</kbd> to close</span>
-            <span>{results.length} result{results.length === 1 ? '' : 's'}</span>
+            <span>{t('press_esc_to_close').split('ESC')[0]}<kbd className="font-mono bg-white px-1 py-0.5 border border-slate-200 rounded">ESC</kbd>{t('press_esc_to_close').split('ESC')[1]}</span>
+            <span>{results.length} {results.length === 1 ? t('result') : t('results')}</span>
           </div>
         </div>
       )}

@@ -20,7 +20,7 @@ export default function CustomsWorkspace() {
         forwarder: doc.loadTitle || 'TradeFlow Logistics',
         eta: new Date(doc.createdAt).toLocaleDateString(),
         status: doc.status,
-        color: doc.status === 'SUBMITTED' ? 'amber' : doc.status === 'UNDER_REVIEW' ? 'blue' : 'emerald',
+        color: doc.status === 'SUBMITTED' ? 'amber' : doc.status === 'UNDER_REVIEW' ? 'purple' : 'emerald',
         originalData: doc
       }));
       
@@ -63,6 +63,7 @@ export default function CustomsWorkspace() {
   const getStatusClasses = (color: string) => {
     switch (color) {
       case 'amber': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'purple': return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'rose': return 'bg-rose-50 text-rose-700 border-rose-200';
       case 'emerald': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       default: return 'bg-slate-50 text-slate-700 border-slate-200';
@@ -76,7 +77,6 @@ export default function CustomsWorkspace() {
         <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
           <div>
             <h3 className="font-bold text-slate-900">{t('incoming_manifest_queue')}</h3>
-            <p className="text-xs text-slate-500 mt-1">{t('select_manifest_check')} (FR-06.3)</p>
           </div>
           <div className="flex items-center gap-2">
             <button className="p-1.5 text-slate-400 hover:text-blue-600 bg-white border border-slate-200 rounded shadow-sm transition-colors">
@@ -86,7 +86,7 @@ export default function CustomsWorkspace() {
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
-                placeholder="Search Manifest ID, Forwarder..." 
+                placeholder={t('search_manifest_id')} 
                 className="pl-8 pr-3 py-1.5 text-sm border border-slate-200 rounded bg-white shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-56"
               />
             </div>
@@ -97,10 +97,10 @@ export default function CustomsWorkspace() {
           <table className="w-full text-left border-collapse table-fixed">
             <thead className="bg-slate-50 sticky top-0 border-b border-slate-200 z-10">
               <tr>
-                <th className="w-3/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('manifest_id')}</th>
-                <th className="w-4/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('freight_forwarder')}</th>
+                <th className="w-2/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('manifest_id')}</th>
+                <th className="w-3/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('freight_forwarder')}</th>
                 <th className="w-2/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('eta_galafi')}</th>
-                <th className="w-3/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('status_action')}</th>
+                <th className="w-5/12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">{t('status_action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -109,7 +109,7 @@ export default function CustomsWorkspace() {
                 return (
                   <tr 
                     key={row.id} 
-                    className={`group cursor-pointer transition-colors ${isActive ? 'bg-blue-50/70 border-l-4 border-blue-600' : 'border-l-4 border-transparent hover:bg-slate-50'}`}
+                    className={`group cursor-pointer transition-colors ${isActive ? 'bg-slate-100/70 border-l-4 border-slate-900' : 'border-l-4 border-transparent hover:bg-slate-50'}`}
                     onClick={() => setActiveManifestId(row.id)}
                   >
                     <td className="px-4 py-4 whitespace-nowrap truncate">
@@ -121,17 +121,19 @@ export default function CustomsWorkspace() {
                     <td className="px-4 py-4 whitespace-nowrap truncate">
                       <span className="font-mono text-sm font-medium text-slate-600">{row.eta}</span>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap truncate flex items-center gap-2">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold border shadow-sm ${getStatusClasses(row.color)}`}>
-                        {row.status}
-                      </span>
-                      <button className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded transition-all shadow-sm ${
-                        isActive 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                      }`}>
-                        {isActive ? '[Active Selection]' : '[Inspect]'}
-                      </button>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold border shadow-sm ${getStatusClasses(row.color)}`}>
+                          {t(`status_${row.status}`)}
+                        </span>
+                        <button className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded transition-all shadow-sm ${
+                          isActive 
+                            ? 'bg-slate-300 border border-black hover:bg-slate-400 text-slate-900' 
+                            : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        }`}>
+                          {isActive ? t('active_selection') : t('inspect')}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -148,22 +150,22 @@ export default function CustomsWorkspace() {
             <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm border ${
-                  activeDoc.status === 'SUBMITTED' ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-blue-100 border-blue-200 text-blue-600'
+                  activeDoc.status === 'SUBMITTED' ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-purple-100 border-purple-200 text-purple-600'
                 }`}>
                   <AlertTriangle size={16} />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900">{t('selected_manifest')} {activeManifestId}</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">{t('freight_forwarder')}: {activeDoc.forwarder} • Date: {activeDoc.eta}</p>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">{t('freight_forwarder')}: {activeDoc.forwarder} • {t('date')}: {activeDoc.eta}</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+            <div className="flex-1 overflow-y-auto p-5 space-y-5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full">
               {/* Alert Box */}
               <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3.5 shadow-sm">
                 <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-3">
-                  <FileText size={18} className="text-blue-500" />
+                  <FileText size={18} className="text-slate-700" />
                   {t('extracted_data_validation')} (FR-06.2)
                 </h4>
                 
@@ -209,21 +211,21 @@ export default function CustomsWorkspace() {
               <div className="p-4 rounded-lg border border-slate-200 shadow-sm bg-white">
                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">{t('attached_clearance_docs')}</div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <a href={activeDoc.originalData.invoiceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border shadow-sm transition-colors bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+                  <a href={activeDoc.originalData.invoiceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border shadow-sm transition-colors bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">
                     <FileText size={12} />
-                    [Invoice]
+                    {t('invoice')}
                   </a>
-                  <a href={activeDoc.originalData.packingListUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border shadow-sm transition-colors bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+                  <a href={activeDoc.originalData.packingListUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border shadow-sm transition-colors bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">
                     <FileText size={12} />
-                    [Packing List]
+                    {t('packing_list')}
                   </a>
-                  <a href={activeDoc.originalData.billOfLadingUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border shadow-sm transition-colors bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+                  <a href={activeDoc.originalData.billOfLadingUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border shadow-sm transition-colors bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">
                     <FileText size={12} />
-                    [Bill of Lading]
+                    {t('bill_of_lading')}
                   </a>
-                  <a href={activeDoc.originalData.certificateOfOriginUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border shadow-sm transition-colors bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+                  <a href={activeDoc.originalData.certificateOfOriginUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border shadow-sm transition-colors bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">
                     <FileText size={12} />
-                    [Cert Origin]
+                    {t('cert_origin')}
                   </a>
                 </div>
               </div>
@@ -233,28 +235,28 @@ export default function CustomsWorkspace() {
                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#CBD5E1 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
                 <div className="flex flex-col items-center gap-1.5 z-10">
                   <Map size={24} className="text-slate-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] font-bold text-slate-500 bg-white/80 px-2 py-1 rounded backdrop-blur border border-slate-200">Satellite Snapshot: Galafi Scale Station</span>
+                  <span className="text-[10px] font-bold text-slate-500 bg-white/80 px-2 py-1 rounded backdrop-blur border border-slate-200">{t('satellite_snapshot')}</span>
                 </div>
                 
                 {/* Simulated check point highlight */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-16 border-2 border-blue-500 rounded bg-blue-500/10 flex items-center justify-center z-10 animate-pulse">
-                  <span className="text-[10px] font-bold text-blue-700 bg-white/90 px-1 rounded shadow-sm">Vehicle Lane Pin</span>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-16 border-2 border-slate-500 rounded bg-slate-500/10 flex items-center justify-center z-10 animate-pulse">
+                  <span className="text-[10px] font-bold text-slate-700 bg-white/90 px-1 rounded shadow-sm">{t('vehicle_lane_pin')}</span>
                 </div>
               </div>
             </div>
 
             {/* Action Triggers */}
-            <div className="p-5 border-t border-slate-100 bg-slate-50 flex gap-4 shrink-0 mt-auto">
+            <div className="p-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-4 shrink-0 mt-auto">
               <button 
                 onClick={() => handleUpdateStatus('CLEARED')}
-                className="flex-1 h-11 bg-[#059669] hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 border border-emerald-800/20 text-sm"
+                className="flex-1 h-11 px-6 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 active:scale-[0.98] text-white font-semibold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-sm"
               >
                 <CheckCircle2 size={18} />
                 ✓ {t('validate_issue_pass')}
               </button>
               <button 
                 onClick={() => handleUpdateStatus('REJECTED')}
-                className="flex-1 h-11 bg-[#DC2626] hover:bg-rose-700 active:scale-[0.98] text-white font-semibold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 border border-rose-800/20 text-sm"
+                className="w-fit px-6 h-11 bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 active:scale-[0.98] font-semibold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-sm whitespace-nowrap"
               >
                 <AlertTriangle size={18} />
                 ⚠️ {t('flag_inspection')}
