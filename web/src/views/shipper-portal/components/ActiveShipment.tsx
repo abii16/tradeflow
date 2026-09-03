@@ -124,7 +124,7 @@ TradeFlow MVP Platform
       </div>
 
       {/* Mini Map */}
-      <div className="h-44 w-full border-b border-slate-100 relative">
+      <div className="h-64 w-full border-b border-slate-100 relative">
         <MapContainer center={[10.5, 41.5]} zoom={6} scrollWheelZoom={false} className="h-full w-full">
           <TileLayer
             attribution="&copy; Google"
