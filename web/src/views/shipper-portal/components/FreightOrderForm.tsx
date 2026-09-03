@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MapPin, Scale, Package } from 'lucide-react';
-import { postLoad } from '@/lib/apiClient';
+import { postLoad, calculateSpotRate } from '@/lib/apiClient';
 
 export default function FreightOrderForm() {
   const { t } = useTranslation();
@@ -22,17 +22,40 @@ export default function FreightOrderForm() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleRequestQuote = (e: React.FormEvent) => {
+  const [quoteDetails, setQuoteDetails] = useState<any>(null);
+
+  const handleRequestQuote = async (e: React.FormEvent) => {
     e.preventDefault();
-    const baseRatePerKg = 8.7; // ~8.7 ETB per kg base rate
-    let multiplier = 1.0;
-    if (leadTime === '12h') multiplier = 1.4;
-    if (leadTime === '48h') multiplier = 0.85;
-    
-    const weight = Number(formData.weightKg) || 0;
-    const finalPrice = Math.round(weight * baseRatePerKg * multiplier);
-    setCalculatedPrice(finalPrice);
-    setQuoteGenerated(true);
+    try {
+      setLoading(true);
+      
+      const payload = {
+        origin: { 
+          name: formData.origin, 
+          city: formData.origin.toLowerCase().includes('djibouti') ? 'Djibouti' : formData.origin.toLowerCase().includes('addis') ? 'Addis Ababa' : 'Modjo' 
+        },
+        destination: { 
+          name: formData.destination, 
+          city: formData.destination.toLowerCase().includes('modjo') ? 'Modjo' : formData.destination.toLowerCase().includes('hawassa') ? 'Hawassa' : formData.destination.toLowerCase().includes('dire') ? 'Dire Dawa' : 'Addis Ababa' 
+        },
+        cargoType: 'dry',
+        weightKg: Number(formData.weightKg) || 0,
+        urgency: leadTime === '12h' ? 'high' : leadTime === '48h' ? 'low' : 'standard',
+        isUrgent: leadTime === '12h',
+        pickupWindowHours: leadTime === '12h' ? 12 : leadTime === '24h' ? 24 : 48,
+      };
+
+      const response = await calculateSpotRate(payload);
+      
+      setCalculatedPrice(response.spot_price);
+      setQuoteDetails(response);
+      setQuoteGenerated(true);
+    } catch (error: any) {
+      console.error(error);
+      alert('Failed to calculate spot price: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConfirmBroadcast = async () => {
@@ -41,8 +64,8 @@ export default function FreightOrderForm() {
       await postLoad({
         title: `Freight: ${formData.cargoType}`,
         description: `Deliver ${formData.cargoType} from ${formData.origin} to ${formData.destination}`,
-        origin: { address: formData.origin, city: 'Djibouti' },
-        destination: { address: formData.destination, city: 'Modjo' },
+        origin: { address: formData.origin, city: formData.origin.toLowerCase().includes('djibouti') ? 'Djibouti' : 'Modjo' },
+        destination: { address: formData.destination, city: formData.destination.toLowerCase().includes('modjo') ? 'Modjo' : 'Addis Ababa' },
         weightKg: Number(formData.weightKg),
         cargoType: formData.cargoType,
         budgetAmount: calculatedPrice,
@@ -51,6 +74,7 @@ export default function FreightOrderForm() {
       });
       alert('Order posted successfully!');
       setQuoteGenerated(false);
+      setQuoteDetails(null);
       
       // Navigate to Bids Exchange tab
       window.dispatchEvent(new Event('shipper:load_posted'));
@@ -206,16 +230,16 @@ export default function FreightOrderForm() {
           </div>
 
           <div className="bg-slate-800 rounded p-2 text-[11px] font-mono flex items-center justify-between mt-3 text-slate-300">
-             <div className="flex items-center gap-1.5">
-                <span>Corridor Base: {Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
+             <div className="flex items-center gap-1.5 flex-wrap">
+                <span>Corridor Base: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
                 <span className="text-slate-500">+</span>
-                <span>Fuel Index: {Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
+                <span>Fuel Index: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
                 <span className="text-slate-500">+</span>
-                <span>Dwell Surcharge: {Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
+                <span>Surcharges: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
              </div>
-             <div className="flex items-center gap-1.5">
+             <div className="flex items-center gap-1.5 ml-2">
                 <span className="text-slate-500">=</span>
-                <span className="text-emerald-400 font-bold">Total: {calculatedPrice.toLocaleString()} ETB</span>
+                <span className="text-emerald-400 font-bold whitespace-nowrap">Total: {calculatedPrice.toLocaleString()} ETB</span>
              </div>
           </div>
 
