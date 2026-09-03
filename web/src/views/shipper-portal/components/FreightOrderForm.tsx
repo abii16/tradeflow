@@ -203,7 +203,6 @@ export default function FreightOrderForm() {
           <div className="flex justify-between items-start">
             <div>
               <span className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 mb-1.5">Dynamic Pricing Engine (FR-02.3)</span>
-              <h3 className="text-sm font-bold text-slate-800">Calculated Corridor Benchmark</h3>
             </div>
             <div className="text-right">
               <span className="text-2xl font-black font-mono text-slate-800 tracking-tight">{calculatedPrice.toLocaleString()} ETB</span>
