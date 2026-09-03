@@ -88,14 +88,14 @@ export default function ContractRates() {
         <div>
           <h1 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
             <FileSignature size={24} className="text-slate-700" />
-            Contract Rates Management
+            {t('crm_title')}
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage long-term locked rates and monitor spot market divergence (FR-04).
+            {t('crm_subtitle')}
           </p>
         </div>
         <button onClick={handleNewContract} className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-slate-800 transition-colors">
-          + New Contract Rate
+          {t('crm_btn_new')}
         </button>
       </div>
 
@@ -104,18 +104,18 @@ export default function ContractRates() {
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
               <tr>
-                <th className="px-6 py-4 font-semibold">Contract ID</th>
-                <th className="px-6 py-4 font-semibold">Carrier & Route</th>
-                <th className="px-6 py-4 font-semibold">Locked Rate</th>
-                <th className="px-6 py-4 font-semibold">Current Spot</th>
-                <th className="px-6 py-4 font-semibold">Divergence</th>
-                <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold">Actions</th>
+                <th className="px-6 py-4 font-semibold">{t('crm_col_id')}</th>
+                <th className="px-6 py-4 font-semibold">{t('crm_col_carrier')}</th>
+                <th className="px-6 py-4 font-semibold">{t('crm_col_locked')}</th>
+                <th className="px-6 py-4 font-semibold">{t('crm_col_spot')}</th>
+                <th className="px-6 py-4 font-semibold">{t('crm_col_divergence')}</th>
+                <th className="px-6 py-4 font-semibold">{t('crm_col_status')}</th>
+                <th className="px-6 py-4 font-semibold">{t('crm_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {contracts.length === 0 && !loading && (
-                <tr><td colSpan={7} className="px-6 py-4 text-center text-slate-500">No contracts found.</td></tr>
+                <tr><td colSpan={7} className="px-6 py-4 text-center text-slate-500">{t('crm_no_contracts')}</td></tr>
               )}
               {contracts.map((contract) => {
                 const currentSpot = contract.currentSpotRate ? Number(contract.currentSpotRate) : Number(contract.lockedRate);
@@ -125,7 +125,7 @@ export default function ContractRates() {
                   <tr key={contract.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <span className="font-mono text-xs font-bold text-slate-900">{contract.id.split('-')[0]}...</span>
-                      <div className="text-[11px] text-slate-500">Valid to: {new Date(contract.validUntil).toLocaleDateString()}</div>
+                      <div className="text-[11px] text-slate-500">{t('crm_valid_to')} {new Date(contract.validUntil).toLocaleDateString()}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-semibold text-slate-900">{contract.companyName || contract.transporterName || 'Transporter'}</div>
@@ -154,17 +154,17 @@ export default function ContractRates() {
                           ? 'bg-amber-100 text-amber-700'
                           : 'bg-emerald-100 text-emerald-700'
                       }`}>
-                        {contract.status === 'REVIEW_REQUIRED' ? 'REVIEW REQUIRED' : Math.abs(divergence) > 15 ? 'FLAGGED' : contract.status}
+                        {contract.status === 'REVIEW_REQUIRED' ? t('crm_review_required') : Math.abs(divergence) > 15 ? t('crm_flagged') : t('crm_active')}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       {Math.abs(divergence) > 15 && contract.status === 'ACTIVE' ? (
                         <button onClick={() => handleRenegotiate(contract.id)} className="text-blue-600 hover:text-blue-800 text-xs font-bold">
-                          Renegotiate
+                          {t('crm_renegotiate')}
                         </button>
                       ) : (
                         <button className="text-slate-500 hover:text-slate-800 text-xs font-bold">
-                          View Details
+                          {t('crm_view_details')}
                         </button>
                       )}
                     </td>
@@ -180,14 +180,14 @@ export default function ContractRates() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="flex justify-between items-center p-4 border-b border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900">New Contract Rate</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{t('crm_modal_title')}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={submitNewContract} className="p-4 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Transporter ID (UUID)</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">{t('crm_transporter_id')}</label>
                 <input
                   type="text"
                   required
@@ -199,7 +199,7 @@ export default function ContractRates() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Origin</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">{t('origin')}</label>
                   <input
                     type="text"
                     required
@@ -209,7 +209,7 @@ export default function ContractRates() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Destination</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">{t('destination')}</label>
                   <input
                     type="text"
                     required
@@ -221,7 +221,7 @@ export default function ContractRates() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Locked Rate (ETB)</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">{t('crm_col_locked')} (ETB)</label>
                   <input
                     type="number"
                     required
@@ -231,7 +231,7 @@ export default function ContractRates() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Valid Until</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">{t('crm_valid_to').replace(':', '')}</label>
                   <input
                     type="date"
                     required
@@ -246,7 +246,7 @@ export default function ContractRates() {
                   type="submit"
                   className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 rounded-lg transition-colors text-sm"
                 >
-                  Create Contract Rate
+                  {t('crm_btn_submit')}
                 </button>
               </div>
             </form>
