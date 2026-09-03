@@ -44,6 +44,46 @@ export default function ActiveShipment() {
     return () => window.removeEventListener('shipper:load_posted', handleRefresh);
   }, []);
 
+  const handleDownloadWaybill = () => {
+    if (!shipment) return;
+    
+    const waybillText = `
+=========================================
+      SMART e-CMR WAYBILL (FR-04)
+=========================================
+Tracking Number: ${shipment.trackingNumber || 'N/A'}
+Status: ${shipment.status || 'IN_TRANSIT'}
+
+ORIGIN:
+${shipment.load?.origin?.address || 'Djibouti Port / Doraleh Container Terminal (DCT)'}
+
+DESTINATION:
+${shipment.load?.destination?.address || 'Modjo Dry Port & Terminal, Ethiopia'}
+
+CARGO DETAILS:
+Type: ${shipment.load?.cargoType || '30T Construction Rebar (Flatbed)'}
+Weight: ${shipment.load?.weightKg || '32000'} kg
+
+TRANSPORTER / DRIVER:
+Name: ${shipment.driver?.fullName || 'Unknown Driver'}
+
+---
+Digital Signature Verified
+TradeFlow MVP Platform
+=========================================
+    `;
+
+    const blob = new Blob([waybillText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `e-CMR_${shipment.trackingNumber || 'Waybill'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) return <div className="p-4 text-xs text-slate-500">Loading active shipment...</div>;
   if (!shipment) return <div className="p-4 bg-white border border-slate-200 rounded-md text-xs text-slate-500 text-center">No active shipments in transit.</div>;
 
@@ -142,9 +182,10 @@ export default function ActiveShipment() {
         <div className="pt-2 border-t border-slate-100">
           <button
             type="button"
+            onClick={handleDownloadWaybill}
             className="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 py-1.5 rounded text-xs font-medium transition-colors"
           >
-            Download Smart e-CMR Waybill (PDF)
+            Download Smart e-CMR Waybill (TXT)
           </button>
         </div>
       </div>
