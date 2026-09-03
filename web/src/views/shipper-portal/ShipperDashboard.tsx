@@ -10,9 +10,6 @@ export default function ShipperDashboard() {
           <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
             Shipper Portal
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Post loads, match transporters, and track active corridor shipments.
-          </p>
         </div>
       </div>
 

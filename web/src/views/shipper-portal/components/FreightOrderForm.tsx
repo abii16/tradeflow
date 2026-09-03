@@ -94,7 +94,6 @@ export default function FreightOrderForm() {
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div className="bg-slate-50/50 border-b border-slate-200 px-5 py-4">
           <h2 className="text-base font-bold text-slate-800">Post New Freight Order</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Submit cargo details for corridor matching (FR-02)</p>
         </div>
 
         <form onSubmit={handleRequestQuote} className="p-5 space-y-6">
