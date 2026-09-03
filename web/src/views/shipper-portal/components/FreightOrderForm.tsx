@@ -8,14 +8,14 @@ import { postLoad, calculateSpotRate } from '@/lib/apiClient';
 export default function FreightOrderForm() {
   const { t } = useTranslation();
   const [quoteGenerated, setQuoteGenerated] = useState(false);
-  const [leadTime, setLeadTime] = useState('24h');
+  const [leadTime, setLeadTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [formData, setFormData] = useState({
-    origin: 'Djibouti Port / Doraleh Container Terminal (DCT)',
-    cargoType: '30T Construction Rebar (Flatbed)',
-    destination: 'Modjo Dry Port & Terminal, Ethiopia',
-    weightKg: '32000'
+    origin: '',
+    cargoType: '',
+    destination: '',
+    weightKg: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -91,7 +91,7 @@ export default function FreightOrderForm() {
 
   return (
     <div className="space-y-5">
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/40 overflow-hidden">
         <div className="bg-slate-50/50 border-b border-slate-200 px-5 py-4">
           <h2 className="text-base font-bold text-slate-800">{t('post_new_freight_order')}</h2>
         </div>
@@ -102,17 +102,18 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-semibold text-slate-700">{t('origin')}</Label>
               <div className="relative">
                 <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
-                  <option value="Djibouti Port / Doraleh Container Terminal (DCT)">Djibouti Port / Doraleh Container Terminal (DCT)</option>
-                  <option value="Djibouti Free Trade Zone (DFTZ)">Djibouti Free Trade Zone (DFTZ)</option>
-                  <option value="Galafi Border Terminal (Inbound)">Galafi Border Terminal (Inbound)</option>
-                  <option value="Modjo Dry Port & Terminal (Outbound Export)">Modjo Dry Port & Terminal (Outbound Export)</option>
-                  <option value="Addis Ababa / Kality Customs Branch">Addis Ababa / Kality Customs Branch</option>
-                  <option value="Dire Dawa Dry Port">Dire Dawa Dry Port</option>
-                  <option value="Semera Logistics Hub">Semera Logistics Hub</option>
-                  <option value="Kombolcha Dry Port">Kombolcha Dry Port</option>
-                  <option value="Hawassa Industrial Park Terminal">Hawassa Industrial Park Terminal</option>
-                </select>
+                <input type="text" list="origin-list" name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" placeholder={t('origin')} />
+                <datalist id="origin-list">
+                  <option value="Djibouti Port / Doraleh Container Terminal (DCT)" />
+                  <option value="Djibouti Free Trade Zone (DFTZ)" />
+                  <option value="Galafi Border Terminal (Inbound)" />
+                  <option value="Modjo Dry Port & Terminal (Outbound Export)" />
+                  <option value="Addis Ababa / Kality Customs Branch" />
+                  <option value="Dire Dawa Dry Port" />
+                  <option value="Semera Logistics Hub" />
+                  <option value="Kombolcha Dry Port" />
+                  <option value="Hawassa Industrial Park Terminal" />
+                </datalist>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
@@ -121,16 +122,17 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-semibold text-slate-700">{t('cargo_details')}</Label>
               <div className="relative">
                 <Package size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
-                  <option value="30T Construction Rebar (Flatbed)">30T Construction Rebar (Flatbed)</option>
-                  <option value="20ft Standard Dry Container (FCL)">20ft Standard Dry Container (FCL)</option>
-                  <option value="40ft High Cube Container (FCL)">40ft High Cube Container (FCL)</option>
-                  <option value="40T Bulk Agricultural / Coffee Beans (High-Side)">40T Bulk Agricultural / Coffee Beans (High-Side)</option>
-                  <option value="Heavy Machinery / Industrial Equipment (Lowbed)">Heavy Machinery / Industrial Equipment (Lowbed)</option>
-                  <option value="Refrigerated Perishables / Pharma (Reefer)">Refrigerated Perishables / Pharma (Reefer)</option>
-                  <option value="Bulk Petroleum / Fuel Tanker">Bulk Petroleum / Fuel Tanker</option>
-                  <option value="General Palletized Merchandise (Box Truck)">General Palletized Merchandise (Box Truck)</option>
-                </select>
+                <input type="text" list="cargo-list" name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" placeholder={t('cargo_details')} />
+                <datalist id="cargo-list">
+                  <option value="30T Construction Rebar (Flatbed)" />
+                  <option value="20ft Standard Dry Container (FCL)" />
+                  <option value="40ft High Cube Container (FCL)" />
+                  <option value="40T Bulk Agricultural / Coffee Beans (High-Side)" />
+                  <option value="Heavy Machinery / Industrial Equipment (Lowbed)" />
+                  <option value="Refrigerated Perishables / Pharma (Reefer)" />
+                  <option value="Bulk Petroleum / Fuel Tanker" />
+                  <option value="General Palletized Merchandise (Box Truck)" />
+                </datalist>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
@@ -139,17 +141,18 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-semibold text-slate-700">{t('destination')}</Label>
               <div className="relative">
                 <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
-                  <option value="Modjo Dry Port & Terminal, Ethiopia">Modjo Dry Port & Terminal, Ethiopia</option>
-                  <option value="Addis Ababa / Kality Customs Clearance Center">Addis Ababa / Kality Customs Clearance Center</option>
-                  <option value="Djibouti Container Terminal (Export Exit)">Djibouti Container Terminal (Export Exit)</option>
-                  <option value="Dire Dawa Free Trade Zone">Dire Dawa Free Trade Zone</option>
-                  <option value="Semera Freight Hub">Semera Freight Hub</option>
-                  <option value="Kombolcha Dry Port">Kombolcha Dry Port</option>
-                  <option value="Hawassa Industrial Park">Hawassa Industrial Park</option>
-                  <option value="Mekelle Hub">Mekelle Hub</option>
-                  <option value="Adama Industrial Hub">Adama Industrial Hub</option>
-                </select>
+                <input type="text" list="destination-list" name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" placeholder={t('destination')} />
+                <datalist id="destination-list">
+                  <option value="Modjo Dry Port & Terminal, Ethiopia" />
+                  <option value="Addis Ababa / Kality Customs Clearance Center" />
+                  <option value="Djibouti Container Terminal (Export Exit)" />
+                  <option value="Dire Dawa Free Trade Zone" />
+                  <option value="Semera Freight Hub" />
+                  <option value="Kombolcha Dry Port" />
+                  <option value="Hawassa Industrial Park" />
+                  <option value="Mekelle Hub" />
+                  <option value="Adama Industrial Hub" />
+                </datalist>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
@@ -167,17 +170,21 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-semibold text-slate-700">{t('lead_time_window')}</Label>
               <div className="relative">
                 <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select 
+                <input 
+                  type="text"
+                  list="lead-time-list"
                   name="leadTime" 
                   value={leadTime} 
                   onChange={(e) => setLeadTime(e.target.value)} 
                   required 
-                  className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
-                >
+                  className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none"
+                  placeholder={t('lead_time_window')}
+                />
+                <datalist id="lead-time-list">
                   <option value="12h">{t('express_12h')}</option>
                   <option value="24h">{t('standard_24h')}</option>
                   <option value="48h">{t('flexible_48h')}</option>
-                </select>
+                </datalist>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
             </div>
@@ -200,7 +207,7 @@ export default function FreightOrderForm() {
       </div>
 
       {quoteGenerated && (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-lg shadow-slate-200/40 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex justify-between items-start">
             <div>
               <span className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 mb-1.5">{t('dynamic_pricing_engine')}</span>
@@ -229,7 +236,7 @@ export default function FreightOrderForm() {
             type="button"
             onClick={handleConfirmBroadcast}
             disabled={loading}
-            className="w-full bg-slate-900 border border-transparent hover:bg-slate-800 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? 'Posting...' : t('confirm_post_load')}
           </button>
