@@ -192,7 +192,7 @@ export default function FreightOrderForm() {
           type="submit"
           form="quote-form"
           disabled={loading}
-          className="bg-slate-200 text-slate-900 border border-transparent px-5 py-2.5 rounded-lg text-xs font-bold hover:border-black hover:bg-slate-300 transition-all active:scale-[0.98] disabled:opacity-50"
+          className="bg-slate-300 text-slate-900 border border-black px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-slate-400 transition-all active:scale-[0.98] disabled:opacity-50"
         >
           Generate Instant Spot Quote
         </button>
@@ -229,7 +229,7 @@ export default function FreightOrderForm() {
             type="button"
             onClick={handleConfirmBroadcast}
             disabled={loading}
-            className="w-full bg-slate-200 border border-transparent hover:border-black hover:bg-slate-300 text-slate-900 py-3 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 py-3 rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? 'Posting...' : 'Confirm & Post Load'}
           </button>
