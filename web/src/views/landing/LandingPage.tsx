@@ -11,7 +11,7 @@ interface LandingPageProps {
 export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   const [activePillar, setActivePillar] = useState<string | null>(null);
   const [activeNode, setActiveNode] = useState<number | null>(null);
-  const [activeComplianceModal, setActiveComplianceModal] = useState<{title: string, content: string} | null>(null);
+  const [activeComplianceModal, setActiveComplianceModal] = useState<{ title: string, content: string } | null>(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
@@ -66,120 +66,108 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {renderComplianceModal()}
       {showRegistration && <RegistrationFlow onClose={() => setShowRegistration(false)} />}
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
-      
+
       {/* =================================================================================
           SECTION 1: HERO SECTION
           ================================================================================= */}
       <section className="relative w-full h-screen flex flex-col justify-between overflow-hidden">
         {/* Video Background */}
         <div className="absolute inset-0 z-0 overflow-hidden">
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
             className="w-full h-full object-cover"
-          >
-            <source src="/video.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F17]/40 via-[#0B0F17]/20 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0B0F17]/50"></div>
+            src="/video.mp4"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/10 to-black/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50 pointer-events-none"></div>
         </div>
 
         {/* TOP NAVIGATION HEADER */}
-        <header className="fixed top-0 left-0 w-full h-16 border-b border-white/10 px-8 flex items-center justify-between z-[60] bg-black/40 backdrop-blur-md">
-          <div className="flex items-center">
-            <span className="font-bold text-[20px] text-white tracking-tight">TradeFlow<span className="text-cyan-400">.</span></span>
+        <header className="fixed top-0 left-0 w-full h-16 border-b border-white/30 px-8 flex items-center justify-between z-[60] bg-transparent backdrop-blur-sm transition-all duration-300">
+          <div 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-baseline select-none cursor-pointer hover:opacity-80 hover:scale-[1.02] active:scale-95 transition-all duration-300"
+          >
+            <span className="text-white font-serif italic font-extrabold text-4xl md:text-5xl tracking-tighter mr-0.5">T</span>
+            <span className="font-bold text-2xl text-white tracking-tight">radeFlow<span className="text-white">.</span></span>
           </div>
-          
-          <nav className="hidden md:flex items-center space-x-6">
-            <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">Corridor Telematics</a>
-            <a href="#ecosystem-roles" onClick={(e) => handleSmoothScroll(e, 'ecosystem-roles')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">Load Board</a>
-            <a href="#system-pillars" onClick={(e) => handleSmoothScroll(e, 'system-pillars')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">Dynamic Rates</a>
-            <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">Customs Sync</a>
-          </nav>
 
-          <div className="flex items-center gap-4">
-            {!isAuthenticated ? (
+          <div className="flex items-center gap-6 md:gap-10">
+            <nav className="hidden md:flex items-center space-x-2">
+              <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Corridor Telematics</a>
+              <a href="#ecosystem-roles" onClick={(e) => handleSmoothScroll(e, 'ecosystem-roles')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Load Board</a>
+              <a href="#system-pillars" onClick={(e) => handleSmoothScroll(e, 'system-pillars')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Dynamic Rates</a>
+              <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Customs Sync</a>
+            </nav>
+
+            <div className="hidden md:block w-px h-6 bg-white/20"></div>
+
+            <div className="flex items-center gap-6">
+              {!isAuthenticated ? (
               <>
-                <button 
+                <button
                   onClick={() => setShowLoginModal(true)}
-                  className="text-white text-sm font-semibold hover:text-slate-300 transition-colors"
+                  className="text-base font-bold text-slate-100 hover:text-white transition-colors"
                 >
                   Sign In
                 </button>
-                <button 
+                <button
                   onClick={() => setShowRegistration(true)}
-                  className="bg-white text-slate-950 px-5 py-2.5 rounded-lg text-sm font-bold shadow-lg hover:bg-slate-100 transition-colors"
+                  className="bg-white text-slate-950 px-6 py-2.5 rounded-lg text-base font-bold shadow-lg hover:bg-slate-100 hover:-translate-y-0.5 transition-all"
                 >
                   Launch Platform
                 </button>
               </>
             ) : (
               <>
-                <button 
+                <button
                   onClick={() => onSelectPortal('shipper')}
-                  className="bg-white text-slate-950 px-5 py-2.5 rounded-lg text-sm font-bold shadow-lg hover:bg-slate-100 transition-colors"
+                  className="bg-white text-slate-950 px-6 py-2.5 rounded-lg text-base font-bold shadow-lg hover:bg-slate-100 hover:-translate-y-0.5 transition-all"
                 >
                   Launch Platform
                 </button>
-                <button 
+                <button
                   onClick={logout}
-                  className="text-slate-300 hover:text-white px-3 py-2.5 text-sm font-semibold transition-colors"
+                  className="text-base font-bold text-slate-100 hover:text-white transition-colors"
                 >
                   Logout
                 </button>
               </>
             )}
           </div>
+          </div>
         </header>
 
         {/* FOREGROUND HERO METRIC CARD */}
-        <div className="relative z-30 pt-48 px-12 md:px-24 max-w-4xl mx-auto flex flex-col items-center text-center">
-          <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-full px-4 py-1.5 inline-flex items-center space-x-2 mb-6 backdrop-blur-sm">
-            <span className="text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest flex items-center gap-2">
-              [ <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div> NEURAL LOGISTICS ENGINE ACTIVE (V1.0) ]
-            </span>
-          </div>
+        <div className="relative z-30 pt-64 md:pt-72 px-12 md:px-24 max-w-4xl mx-auto flex flex-col items-center text-center w-full">
 
-          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 max-w-3xl mx-auto">
-            Autonomous Freight for East Africa.
+
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 max-w-4xl mx-auto text-white whitespace-nowrap">
+            Intelligent Freight.
           </h1>
-          <p className="text-lg text-slate-300 font-normal mb-10 max-w-2xl mx-auto leading-relaxed">
-            AI matching, live telematics, and digital customs for the 810km Djibouti–Modjo artery.
+          <p className="text-lg md:text-xl text-slate-200 font-medium mb-10 max-w-3xl mx-auto leading-relaxed">
+          AI matching, live tracking, and digital customs.<span className="inline-block animate-pulse ml-1 text-white">|</span>
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
-            <button 
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 w-full max-w-2xl mx-auto">
+            <button
               onClick={() => onSelectPortal('shipper')}
-              className="bg-white text-slate-950 font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-slate-100 transition-colors flex items-center gap-2"
+              className="bg-white text-slate-950 font-bold text-sm tracking-wider uppercase px-8 py-3.5 rounded-full hover:bg-slate-200 transition-all w-full sm:w-auto text-center"
             >
-              Get Started <span className="font-bold">→</span>
+              Get Started
             </button>
-            <button 
+            <button
               onClick={() => onSelectPortal('finance')}
-              className="border border-white/20 text-white hover:bg-white/10 px-6 py-3 rounded-lg backdrop-blur-md transition-colors"
+              className="bg-black/20 backdrop-blur-md border border-white/30 text-white font-bold text-sm tracking-wider uppercase px-8 py-3.5 rounded-full hover:bg-white/10 transition-all w-full sm:w-auto text-center"
             >
               Calculate Rate
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-8">
-            <div className="flex flex-col gap-1 items-center">
-              <span className="text-white font-mono text-sm font-bold">[ 810 KM ]</span>
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Principal Corridor Artery</span>
-            </div>
-            <div className="w-px h-8 bg-white/10"></div>
-            <div className="flex flex-col gap-1 items-center">
-              <span className="text-white font-mono text-sm font-bold">[ ETB 356K ]</span>
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Avg Spot Rate Index</span>
-            </div>
-            <div className="w-px h-8 bg-white/10"></div>
-            <div className="flex flex-col gap-1 items-center">
-              <span className="text-white font-mono text-sm font-bold">[ 98.28% ]</span>
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">PyTorch ETA Precision</span>
-            </div>
-          </div>
+
         </div>
 
         {/* Explore Down Arrow */}
@@ -320,20 +308,19 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
           <div className="relative mb-32">
             <div className="absolute top-6 left-[10%] right-[10%] h-1 bg-slate-800 rounded-full hidden md:block z-0"></div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
               {[0, 1, 2, 3, 4].map((index) => (
-                <div 
+                <div
                   key={index}
                   className="flex flex-col items-center text-center cursor-pointer group relative"
                   onMouseEnter={() => setActiveNode(index)}
                   onClick={() => setActiveNode(index)}
                 >
-                  <div className={`w-12 h-12 border-4 border-slate-900 rounded-full flex items-center justify-center mb-4 transition-all duration-300 relative z-10 shadow-xl ${
-                    activeNode === index 
-                      ? 'bg-cyan-500 text-white ring-4 ring-cyan-500/50 shadow-cyan-500/50' 
+                  <div className={`w-12 h-12 border-4 border-slate-900 rounded-full flex items-center justify-center mb-4 transition-all duration-300 relative z-10 shadow-xl ${activeNode === index
+                      ? 'bg-cyan-500 text-white ring-4 ring-cyan-500/50 shadow-cyan-500/50'
                       : 'bg-slate-800 text-slate-400 group-hover:bg-cyan-900 group-hover:text-cyan-400'
-                  }`}>
+                    }`}>
                     {index === 0 && <MapPin size={20} />}
                     {index === 1 && <Shield size={20} />}
                     {index === 2 && <Monitor size={20} />}
@@ -457,8 +444,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <div>
                 <h4 className="text-sm font-bold text-white mb-4">Compliance</h4>
                 <ul className="space-y-3 text-sm text-slate-400">
-                  <li><button onClick={() => setActiveComplianceModal({ title: 'Escrow Mediation Rules', content: 'SRS FR-10: TeleBirr Escrow Rules\n\n1. Funds are locked into a smart-contract multi-sig wallet upon load assignment.\n2. Payment is automatically released only when e-PoD (Proof of Delivery) is validated by the receiving terminal.\n3. Dispute mediation relies on GPS timestamps and immutable scale weighbridge logs.'})} className="hover:text-blue-400 transition-colors">Escrow Mediation Rules</button></li>
-                  <li><button onClick={() => setActiveComplianceModal({ title: '7-Year Audit Ledger', content: 'SRS Section 6: Audit & Data Retention\n\nTo comply with Ethiopian federal regulatory standards, all manifest data, inspection logs, and financial transactions are cryptographically hashed and retained in immutable storage for a minimum of 7 calendar years.'})} className="hover:text-blue-400 transition-colors">7-Year Audit Ledger</button></li>
+                  <li><button onClick={() => setActiveComplianceModal({ title: 'Escrow Mediation Rules', content: 'SRS FR-10: TeleBirr Escrow Rules\n\n1. Funds are locked into a smart-contract multi-sig wallet upon load assignment.\n2. Payment is automatically released only when e-PoD (Proof of Delivery) is validated by the receiving terminal.\n3. Dispute mediation relies on GPS timestamps and immutable scale weighbridge logs.' })} className="hover:text-blue-400 transition-colors">Escrow Mediation Rules</button></li>
+                  <li><button onClick={() => setActiveComplianceModal({ title: '7-Year Audit Ledger', content: 'SRS Section 6: Audit & Data Retention\n\nTo comply with Ethiopian federal regulatory standards, all manifest data, inspection logs, and financial transactions are cryptographically hashed and retained in immutable storage for a minimum of 7 calendar years.' })} className="hover:text-blue-400 transition-colors">7-Year Audit Ledger</button></li>
                   <li><button className="hover:text-blue-400 transition-colors">Data Retention Policy</button></li>
                 </ul>
               </div>
@@ -493,7 +480,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         </div>
       </footer>
 
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes marquee {
           0% { transform: translateX(0%); }
           100% { transform: translateX(-50%); }
