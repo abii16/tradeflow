@@ -19,7 +19,7 @@ export default function CustomsInspections() {
         let trigger = doc.rejectionReason || 'Random Physical Check';
         let color = 'rose';
         let bay = 'Bay 01 (Security / E-Seals)';
-        
+
         const r = trigger.toLowerCase();
         if (r.includes('weight') || r.includes('heavy') || r.includes('axle')) {
           color = 'amber';
@@ -102,8 +102,8 @@ export default function CustomsInspections() {
             </button>
             <div className="relative">
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder={t('search_container_id')}
                 className="pl-8 pr-3 py-1.5 text-sm border border-slate-200 rounded bg-white shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64"
               />
@@ -145,7 +145,7 @@ export default function CustomsInspections() {
                     <span className="text-sm font-medium text-slate-600">{row.officer}</span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-right truncate">
-                    <button 
+                    <button
                       onClick={() => handleOpenModal(row)}
                       className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded transition-all shadow-sm bg-white text-blue-700 border border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                     >
@@ -157,7 +157,7 @@ export default function CustomsInspections() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Bottom Bay Capacity Status Strip */}
         <div className="border-t border-slate-100 p-4 bg-slate-50 shrink-0 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
@@ -194,7 +194,7 @@ export default function CustomsInspections() {
       {isModalOpen && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-xl" onClick={() => setIsModalOpen(false)}></div>
-          
+
           <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50">
               <div className="flex items-center gap-3">
@@ -210,14 +210,14 @@ export default function CustomsInspections() {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto space-y-6">
               {/* Weight Recalibration */}
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
                 <label className="block text-sm font-bold text-slate-700 mb-2">{t('reweighed_scale_value')}</label>
                 <div className="flex items-center gap-3">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value="24,550 kg"
                     readOnly
                     className="w-1/2 border border-slate-300 rounded-md p-2.5 text-sm focus:outline-none font-mono font-bold bg-white text-slate-900 shadow-inner"
@@ -232,22 +232,22 @@ export default function CustomsInspections() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-3">{t('contraband_security_check')}</label>
                 <div className="space-y-3">
-                  <button 
-                    onClick={() => setToggles({...toggles, visual: !toggles.visual})}
+                  <button
+                    onClick={() => setToggles({ ...toggles, visual: !toggles.visual })}
                     className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.visual ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}
                   >
                     <span className="font-medium text-sm">{t('visual_inspection')}</span>
                     {toggles.visual ? <span className="font-bold text-xs bg-emerald-100 px-2 py-1 rounded">{t('passed')}</span> : <span className="font-bold text-xs bg-slate-100 px-2 py-1 rounded">{t('pending')}</span>}
                   </button>
-                  <button 
-                    onClick={() => setToggles({...toggles, tamper: !toggles.tamper})}
+                  <button
+                    onClick={() => setToggles({ ...toggles, tamper: !toggles.tamper })}
                     className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.tamper ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}
                   >
                     <span className="font-medium text-sm">{t('cargo_tamper_inspection')}</span>
                     {toggles.tamper ? <span className="font-bold text-xs bg-emerald-100 px-2 py-1 rounded">{t('passed')}</span> : <span className="font-bold text-xs bg-slate-100 px-2 py-1 rounded">{t('pending')}</span>}
                   </button>
-                  <button 
-                    onClick={() => setToggles({...toggles, eSeal: !toggles.eSeal})}
+                  <button
+                    onClick={() => setToggles({ ...toggles, eSeal: !toggles.eSeal })}
                     className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.eSeal ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-600'}`}
                   >
                     <span className="font-medium text-sm">{t('new_eseal_applied')}</span>
@@ -256,16 +256,16 @@ export default function CustomsInspections() {
                 </div>
               </div>
             </div>
-            
+
             <div className="p-5 border-t border-slate-100 bg-slate-50 flex flex-col gap-3 shrink-0">
-              <button 
+              <button
                 onClick={handleClearInspection}
                 className="w-full py-3 bg-[#059669] hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold rounded-lg shadow-sm transition-all text-sm border border-emerald-800/20 flex justify-center items-center gap-2"
               >
                 <CheckCircle2 size={18} />
                 ✓ {t('issue_cleared_pass')}
               </button>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="w-full py-3 bg-[#DC2626] hover:bg-rose-700 active:scale-[0.99] text-white font-semibold rounded-lg shadow-sm transition-all text-sm border border-rose-800/20 flex justify-center items-center gap-2"
               >
