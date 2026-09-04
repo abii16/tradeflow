@@ -161,7 +161,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             </button>
             <button
               onClick={() => onSelectPortal('finance')}
-              className="bg-black/20 backdrop-blur-md border border-white/30 text-white font-bold text-sm tracking-wider uppercase px-8 py-3.5 rounded-full hover:bg-white hover:text-black transition-all w-full sm:w-auto text-center"
+              className="bg-black/20 backdrop-blur-md border border-white/30 text-white font-bold text-sm tracking-wider uppercase px-8 py-3.5 rounded-full hover:border-black hover:bg-black/40 transition-all w-full sm:w-auto text-center"
             >
               Calculate Rate
             </button>
