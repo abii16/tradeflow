@@ -37,10 +37,10 @@ export default function CustomsPortal({ onSwitchPortal }: CustomsPortalProps) {
     <div className="flex h-screen bg-slate-900 overflow-hidden font-inter">
       {/* Sidebar Navigation */}
       <CustomsSidebar activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
-      
+
       {/* Main Layout Area */}
       <div className="flex-1 flex flex-col relative min-w-0">
-        
+
         {/* Global Identity & Notification Bar */}
         <UniversalTopBar />
 
