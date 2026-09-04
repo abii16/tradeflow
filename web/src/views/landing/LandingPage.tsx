@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin, Building2, Truck, Briefcase, X, ExternalLink, Activity } from 'lucide-react';
+import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin, Building2, Truck, Briefcase, X, ExternalLink, Activity, Check } from 'lucide-react';
 import RegistrationFlow from '@/views/auth/RegistrationFlow';
 import LoginModal from '@/views/auth/LoginModal';
 import { useAuth } from '@/hooks/useAuth';
+import LiveTelematicsMap from '@/components/LiveTelematicsMap';
 
 interface LandingPageProps {
   onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
@@ -14,7 +15,66 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   const [activeComplianceModal, setActiveComplianceModal] = useState<{ title: string, content: string } | null>(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  
+  // Live Data Simulation State
+  const [liveSpotIndex, setLiveSpotIndex] = useState(356000);
+  const [liveBids, setLiveBids] = useState([
+    { id: 103, score: 98.4 },
+    { id: 104, score: 97.2 },
+    { id: 105, score: 94.8 }
+  ]);
+  const [etaMins, setEtaMins] = useState(45);
+  
+  // Calculator State
+  const [calcFrom, setCalcFrom] = useState('');
+  const [calcTo, setCalcTo] = useState('');
+  const [calcWeight, setCalcWeight] = useState('');
+  const [calcState, setCalcState] = useState<'idle' | 'loading' | 'result'>('idle');
+  const [calcRate, setCalcRate] = useState<number | null>(null);
+
+  const handleCalculate = () => {
+    if (!calcFrom || !calcTo || !calcWeight) return;
+    setCalcState('loading');
+    setTimeout(() => {
+      // Mock calculation logic
+      const base = 45000;
+      const weightMultiplier = parseFloat(calcWeight) * 1200;
+      setCalcRate(base + weightMultiplier + 2500);
+      setCalcState('result');
+    }, 1500);
+  };
+
   const { isAuthenticated, user, logout } = useAuth();
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    
+    const interval = setInterval(() => {
+      // Randomize spot index slightly (-500 to +500)
+      setLiveSpotIndex(prev => prev + Math.floor(Math.random() * 1000) - 500);
+      
+      // Randomize bids slightly
+      setLiveBids(prev => prev.map(bid => ({
+        ...bid,
+        score: Math.min(99.9, Math.max(85.0, bid.score + (Math.random() * 0.4 - 0.2)))
+      })));
+
+      // Decrease ETA occasionally
+      if (Math.random() > 0.7) {
+        setEtaMins(prev => Math.max(0, prev - 1));
+      }
+    }, 2500);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(interval);
+    };
+  }, []);
+
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
@@ -86,7 +146,11 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         </div>
 
         {/* TOP NAVIGATION HEADER */}
-        <header className="fixed top-0 left-0 w-full h-16 border-b border-white/30 px-8 flex items-center justify-between z-[60] bg-transparent backdrop-blur-sm transition-all duration-300">
+        <header className={`fixed top-0 left-0 w-full h-16 border-b px-8 flex items-center justify-between z-[60] backdrop-blur-md transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-black/95 border-white/10 shadow-2xl' 
+            : 'bg-transparent border-white/30'
+        }`}>
           <div 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-baseline select-none cursor-pointer hover:opacity-80 hover:scale-[1.02] active:scale-95 transition-all duration-300"
@@ -97,10 +161,10 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
           <div className="flex items-center gap-6 md:gap-10">
             <nav className="hidden md:flex items-center space-x-2">
-              <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Corridor Telematics</a>
-              <a href="#ecosystem-roles" onClick={(e) => handleSmoothScroll(e, 'ecosystem-roles')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Load Board</a>
-              <a href="#system-pillars" onClick={(e) => handleSmoothScroll(e, 'system-pillars')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Dynamic Rates</a>
-              <a href="#corridor-artery" onClick={(e) => handleSmoothScroll(e, 'corridor-artery')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Customs Sync</a>
+              <a href="#corridor-telematics" onClick={(e) => handleSmoothScroll(e, 'corridor-telematics')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Corridor Telematics</a>
+              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Load Board</a>
+              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Dynamic Rates</a>
+              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-slate-100 hover:text-white border border-transparent hover:border-white/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] rounded-full px-4 py-2 hover:-translate-y-0.5 transition-all duration-300">Customs Sync</a>
             </nav>
 
             <div className="hidden md:block w-px h-6 bg-white/20"></div>
@@ -180,173 +244,159 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       </section>
 
       {/* =================================================================================
-          SECTION 2: 4 CORE SYSTEM PILLARS
+          TRUSTED BY
           ================================================================================= */}
-      <section id="system-pillars" className="w-full bg-[#F8FAFC] py-24 relative z-40 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-8 md:px-12">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-              Engineering Autonomous Logistics for Landlocked Ethiopia
-            </h2>
-            <p className="text-slate-500 font-medium text-lg">
-              Built for shippers, fleet operators, freight forwarders, and regulatory authorities.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div onClick={() => setActivePillar(activePillar === 'ai' ? null : 'ai')} className={`cursor-pointer bg-white p-6 rounded-2xl shadow-sm border ${activePillar === 'ai' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-[#E2E8F0]'} hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex flex-col h-full`}>
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Zap size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">AI-Powered Freight Matching</h3>
-              <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
-                Sub-second multi-objective ranking algorithm evaluating cost, carrier reliability, fuel rating, and proximity.
-              </p>
-              <div className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md w-fit">
-                &lt; 1.0s Matching Latency
-              </div>
+      <section className="w-full bg-white border-t border-black/10 py-12 relative z-40">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-xs font-bold text-black/40 uppercase tracking-[0.2em] mb-8">Trusted by East Africa's Leading Institutions</p>
+          <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-80 grayscale hover:grayscale-0 transition-all duration-500">
+            <div className="flex items-center gap-2 font-serif italic font-extrabold text-2xl text-black">
+              <ShieldCheck size={28} />
+              ECC
             </div>
-
-            <div onClick={() => setActivePillar(activePillar === 'telematics' ? null : 'telematics')} className={`cursor-pointer bg-white p-6 rounded-2xl shadow-sm border ${activePillar === 'telematics' ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-[#E2E8F0]'} hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex flex-col h-full`}>
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Navigation size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">Corridor Telematics & Deep ETA</h3>
-              <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
-                Gradient-boosted ETA models calculating live arrival windows with security-aware rerouting.
-              </p>
-              <div className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-md w-fit">
-                98.28% ETA Precision
-              </div>
+            <div className="flex items-center gap-2 font-bold text-xl text-black">
+              <Activity size={24} />
+              telebirr
             </div>
-
-            <div onClick={() => setActivePillar(activePillar === 'pricing' ? null : 'pricing')} className={`cursor-pointer bg-white p-6 rounded-2xl shadow-sm border ${activePillar === 'pricing' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-[#E2E8F0]'} hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex flex-col h-full`}>
-              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <TrendingUp size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">Dynamic Pricing & Fuel Governance</h3>
-              <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
-                Real-time spot and contract rate calculation accounting for live diesel indices and dwell surcharges.
-              </p>
-              <div className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-md w-fit">
-                Automated Rate Bounds
-              </div>
+            <div className="flex items-center gap-2 font-extrabold tracking-tighter text-2xl text-black">
+              <Building2 size={24} />
+              ESLSE
             </div>
-
-            <div onClick={() => setActivePillar(activePillar === 'customs' ? null : 'customs')} className={`cursor-pointer bg-white p-6 rounded-2xl shadow-sm border ${activePillar === 'customs' ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-[#E2E8F0]'} hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex flex-col h-full`}>
-              <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Shield size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">Digital Customs Vault & Escrow</h3>
-              <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
-                Immutable multi-document consistency checking with multi-sig milestone payment releases (e-PoD).
-              </p>
-              <div className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1.5 rounded-md w-fit">
-                Zero Paperwork Transit
-              </div>
+            <div className="flex items-center gap-2 font-bold text-xl text-black">
+              <MapPin size={24} />
+              DPCA
             </div>
           </div>
-
-          {/* Mini-Explainer Drawer */}
-          {activePillar && (
-            <div className="bg-slate-900 rounded-2xl p-6 md:p-8 shadow-xl text-white animate-in slide-in-from-top-4 fade-in duration-300">
-              <div className="flex justify-between items-start mb-4">
-                <h4 className="text-xl font-bold flex items-center gap-2">
-                  <Activity size={20} className="text-emerald-400" />
-                  System Specification Detail
-                </h4>
-                <button onClick={() => setActivePillar(null)} className="text-slate-400 hover:text-white">
-                  <X size={20} />
-                </button>
-              </div>
-              {activePillar === 'ai' && (
-                <div className="font-mono text-sm text-slate-300 space-y-2">
-                  <p>SRS FR-02.2 & 8.1 - Carrier Ranking Matrix:</p>
-                  <p className="text-blue-400">Score = (w1 × BaseCost) + (w2 × ETA_Variance) + (w3 × SafetyRating) - Proximity_Bonus</p>
-                  <p>Resolves top 5 carriers in under 1.0s utilizing distributed Redis caching.</p>
-                </div>
-              )}
-              {activePillar === 'telematics' && (
-                <div className="font-mono text-sm text-slate-300 space-y-2">
-                  <p>SRS FR-03.2 & FR-08 - Gradient-Boosted ETA & Security:</p>
-                  <p className="text-indigo-400">ETA = BaseDistance / AvgSpeed + Σ(Dwell_nodes) + TrafficFactor(time) + Security_Delay</p>
-                  <p>Live geofencing automatically triggers RISK-04 detours if conflict density &gt; threshold.</p>
-                </div>
-              )}
-              {activePillar === 'pricing' && (
-                <div className="font-mono text-sm text-slate-300 space-y-2">
-                  <p>SRS FR-04 - Dynamic Pricing Equation:</p>
-                  <p className="text-emerald-400">SpotRate = BaseLine + (DieselIndex_Delta × 0.4) + Equipment_Surcharge</p>
-                  <p>Bounds enforced strictly between -15% and +45% of historical moving averages.</p>
-                </div>
-              )}
-              {activePillar === 'customs' && (
-                <div className="font-mono text-sm text-slate-300 space-y-2">
-                  <p>SRS FR-06 & FR-10 - Customs Document Hashing & Escrow:</p>
-                  <p className="text-amber-400">SHA-256( CI || PL || BL || COO ) == Ledger_Hash</p>
-                  <p>Escrow release (TeleBirr API) requires e-PoD boolean = TRUE &amp; Inspector Override = FALSE.</p>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </section>
 
       {/* =================================================================================
-          SECTION 3: THE 810KM ARTERY INTERACTIVE TIMELINE
+          SECTION 1: CORRIDOR TELEMATICS
           ================================================================================= */}
-      <section id="corridor-artery" className="w-full bg-slate-900 py-24 relative z-40 border-t border-white/10 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-8 md:px-12">
-          <div className="text-center max-w-3xl mx-auto mb-24">
-            <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">
-              The Principal Trade Artery
+      <section id="corridor-telematics" className="w-full bg-slate-50 text-black pt-16 pb-32 relative z-40 border-t border-black/10">
+        <div className="w-full px-6 lg:px-12 xl:px-16 flex flex-col xl:flex-row items-center gap-12 xl:gap-16">
+          <div className="flex-1">
+
+            <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 pr-4 lg:whitespace-nowrap">
+              Corridor Telematics & Deep ETA
             </h2>
-            <p className="text-slate-400 font-medium text-lg">
-              Djibouti Port to Modjo Dry Port (810km)
+            <p className="text-lg font-medium text-black/70 mb-8 leading-relaxed max-w-lg">
+              GPS position updates ingested at least every 5 minutes while in transit. ETA model recalculates predicted arrival using live position, historical corridor transit-time data, weather, and known congestion/conflict alerts.
             </p>
+            <ul className="space-y-4 font-bold text-sm">
+              <li className="flex items-center gap-3"><Navigation size={20} className="text-black" /> Gradient-Boosted ETA Models</li>
+              <li className="flex items-center gap-3"><Shield size={20} className="text-black" /> Security-Aware Rerouting (FR-08)</li>
+              <li className="flex items-center gap-3"><MapPin size={20} className="text-black" /> 810km Djibouti–Modjo Route Tracking</li>
+            </ul>
           </div>
+          <div className="flex-1 w-full h-[400px] lg:h-[450px] rounded-3xl relative shadow-2xl p-1 bg-black/5">
+            <LiveTelematicsMap />
+          </div>
+        </div>
+      </section>
 
-          <div className="relative mb-32">
-            <div className="absolute top-6 left-[10%] right-[10%] h-1 bg-slate-800 rounded-full hidden md:block z-0"></div>
+      {/* =================================================================================
+          SECTION 2: AI LOAD BOARD
+          ================================================================================= */}
+      <section id="load-board" className="w-full bg-black text-white py-32 relative z-40">
+        <div className="max-w-7xl mx-auto px-8 md:px-12 flex flex-col md:flex-row-reverse items-center gap-16">
+          <div className="flex-1">
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
-              {[0, 1, 2, 3, 4].map((index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center text-center cursor-pointer group relative"
-                  onMouseEnter={() => setActiveNode(index)}
-                  onClick={() => setActiveNode(index)}
-                >
-                  <div className={`w-12 h-12 border-4 border-slate-900 rounded-full flex items-center justify-center mb-4 transition-all duration-300 relative z-10 shadow-xl ${activeNode === index
-                      ? 'bg-cyan-500 text-white ring-4 ring-cyan-500/50 shadow-cyan-500/50'
-                      : 'bg-slate-800 text-slate-400 group-hover:bg-cyan-900 group-hover:text-cyan-400'
-                    }`}>
-                    {index === 0 && <MapPin size={20} />}
-                    {index === 1 && <Shield size={20} />}
-                    {index === 2 && <Monitor size={20} />}
-                    {index === 3 && <Navigation size={20} />}
-                    {index === 4 && <Package size={20} />}
-                  </div>
-                  <h4 className={`text-sm font-bold mb-2 transition-colors ${activeNode === index ? 'text-cyan-400' : 'text-white'}`}>
-                    {nodeTelemetry[index].name}
-                  </h4>
-                  <div className="text-[10px] font-mono text-slate-500 mb-2 uppercase tracking-wider">
-                    {index === 0 ? 'Djibouti (0 KM)' : index === 1 ? 'Ethiopia (240 KM)' : index === 2 ? 'Intersection (380 KM)' : index === 3 ? 'Waypoint (620 KM)' : 'Terminal (810 KM)'}
-                  </div>
-
-                  {activeNode === index && (
-                    <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 w-48 bg-slate-800 border border-slate-700 rounded-lg p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200">
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-t border-l border-slate-700 rotate-45"></div>
-                      <div className="relative z-10 flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Live Telemetry</span>
-                      </div>
-                      <p className="text-[11px] font-mono text-cyan-400 text-left">
-                        {nodeTelemetry[index].metrics}
-                      </p>
-                    </div>
-                  )}
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
+              AI-Powered <br/> Freight Matching
+            </h2>
+            <p className="text-lg font-medium text-white/70 mb-8 leading-relaxed max-w-lg">
+              Two-sided marketplace onboarding with verified transporter identity. Matching engine ranks eligible transporters by a weighted score of cost, historical reliability, fuel efficiency, and proximity.
+            </p>
+            <ul className="space-y-4 font-bold text-sm">
+              <li className="flex items-center gap-3"><Check size={20} className="text-white" /> &lt; 1 Second Response Time</li>
+              <li className="flex items-center gap-3"><Check size={20} className="text-white" /> Multi-Objective Scoring Function</li>
+              <li className="flex items-center gap-3"><Check size={20} className="text-white" /> Strict Fleet Verification (FR-01)</li>
+            </ul>
+          </div>
+          <div className="flex-1 w-full relative">
+            <div className="absolute inset-0 bg-white/5 rounded-3xl blur-2xl transform scale-105"></div>
+            <div className="w-full bg-slate-50 text-black rounded-3xl p-8 shadow-2xl relative z-10 border border-black/10">
+              <div className="flex justify-between items-center mb-8 border-b border-black/10 pb-4">
+                <div className="font-bold text-lg">Load Board</div>
+                <div className="flex items-center gap-2 text-xs font-bold border border-emerald-500 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">
+                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                  Live Bids
                 </div>
+              </div>
+              <div className="space-y-4">
+                {liveBids.map((bid, i) => (
+                  <div key={bid.id} className={`flex items-center justify-between p-4 border rounded-xl transition-all duration-300 ${i === 0 ? 'border-emerald-500/30 bg-emerald-50/50' : 'border-black/10'}`}>
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${i === 0 ? 'bg-emerald-600 text-white shadow-lg' : 'bg-black text-white'}`}>
+                        T{i + 1}
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm">Transporter #{bid.id}</div>
+                        <div className="text-xs text-black/60 font-medium">Score: <span className={i === 0 ? 'text-emerald-600 font-bold' : ''}>{bid.score.toFixed(1)}%</span> Match</div>
+                      </div>
+                    </div>
+                    <button className={`px-4 py-2 text-xs font-bold rounded-full transition-colors ${i === 0 ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'border border-black text-black hover:bg-black hover:text-white'}`}>
+                      {i === 0 ? 'Accept Match' : 'View'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =================================================================================
+          IMPACT METRICS
+          ================================================================================= */}
+      <section className="w-full bg-black text-white py-24 relative z-40 border-y border-white/10">
+        <div className="max-w-7xl mx-auto px-8 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-white/20">
+          <div className="flex flex-col items-center pt-8 md:pt-0">
+            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2">12.4K<span className="text-emerald-500">+</span></div>
+            <div className="text-sm font-bold text-white/50 uppercase tracking-widest">Active Transporters</div>
+          </div>
+          <div className="flex flex-col items-center pt-8 md:pt-0">
+            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2">3.2M<span className="text-emerald-500">+</span></div>
+            <div className="text-sm font-bold text-white/50 uppercase tracking-widest">Tons Delivered</div>
+          </div>
+          <div className="flex flex-col items-center pt-8 md:pt-0">
+            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2">99.9<span className="text-emerald-500">%</span></div>
+            <div className="text-sm font-bold text-white/50 uppercase tracking-widest">Platform Uptime</div>
+          </div>
+        </div>
+      </section>
+
+      {/* =================================================================================
+          SECTION 3: DYNAMIC RATES
+          ================================================================================= */}
+      <section id="dynamic-rates" className="w-full bg-slate-50 text-black py-32 relative z-40 border-t border-black/10">
+        <div className="max-w-7xl mx-auto px-8 md:px-12 flex flex-col md:flex-row items-center gap-16">
+          <div className="flex-1">
+
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
+              Dynamic Pricing <br/> & Settlement
+            </h2>
+            <p className="text-lg font-medium text-black/70 mb-8 leading-relaxed max-w-lg">
+              Spot rates computed from current demand/capacity balance, fuel-cost index, and corridor congestion. Integrated with Mobile-Money platforms (TeleBirr) for automated payout scheduling and reconciliation.
+            </p>
+            <ul className="space-y-4 font-bold text-sm">
+              <li className="flex items-center gap-3"><Check size={20} className="text-black" /> Real-time Spot & Contract Rates</li>
+              <li className="flex items-center gap-3"><Check size={20} className="text-black" /> Fuel Consumption Analytics (FR-07)</li>
+              <li className="flex items-center gap-3"><Check size={20} className="text-black" /> Mobile-Money Escrow Engine</li>
+            </ul>
+          </div>
+          <div className="flex-1 w-full bg-black rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-end h-80 border border-black">
+            <div className="absolute top-8 left-8 text-white z-10">
+              <div className="flex items-center gap-2 mb-2">
+                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                 <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Live Spot Index</div>
+              </div>
+              <div className="text-3xl font-extrabold text-white">ETB {(liveSpotIndex / 1000).toFixed(1)}K</div>
+            </div>
+            <div className="flex items-end gap-2 h-40 relative z-10 opacity-80 mt-auto">
+              {[40, 55, 45, 70, 60, 85, 90, 75, 100].map((h, i) => (
+                <div key={i} className="flex-1 bg-white hover:bg-white/80 transition-colors cursor-pointer rounded-t-sm" style={{ height: `${h}%` }}></div>
               ))}
             </div>
           </div>
@@ -354,60 +404,142 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       </section>
 
       {/* =================================================================================
-          SECTION 4: ROLE-BASED ECOSYSTEM ACCESS
+          SECTION 4: CUSTOMS SYNC
           ================================================================================= */}
-      <section id="ecosystem-roles" className="w-full bg-[#F8FAFC] py-24 relative z-40 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-8 md:px-12">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-              Role-Based Ecosystem Access
+      <section id="customs-sync" className="w-full bg-black text-white py-32 relative z-40">
+        <div className="max-w-7xl mx-auto px-8 md:px-12 flex flex-col md:flex-row-reverse items-center gap-16">
+          <div className="flex-1">
+
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
+              Digital Customs <br/> Documentation
             </h2>
-            <p className="text-slate-500 font-medium text-lg">
-              Unified operating picture across the logistics value chain.
+            <p className="text-lg font-medium text-white/70 mb-8 leading-relaxed max-w-lg">
+              Support upload and structured capture of key clearance documents (commercial invoice, packing list, bill of lading). Automated validation checks for completeness and consistency before submission.
             </p>
+            <ul className="space-y-4 font-bold text-sm">
+              <li className="flex items-center gap-3"><Check size={20} className="text-white" /> Immutable Document Vault</li>
+              <li className="flex items-center gap-3"><Check size={20} className="text-white" /> Status Tracking & Validation</li>
+              <li className="flex items-center gap-3"><Check size={20} className="text-white" /> 7-Year Audit Ledger Compliance</li>
+            </ul>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E2E8F0] hover:shadow-lg transition-all group overflow-hidden relative flex flex-col h-full">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-sky-50 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-              <div className="w-14 h-14 bg-sky-100 text-sky-600 rounded-xl flex items-center justify-center mb-6 relative z-10">
-                <Building2 size={28} />
+          <div className="flex-1 w-full relative">
+            <div className="absolute inset-0 bg-white/5 rounded-3xl blur-2xl transform scale-105"></div>
+            <div className="w-full bg-slate-50 text-black rounded-3xl p-8 shadow-2xl relative z-10 border border-white/10">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center">
+                  <ShieldCheck size={24} />
+                </div>
+                <div>
+                  <div className="font-bold text-lg">Clearance Vault</div>
+                  <div className="text-xs font-bold text-black/60 uppercase tracking-wider">Status: Cleared</div>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4 relative z-10">For Cargo Owners</h3>
-              <p className="text-sm text-slate-600 leading-relaxed relative z-10 mb-8 flex-1">
-                Instant Spot Quotes, Verified Carriers, and Live Milestones from Doraleh to your Warehouse.
-              </p>
-              <button onClick={() => onSelectPortal('shipper')} className="relative z-10 w-full py-3 px-4 border-2 border-sky-600 text-sky-600 font-bold text-sm rounded-lg hover:bg-sky-50 transition-colors flex justify-center items-center gap-2">
-                Post Cargo & Get Spot Rate <ExternalLink size={16} />
+              <div className="space-y-3">
+                {['Commercial Invoice', 'Packing List', 'Certificate of Origin', 'Bill of Lading'].map((doc, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 border border-black/10 rounded-xl bg-black/5">
+                    <span className="text-sm font-bold">{doc}</span>
+                    <Check size={16} className="text-black" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =================================================================================
+          INTERACTIVE FREIGHT CALCULATOR (CTA)
+          ================================================================================= */}
+      <section className="w-full bg-slate-50 text-black py-32 relative z-40 border-t border-black/10">
+        <div className="max-w-5xl mx-auto px-6 md:px-12">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Instant AI Spot Rate</h2>
+            <p className="text-lg text-black/60 font-medium">Get a predictive, data-driven freight quote instantly.</p>
+          </div>
+          
+          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-2xl border border-black/10 flex flex-col md:flex-row gap-12">
+            <div className="flex-1 space-y-6">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-black/50 mb-2">Origin (Port)</label>
+                <select 
+                  value={calcFrom} 
+                  onChange={(e) => setCalcFrom(e.target.value)}
+                  className="w-full bg-slate-50 border border-black/10 rounded-xl px-4 py-3 font-bold text-black focus:outline-none focus:border-black transition-colors"
+                >
+                  <option value="" disabled>Select Origin</option>
+                  <option value="djibouti">Djibouti Port (SGTD)</option>
+                  <option value="berbera">Berbera Port</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-black/50 mb-2">Destination (Dry Port)</label>
+                <select 
+                  value={calcTo} 
+                  onChange={(e) => setCalcTo(e.target.value)}
+                  className="w-full bg-slate-50 border border-black/10 rounded-xl px-4 py-3 font-bold text-black focus:outline-none focus:border-black transition-colors"
+                >
+                  <option value="" disabled>Select Destination</option>
+                  <option value="modjo">Modjo Dry Port</option>
+                  <option value="semera">Semera Dry Port</option>
+                  <option value="kality">Addis Ababa (Kality)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-black/50 mb-2">Cargo Weight (Tons)</label>
+                <input 
+                  type="number" 
+                  value={calcWeight}
+                  onChange={(e) => setCalcWeight(e.target.value)}
+                  placeholder="e.g. 40"
+                  className="w-full bg-slate-50 border border-black/10 rounded-xl px-4 py-3 font-bold text-black focus:outline-none focus:border-black transition-colors"
+                />
+              </div>
+              <button 
+                onClick={handleCalculate}
+                disabled={!calcFrom || !calcTo || !calcWeight || calcState === 'loading'}
+                className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {calcState === 'loading' ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Calculating AI Rate...
+                  </span>
+                ) : 'Calculate AI Spot Rate'}
               </button>
             </div>
-
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E2E8F0] hover:shadow-lg transition-all group overflow-hidden relative flex flex-col h-full">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-6 relative z-10">
-                <Truck size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4 relative z-10">For Fleet Owners & Carriers</h3>
-              <p className="text-sm text-slate-600 leading-relaxed relative z-10 mb-8 flex-1">
-                Maximize Truck Utilization, Eliminate Empty Backhauls, and Receive Guaranteed Instant TeleBirr Payouts.
-              </p>
-              <button onClick={() => onSelectPortal('finance')} className="relative z-10 w-full py-3 px-4 border-2 border-emerald-600 text-emerald-600 font-bold text-sm rounded-lg hover:bg-emerald-50 transition-colors flex justify-center items-center gap-2">
-                Access Carrier Freight Board <ExternalLink size={16} />
-              </button>
-            </div>
-
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E2E8F0] hover:shadow-lg transition-all group overflow-hidden relative flex flex-col h-full">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-              <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-6 relative z-10">
-                <Briefcase size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4 relative z-10">For Freight Forwarders</h3>
-              <p className="text-sm text-slate-600 leading-relaxed relative z-10 mb-8 flex-1">
-                Manage Multi-Shipper Manifests, Consolidate Customs Document Vaults, and Run Competitive Auctions.
-              </p>
-              <button onClick={() => onSelectPortal('forwarder')} className="relative z-10 w-full py-3 px-4 bg-slate-900 text-white font-bold text-sm rounded-lg hover:bg-slate-800 transition-colors flex justify-center items-center gap-2">
-                Launch Multi-Shipper Vault <ExternalLink size={16} />
-              </button>
+            
+            <div className="flex-1 bg-black text-white rounded-2xl p-8 flex flex-col justify-center items-center text-center relative overflow-hidden shadow-inner border border-black">
+              <div className="absolute inset-0 bg-[url('/telematics_map.jpg')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
+              {calcState === 'result' && calcRate ? (
+                <div className="relative z-10 w-full animate-in fade-in zoom-in duration-500">
+                  <div className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4 flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                    Live Quote Generated
+                  </div>
+                  <div className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">
+                    ETB {calcRate.toLocaleString()}
+                  </div>
+                  <div className="w-full bg-white/5 rounded-xl p-5 text-left border border-white/10">
+                    <div className="flex justify-between text-sm mb-3">
+                      <span className="text-white/60">Base Route</span>
+                      <span className="font-bold">ETB 45,000</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-3">
+                      <span className="text-white/60">Weight Surcharge</span>
+                      <span className="font-bold">+ ETB {(calcRate - 45000 - 2500).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm pt-3 border-t border-white/20">
+                      <span className="text-white/60">Risk Premium</span>
+                      <span className="font-bold">ETB 2,500</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative z-10 flex flex-col items-center">
+                  <Zap size={48} className="text-white/20 mb-4" />
+                  <p className="font-medium text-white/50 max-w-[200px]">Fill in your freight details to see dynamic AI pricing.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -416,18 +548,18 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           SECTION 5: ENTERPRISE STATS & COMPLIANCE FOOTER
           ================================================================================= */}
-      <footer className="w-full bg-[#0B0F17] border-t border-white/10 pt-16 pb-8 relative z-40">
+      <footer className="w-full bg-black border-t border-white/10 pt-16 pb-8 relative z-40">
         <div className="max-w-7xl mx-auto px-8 md:px-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div>
               <h3 className="text-xl font-bold text-white mb-4">TradeFlow Logistics Engine</h3>
-              <p className="text-sm text-slate-400 leading-relaxed mb-6">
+              <p className="text-sm text-white/50 leading-relaxed mb-6">
                 Aligned with Ethiopian Customs Commission &amp; Ethiopian Shipping and Logistics Services Enterprise specifications.
               </p>
               <div className="flex space-x-4">
-                <div className="flex items-center gap-2 text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded border border-emerald-400/20">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                  System Status: OPERATIONAL (99.9% SLA)
+                <div className="flex items-center gap-2 text-[10px] font-mono text-emerald-400 bg-emerald-900/30 px-3 py-1.5 rounded border border-emerald-500/30">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                  System Status: OPERATIONAL (LIVE)
                 </div>
               </div>
             </div>
@@ -435,18 +567,18 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <div className="grid grid-cols-2 gap-8">
               <div>
                 <h4 className="text-sm font-bold text-white mb-4">Platform</h4>
-                <ul className="space-y-3 text-sm text-slate-400">
-                  <li><button className="hover:text-blue-400 transition-colors">Platform Specs</button></li>
-                  <li><button onClick={(e) => handleSmoothScroll(e as any, 'corridor-artery')} className="hover:text-blue-400 transition-colors">Corridor Telematics</button></li>
-                  <li><button onClick={() => setActiveComplianceModal({ title: 'Pricing Formulas', content: 'SRS FR-04: Dynamic Pricing Equation\n\nSpotRate = BaseLine + (DieselIndex_Delta × 0.4) + Equipment_Surcharge\n\nAll pricing bounds are algorithmically enforced strictly between -15% and +45% of the 30-day historical moving average for the respective corridor segment.' })} className="hover:text-blue-400 transition-colors">Pricing Formulas</button></li>
+                <ul className="space-y-3 text-sm text-white/50">
+                  <li><button className="hover:text-white transition-colors">Platform Specs</button></li>
+                  <li><button onClick={(e) => handleSmoothScroll(e as any, 'corridor-telematics')} className="hover:text-white transition-colors">Corridor Telematics</button></li>
+                  <li><button onClick={() => setActiveComplianceModal({ title: 'Pricing Formulas', content: 'SRS FR-04: Dynamic Pricing Equation\n\nSpotRate = BaseLine + (DieselIndex_Delta × 0.4) + Equipment_Surcharge\n\nAll pricing bounds are algorithmically enforced strictly between -15% and +45% of the 30-day historical moving average for the respective corridor segment.' })} className="hover:text-white transition-colors">Pricing Formulas</button></li>
                 </ul>
               </div>
               <div>
                 <h4 className="text-sm font-bold text-white mb-4">Compliance</h4>
-                <ul className="space-y-3 text-sm text-slate-400">
-                  <li><button onClick={() => setActiveComplianceModal({ title: 'Escrow Mediation Rules', content: 'SRS FR-10: TeleBirr Escrow Rules\n\n1. Funds are locked into a smart-contract multi-sig wallet upon load assignment.\n2. Payment is automatically released only when e-PoD (Proof of Delivery) is validated by the receiving terminal.\n3. Dispute mediation relies on GPS timestamps and immutable scale weighbridge logs.' })} className="hover:text-blue-400 transition-colors">Escrow Mediation Rules</button></li>
-                  <li><button onClick={() => setActiveComplianceModal({ title: '7-Year Audit Ledger', content: 'SRS Section 6: Audit & Data Retention\n\nTo comply with Ethiopian federal regulatory standards, all manifest data, inspection logs, and financial transactions are cryptographically hashed and retained in immutable storage for a minimum of 7 calendar years.' })} className="hover:text-blue-400 transition-colors">7-Year Audit Ledger</button></li>
-                  <li><button className="hover:text-blue-400 transition-colors">Data Retention Policy</button></li>
+                <ul className="space-y-3 text-sm text-white/50">
+                  <li><button onClick={() => setActiveComplianceModal({ title: 'Escrow Mediation Rules', content: 'SRS FR-10: TeleBirr Escrow Rules\n\n1. Funds are locked into a smart-contract multi-sig wallet upon load assignment.\n2. Payment is automatically released only when e-PoD (Proof of Delivery) is validated by the receiving terminal.\n3. Dispute mediation relies on GPS timestamps and immutable scale weighbridge logs.' })} className="hover:text-white transition-colors">Escrow Mediation Rules</button></li>
+                  <li><button onClick={() => setActiveComplianceModal({ title: '7-Year Audit Ledger', content: 'SRS Section 6: Audit & Data Retention\n\nTo comply with Ethiopian federal regulatory standards, all manifest data, inspection logs, and financial transactions are cryptographically hashed and retained in immutable storage for a minimum of 7 calendar years.' })} className="hover:text-white transition-colors">7-Year Audit Ledger</button></li>
+                  <li><button className="hover:text-white transition-colors">Data Retention Policy</button></li>
                 </ul>
               </div>
             </div>
@@ -454,27 +586,27 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <div>
               <h4 className="text-sm font-bold text-white mb-4">Verified Security</h4>
               <div className="space-y-4">
-                <div className="flex items-center gap-3 text-sm text-slate-400">
-                  <ShieldCheck size={18} className="text-blue-400" />
+                <div className="flex items-center gap-3 text-sm text-white/50">
+                  <ShieldCheck size={18} className="text-white" />
                   <span>AES-256 Encrypted Ledger</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-400">
-                  <MapPin size={18} className="text-blue-400" />
+                <div className="flex items-center gap-3 text-sm text-white/50">
+                  <MapPin size={18} className="text-white" />
                   <span>Regional East Africa Data Residency</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-400">
-                  <FileText size={18} className="text-blue-400" />
+                <div className="flex items-center gap-3 text-sm text-white/50">
+                  <FileText size={18} className="text-white" />
                   <span>TeleBirr API Integrated Escrow</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between text-[11px] font-mono text-slate-500">
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between text-[11px] font-mono text-white/40">
             <p>© 2026 TradeFlow Logistics Platform. Developed for East Africa's Principal Corridor.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="hover:text-slate-300 transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-slate-300 transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             </div>
           </div>
         </div>
