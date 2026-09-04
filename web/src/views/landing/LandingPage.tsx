@@ -105,35 +105,35 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
             <div className="hidden md:block w-px h-6 bg-white/20"></div>
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               {!isAuthenticated ? (
               <>
                 <button
                   onClick={() => setShowLoginModal(true)}
-                  className="text-base font-bold text-slate-100 hover:text-white transition-colors"
+                  className="text-sm font-bold text-slate-200 hover:text-white px-4 py-2 rounded-full hover:bg-white/10 transition-all duration-300"
                 >
                   Sign In
                 </button>
                 <button
                   onClick={() => setShowRegistration(true)}
-                  className="bg-white text-slate-950 px-6 py-2.5 rounded-lg text-base font-bold shadow-lg hover:bg-slate-100 hover:-translate-y-0.5 transition-all"
+                  className="bg-white text-black text-sm font-bold px-6 py-2.5 rounded-full shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:bg-slate-200 hover:-translate-y-0.5 transition-all duration-300"
                 >
-                  Launch Platform
+                  Register
                 </button>
               </>
             ) : (
               <>
                 <button
-                  onClick={() => onSelectPortal('shipper')}
-                  className="bg-white text-slate-950 px-6 py-2.5 rounded-lg text-base font-bold shadow-lg hover:bg-slate-100 hover:-translate-y-0.5 transition-all"
-                >
-                  Launch Platform
-                </button>
-                <button
                   onClick={logout}
-                  className="text-base font-bold text-slate-100 hover:text-white transition-colors"
+                  className="text-sm font-bold text-slate-200 hover:text-white px-4 py-2 rounded-full hover:bg-white/10 transition-all duration-300"
                 >
                   Logout
+                </button>
+                <button
+                  onClick={() => onSelectPortal('shipper')}
+                  className="bg-white text-black text-sm font-bold px-6 py-2.5 rounded-full shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:bg-slate-200 hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  Launch Platform
                 </button>
               </>
             )}
@@ -154,14 +154,14 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 w-full max-w-2xl mx-auto">
             <button
-              onClick={() => onSelectPortal('shipper')}
+              onClick={() => isAuthenticated ? onSelectPortal('shipper') : setShowRegistration(true)}
               className="bg-white text-slate-950 font-bold text-sm tracking-wider uppercase px-8 py-3.5 rounded-full hover:bg-slate-200 transition-all w-full sm:w-auto text-center"
             >
               Get Started
             </button>
             <button
               onClick={() => onSelectPortal('finance')}
-              className="bg-black/20 backdrop-blur-md border border-white/30 text-white font-bold text-sm tracking-wider uppercase px-8 py-3.5 rounded-full hover:bg-white/10 transition-all w-full sm:w-auto text-center"
+              className="bg-black/20 backdrop-blur-md border border-white/30 text-white font-bold text-sm tracking-wider uppercase px-8 py-3.5 rounded-full hover:bg-white hover:text-black transition-all w-full sm:w-auto text-center"
             >
               Calculate Rate
             </button>
