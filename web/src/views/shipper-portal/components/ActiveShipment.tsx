@@ -46,7 +46,7 @@ export default function ActiveShipment() {
 
   const handleDownloadWaybill = () => {
     if (!shipment) return;
-    
+
     const waybillText = `
 =========================================
       SMART e-CMR WAYBILL (FR-04)
@@ -164,11 +164,10 @@ TradeFlow MVP Platform
             ].map((m, idx) => (
               <div key={idx} className="relative flex items-center justify-between text-xs">
                 <div
-                  className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-white transition-all ${
-                    m.state === 'done' || m.state === 'active'
+                  className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-white transition-all ${m.state === 'done' || m.state === 'active'
                       ? 'border-emerald-500 text-emerald-600'
                       : 'border-slate-200 text-slate-300'
-                  } ${m.state === 'active' ? 'shadow-[0_0_12px_rgba(16,185,129,0.4)] ring-4 ring-emerald-500/20' : ''}`}
+                    } ${m.state === 'active' ? 'shadow-[0_0_12px_rgba(16,185,129,0.4)] ring-4 ring-emerald-500/20' : ''}`}
                 >
                   {m.state === 'done' || m.state === 'active' ? (
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
