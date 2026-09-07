@@ -90,7 +90,7 @@ export default function MultiShipperWorkspace() {
 
           <div className="flex-1 overflow-auto">
             <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 bg-white/95 backdrop-blur z-10 shadow-sm">
+              <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                 <tr className="border-b border-slate-200">
                   <th className="py-3 px-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">MBL / HBL</th>
                   <th className="py-3 px-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Importer Entity</th>
@@ -99,7 +99,7 @@ export default function MultiShipperWorkspace() {
                   <th className="py-3 px-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
                 {manifests.map((row, idx) => (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors group">
                     <td className="py-3.5 px-4">
