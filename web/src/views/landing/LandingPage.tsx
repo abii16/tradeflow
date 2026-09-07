@@ -203,10 +203,10 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
           <div className="flex items-center gap-6 md:gap-10">
             <nav className="hidden md:flex items-center space-x-1">
-              <a href="#platform-overview" onClick={(e) => handleSmoothScroll(e, 'platform-overview')} className="text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 rounded-full px-4 py-2 transition-all">Platform Overview</a>
-              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 rounded-full px-4 py-2 transition-all">Load Board</a>
-              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 rounded-full px-4 py-2 transition-all">Dynamic Rates</a>
-              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-slate-300 hover:text-white hover:bg-white/10 rounded-full px-4 py-2 transition-all">Customs Sync</a>
+              <a href="#platform-overview" onClick={(e) => handleSmoothScroll(e, 'platform-overview')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">Platform Overview</a>
+              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">Load Board</a>
+              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">Dynamic Rates</a>
+              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">Customs Sync</a>
             </nav>
 
             <div className="hidden md:block w-px h-6 bg-[#262626]"></div>
@@ -253,9 +253,9 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 max-w-4xl mx-auto text-[#EDEDED] whitespace-nowrap">
-            Intelligent Freight.
+            Intelligent <span className="text-[#3ECF8E]">Freight</span>.
           </h1>
-          <p className="text-sm leading-relaxed text-[#8F8F8F] font-medium mb-10 max-w-3xl mx-auto">
+          <p className="text-base md:text-lg leading-relaxed text-[#EDEDED] font-bold mb-10 max-w-3xl mx-auto">
           AI matching, live tracking, and digital customs.<span className="inline-block animate-pulse ml-1 text-[#3ECF8E]">|</span>
           </p>
 
