@@ -56,8 +56,8 @@ const LiveTelematicsMap = () => {
   const truckIcon = L.divIcon({
     className: 'bg-transparent',
     html: `<div class="relative w-8 h-8 flex items-center justify-center">
-             <div class="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-60"></div>
-             <div class="relative w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,1)] border-2 border-white"></div>
+             <div class="absolute inset-0 bg-[#3ECF8E] rounded-full animate-ping opacity-60"></div>
+             <div class="relative w-4 h-4 bg-[#3ECF8E] rounded-full shadow-[0_0_15px_rgba(62,207,142,1)] border-2 border-[#141414]"></div>
            </div>`,
     iconSize: [32, 32],
     iconAnchor: [16, 16]
@@ -82,7 +82,8 @@ const LiveTelematicsMap = () => {
         {/* Route Line */}
         <Polyline
           positions={routeCoords}
-          pathOptions={{ color: '#475569', weight: 3, opacity: 0.8, dashArray: '5, 10' }}
+          pathOptions={{ color: '#3ECF8E', weight: 2.5, dashArray: '4, 4' }}
+          className="filter drop-shadow-[0_0_10px_rgba(62,207,142,0.9)] animate-pulse"
         />
 
         {/* Moving Truck Marker */}
@@ -91,12 +92,12 @@ const LiveTelematicsMap = () => {
         {/* Start/End Points */}
         <Marker position={routeCoords[0]} icon={L.divIcon({
           className: 'bg-transparent',
-          html: '<div class="w-3 h-3 bg-white rounded-full"></div>',
+          html: '<div class="relative w-3 h-3"><div class="absolute inset-0 bg-[#3ECF8E] rounded-full animate-ping opacity-75"></div><div class="relative w-3 h-3 bg-[#3ECF8E] rounded-full"></div></div>',
           iconSize: [12, 12], iconAnchor: [6, 6]
         })} />
         <Marker position={routeCoords[routeCoords.length - 1]} icon={L.divIcon({
           className: 'bg-transparent',
-          html: '<div class="w-3 h-3 bg-white rounded-full"></div>',
+          html: '<div class="relative w-3 h-3"><div class="absolute inset-0 bg-[#3ECF8E] rounded-full animate-ping opacity-75"></div><div class="relative w-3 h-3 bg-[#3ECF8E] rounded-full"></div></div>',
           iconSize: [12, 12], iconAnchor: [6, 6]
         })} />
       </MapContainer>

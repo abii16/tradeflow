@@ -197,7 +197,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-baseline select-none cursor-pointer hover:opacity-80 hover:scale-[1.02] active:scale-95 transition-all duration-300"
           >
-            <span className="font-bold text-2xl text-white tracking-tight">Trade<span className="text-[#3ECF8E]">Flow</span></span>
+            <span className="text-4xl font-serif text-white tracking-tighter pr-0.5">T</span>
+            <span className="text-2xl font-black tracking-tight text-white">rade<span className="text-[#3ECF8E]">Flow</span></span>
           </div>
 
           <div className="flex items-center gap-6 md:gap-10">
@@ -261,13 +262,13 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 w-full max-w-2xl mx-auto">
             <button
               onClick={() => isAuthenticated ? onSelectPortal('shipper') : setShowRegistration(true)}
-              className="bg-[#EDEDED] hover:bg-white text-black font-bold px-6 py-3 rounded-xl transition w-full sm:w-auto text-center"
+              className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs md:text-sm px-6 py-3.5 rounded-xl shadow-[0_0_25px_rgba(62,207,142,0.3)] transition duration-200 transform hover:-translate-y-0.5 w-full sm:w-auto text-center"
             >
               GET STARTED
             </button>
             <button
               onClick={() => onSelectPortal('finance')}
-              className="bg-[#141414]/80 border border-[#262626] hover:border-[#3ECF8E]/50 text-[#EDEDED] font-semibold px-6 py-3 rounded-xl backdrop-blur-md transition w-full sm:w-auto text-center"
+              className="bg-black/50 hover:bg-black/75 border border-white/20 hover:border-[#3ECF8E]/50 text-white font-semibold text-xs md:text-sm px-6 py-3.5 rounded-xl backdrop-blur-md transition duration-200 w-full sm:w-auto text-center"
             >
               CALCULATE RATE
             </button>
@@ -300,8 +301,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               { src: '/EAC.png', alt: 'EAC', title: 'Ethiopian Airlines Cargo', height: 'h-6' },
               { src: '/DPCA.jpg', alt: 'DPCA', title: 'Djibouti Ports and Corridor Authority', height: 'h-10' }
             ].map((logo, idx) => (
-              <div key={idx} className="h-12 px-6 rounded-xl bg-[#141414] border border-[#262626] flex items-center justify-center opacity-75 hover:opacity-100 transition group">
-                <img src={logo.src} alt={logo.alt} className={`${logo.height} w-auto object-contain opacity-85 group-hover:opacity-100 transition`} title={logo.title} />
+              <div key={idx} className="h-12 px-5 rounded-xl bg-[#141414]/90 border border-[#262626] flex items-center justify-center transition-all duration-300 hover:border-[#3ECF8E]/40 hover:bg-[#1A1A1A] group">
+                <img src={logo.src} alt={logo.alt} className="h-7 w-auto max-w-[90px] object-contain mix-blend-screen opacity-80 hover:opacity-100 transition" title={logo.title} />
               </div>
             ))}
           </div>
