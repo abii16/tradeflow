@@ -32,9 +32,9 @@ const LiveTelematicsMap = () => {
 
     const interval = setInterval(() => {
       frame = (frame + 1) % totalFrames;
-      
+
       const t = frame / totalFrames; // 0 to 1 over the whole route
-      
+
       // Find which segment we're in
       const numSegments = routeCoords.length - 1;
       const scaledT = t * numSegments;
@@ -43,8 +43,8 @@ const LiveTelematicsMap = () => {
 
       if (segmentIndex < numSegments) {
         setCurrentPosition(interpolatePoint(
-          routeCoords[segmentIndex], 
-          routeCoords[segmentIndex + 1], 
+          routeCoords[segmentIndex],
+          routeCoords[segmentIndex + 1],
           segmentT
         ));
       }
@@ -56,8 +56,8 @@ const LiveTelematicsMap = () => {
   const truckIcon = L.divIcon({
     className: 'bg-transparent',
     html: `<div class="relative w-8 h-8 flex items-center justify-center">
-             <div class="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-60"></div>
-             <div class="relative w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,1)] border-2 border-white"></div>
+             <div class="absolute inset-0 bg-[#3ECF8E] rounded-full animate-ping opacity-60"></div>
+             <div class="relative w-4 h-4 bg-[#3ECF8E] rounded-full shadow-[0_0_15px_rgba(62,207,142,1)] border-2 border-[#141414]"></div>
            </div>`,
     iconSize: [32, 32],
     iconAnchor: [16, 16]
@@ -65,9 +65,9 @@ const LiveTelematicsMap = () => {
 
   return (
     <div className="w-full h-full relative z-10 rounded-3xl overflow-hidden isolate bg-[#0f0f0f]">
-      <MapContainer 
-        center={[10.3, 41.2]} 
-        zoom={6.5} 
+      <MapContainer
+        center={[10.3, 41.2]}
+        zoom={6.5}
         style={{ height: '100%', width: '100%', zIndex: 1 }}
         zoomControl={true}
         scrollWheelZoom={true}
@@ -78,29 +78,30 @@ const LiveTelematicsMap = () => {
           attribution='&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
           className="[filter:brightness(85%)_contrast(110%)]"
         />
-        
+
         {/* Route Line */}
-        <Polyline 
-          positions={routeCoords} 
-          pathOptions={{ color: '#475569', weight: 3, opacity: 0.8, dashArray: '5, 10' }} 
+        <Polyline
+          positions={routeCoords}
+          pathOptions={{ color: '#3ECF8E', weight: 2.5, dashArray: '4, 4' }}
+          className="filter drop-shadow-[0_0_10px_rgba(62,207,142,0.9)] animate-pulse"
         />
-        
+
         {/* Moving Truck Marker */}
         <Marker position={currentPosition} icon={truckIcon} />
 
         {/* Start/End Points */}
         <Marker position={routeCoords[0]} icon={L.divIcon({
-            className: 'bg-transparent',
-            html: '<div class="w-3 h-3 bg-white rounded-full"></div>',
-            iconSize: [12, 12], iconAnchor: [6, 6]
+          className: 'bg-transparent',
+          html: '<div class="relative w-3 h-3"><div class="absolute inset-0 bg-[#3ECF8E] rounded-full animate-ping opacity-75"></div><div class="relative w-3 h-3 bg-[#3ECF8E] rounded-full"></div></div>',
+          iconSize: [12, 12], iconAnchor: [6, 6]
         })} />
         <Marker position={routeCoords[routeCoords.length - 1]} icon={L.divIcon({
-            className: 'bg-transparent',
-            html: '<div class="w-3 h-3 bg-white rounded-full"></div>',
-            iconSize: [12, 12], iconAnchor: [6, 6]
+          className: 'bg-transparent',
+          html: '<div class="relative w-3 h-3"><div class="absolute inset-0 bg-[#3ECF8E] rounded-full animate-ping opacity-75"></div><div class="relative w-3 h-3 bg-[#3ECF8E] rounded-full"></div></div>',
+          iconSize: [12, 12], iconAnchor: [6, 6]
         })} />
       </MapContainer>
-      
+
       {/* Decorative Overlay for premium feel */}
       <div className="absolute inset-0 pointer-events-none rounded-3xl border border-white/10 z-20 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)]"></div>
     </div>
