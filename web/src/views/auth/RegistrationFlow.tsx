@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Truck, Briefcase, ChevronRight, CheckCircle2, UploadCloud, X, Loader2, Eye, EyeOff, ShieldCheck, MapPin } from 'lucide-react';
+import { Building2, Truck, Briefcase, ChevronRight, CheckCircle2, UploadCloud, X, Loader2, Eye, EyeOff, ShieldCheck, UserCog } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface RegistrationFlowProps {
@@ -66,52 +66,14 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
     { id: 'transporter', title: 'Transporter', desc: 'I own a truck or fleet', icon: Truck },
     { id: 'forwarder', title: 'Freight Forwarder', desc: 'I act as an intermediary', icon: Building2 },
     { id: 'customs_officer', title: 'Customs Officer', desc: 'ECC Official Only', icon: ShieldCheck },
+    { id: 'admin', title: 'Administrator', desc: 'System Admin', icon: UserCog },
   ];
 
   const renderStep1 = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-      <div className="mb-8 text-center">
-        <h3 className="text-xl font-bold text-[#EDEDED] tracking-tight mb-2">Select your primary role</h3>
-        <p className="text-sm text-[#8F8F8F]">Choose how you will interact with the platform.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {roleOptions.map(r => (
-          <div 
-            key={r.id} 
-            onClick={() => setRole(r.id as any)}
-            className={`cursor-pointer border rounded-2xl p-4 flex flex-col items-center text-center transition-all duration-200 ${
-              role === r.id 
-                ? 'bg-[#3ECF8E]/10 border-[#3ECF8E] shadow-[0_0_20px_rgba(62,207,142,0.15)] transform scale-[1.02]' 
-                : 'bg-[#1C1C1C] border-[#2E2E2E] hover:border-[#8F8F8F] hover:bg-[#232323]'
-            }`}
-          >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${role === r.id ? 'bg-[#3ECF8E] text-black' : 'bg-[#2E2E2E] text-[#8F8F8F]'}`}>
-              <r.icon size={20} />
-            </div>
-            <div className="font-bold text-sm text-[#EDEDED] mb-1">{r.title}</div>
-            <div className="text-[11px] font-mono tracking-wide text-[#8F8F8F]">{r.desc}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="pt-6 flex justify-end border-t border-[#2E2E2E]">
-        <button 
-          disabled={!role}
-          onClick={handleNext} 
-          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-        >
-          Continue <ChevronRight size={16} />
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderStep2 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <div className="mb-6">
         <h3 className="text-xl font-bold text-[#EDEDED] tracking-tight mb-1">Account Details</h3>
-        <p className="text-sm text-[#8F8F8F]">Create your administrator profile.</p>
+        <p className="text-sm text-[#8F8F8F]">Create your profile to get started.</p>
       </div>
 
       {/* Google Button */}
@@ -166,14 +128,54 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
         </div>
       </div>
 
-      <div className="pt-6 flex justify-between border-t border-[#2E2E2E]">
-        <button onClick={handleBack} className="text-[#8F8F8F] hover:text-[#EDEDED] px-4 py-2 text-sm font-bold rounded-lg transition-colors">Back</button>
+      <div className="pt-6 flex justify-end border-t border-[#2E2E2E]">
         <button 
           onClick={handleNext} 
           disabled={!formData.fullName || !formData.email || !formData.password}
           className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
         >
           Next Step <ChevronRight size={16} />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="mb-8 text-center">
+        <h3 className="text-xl font-bold text-[#EDEDED] tracking-tight mb-2">Select your primary role</h3>
+        <p className="text-sm text-[#8F8F8F]">Choose how you will interact with the platform.</p>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {roleOptions.map(r => (
+          <div 
+            key={r.id} 
+            onClick={() => setRole(r.id as any)}
+            className={`cursor-pointer border rounded-2xl p-4 flex flex-col items-center text-center transition-all duration-200 ${
+              role === r.id 
+                ? 'bg-[#3ECF8E]/10 border-[#3ECF8E] shadow-[0_0_20px_rgba(62,207,142,0.15)] transform scale-[1.02]' 
+                : 'bg-[#1C1C1C] border-[#2E2E2E] hover:border-[#8F8F8F] hover:bg-[#232323]'
+            }`}
+          >
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${role === r.id ? 'bg-[#3ECF8E] text-black' : 'bg-[#2E2E2E] text-[#8F8F8F]'}`}>
+              <r.icon size={20} />
+            </div>
+            <div className="font-bold text-sm text-[#EDEDED] mb-1">{r.title}</div>
+            <div className="text-[11px] font-mono tracking-wide text-[#8F8F8F]">{r.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="pt-6 flex justify-between border-t border-[#2E2E2E]">
+        <button onClick={handleBack} className="text-[#8F8F8F] hover:text-[#EDEDED] px-4 py-2 text-sm font-bold rounded-lg transition-colors">Back</button>
+        <button 
+          disabled={!role}
+          onClick={role === 'admin' || role === 'customs_officer' ? handleSubmit : handleNext} 
+          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
+        >
+          {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : (role === 'admin' || role === 'customs_officer' ? 'Submit Registration' : 'Continue')}
+          {!isSubmitting && <ChevronRight size={16} />}
         </button>
       </div>
     </div>
@@ -289,7 +291,7 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
       </div>
       <h3 className="text-2xl font-bold text-[#EDEDED] tracking-tight mb-3">Registration Submitted!</h3>
       <p className="text-sm text-[#8F8F8F] max-w-sm mx-auto mb-8 leading-relaxed">
-        Your account has been created successfully. You are now logged in and can access the platform, but some features may require Verification Queue administrator approval (FR-01.4).
+        Your account has been created successfully. You are now logged in and can access the platform, but some features may require Verification Queue administrator approval.
       </p>
       <button 
         onClick={onClose} 
@@ -300,7 +302,11 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
     </div>
   );
 
-  const totalSteps = role === 'transporter' ? 4 : 3;
+  // Total steps logic based on role selected in step 2
+  let totalSteps = 3;
+  if (role === 'transporter') totalSteps = 4;
+  if (role === 'admin' || role === 'customs_officer') totalSteps = 2; // They don't need company details
+  
   const isSuccess = step > totalSteps;
 
   return (
