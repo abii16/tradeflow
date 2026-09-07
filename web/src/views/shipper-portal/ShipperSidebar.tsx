@@ -33,18 +33,18 @@ export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSideb
   ];
 
   return (
-    <aside className={`${collapsed ? 'w-[52px]' : 'w-60'} bg-slate-900 h-screen flex flex-col shrink-0 border-r border-slate-800 transition-all duration-150`}>
+    <aside className={`${collapsed ? 'w-[52px]' : 'w-60'} bg-[#1C1C1C] h-screen flex flex-col shrink-0 border-r border-[#2E2E2E] transition-all duration-150`}>
       {/* Header */}
-      <div className={`p-3 border-b border-slate-800 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+      <div className={`p-3 border-b border-[#2E2E2E] flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
         {!collapsed && (
           <div className="pl-1">
-            <div className="font-semibold text-sm text-white tracking-tight">TradeFlow</div>
-            <div className="text-[11px] text-slate-400">{t('shipper_portal_brand')}</div>
+            <div className="font-semibold text-sm text-[#EDEDED] tracking-tight">TradeFlow</div>
+            <div className="text-[11px] text-[#8F8F8F]">{t('shipper_portal_brand')}</div>
           </div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors"
+          className="text-[#8F8F8F] hover:text-[#EDEDED] p-1 rounded hover:bg-[#232323] transition-colors"
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
@@ -55,7 +55,7 @@ export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSideb
         {!collapsed && (
           <button
             onClick={() => setActiveTab('operations')}
-            className="w-full bg-white text-slate-900 hover:bg-slate-100 rounded py-2 px-3 mb-3 font-semibold text-xs transition-colors"
+            className="w-full bg-[#232323] text-[#EDEDED] hover:bg-[#181818] rounded py-2 px-3 mb-3 font-semibold text-xs transition-colors"
           >
             + {t('new_shipment')}
           </button>
@@ -64,7 +64,7 @@ export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSideb
         {collapsed && (
           <button
             onClick={() => setActiveTab('operations')}
-            className="w-full flex items-center justify-center bg-white text-slate-900 hover:bg-slate-100 rounded p-2 mb-3 transition-colors text-xs font-bold"
+            className="w-full flex items-center justify-center bg-[#232323] text-[#EDEDED] hover:bg-[#181818] rounded p-2 mb-3 transition-colors text-xs font-bold"
             title={t('new_shipment')}
           >
             +
@@ -78,20 +78,20 @@ export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSideb
             title={collapsed ? item.name : undefined}
             className={`w-full flex items-center ${collapsed ? 'justify-center px-0 py-2' : 'space-x-2.5 px-2.5 py-1.5'} rounded text-xs font-medium transition-colors ${
               activeTab === item.id
-                ? 'bg-slate-800 text-white font-semibold'
-                : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                ? 'bg-[#232323] text-[#EDEDED] font-semibold'
+                : 'text-[#8F8F8F] hover:bg-[#232323]/60 hover:text-[#EDEDED]'
             }`}
           >
-            <item.icon size={15} className={activeTab === item.id ? "text-white" : "text-slate-400"} />
+            <item.icon size={15} className={activeTab === item.id ? "text-[#EDEDED]" : "text-[#8F8F8F]"} />
             {!collapsed && <span className="text-left">{item.name}</span>}
           </button>
         ))}
       </nav>
 
-      <div className={`${collapsed ? 'p-1.5' : 'p-3'} border-t border-slate-800 text-xs space-y-1`}>
+      <div className={`${collapsed ? 'p-1.5' : 'p-3'} border-t border-[#2E2E2E] text-xs space-y-1`}>
         <button
           title={collapsed ? t('support') : undefined}
-          className={`w-full flex items-center ${collapsed ? 'justify-center py-2' : 'space-x-2 py-1 px-2'} text-slate-400 hover:text-slate-200 rounded hover:bg-slate-800/60 transition-colors`}
+          className={`w-full flex items-center ${collapsed ? 'justify-center py-2' : 'space-x-2 py-1 px-2'} text-[#8F8F8F] hover:text-[#EDEDED] rounded hover:bg-[#232323]/60 transition-colors`}
         >
           {collapsed ? <span className="text-[11px]">?</span> : <span>{t('support')}</span>}
         </button>
