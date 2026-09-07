@@ -48,6 +48,7 @@ import { paymentsRoutes } from './routes/payments.routes';
 import { offlineSyncRoutes } from './routes/offline-sync.routes';
 import { telemetryRoutes } from './routes/telemetry.routes';
 import { riskZonesRoutes } from './routes/risk-zones.routes';
+import { publicRoutes } from './routes/public.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
 import { startPayoutWorker } from './workers/payout.worker';
 import { SocketGateway } from './gateways/socket.gateway';

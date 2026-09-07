@@ -13,7 +13,7 @@ export default function CustomsWorkspace() {
     try {
       setLoading(true);
       const data = await getCustomsQueue();
-      
+
       const formattedQueue = data.queue.map((doc: any) => ({
         id: doc.id.substring(0, 8).toUpperCase(),
         originalId: doc.id,
@@ -23,9 +23,9 @@ export default function CustomsWorkspace() {
         color: doc.status === 'SUBMITTED' ? 'amber' : doc.status === 'UNDER_REVIEW' ? 'purple' : 'emerald',
         originalData: doc
       }));
-      
+
       setQueue(formattedQueue);
-    } catch(err) {
+    } catch (err) {
       console.error('Failed to load queue:', err);
     } finally {
       setLoading(false);
@@ -40,7 +40,7 @@ export default function CustomsWorkspace() {
 
   const handleUpdateStatus = async (status: string) => {
     if (!activeDoc) return;
-    
+
     let reason = undefined;
     if (status === 'REJECTED') {
       const input = prompt('Please enter the reason for rejection (e.g. Weight Discrepancy):');
@@ -84,9 +84,9 @@ export default function CustomsWorkspace() {
             </button>
             <div className="relative">
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder={t('search_manifest_id')} 
+              <input
+                type="text"
+                placeholder={t('search_manifest_id')}
                 className="pl-8 pr-3 py-1.5 text-sm border border-slate-200 rounded bg-white shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-56"
               />
             </div>
@@ -107,8 +107,8 @@ export default function CustomsWorkspace() {
               {queue.map((row) => {
                 const isActive = activeManifestId === row.id;
                 return (
-                  <tr 
-                    key={row.id} 
+                  <tr
+                    key={row.id}
                     className={`group cursor-pointer transition-colors ${isActive ? 'bg-slate-100/70 border-l-4 border-slate-900' : 'border-l-4 border-transparent hover:bg-slate-50'}`}
                     onClick={() => setActiveManifestId(row.id)}
                   >
@@ -126,11 +126,10 @@ export default function CustomsWorkspace() {
                         <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold border shadow-sm ${getStatusClasses(row.color)}`}>
                           {t(`status_${row.status}`)}
                         </span>
-                        <button className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded transition-all shadow-sm ${
-                          isActive 
-                            ? 'bg-slate-300 border border-black hover:bg-slate-400 text-slate-900' 
-                            : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                        }`}>
+                        <button className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded transition-all shadow-sm ${isActive
+                          ? 'bg-slate-300 border border-black hover:bg-slate-400 text-slate-900'
+                          : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          }`}>
                           {isActive ? t('active_selection') : t('inspect')}
                         </button>
                       </div>
@@ -149,9 +148,8 @@ export default function CustomsWorkspace() {
           <>
             <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm border ${
-                  activeDoc.status === 'SUBMITTED' ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-purple-100 border-purple-200 text-purple-600'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm border ${activeDoc.status === 'SUBMITTED' ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-purple-100 border-purple-200 text-purple-600'
+                  }`}>
                   <AlertTriangle size={16} />
                 </div>
                 <div>
@@ -168,12 +166,12 @@ export default function CustomsWorkspace() {
                   <FileText size={18} className="text-slate-700" />
                   {t('extracted_data_validation')} (FR-06.2)
                 </h4>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white/60 p-3 rounded border border-slate-200">
                     <div className="text-[10px] uppercase font-bold text-slate-500 mb-1 tracking-wider">{t('invoice_total')}</div>
                     <div className="font-mono text-lg font-bold text-slate-800">
-                      {activeDoc.originalData.extractedData?.invoice?.totalAmount 
+                      {activeDoc.originalData.extractedData?.invoice?.totalAmount
                         ? `${activeDoc.originalData.extractedData.invoice.currency || 'USD'} ${activeDoc.originalData.extractedData.invoice.totalAmount.toLocaleString()}`
                         : 'N/A'}
                     </div>
@@ -181,8 +179,8 @@ export default function CustomsWorkspace() {
                   <div className="bg-white/60 p-3 rounded border border-slate-200">
                     <div className="text-[10px] uppercase font-bold text-slate-500 mb-1 tracking-wider">{t('packing_list_weight')}</div>
                     <div className="font-mono text-lg font-bold text-slate-800">
-                      {activeDoc.originalData.extractedData?.packingList?.totalWeight 
-                        ? `${activeDoc.originalData.extractedData.packingList.totalWeight.toLocaleString()} kg` 
+                      {activeDoc.originalData.extractedData?.packingList?.totalWeight
+                        ? `${activeDoc.originalData.extractedData.packingList.totalWeight.toLocaleString()} kg`
                         : 'N/A'}
                     </div>
                   </div>
@@ -197,7 +195,7 @@ export default function CustomsWorkspace() {
                     {activeDoc.originalData.extractedData?.invoice?.invoiceNumber || 'Unknown'}
                   </div>
                 </div>
-                
+
                 <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 shadow-sm flex flex-col justify-center">
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{t('smart_eseal')}</div>
                   <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded text-[11px] font-bold shadow-sm w-fit">
@@ -237,7 +235,7 @@ export default function CustomsWorkspace() {
                   <Map size={24} className="text-slate-400 group-hover:scale-110 transition-transform" />
                   <span className="text-[10px] font-bold text-slate-500 bg-white/80 px-2 py-1 rounded backdrop-blur border border-slate-200">{t('satellite_snapshot')}</span>
                 </div>
-                
+
                 {/* Simulated check point highlight */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-16 border-2 border-slate-500 rounded bg-slate-500/10 flex items-center justify-center z-10 animate-pulse">
                   <span className="text-[10px] font-bold text-slate-700 bg-white/90 px-1 rounded shadow-sm">{t('vehicle_lane_pin')}</span>
@@ -247,14 +245,14 @@ export default function CustomsWorkspace() {
 
             {/* Action Triggers */}
             <div className="p-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-4 shrink-0 mt-auto">
-              <button 
+              <button
                 onClick={() => handleUpdateStatus('CLEARED')}
                 className="flex-1 h-11 px-6 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 active:scale-[0.98] text-white font-semibold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-sm"
               >
                 <CheckCircle2 size={18} />
                 ✓ {t('validate_issue_pass')}
               </button>
-              <button 
+              <button
                 onClick={() => handleUpdateStatus('REJECTED')}
                 className="w-fit px-6 h-11 bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 active:scale-[0.98] font-semibold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-sm whitespace-nowrap"
               >

@@ -28,15 +28,15 @@ export default function FreightOrderForm() {
     e.preventDefault();
     try {
       setLoading(true);
-      
+
       const payload = {
-        origin: { 
-          name: formData.origin, 
-          city: formData.origin.toLowerCase().includes('djibouti') ? 'Djibouti' : formData.origin.toLowerCase().includes('addis') ? 'Addis Ababa' : 'Modjo' 
+        origin: {
+          name: formData.origin,
+          city: formData.origin.toLowerCase().includes('djibouti') ? 'Djibouti' : formData.origin.toLowerCase().includes('addis') ? 'Addis Ababa' : 'Modjo'
         },
-        destination: { 
-          name: formData.destination, 
-          city: formData.destination.toLowerCase().includes('modjo') ? 'Modjo' : formData.destination.toLowerCase().includes('hawassa') ? 'Hawassa' : formData.destination.toLowerCase().includes('dire') ? 'Dire Dawa' : 'Addis Ababa' 
+        destination: {
+          name: formData.destination,
+          city: formData.destination.toLowerCase().includes('modjo') ? 'Modjo' : formData.destination.toLowerCase().includes('hawassa') ? 'Hawassa' : formData.destination.toLowerCase().includes('dire') ? 'Dire Dawa' : 'Addis Ababa'
         },
         cargoType: 'dry',
         weightKg: Number(formData.weightKg) || 0,
@@ -46,7 +46,7 @@ export default function FreightOrderForm() {
       };
 
       const response = await calculateSpotRate(payload);
-      
+
       setCalculatedPrice(response.spot_price);
       setQuoteDetails(response);
       setQuoteGenerated(true);
@@ -75,7 +75,7 @@ export default function FreightOrderForm() {
       alert('Order posted successfully!');
       setQuoteGenerated(false);
       setQuoteDetails(null);
-      
+
       // Navigate to Bids Exchange tab
       window.dispatchEvent(new Event('shipper:load_posted'));
       localStorage.setItem('tradeflow_load_posted', Date.now().toString());
@@ -170,13 +170,13 @@ export default function FreightOrderForm() {
               <Label className="text-xs font-semibold text-slate-700">{t('lead_time_window')}</Label>
               <div className="relative">
                 <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
+                <input
                   type="text"
                   list="lead-time-list"
-                  name="leadTime" 
-                  value={leadTime} 
-                  onChange={(e) => setLeadTime(e.target.value)} 
-                  required 
+                  name="leadTime"
+                  value={leadTime}
+                  onChange={(e) => setLeadTime(e.target.value)}
+                  required
                   className="w-full pl-9 pr-8 bg-slate-50 border border-slate-200 h-9 text-xs font-medium rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none"
                   placeholder={t('lead_time_window')}
                 />
@@ -219,17 +219,17 @@ export default function FreightOrderForm() {
           </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono flex items-center justify-between">
-             <div className="flex items-center gap-2 flex-wrap text-slate-600 font-medium">
-                <span>{t('base_fee')}: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
-                <span className="text-slate-300">+</span>
-                <span>{t('fuel')}: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
-                <span className="text-slate-300">+</span>
-                <span>{t('fees')}: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
-             </div>
-             <div className="flex items-center gap-2 ml-4">
-                <span className="text-slate-300">=</span>
-                <span className="text-slate-800 font-bold whitespace-nowrap">{t('total')}: {calculatedPrice.toLocaleString()}</span>
-             </div>
+            <div className="flex items-center gap-2 flex-wrap text-slate-600 font-medium">
+              <span>{t('base_fee')}: {quoteDetails ? Math.round(quoteDetails.breakdown?.base_corridor_rate || 0).toLocaleString() : Math.round(calculatedPrice * 0.75).toLocaleString()}</span>
+              <span className="text-slate-300">+</span>
+              <span>{t('fuel')}: {quoteDetails ? Math.round((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1)).toLocaleString() : Math.round(calculatedPrice * 0.15).toLocaleString()}</span>
+              <span className="text-slate-300">+</span>
+              <span>{t('fees')}: {quoteDetails ? Math.round(calculatedPrice - (quoteDetails.breakdown?.base_corridor_rate || 0) - ((quoteDetails.breakdown?.base_corridor_rate || 0) * ((quoteDetails.breakdown?.fuel_multiplier || 1) - 1))).toLocaleString() : Math.round(calculatedPrice * 0.1).toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-2 ml-4">
+              <span className="text-slate-300">=</span>
+              <span className="text-slate-800 font-bold whitespace-nowrap">{t('total')}: {calculatedPrice.toLocaleString()}</span>
+            </div>
           </div>
 
           <button
