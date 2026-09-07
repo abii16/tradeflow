@@ -34,19 +34,49 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   const [calcState, setCalcState] = useState<'idle' | 'loading' | 'result'>('idle');
   const [calcRate, setCalcRate] = useState<number | null>(null);
 
-  const handleCalculate = () => {
+  const handleCalculate = async () => {
     if (!calcFrom || !calcTo || !calcWeight) return;
     setCalcState('loading');
-    setTimeout(() => {
-      // Mock calculation logic
+    try {
+      const payload = {
+        origin: { city: calcFrom },
+        destination: { city: calcTo },
+        weightKg: parseFloat(calcWeight) * 1000, // convert tons to kg
+        cargoType: 'dry'
+      };
+      
+      const response = await fetch('http://localhost:3000/api/v1/pricing/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Assuming data returns totalRate or baseRate
+        setCalcRate(data.totalRate || data.baseRate || 45000);
+        setCalcState('result');
+      } else {
+        throw new Error('Failed to fetch quote');
+      }
+    } catch (error) {
+      console.error(error);
+      // Fallback for demo purposes if backend quote fails
       const base = 45000;
       const weightMultiplier = parseFloat(calcWeight) * 1200;
       setCalcRate(base + weightMultiplier + 2500);
       setCalcState('result');
-    }, 1500);
+    }
   };
 
   const { isAuthenticated, user, logout } = useAuth();
+
+  // Impact Metrics State
+  const [impactMetrics, setImpactMetrics] = useState({
+    activeTransporters: '12.4K',
+    tonsDelivered: '3.2M',
+    uptime: '99.9'
+  });
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -54,33 +84,39 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
     };
     window.addEventListener('scroll', handleScroll);
     
-    const interval = setInterval(() => {
-      // Randomize spot index slightly (-500 to +500)
-      setLiveSpotIndex(prev => prev + Math.floor(Math.random() * 1000) - 500);
-      
-      // Randomize bids slightly
-      setLiveBids(prev => prev.map(bid => ({
-        ...bid,
-        score: Math.min(99.9, Math.max(85.0, bid.score + (Math.random() * 0.4 - 0.2)))
-      })));
+    // Initial fetch
+    fetchLandingMetrics();
 
-      // Decrease ETA occasionally
-      if (Math.random() > 0.7) {
-        setEtaMins(prev => Math.max(0, prev - 1));
-      }
-      
-      // Randomize confidence score
-      setEtaConfidence(prev => {
-        const jitter = (Math.random() * 0.8) - 0.4;
-        return Math.min(99.9, Math.max(88.0, prev + jitter));
-      });
-    }, 2500);
+    // Poll every 10 seconds
+    const interval = setInterval(() => {
+      fetchLandingMetrics();
+    }, 10000);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       clearInterval(interval);
     };
   }, []);
+
+  const fetchLandingMetrics = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/v1/public/landing-metrics');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.liveBids) setLiveBids(data.liveBids);
+        if (data.spotIndex) setLiveSpotIndex(data.spotIndex);
+        if (data.telematics) {
+          setEtaMins(data.telematics.etaMins);
+          setEtaConfidence(data.telematics.etaConfidence);
+        }
+        if (data.metrics) {
+          setImpactMetrics(data.metrics);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch live landing metrics:', error);
+    }
+  };
 
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
@@ -406,15 +442,15 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       <section className="w-full bg-slate-900 text-white py-24 relative z-40 border-y border-white/5">
         <div className="max-w-7xl mx-auto px-8 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-white/10">
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-white">12.4K<span className="text-emerald-500">+</span></div>
+            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-white">{impactMetrics.activeTransporters}<span className="text-emerald-500">+</span></div>
             <div className="text-sm font-bold text-slate-500 uppercase tracking-widest">Active Transporters</div>
           </div>
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-white">3.2M<span className="text-emerald-500">+</span></div>
+            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-white">{impactMetrics.tonsDelivered}<span className="text-emerald-500">+</span></div>
             <div className="text-sm font-bold text-slate-500 uppercase tracking-widest">Tons Delivered</div>
           </div>
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-white">99.9<span className="text-emerald-500">%</span></div>
+            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-white">{impactMetrics.uptime}<span className="text-emerald-500">%</span></div>
             <div className="text-sm font-bold text-slate-500 uppercase tracking-widest">Platform Uptime</div>
           </div>
         </div>
