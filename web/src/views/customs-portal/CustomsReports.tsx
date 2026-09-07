@@ -108,7 +108,7 @@ export default function CustomsReports() {
           </button>
           <button
             onClick={() => handleExport('Official ECC PDF Pass Log')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-colors active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-[#34b27b] shadow-sm transition-colors active:scale-95"
           >
             <FileBarChart size={16} />
             Export Official ECC PDF Pass Log
@@ -260,7 +260,7 @@ export default function CustomsReports() {
 
           <div className="flex-1 overflow-auto">
             <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50 sticky top-0 border-b border-slate-200 z-10 shadow-sm">
+              <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                 <tr>
                   <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">TIMESTAMP (EAT)</th>
                   <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">OFFICER ID</th>
@@ -269,7 +269,7 @@ export default function CustomsReports() {
                   <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">DIGITAL SIGNATURE HASH</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
                 {ledgerRows.map((row, i) => (
                   <tr key={i} className="hover:bg-slate-50 transition-colors">
                     <td className="px-5 py-3 whitespace-nowrap">
