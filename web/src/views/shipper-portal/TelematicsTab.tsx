@@ -48,20 +48,20 @@ export default function TelematicsTab() {
 
   return (
     <div className="max-w-[1320px] mx-auto h-[calc(100vh-8rem)] flex flex-col space-y-4">
-      <div className="pb-4 border-b border-slate-200 shrink-0 flex justify-between items-end">
+      <div className="pb-4 border-b border-[#2E2E2E] shrink-0 flex justify-between items-end">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{t('telematics')}</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Live GPS tracking and ETA prediction across the Djibouti–Modjo corridor (FR-03)</p>
+          <h1 className="text-xl font-semibold text-[#EDEDED] tracking-tight">{t('telematics')}</h1>
+          <p className="text-xs text-[#8F8F8F] mt-0.5">Live GPS tracking and ETA prediction across the Djibouti–Modjo corridor (FR-03)</p>
         </div>
         <div className="flex items-center gap-2">
           <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
-          <span className="text-xs font-medium text-slate-600">{isConnected ? 'Live Socket Connected' : 'Reconnecting...'}</span>
+          <span className="text-xs font-medium text-[#8F8F8F]">{isConnected ? 'Live Socket Connected' : 'Reconnecting...'}</span>
         </div>
       </div>
       
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 overflow-hidden">
         {/* Map */}
-        <div className="lg:col-span-3 rounded-md overflow-hidden border border-slate-200 relative z-0 h-[calc(100vh-16rem)] min-h-[400px]">
+        <div className="lg:col-span-3 rounded-md overflow-hidden border border-[#2E2E2E] relative z-0 h-[calc(100vh-16rem)] min-h-[400px]">
           <MapContainer center={[10.5, 41.0]} zoom={7} className="w-full h-full z-0">
             <TileLayer
               attribution="&copy; Google"
@@ -99,7 +99,7 @@ export default function TelematicsTab() {
                 return (
                   <Polygon key={zone.id} positions={positions} pathOptions={{ color, fillColor: color, fillOpacity: 0.3, weight: 2 }}>
                     <Popup>
-                      <div className="font-bold text-slate-900">{zone.name}</div>
+                      <div className="font-bold text-[#EDEDED]">{zone.name}</div>
                       <div className="text-xs font-semibold mt-1" style={{color}}>Severity: {zone.severity}</div>
                     </Popup>
                   </Polygon>
@@ -115,7 +115,7 @@ export default function TelematicsTab() {
                   <Polygon key={`alert-${alert.id}`} positions={alert.polygon} pathOptions={{ color: '#DC2626', fillColor: '#DC2626', fillOpacity: 0.4, weight: 2 }}>
                     <Popup>
                       <div className="font-bold text-red-700">{alert.title}</div>
-                      <div className="text-xs text-slate-600 mt-1">{alert.description}</div>
+                      <div className="text-xs text-[#8F8F8F] mt-1">{alert.description}</div>
                     </Popup>
                   </Polygon>
                 );
@@ -127,10 +127,10 @@ export default function TelematicsTab() {
             {telemetry.trucks.map(truck => (
               <Marker key={truck.id} position={[truck.lat, truck.lng]}>
                 <Popup>
-                  <div className="font-bold text-slate-900">{truck.id}</div>
-                  <div className="text-slate-700 text-sm mt-1">{truck.cargo} • {truck.speed} km/h</div>
-                  <div className="text-slate-500 text-xs mt-1">Driver: {truck.driver}</div>
-                  <div className="text-slate-500 text-xs">ETA: {truck.eta}</div>
+                  <div className="font-bold text-[#EDEDED]">{truck.id}</div>
+                  <div className="text-[#EDEDED] text-sm mt-1">{truck.cargo} • {truck.speed} km/h</div>
+                  <div className="text-[#8F8F8F] text-xs mt-1">Driver: {truck.driver}</div>
+                  <div className="text-[#8F8F8F] text-xs">ETA: {truck.eta}</div>
                 </Popup>
               </Marker>
             ))}
@@ -141,7 +141,7 @@ export default function TelematicsTab() {
         <div className="lg:col-span-2 relative h-full flex flex-col min-h-0">
           <div className="flex-1 space-y-3 overflow-y-auto min-h-0 pr-1 pb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {telemetry.alerts.map(alert => (
-            <div key={alert.id} className="bg-red-50 border-l-4 border-l-red-500 border-y border-r border-slate-200 rounded-md p-3 shadow-sm animate-in fade-in slide-in-from-right-4">
+            <div key={alert.id} className="bg-red-50 border-l-4 border-l-red-500 border-y border-r border-[#2E2E2E] rounded-md p-3 shadow-sm animate-in fade-in slide-in-from-right-4">
               <div className="flex items-start gap-2 text-xs">
                 <AlertTriangle size={16} className="text-red-600 shrink-0 mt-0.5" />
                 <div>
@@ -153,30 +153,30 @@ export default function TelematicsTab() {
           ))}
 
           {telemetry.trucks.length === 0 && !isConnected && (
-            <div className="text-center text-slate-500 py-8 text-sm flex flex-col items-center gap-2">
-              <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
+            <div className="text-center text-[#8F8F8F] py-8 text-sm flex flex-col items-center gap-2">
+              <div className="w-6 h-6 border-2 border-[#2E2E2E] border-t-slate-600 rounded-full animate-spin"></div>
               Connecting to Telemetry Stream...
             </div>
           )}
 
           {telemetry.trucks.length === 0 && isConnected && (
-            <div className="text-center text-slate-500 py-12 px-4 flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
-                <Radar size={24} className="text-slate-400" />
+            <div className="text-center text-[#8F8F8F] py-12 px-4 flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-[#181818] flex items-center justify-center mb-3">
+                <Radar size={24} className="text-[#8F8F8F]" />
               </div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-1">No active shipments in transit</h3>
-              <p className="text-xs text-slate-500 leading-relaxed max-w-[200px]">
+              <h3 className="text-sm font-semibold text-[#EDEDED] mb-1">No active shipments in transit</h3>
+              <p className="text-xs text-[#8F8F8F] leading-relaxed max-w-[200px]">
                 Post a freight order to start live corridor tracking.
               </p>
             </div>
           )}
 
           {telemetry.trucks.map(truck => (
-            <div key={truck.id} className="bg-white border border-slate-200 rounded-md p-3 hover:border-blue-300 transition-colors shadow-sm">
+            <div key={truck.id} className="bg-[#232323] border border-[#2E2E2E] rounded-md p-3 hover:border-blue-300 transition-colors shadow-sm">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <div className="font-bold text-sm text-slate-900">{truck.id}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{truck.cargo} • {truck.driver}</div>
+                  <div className="font-bold text-sm text-[#EDEDED]">{truck.id}</div>
+                  <div className="text-xs text-[#8F8F8F] mt-0.5">{truck.cargo} • {truck.driver}</div>
                 </div>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${truck.status === 'SAFE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                   {truck.status || 'ONLINE'}
@@ -184,18 +184,18 @@ export default function TelematicsTab() {
               </div>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Speed</span>
-                  <span className="font-bold text-slate-900">{truck.speed} km/h</span>
+                  <span className="text-[#8F8F8F] font-medium">Speed</span>
+                  <span className="font-bold text-[#EDEDED]">{truck.speed} km/h</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Remaining</span>
-                  <span className="font-bold text-slate-900">{Math.round(Number(truck.speed) * 2.5)} km</span>
+                  <span className="text-[#8F8F8F] font-medium">Remaining</span>
+                  <span className="font-bold text-[#EDEDED]">{Math.round(Number(truck.speed) * 2.5)} km</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">ETA</span>
-                  <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{truck.eta}</span>
+                  <span className="text-[#8F8F8F] font-medium">ETA</span>
+                  <span className="font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded">{truck.eta}</span>
                 </div>
-                <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                <div className="mt-2 h-1.5 w-full bg-[#181818] rounded-full overflow-hidden border border-[#2E2E2E]">
                    <div className="h-full bg-emerald-500" style={{ width: '65%' }}></div>
                 </div>
               </div>
@@ -205,7 +205,7 @@ export default function TelematicsTab() {
           
           {/* Custom Scroll Indicator */}
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-slate-100 to-transparent pointer-events-none flex items-end justify-center pb-2">
-            <div className="bg-white/80 backdrop-blur shadow-sm rounded-full p-1 animate-bounce text-slate-400 border border-slate-200">
+            <div className="bg-[#232323]/80 backdrop-blur shadow-sm rounded-full p-1 animate-bounce text-[#8F8F8F] border border-[#2E2E2E]">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>

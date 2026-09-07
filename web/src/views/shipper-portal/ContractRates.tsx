@@ -84,25 +84,25 @@ export default function ContractRates() {
 
   return (
     <div className="max-w-[1320px] mx-auto space-y-5">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+      <div className="flex items-center justify-between pb-4 border-b border-[#2E2E2E]">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-            <FileSignature size={24} className="text-slate-700" />
+          <h1 className="text-xl font-semibold text-[#EDEDED] tracking-tight flex items-center gap-2">
+            <FileSignature size={24} className="text-[#EDEDED]" />
             {t('crm_title')}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-[#8F8F8F] mt-0.5">
             {t('crm_subtitle')}
           </p>
         </div>
-        <button onClick={handleNewContract} className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-slate-800 transition-colors">
+        <button onClick={handleNewContract} className="bg-[#3ECF8E] text-black hover:bg-[#34b27b] transition-colors font-bold px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-[#232323] transition-colors">
           {t('crm_btn_new')}
         </button>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
+            <thead className="bg-[#1C1C1C] border-b border-[#2E2E2E] text-[#8F8F8F]">
               <tr>
                 <th className="px-6 py-4 font-semibold">{t('crm_col_id')}</th>
                 <th className="px-6 py-4 font-semibold">{t('crm_col_carrier')}</th>
@@ -115,26 +115,26 @@ export default function ContractRates() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {contracts.length === 0 && !loading && (
-                <tr><td colSpan={7} className="px-6 py-4 text-center text-slate-500">{t('crm_no_contracts')}</td></tr>
+                <tr><td colSpan={7} className="px-6 py-4 text-center text-[#8F8F8F]">{t('crm_no_contracts')}</td></tr>
               )}
               {contracts.map((contract) => {
                 const currentSpot = contract.currentSpotRate ? Number(contract.currentSpotRate) : Number(contract.lockedRate);
                 const divergence = ((currentSpot - Number(contract.lockedRate)) / Number(contract.lockedRate)) * 100;
 
                 return (
-                  <tr key={contract.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={contract.id} className="hover:bg-[#1C1C1C] transition-colors">
                     <td className="px-6 py-4">
-                      <span className="font-mono text-xs font-bold text-slate-900">{contract.id.split('-')[0]}...</span>
-                      <div className="text-[11px] text-slate-500">{t('crm_valid_to')} {new Date(contract.validUntil).toLocaleDateString()}</div>
+                      <span className="font-mono text-xs font-bold text-[#EDEDED]">{contract.id.split('-')[0]}...</span>
+                      <div className="text-[11px] text-[#8F8F8F]">{t('crm_valid_to')} {new Date(contract.validUntil).toLocaleDateString()}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-slate-900">{contract.companyName || contract.transporterName || 'Transporter'}</div>
-                      <div className="text-xs text-slate-500">{contract.origin} → {contract.destination}</div>
+                      <div className="font-semibold text-[#EDEDED]">{contract.companyName || contract.transporterName || 'Transporter'}</div>
+                      <div className="text-xs text-[#8F8F8F]">{contract.origin} → {contract.destination}</div>
                     </td>
-                    <td className="px-6 py-4 font-mono font-medium text-slate-900">
+                    <td className="px-6 py-4 font-mono font-medium text-[#EDEDED]">
                       ETB {Number(contract.lockedRate).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 font-mono text-slate-600">
+                    <td className="px-6 py-4 font-mono text-[#8F8F8F]">
                       ETB {currentSpot.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </td>
                     <td className="px-6 py-4">
@@ -159,11 +159,11 @@ export default function ContractRates() {
                     </td>
                     <td className="px-6 py-4">
                       {Math.abs(divergence) > 15 && contract.status === 'ACTIVE' ? (
-                        <button onClick={() => handleRenegotiate(contract.id)} className="text-blue-600 hover:text-blue-800 text-xs font-bold">
+                        <button onClick={() => handleRenegotiate(contract.id)} className="text-[#3ECF8E] hover:text-blue-800 text-xs font-bold">
                           {t('crm_renegotiate')}
                         </button>
                       ) : (
-                        <button className="text-slate-500 hover:text-slate-800 text-xs font-bold">
+                        <button className="text-[#8F8F8F] hover:text-[#EDEDED] text-xs font-bold">
                           {t('crm_view_details')}
                         </button>
                       )}
@@ -177,74 +177,74 @@ export default function ContractRates() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900">{t('crm_modal_title')}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1C1C1C]/50 backdrop-blur-sm p-4">
+          <div className="bg-[#232323] rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b border-[#2E2E2E]">
+              <h2 className="text-lg font-semibold text-[#EDEDED]">{t('crm_modal_title')}</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-[#8F8F8F] hover:text-[#8F8F8F] transition-colors">
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={submitNewContract} className="p-4 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">{t('crm_transporter_id')}</label>
+                <label className="block text-xs font-medium text-[#EDEDED] mb-1">{t('crm_transporter_id')}</label>
                 <input
                   type="text"
                   required
                   value={newContractForm.transporterId}
                   onChange={e => setNewContractForm({ ...newContractForm, transporterId: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
+                  className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
                   placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">{t('origin')}</label>
+                  <label className="block text-xs font-medium text-[#EDEDED] mb-1">{t('origin')}</label>
                   <input
                     type="text"
                     required
                     value={newContractForm.origin}
                     onChange={e => setNewContractForm({ ...newContractForm, origin: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none"
+                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg bg-[#1C1C1C] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">{t('destination')}</label>
+                  <label className="block text-xs font-medium text-[#EDEDED] mb-1">{t('destination')}</label>
                   <input
                     type="text"
                     required
                     value={newContractForm.destination}
                     onChange={e => setNewContractForm({ ...newContractForm, destination: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none"
+                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg bg-[#1C1C1C] focus:outline-none"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">{t('crm_col_locked')} (ETB)</label>
+                  <label className="block text-xs font-medium text-[#EDEDED] mb-1">{t('crm_col_locked')} (ETB)</label>
                   <input
                     type="number"
                     required
                     value={newContractForm.lockedRate}
                     onChange={e => setNewContractForm({ ...newContractForm, lockedRate: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
+                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">{t('crm_valid_to').replace(':', '')}</label>
+                  <label className="block text-xs font-medium text-[#EDEDED] mb-1">{t('crm_valid_to').replace(':', '')}</label>
                   <input
                     type="date"
                     required
                     value={newContractForm.validUntil}
                     onChange={e => setNewContractForm({ ...newContractForm, validUntil: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
+                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
                   />
                 </div>
               </div>
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 rounded-lg transition-colors text-sm"
+                  className="w-full bg-[#1C1C1C] hover:bg-[#232323] text-white font-medium py-2 rounded-lg transition-colors text-sm"
                 >
                   {t('crm_btn_submit')}
                 </button>
