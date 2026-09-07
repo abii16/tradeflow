@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { en, am } from '../../i18n/landing';
 import { Bell, Settings, Package, Compass, FileText, Monitor, ShieldCheck, ChevronDown, Zap, Navigation, TrendingUp, Shield, MapPin, Building2, Truck, Briefcase, X, ExternalLink, Activity, Check } from 'lucide-react';
 import RegistrationFlow from '@/views/auth/RegistrationFlow';
 import LoginModal from '@/views/auth/LoginModal';
@@ -16,6 +17,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [lang, setLang] = useState<'en' | 'am'>('en');
+  const t = lang === 'en' ? en : am;
   
   // Live Data Simulation State
   const [liveSpotIndex, setLiveSpotIndex] = useState(356000);
@@ -203,16 +206,16 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
           <div className="flex items-center gap-6 md:gap-10">
             <nav className="hidden md:flex items-center space-x-1">
-              <a href="#platform-overview" onClick={(e) => handleSmoothScroll(e, 'platform-overview')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">Platform Overview</a>
-              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">Load Board</a>
-              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">Dynamic Rates</a>
-              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">Customs Sync</a>
+              <a href="#platform-overview" onClick={(e) => handleSmoothScroll(e, 'platform-overview')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.platformOverview}</a>
+              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.loadBoard}</a>
+              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.dynamicRates}</a>
+              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.customsSync}</a>
             </nav>
 
             <div className="hidden md:block w-px h-6 bg-[#262626]"></div>
 
             <div className="flex items-center gap-4">
-              <button className="px-2.5 py-1 text-xs font-mono border border-[#2E2E2E] text-zinc-300 rounded-lg hover:border-[#3ECF8E]/50 transition">EN | አማ</button>
+              <button className="px-2.5 py-1 text-xs font-mono border border-[#2E2E2E] text-zinc-300 rounded-lg hover:border-[#3ECF8E]/50 transition" onClick={() => setLang(l => l === 'en' ? 'am' : 'en')}>{lang === 'en' ? 'EN | አማ' : 'አማ | EN'}</button>
               {!isAuthenticated ? (
               <>
                 <button
@@ -253,7 +256,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 max-w-4xl mx-auto text-[#EDEDED] whitespace-nowrap">
-            Intelligent <span className="text-[#3ECF8E]">Freight</span>.
+            Intelligent <span className="text-[#3ECF8E]">{t.hero.titleHighlight}</span>.
           </h1>
           <p className="text-base md:text-lg leading-relaxed text-[#EDEDED] font-bold mb-10 max-w-3xl mx-auto">
           AI matching, live tracking, and digital customs.<span className="inline-block animate-pulse ml-1 text-[#3ECF8E]">|</span>
@@ -280,7 +283,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         {/* Explore Down Arrow */}
         <div className="relative z-30 pb-8 w-full flex justify-center">
           <div className="flex flex-col items-center animate-bounce opacity-50 cursor-pointer" onClick={(e) => handleSmoothScroll(e as any, 'system-pillars')}>
-            <span className="text-[10px] text-white font-mono uppercase tracking-widest mb-1">Explore</span>
+            <span className="text-[10px] text-white font-mono uppercase tracking-widest mb-1">{t.nav.explore}</span>
             <ChevronDown size={16} className="text-white" />
           </div>
         </div>
@@ -291,7 +294,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           ================================================================================= */}
       <section id="platform-overview" className="w-full bg-[#1C1C1C] border-y border-[#2E2E2E] py-10 relative z-40">
         <div className="max-w-[90rem] mx-auto px-6 text-center">
-          <p className="text-[11px] font-mono tracking-widest text-[#8F8F8F] uppercase text-center mb-6">TRUSTED BY EAST Africa'S PRINCIPAL LOGISTICS ACTORS</p>
+          <p className="text-[11px] font-mono tracking-widest text-[#8F8F8F] uppercase text-center mb-6">{t.trustedBy}</p>
           <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8">
             {[
               { src: '/ECC.jfif', alt: 'ECC', title: 'Ethiopian Customs Commission', height: 'h-8' },
@@ -321,26 +324,26 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide uppercase bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 text-[#3ECF8E] mb-4 w-fit">
               <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
-              • LIVE CORRIDOR TELEMATICS (810KM ARTERY)
+              {t.telematics.badge}
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-white tracking-tight whitespace-nowrap mb-4">
-              Corridor Telematics <span className="text-[#3ECF8E]">& Deep ETA</span>
+              {t.telematics.titlePrefix} <span className="text-[#3ECF8E]">{t.telematics.titleHighlight}</span>
             </h2>
             <p className="text-sm text-zinc-400 leading-relaxed max-w-lg mb-6">
-              GPS position updates ingested at least every 5 minutes while in transit. ETA model recalculates predicted arrival using live position, historical corridor transit-time data, weather, and known congestion/conflict alerts.
+              {t.telematics.desc}
             </p>
             <ul className="space-y-3 mb-10">
               <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
                 <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Navigation size={14} /></div> 
-                <span className="text-xs font-semibold text-zinc-200 tracking-wide">Gradient-Boosted ETA Models</span>
+                <span className="text-xs font-semibold text-zinc-200 tracking-wide">{t.telematics.features[0]}</span>
               </li>
               <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
                 <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Shield size={14} /></div> 
-                <span className="text-xs font-semibold text-zinc-200 tracking-wide">Security-Aware Rerouting (FR-08)</span>
+                <span className="text-xs font-semibold text-zinc-200 tracking-wide">{t.telematics.features[1]}</span>
               </li>
               <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
                 <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><MapPin size={14} /></div> 
-                <span className="text-xs font-semibold text-zinc-200 tracking-wide">810km Djibouti–Modjo Route Tracking</span>
+                <span className="text-xs font-semibold text-zinc-200 tracking-wide">{t.telematics.features[2]}</span>
               </li>
             </ul>
             
@@ -363,20 +366,20 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 </div>
                 <div className="flex items-center gap-1.5 bg-[#3ECF8E]/15 text-[#3ECF8E] border border-[#3ECF8E]/30 font-mono text-[10px] px-2.5 py-0.5 rounded-full">
                   <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
-                  <span>EN ROUTE</span>
+                  <span>{t.telematics.truckStatus}</span>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-[10px] font-bold text-[#8F8F8F] uppercase tracking-widest mb-1">Speed</div>
+                  <div className="text-[10px] font-bold text-[#8F8F8F] uppercase tracking-widest mb-1">{t.telematics.speed}</div>
                   <div className="text-sm font-extrabold text-[#EDEDED]">62 <span className="text-[10px] text-[#8F8F8F]">km/h</span></div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-[#8F8F8F] uppercase tracking-widest mb-1">ETA</div>
-                  <div className="text-sm font-extrabold text-[#3ECF8E]">{etaMins} <span className="text-[10px]">mins</span></div>
+                  <div className="text-[10px] font-bold text-[#8F8F8F] uppercase tracking-widest mb-1">{t.telematics.eta}</div>
+                  <div className="text-sm font-extrabold text-[#3ECF8E]">{etaMins} <span className="text-[10px]">{t.telematics.etaMins}</span></div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-[#8F8F8F] uppercase tracking-widest mb-1" title="AI Confidence Score">Conf</div>
+                  <div className="text-[10px] font-bold text-[#8F8F8F] uppercase tracking-widest mb-1" title="AI Confidence Score">{t.telematics.conf}</div>
                   <div className="text-sm font-extrabold text-[#EDEDED]">{etaConfidence.toFixed(1)}<span className="text-[10px] text-[#8F8F8F]">%</span></div>
                 </div>
               </div>
@@ -403,19 +406,19 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               AI-Powered Freight Matching
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
-              Two-sided marketplace onboarding with verified transporter identity. Matching engine ranks eligible transporters by a weighted score of cost, historical reliability, fuel efficiency, and proximity.
+              {t.matching.desc}
             </p>
             <ul className="space-y-4 font-bold text-sm text-[#EDEDED]">
               <li className="flex items-center gap-3"><Check size={20} className="text-[#3ECF8E]" /> &lt; 1 Second Response Time</li>
-              <li className="flex items-center gap-3"><Check size={20} className="text-[#3ECF8E]" /> Multi-Objective Scoring Function</li>
-              <li className="flex items-center gap-3"><Check size={20} className="text-[#3ECF8E]" /> Strict Fleet Verification (FR-01)</li>
+              <li className="flex items-center gap-3"><Check size={20} className="text-[#3ECF8E]" /> {t.matching.features[1]}</li>
+              <li className="flex items-center gap-3"><Check size={20} className="text-[#3ECF8E]" /> {t.matching.features[2]}</li>
             </ul>
           </div>
           <div className="flex-1 w-full relative group">
             <div className="absolute inset-0 bg-[#3ECF8E]/5 rounded-3xl blur-2xl transform scale-105 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="w-full bg-[#232323] border border-[#2E2E2E] rounded-2xl p-6 shadow-2xl relative z-10">
               <div className="flex justify-between items-center mb-8 border-b border-[#2E2E2E] pb-4">
-                <div className="font-bold text-lg text-[#EDEDED]">Load Board</div>
+                <div className="font-bold text-lg text-[#EDEDED]">{t.matching.loadBoardTitle}</div>
                 <div className="flex items-center gap-2 text-[10px] font-mono border border-[#3ECF8E]/50 text-[#3ECF8E] bg-[#3ECF8E]/10 px-3 py-1 rounded-full uppercase tracking-wider">
                   <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
                   Live Bids
@@ -430,7 +433,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                       </div>
                       <div>
                         <div className="font-bold text-sm text-[#EDEDED]">Transporter #{bid.id}</div>
-                        <div className="text-xs text-[#8F8F8F] font-medium">Score: <span className={i === 0 ? 'text-[#3ECF8E] font-bold' : 'text-[#8F8F8F]'}>{bid.score.toFixed(1)}%</span> Match</div>
+                        <div className="text-xs text-[#8F8F8F] font-medium">{t.matching.score}: <span className={i === 0 ? 'text-[#3ECF8E] font-bold' : 'text-[#8F8F8F]'}>{bid.score.toFixed(1)}%</span> {t.matching.match}</div>
                       </div>
                     </div>
                     <button className={`px-4 py-2 text-xs font-bold transition-colors ${i === 0 ? 'bg-[#3ECF8E] hover:bg-[#34b27b] text-black rounded-lg' : 'border border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#232323] rounded-lg'}`}>
@@ -451,15 +454,15 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         <div className="max-w-[90rem] mx-auto px-8 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-white/5">
           <div className="flex flex-col items-center pt-8 md:pt-0">
             <div className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-white">{impactMetrics.activeTransporters}<span className="text-[#3ECF8E]">+</span></div>
-            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Active Transporters</div>
+            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">{t.metrics.activeTransporters}</div>
           </div>
           <div className="flex flex-col items-center pt-8 md:pt-0">
             <div className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-white">{impactMetrics.tonsDelivered}<span className="text-[#3ECF8E]">+</span></div>
-            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Tons Delivered</div>
+            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">{t.metrics.tonsDelivered}</div>
           </div>
           <div className="flex flex-col items-center pt-8 md:pt-0">
             <div className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-white">{impactMetrics.uptime}<span className="text-[#3ECF8E]">%</span></div>
-            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Platform Uptime</div>
+            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">{t.metrics.uptime}</div>
           </div>
         </div>
       </section>
@@ -475,7 +478,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               Dynamic Pricing & Settlement
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
-              Spot rates computed from current demand/capacity balance, fuel-cost index, and corridor congestion. Integrated with Mobile-Money platforms (TeleBirr) for automated payout scheduling and reconciliation.
+              {t.pricing.desc}
             </p>
             <ul className="space-y-4 font-bold text-sm text-[#EDEDED]">
               <li className="flex items-center gap-3"><Check size={20} className="text-[#3ECF8E]" /> Real-time Spot & Contract Rates</li>
@@ -487,7 +490,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <div className="absolute top-8 left-8 text-[#EDEDED] z-10">
               <div className="flex items-center gap-2 mb-2">
                  <div className="w-2 h-2 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
-                 <div className="text-[10px] font-mono uppercase tracking-widest text-[#3ECF8E]">Live Spot Index</div>
+                 <div className="text-[10px] font-mono uppercase tracking-widest text-[#3ECF8E]">{t.pricing.liveSpotIndex}</div>
               </div>
               <div className="text-3xl font-extrabold">ETB {(liveSpotIndex / 1000).toFixed(1)}K</div>
             </div>
@@ -513,10 +516,10 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               Customs Sync
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight whitespace-nowrap mb-6 text-[#EDEDED]">
-              Digital Customs <span className="text-[#3ECF8E]">Documentation</span>
+              {t.customs.titlePrefix} <span className="text-[#3ECF8E]">{t.customs.titleHighlight}</span>
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
-              Support upload and structured capture of key clearance documents (commercial invoice, packing list, bill of lading). Automated validation checks for completeness and consistency before submission.
+              {t.customs.desc}
             </p>
             <ul className="space-y-4 font-bold text-sm text-[#EDEDED]">
               <li className="flex items-center gap-4 bg-[#232323] p-3 rounded-xl border border-[#2E2E2E] hover:border-[#3ECF8E]/30 transition-colors"><Check size={20} className="text-[#3ECF8E]" /> Immutable Document Vault</li>
@@ -532,12 +535,12 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                   <ShieldCheck size={24} />
                 </div>
                 <div>
-                  <div className="font-bold text-lg text-[#EDEDED]">Clearance Vault</div>
-                  <div className="text-[10px] font-mono text-[#3ECF8E] uppercase tracking-wider">Status: Cleared</div>
+                  <div className="font-bold text-lg text-[#EDEDED]">{t.customs.vault}</div>
+                  <div className="text-[10px] font-mono text-[#3ECF8E] uppercase tracking-wider">{t.customs.status}</div>
                 </div>
               </div>
               <div className="space-y-3">
-                {['Commercial Invoice', 'Packing List', 'Certificate of Origin', 'Bill of Lading'].map((doc, i) => (
+                {t.customs.docs.map((doc, i) => (
                   <div key={i} className="flex items-center justify-between p-4 border border-[#2E2E2E] rounded-xl bg-[#1C1C1C] hover:border-[#3ECF8E]/30 transition-colors">
                     <span className="text-sm font-bold text-[#EDEDED]">{doc}</span>
                     <div className="w-6 h-6 rounded-full bg-[#3ECF8E]/10 flex items-center justify-center border border-[#3ECF8E]/20">
@@ -557,14 +560,14 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       <section className="w-full bg-[#1C1C1C] py-32 relative z-40 border-t border-[#2E2E2E]">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight mb-4 text-[#EDEDED]">Instant AI Spot Rate</h2>
-            <p className="text-sm text-[#8F8F8F] leading-relaxed max-w-2xl mx-auto">Get a predictive, data-driven freight quote instantly.</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight mb-4 text-[#EDEDED]">{t.calculator.title}</h2>
+            <p className="text-sm text-[#8F8F8F] leading-relaxed max-w-2xl mx-auto">{t.calculator.desc}</p>
           </div>
           
           <div className="max-w-7xl mx-auto p-8 rounded-2xl bg-[#232323] border border-[#2E2E2E] shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex flex-col space-y-6 relative z-10">
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">Origin (Port)</label>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">{t.calculator.origin}</label>
                 <select 
                   value={calcFrom} 
                   onChange={(e) => setCalcFrom(e.target.value)}
@@ -576,7 +579,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">Destination (Dry Port)</label>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">{t.calculator.destination}</label>
                 <select 
                   value={calcTo} 
                   onChange={(e) => setCalcTo(e.target.value)}
@@ -589,7 +592,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">Cargo Weight (Tons)</label>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">{t.calculator.weight}</label>
                 <input 
                   type="number" 
                   value={calcWeight}
@@ -628,15 +631,15 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                   
                   <div className="w-full space-y-2 text-left">
                     <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
-                      <span>Fuel Index:</span>
+                      <span>{t.calculator.fuelIndex}</span>
                       <span className="font-bold text-[#EDEDED]">1.08x</span>
                     </div>
                     <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
-                      <span>Congestion Surcharge:</span>
+                      <span>{t.calculator.congestion}</span>
                       <span className="font-bold text-[#EDEDED]">Low</span>
                     </div>
                     <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
-                      <span>Corridor Transit:</span>
+                      <span>{t.calculator.transit}</span>
                       <span className="font-bold text-[#EDEDED]">28 hrs</span>
                     </div>
                   </div>
@@ -652,7 +655,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                     <Zap size={24} className="text-[#3ECF8E]" />
                   </div>
                   <p className="font-mono text-[11px] text-[#8F8F8F] max-w-[220px] uppercase tracking-widest leading-relaxed">
-                    <div className="flex flex-col items-center justify-center h-full opacity-50"><MapPin size={32} className="text-[#3ECF8E] mb-4 animate-bounce" /><div className="text-[#8F8F8F] font-mono text-xs tracking-widest uppercase">AWAITING FREIGHT PARAMETERS...</div></div>
+                    <div className="flex flex-col items-center justify-center h-full opacity-50"><MapPin size={32} className="text-[#3ECF8E] mb-4 animate-bounce" /><div className="text-[#8F8F8F] font-mono text-xs tracking-widest uppercase">{t.calculator.awaiting}</div></div>
                   </p>
                 </div>
               )}
@@ -668,7 +671,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         <div className="max-w-[90rem] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div>
-              <h3 className="text-xl font-bold text-[#EDEDED] mb-4">TradeFlow Logistics Engine</h3>
+              <h3 className="text-xl font-bold text-[#EDEDED] mb-4">{t.footer.title}</h3>
               <p className="text-sm text-[#8F8F8F] leading-relaxed mb-6">
                 Aligned with Ethiopian Customs Commission &amp; Ethiopian Shipping and Logistics Services Enterprise specifications.
               </p>
@@ -682,7 +685,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <h4 className="text-sm font-bold text-[#EDEDED] mb-4">Platform</h4>
+                <h4 className="text-sm font-bold text-[#EDEDED] mb-4">{t.footer.platform}</h4>
                 <ul className="space-y-3 text-sm text-[#8F8F8F]">
                   <li><button className="hover:text-[#EDEDED] transition-colors">Platform Specs</button></li>
                   <li><button onClick={(e) => handleSmoothScroll(e as any, 'corridor-telematics')} className="hover:text-[#EDEDED] transition-colors">Corridor Telematics</button></li>
@@ -690,7 +693,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 </ul>
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#EDEDED] mb-4">Compliance</h4>
+                <h4 className="text-sm font-bold text-[#EDEDED] mb-4">{t.footer.compliance}</h4>
                 <ul className="space-y-3 text-sm text-[#8F8F8F]">
                   <li><button onClick={() => setActiveComplianceModal({ title: 'Escrow Mediation Rules', content: 'SRS FR-10: TeleBirr Escrow Rules\n\n1. Funds are locked into a smart-contract multi-sig wallet upon load assignment.\n2. Payment is automatically released only when e-PoD (Proof of Delivery) is validated by the receiving terminal.\n3. Dispute mediation relies on GPS timestamps and immutable scale weighbridge logs.' })} className="hover:text-[#EDEDED] transition-colors">Escrow Mediation Rules</button></li>
                   <li><button onClick={() => setActiveComplianceModal({ title: '7-Year Audit Ledger', content: 'SRS Section 6: Audit & Data Retention\n\nTo comply with Ethiopian federal regulatory standards, all manifest data, inspection logs, and financial transactions are cryptographically signed and stored in immutable ledger storage for 7 years.' })} className="hover:text-[#EDEDED] transition-colors">7-Year Audit Ledger</button></li>
@@ -700,7 +703,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             </div>
             
             <div className="flex flex-col gap-4 bg-[#232323] border border-[#2E2E2E] rounded-xl p-6">
-              <h4 className="text-sm font-bold text-[#EDEDED] mb-2">Regulatory Alignment</h4>
+              <h4 className="text-sm font-bold text-[#EDEDED] mb-2">{t.footer.regulatory}</h4>
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-sm text-[#8F8F8F]">
                   <Shield size={18} className="text-[#3ECF8E]" />
@@ -719,7 +722,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           </div>
 
           <div className="border-t border-[#2E2E2E] pt-8 flex flex-col md:flex-row items-center justify-between text-[11px] font-mono text-[#8F8F8F]">
-            <p>© 2026 TradeFlow Logistics Platform. Developed for East Africa's Principal Corridor.</p>
+            <p>{t.footer.copyright}</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="#" className="hover:text-[#EDEDED] transition-colors">Terms of Service</a>
               <a href="#" className="hover:text-[#EDEDED] transition-colors">Privacy Policy</a>
