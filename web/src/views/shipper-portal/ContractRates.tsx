@@ -102,7 +102,7 @@ export default function ContractRates() {
       <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-[#1C1C1C] border-b border-[#2E2E2E] text-[#8F8F8F]">
+            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
                 <th className="px-6 py-4 font-semibold">{t('crm_col_id')}</th>
                 <th className="px-6 py-4 font-semibold">{t('crm_col_carrier')}</th>
@@ -113,7 +113,7 @@ export default function ContractRates() {
                 <th className="px-6 py-4 font-semibold">{t('crm_col_actions')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
               {contracts.length === 0 && !loading && (
                 <tr><td colSpan={7} className="px-6 py-4 text-center text-[#8F8F8F]">{t('crm_no_contracts')}</td></tr>
               )}
@@ -122,7 +122,7 @@ export default function ContractRates() {
                 const divergence = ((currentSpot - Number(contract.lockedRate)) / Number(contract.lockedRate)) * 100;
 
                 return (
-                  <tr key={contract.id} className="hover:bg-[#1C1C1C] transition-colors">
+                  <tr key={contract.id} className="hover:bg-[#2A2A2A] transition-colors">
                     <td className="px-6 py-4">
                       <span className="font-mono text-xs font-bold text-[#EDEDED]">{contract.id.split('-')[0]}...</span>
                       <div className="text-[11px] text-[#8F8F8F]">{t('crm_valid_to')} {new Date(contract.validUntil).toLocaleDateString()}</div>

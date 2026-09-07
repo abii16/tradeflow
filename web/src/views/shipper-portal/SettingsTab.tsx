@@ -136,7 +136,7 @@ export default function SettingsTab() {
           <button 
             type="submit" 
             disabled={loading}
-            className="bg-[#3ECF8E] text-white text-xs font-semibold px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="bg-[#3ECF8E] text-[#1C1C1C] hover:bg-[#34b27b] text-xs font-semibold px-4 py-2 rounded hover:bg-[#34b27b] disabled:opacity-50"
           >
             {loading ? 'Saving...' : 'Save Organization Profile'}
           </button>
