@@ -41,14 +41,14 @@ export default function AdminPortal({ onSwitchPortal }: AdminPortalProps) {
       default:
         return (
           <div className="flex items-center justify-center h-64">
-            <p className="text-slate-500 font-medium text-sm">Under Construction</p>
+            <p className="text-[#8F8F8F] font-medium text-sm">Under Construction</p>
           </div>
         );
     }
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#181818] overflow-hidden font-sans">
       <AdminSidebar activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <UniversalTopBar />

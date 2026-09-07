@@ -85,15 +85,15 @@ export default function CustomsTab() {
 
   return (
     <div className="max-w-[1320px] mx-auto space-y-6">
-      <div className="flex items-center justify-between pb-6 border-b border-slate-200">
+      <div className="flex items-center justify-between pb-6 border-b border-[#2E2E2E]">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{t('customs_vault')}</h1>
+            <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight">{t('customs_vault')}</h1>
             <div className="flex items-center gap-3 mt-1.5">
               <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                 <CheckCircle2 size={12} /> ERCA Synced
               </span>
-              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+              <span className="text-xs text-[#8F8F8F] font-medium flex items-center gap-1.5">
                 <Fingerprint size={12} /> 256-bit AES Encryption
               </span>
             </div>
@@ -102,39 +102,39 @@ export default function CustomsTab() {
         <button
           type="button"
           onClick={handleUploadClick}
-          className="group relative flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-md hover:shadow-xl overflow-hidden"
+          className="group relative flex items-center gap-2 bg-[#3ECF8E] text-black hover:bg-[#34b27b] transition-colors font-bold px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#232323] transition-all shadow-md hover:shadow-xl overflow-hidden"
         >
-          <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+          <div className="absolute inset-0 bg-[#232323]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
           <UploadCloud size={18} className="relative z-10 group-hover:-translate-y-0.5 transition-transform" /> 
           <span className="relative z-10">Secure Upload</span>
         </button>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-[#2E2E2E] bg-[#1C1C1C]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-base font-bold text-[#EDEDED] flex items-center gap-2">
               <FileText size={18} className="text-indigo-600" />
               Active Shipment Dossier
             </h2>
-            <p className="text-xs text-slate-500 mt-1 font-medium">
-              ID: <span className="font-mono font-bold bg-slate-200/60 px-1.5 py-0.5 rounded text-slate-700 ml-1">{shipmentId ? shipmentId.substring(0, 8).toUpperCase() : 'AWAITING'}</span>
+            <p className="text-xs text-[#8F8F8F] mt-1 font-medium">
+              ID: <span className="font-mono font-bold bg-slate-200/60 px-1.5 py-0.5 rounded text-[#EDEDED] ml-1">{shipmentId ? shipmentId.substring(0, 8).toUpperCase() : 'AWAITING'}</span>
             </p>
           </div>
         </div>
 
         <Table>
           <TableHeader>
-            <TableRow className="border-slate-200 hover:bg-transparent">
-              <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider py-4">Document Type</TableHead>
-              <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider py-4">Status</TableHead>
-              <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider py-4">Attached File</TableHead>
-              <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider py-4 text-right">Action</TableHead>
+            <TableRow className="border-[#2E2E2E] hover:bg-transparent">
+              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-4">Document Type</TableHead>
+              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-4">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-4">Attached File</TableHead>
+              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-4 text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {documents.length === 0 && !loading && (
-              <TableRow><TableCell colSpan={4} className="text-center text-xs text-slate-500 py-4">No documents found. Click upload.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center text-xs text-[#8F8F8F] py-4">No documents found. Click upload.</TableCell></TableRow>
             )}
             {documents.map((doc, idx) => {
               const renderStatus = () => {
@@ -160,7 +160,7 @@ export default function CustomsTab() {
                     );
                   case 'UNDER_REVIEW':
                     return (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-blue-50 text-blue-700 border-blue-100">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-[#3ECF8E]/10 text-[#3ECF8E] border-blue-100">
                         <Clock size={11} /> Under Review
                       </span>
                     );
@@ -177,8 +177,8 @@ export default function CustomsTab() {
               return (
               <React.Fragment key={idx}>
                 {/* Invoice Row */}
-                <TableRow className="border-slate-100 hover:bg-indigo-50/40 transition-colors group">
-                  <TableCell className="font-semibold text-sm text-slate-900 py-4">
+                <TableRow className="border-[#2E2E2E] hover:bg-indigo-50/40 transition-colors group">
+                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
                         <FileText size={16} className="text-indigo-600" />
@@ -189,21 +189,21 @@ export default function CustomsTab() {
                   <TableCell>
                     {renderStatus()}
                   </TableCell>
-                  <TableCell className="text-xs font-mono font-medium text-slate-600 truncate max-w-[200px]">
+                  <TableCell className="text-xs font-mono font-medium text-[#8F8F8F] truncate max-w-[200px]">
                     <div className="flex items-center gap-2">
                       <div className={`w-1.5 h-1.5 rounded-full ${doc.invoiceUrl ? 'bg-indigo-400' : 'bg-slate-300'}`}></div>
                       {doc.invoiceUrl ? doc.invoiceUrl.split('/').pop() : 'Pending'}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
+                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] hover:border-[#2E2E2E] px-2.5 py-1 rounded transition-colors">
                       View
                     </button>
                   </TableCell>
                 </TableRow>
                 {/* Packing List Row */}
-                <TableRow className="border-slate-100 hover:bg-indigo-50/40 transition-colors group">
-                  <TableCell className="font-semibold text-sm text-slate-900 py-4">
+                <TableRow className="border-[#2E2E2E] hover:bg-indigo-50/40 transition-colors group">
+                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
                         <FileText size={16} className="text-indigo-600" />
@@ -214,21 +214,21 @@ export default function CustomsTab() {
                   <TableCell>
                     {renderStatus()}
                   </TableCell>
-                  <TableCell className="text-xs font-mono font-medium text-slate-600 truncate max-w-[200px]">
+                  <TableCell className="text-xs font-mono font-medium text-[#8F8F8F] truncate max-w-[200px]">
                     <div className="flex items-center gap-2">
                       <div className={`w-1.5 h-1.5 rounded-full ${doc.packingListUrl ? 'bg-indigo-400' : 'bg-slate-300'}`}></div>
                       {doc.packingListUrl ? doc.packingListUrl.split('/').pop() : 'Pending'}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
+                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] hover:border-[#2E2E2E] px-2.5 py-1 rounded transition-colors">
                       View
                     </button>
                   </TableCell>
                 </TableRow>
                 {/* Bill of Lading Row */}
-                <TableRow className="border-slate-100 hover:bg-indigo-50/40 transition-colors group">
-                  <TableCell className="font-semibold text-sm text-slate-900 py-4">
+                <TableRow className="border-[#2E2E2E] hover:bg-indigo-50/40 transition-colors group">
+                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
                         <FileText size={16} className="text-indigo-600" />
@@ -239,21 +239,21 @@ export default function CustomsTab() {
                   <TableCell>
                     {renderStatus()}
                   </TableCell>
-                  <TableCell className="text-xs font-mono font-medium text-slate-600 truncate max-w-[200px]">
+                  <TableCell className="text-xs font-mono font-medium text-[#8F8F8F] truncate max-w-[200px]">
                     <div className="flex items-center gap-2">
                       <div className={`w-1.5 h-1.5 rounded-full ${doc.billOfLadingUrl ? 'bg-indigo-400' : 'bg-slate-300'}`}></div>
                       {doc.billOfLadingUrl ? doc.billOfLadingUrl.split('/').pop() : 'Pending'}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
+                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] hover:border-[#2E2E2E] px-2.5 py-1 rounded transition-colors">
                       View
                     </button>
                   </TableCell>
                 </TableRow>
                 {/* Certificate of Origin Row */}
-                <TableRow className="border-slate-100 hover:bg-indigo-50/40 transition-colors group">
-                  <TableCell className="font-semibold text-sm text-slate-900 py-4">
+                <TableRow className="border-[#2E2E2E] hover:bg-indigo-50/40 transition-colors group">
+                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
                         <FileText size={16} className="text-indigo-600" />
@@ -264,14 +264,14 @@ export default function CustomsTab() {
                   <TableCell>
                     {renderStatus()}
                   </TableCell>
-                  <TableCell className="text-xs font-mono font-medium text-slate-600 truncate max-w-[200px]">
+                  <TableCell className="text-xs font-mono font-medium text-[#8F8F8F] truncate max-w-[200px]">
                     <div className="flex items-center gap-2">
                       <div className={`w-1.5 h-1.5 rounded-full ${doc.certificateOfOriginUrl ? 'bg-indigo-400' : 'bg-slate-300'}`}></div>
                       {doc.certificateOfOriginUrl ? doc.certificateOfOriginUrl.split('/').pop() : 'Pending'}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button type="button" className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded transition-colors">
+                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] hover:border-[#2E2E2E] px-2.5 py-1 rounded transition-colors">
                       View
                     </button>
                   </TableCell>
@@ -284,60 +284,60 @@ export default function CustomsTab() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900">Upload Customs Documents</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1C1C1C]/50 backdrop-blur-sm p-4">
+          <div className="bg-[#232323] rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b border-[#2E2E2E]">
+              <h2 className="text-lg font-semibold text-[#EDEDED]">Upload Customs Documents</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-[#8F8F8F] hover:text-[#8F8F8F] transition-colors">
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={submitUpload} className="p-4 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Commercial Invoice (PDF)</label>
+                <label className="block text-xs font-medium text-[#EDEDED] mb-1">Commercial Invoice (PDF)</label>
                 <input
                   type="file"
                   accept="application/pdf"
                   required
                   onChange={e => setFiles({ ...files, invoice: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg"
+                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-[#2E2E2E] rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Packing List (PDF)</label>
+                <label className="block text-xs font-medium text-[#EDEDED] mb-1">Packing List (PDF)</label>
                 <input
                   type="file"
                   accept="application/pdf"
                   required
                   onChange={e => setFiles({ ...files, packingList: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg"
+                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-[#2E2E2E] rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Bill of Lading (PDF)</label>
+                <label className="block text-xs font-medium text-[#EDEDED] mb-1">Bill of Lading (PDF)</label>
                 <input
                   type="file"
                   accept="application/pdf"
                   required
                   onChange={e => setFiles({ ...files, billOfLading: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg"
+                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-[#2E2E2E] rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Certificate of Origin (PDF)</label>
+                <label className="block text-xs font-medium text-[#EDEDED] mb-1">Certificate of Origin (PDF)</label>
                 <input
                   type="file"
                   accept="application/pdf"
                   required
                   onChange={e => setFiles({ ...files, certificateOfOrigin: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg"
+                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-[#2E2E2E] rounded-lg"
                 />
               </div>
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={!files.invoice || !files.packingList || !files.billOfLading || !files.certificateOfOrigin}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 rounded-lg transition-colors text-sm disabled:opacity-50"
+                  className="w-full bg-[#1C1C1C] hover:bg-[#232323] text-white font-medium py-2 rounded-lg transition-colors text-sm disabled:opacity-50"
                 >
                   Upload & Generate SHA-256 Hash
                 </button>

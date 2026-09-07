@@ -113,7 +113,7 @@ export default function CustomsInspections() {
 
         <div className="flex-1 overflow-auto">
           <table className="w-full text-left border-collapse table-fixed min-w-[800px]">
-            <thead className="bg-slate-50 sticky top-0 border-b border-slate-200 z-10">
+            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
                 <th className="w-[20%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('manifest_container_id')}</th>
                 <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('transporter_col')}</th>
@@ -123,7 +123,7 @@ export default function CustomsInspections() {
                 <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">{t('action')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
               {inspections.map((row) => (
                 <tr key={row.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-5 py-4 whitespace-nowrap truncate">

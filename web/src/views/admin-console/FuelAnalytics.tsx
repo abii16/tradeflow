@@ -70,19 +70,19 @@ export default function FuelAnalytics() {
 
   return (
     <div className="max-w-[1320px] mx-auto space-y-6 pb-10">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+      <div className="flex items-center justify-between pb-4 border-b border-[#2E2E2E]">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-            <Droplet size={24} className="text-slate-700" />
+          <h1 className="text-xl font-semibold text-[#EDEDED] tracking-tight flex items-center gap-2">
+            <Droplet size={24} className="text-[#EDEDED]" />
             Fuel Consumption Analytics (FR-07)
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-[#8F8F8F] mt-0.5">
             Track estimated vs. actual fuel consumption per trip and surface efficiency trends.
           </p>
         </div>
         <div className="flex gap-2">
           <select 
-            className="border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-slate-900"
+            className="border border-[#2E2E2E] rounded-lg text-sm px-3 py-2 bg-[#232323] outline-none focus:ring-2 focus:ring-slate-900"
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value)}
           >
@@ -93,7 +93,7 @@ export default function FuelAnalytics() {
           <button 
             onClick={handleExport}
             disabled={exporting}
-            className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className="bg-[#1C1C1C] text-[#EDEDED] px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-[#232323] transition-colors disabled:opacity-50"
           >
             {exporting ? 'Exporting...' : 'Export Report'}
           </button>
@@ -101,13 +101,13 @@ export default function FuelAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Fuel Burned</div>
-              <div className="text-3xl font-black text-slate-900">{metrics.totalFuelBurned.toLocaleString()} <span className="text-sm font-normal text-slate-500">Liters</span></div>
+              <div className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider mb-1">Total Fuel Burned</div>
+              <div className="text-3xl font-black text-[#EDEDED]">{metrics.totalFuelBurned.toLocaleString()} <span className="text-sm font-normal text-[#8F8F8F]">Liters</span></div>
             </div>
-            <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
+            <div className="p-2 bg-[#232323] rounded-lg text-[#8F8F8F]">
               <Droplet size={20} />
             </div>
           </div>
@@ -116,40 +116,40 @@ export default function FuelAnalytics() {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg Variance</div>
-              <div className="text-3xl font-black text-slate-900">+{metrics.variancePercent}%</div>
+              <div className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider mb-1">Avg Variance</div>
+              <div className="text-3xl font-black text-[#EDEDED]">+{metrics.variancePercent}%</div>
             </div>
             <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
               <AlertTriangle size={20} />
             </div>
           </div>
-          <div className="text-xs text-slate-500">Actual burn vs ETA model estimates</div>
+          <div className="text-xs text-[#8F8F8F]">Actual burn vs ETA model estimates</div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Flagged Vehicles</div>
-              <div className="text-3xl font-black text-slate-900">{metrics.flaggedVehiclesCount}</div>
+              <div className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider mb-1">Flagged Vehicles</div>
+              <div className="text-3xl font-black text-[#EDEDED]">{metrics.flaggedVehiclesCount}</div>
             </div>
             <div className="p-2 bg-rose-50 rounded-lg text-rose-600">
               <AlertTriangle size={20} />
             </div>
           </div>
-          <div className="text-xs text-slate-500">&gt; 15% variance requiring inspection</div>
+          <div className="text-xs text-[#8F8F8F]">&gt; 15% variance requiring inspection</div>
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-          <h2 className="font-bold text-slate-900">Vehicle Efficiency Tracker</h2>
+      <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[#2E2E2E] bg-[#181818] flex justify-between items-center">
+          <h2 className="font-bold text-[#EDEDED]">Vehicle Efficiency Tracker</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs">
+            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Vehicle & Driver</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Active Route</th>
@@ -159,24 +159,24 @@ export default function FuelAnalytics() {
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
               {vehicles.map((v, idx) => {
                 const percent = Math.min(100, Math.round((v.actualLiters / v.estimatedLiters) * 100));
                 return (
                   <React.Fragment key={idx}>
-                    <tr className="hover:bg-slate-50 transition-colors">
+                    <tr className="hover:bg-[#2A2A2A] transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-mono text-sm font-bold text-slate-900">{v.vehicleId}</div>
-                        <div className="text-[11px] text-slate-500">{v.driverName}</div>
+                        <div className="font-mono text-sm font-bold text-[#EDEDED]">{v.vehicleId}</div>
+                        <div className="text-[11px] text-[#8F8F8F]">{v.driverName}</div>
                       </td>
-                      <td className="px-6 py-4 text-xs font-medium text-slate-700">{v.activeRoute}</td>
+                      <td className="px-6 py-4 text-xs font-medium text-[#EDEDED]">{v.activeRoute}</td>
                       <td className="px-6 py-4 font-mono">{v.estimatedLiters}</td>
                       <td className="px-6 py-4 font-mono font-bold">{v.actualLiters}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="w-full h-2 bg-[#2E2E2E] rounded-full overflow-hidden">
                             <div 
-                              className={`h-full rounded-full ${v.status === 'FLAGGED' ? 'bg-red-500' : 'bg-blue-500'}`}
+                              className={`h-full rounded-full ${v.status === 'FLAGGED' ? 'bg-red-500' : 'bg-[#3ECF8E]'}`}
                               style={{ width: `${percent}%` }}
                             ></div>
                           </div>
@@ -190,7 +190,7 @@ export default function FuelAnalytics() {
                           </span>
                         )}
                         {v.status === 'NORMAL' && (
-                          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1 bg-[#232323] text-[#8F8F8F] px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
                             Normal
                           </span>
                         )}

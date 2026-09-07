@@ -15,7 +15,7 @@ export default function ShipperHeader({ onSwitchPortal }: ShipperHeaderProps) {
   };
 
   return (
-    <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-5 shrink-0">
+    <header className="h-14 bg-[#232323] border-b border-[#2E2E2E] flex items-center justify-between px-5 shrink-0">
       {/* Left side: Functional Search */}
       <HeaderSearch />
 
@@ -24,7 +24,7 @@ export default function ShipperHeader({ onSwitchPortal }: ShipperHeaderProps) {
         {/* Language Toggle */}
         <button
           onClick={toggleLanguage}
-          className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-semibold text-[#8F8F8F] hover:text-[#EDEDED] transition-colors"
         >
           <Globe size={13} />
           {i18n.language === 'en' ? 'AM' : 'EN'}
@@ -33,14 +33,14 @@ export default function ShipperHeader({ onSwitchPortal }: ShipperHeaderProps) {
         <div className="w-px h-4 bg-slate-200"></div>
 
         {/* Notifications */}
-        <button className="text-slate-500 hover:text-slate-700">
+        <button className="text-[#8F8F8F] hover:text-[#EDEDED]">
           <Bell size={15} />
         </button>
 
         {/* User Account */}
-        <div className="flex items-center space-x-1 text-xs font-medium text-slate-700">
+        <div className="flex items-center space-x-1 text-xs font-medium text-[#EDEDED]">
           <span>Dani</span>
-          <ChevronDown size={13} className="text-slate-400" />
+          <ChevronDown size={13} className="text-[#8F8F8F]" />
         </div>
       </div>
     </header>
