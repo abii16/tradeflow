@@ -202,7 +202,7 @@ export default function HeaderSearch() {
     <div ref={containerRef} className="relative w-full max-w-[400px]">
       {/* Search Input Bar */}
       <div className="relative flex items-center">
-        <Search className="absolute left-2.5 text-slate-400 pointer-events-none" size={14} />
+        <Search className="absolute left-2.5 text-[#8F8F8F] pointer-events-none" size={14} />
         <input
           ref={inputRef}
           type="text"
@@ -213,7 +213,7 @@ export default function HeaderSearch() {
             setIsOpen(true);
           }}
           placeholder={t('search_placeholder')}
-          className="w-full pl-8 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded text-xs text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none placeholder:text-slate-400 transition-colors"
+          className="w-full pl-8 pr-8 py-1.5 bg-[#181818] border border-[#2E2E2E] rounded text-xs text-[#EDEDED] focus:bg-[#232323] focus:border-[#3ECF8E] focus:outline-none placeholder:text-[#8F8F8F] transition-colors"
         />
         {query ? (
           <button
@@ -221,12 +221,12 @@ export default function HeaderSearch() {
               setQuery('');
               inputRef.current?.focus();
             }}
-            className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5"
+            className="absolute right-2 text-[#8F8F8F] hover:text-[#8F8F8F] p-0.5"
           >
             <X size={12} />
           </button>
         ) : (
-          <kbd className="absolute right-2 hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-100 border border-slate-200 rounded">
+          <kbd className="absolute right-2 hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-[#8F8F8F] bg-[#232323] border border-[#2E2E2E] rounded">
             Ctrl+K
           </kbd>
         )}
@@ -234,16 +234,16 @@ export default function HeaderSearch() {
 
       {/* Results Dropdown */}
       {isOpen && query.trim() !== '' && (
-        <div className="absolute left-0 top-full mt-1.5 w-full sm:w-[440px] bg-white border border-slate-200 rounded shadow-md z-50 overflow-hidden text-xs">
+        <div className="absolute left-0 top-full mt-1.5 w-full sm:w-[440px] bg-[#232323] border border-[#2E2E2E] rounded shadow-md z-50 overflow-hidden text-xs">
           {results.length === 0 ? (
-            <div className="p-4 text-center text-xs text-slate-400">
-              {t('no_results_found')} "<span className="text-slate-700 font-medium">{query}</span>"
+            <div className="p-4 text-center text-xs text-[#8F8F8F]">
+              {t('no_results_found')} "<span className="text-[#EDEDED] font-medium">{query}</span>"
             </div>
           ) : (
-            <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+            <div className="max-h-80 overflow-y-auto divide-y divide-[#2E2E2E]">
               {categories.map((category) => (
                 <div key={category} className="p-2">
-                  <div className="text-[10px] font-mono font-semibold uppercase text-slate-400 px-2 py-1 tracking-wider">
+                  <div className="text-[10px] font-mono font-semibold uppercase text-[#8F8F8F] px-2 py-1 tracking-wider">
                     {category}
                   </div>
                   <div className="space-y-0.5">
@@ -253,15 +253,15 @@ export default function HeaderSearch() {
                         <button
                           key={item.id}
                           onClick={() => handleSelect(item.path)}
-                          className="w-full text-left flex items-start gap-2.5 px-2 py-1.5 rounded hover:bg-slate-50 transition-colors group"
+                          className="w-full text-left flex items-start gap-2.5 px-2 py-1.5 rounded hover:bg-[#181818] transition-colors group"
                         >
-                          <item.icon size={14} className="text-slate-400 mt-0.5 shrink-0 group-hover:text-slate-900" />
+                          <item.icon size={14} className="text-[#8F8F8F] mt-0.5 shrink-0 group-hover:text-[#EDEDED]" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-slate-900 truncate flex items-center justify-between">
+                            <div className="font-medium text-[#EDEDED] truncate flex items-center justify-between">
                               <span>{item.title}</span>
-                              <ArrowUpRight size={12} className="text-slate-300 group-hover:text-slate-700 shrink-0 ml-1" />
+                              <ArrowUpRight size={12} className="text-[#8F8F8F] group-hover:text-[#EDEDED] shrink-0 ml-1" />
                             </div>
-                            <div className="text-[11px] text-slate-500 truncate">{item.subtitle}</div>
+                            <div className="text-[11px] text-[#8F8F8F] truncate">{item.subtitle}</div>
                           </div>
                         </button>
                       ))}
@@ -271,8 +271,8 @@ export default function HeaderSearch() {
             </div>
           )}
 
-          <div className="p-2 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400">
-            <span>{t('press_esc_to_close').split('ESC')[0]}<kbd className="font-mono bg-white px-1 py-0.5 border border-slate-200 rounded">ESC</kbd>{t('press_esc_to_close').split('ESC')[1]}</span>
+          <div className="p-2 bg-[#181818] border-t border-[#2E2E2E] flex justify-between items-center text-[10px] text-[#8F8F8F]">
+            <span>{t('press_esc_to_close').split('ESC')[0]}<kbd className="font-mono bg-[#232323] px-1 py-0.5 border border-[#2E2E2E] rounded">ESC</kbd>{t('press_esc_to_close').split('ESC')[1]}</span>
             <span>{results.length} {results.length === 1 ? t('result') : t('results')}</span>
           </div>
         </div>
