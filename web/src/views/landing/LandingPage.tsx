@@ -290,7 +290,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           TRUSTED BY
           ================================================================================= */}
       <section id="platform-overview" className="w-full bg-[#0C0C0C] border-y border-[#262626] py-10 relative z-40">
-        <div className="max-w-7xl mx-auto px-6 text-center">
+        <div className="max-w-[90rem] mx-auto px-6 text-center">
           <p className="text-[11px] font-mono tracking-widest text-[#8F8F8F] uppercase text-center mb-6">TRUSTED BY EAST Africa'S PRINCIPAL LOGISTICS ACTORS</p>
           <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8">
             {[
@@ -312,44 +312,44 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           SECTION 1: CORRIDOR TELEMATICS
           ================================================================================= */}
-      <section id="corridor-telematics" className="w-full bg-[#0C0C0C] pt-24 pb-32 relative z-40 border-b border-[#262626] overflow-hidden">
+      <section id="corridor-telematics" className="w-full bg-[#0C0C0C] py-20 relative z-40 border-b border-[#262626] overflow-hidden">
         {/* Subtle background effect */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#3ECF8E]/5 blur-[120px] rounded-full pointer-events-none"></div>
         
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col xl:flex-row items-center gap-16 xl:gap-24 relative z-10">
-          <div className="flex-1 animate-in fade-in slide-in-from-left-8 duration-1000">
+        <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center relative z-10">
+          <div className="lg:col-span-5 flex flex-col justify-center animate-in fade-in slide-in-from-left-8 duration-1000">
 
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-mono uppercase bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 text-[#3ECF8E] mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide uppercase bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 text-[#3ECF8E] mb-4 w-fit">
               <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
               • LIVE CORRIDOR TELEMATICS (810KM ARTERY)
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-[#EDEDED] tracking-tight leading-tight mb-4 pr-4 lg:whitespace-nowrap">
-              Corridor Telematics <br/> <span className="text-[#3ECF8E]">& Deep ETA</span>
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-white tracking-tight whitespace-nowrap mb-4">
+              Corridor Telematics <span className="text-[#3ECF8E]">& Deep ETA</span>
             </h2>
-            <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
+            <p className="text-sm text-zinc-400 leading-relaxed max-w-lg mb-6">
               GPS position updates ingested at least every 5 minutes while in transit. ETA model recalculates predicted arrival using live position, historical corridor transit-time data, weather, and known congestion/conflict alerts.
             </p>
-            <ul className="space-y-4 font-bold text-sm mb-10">
-              <li className="bg-[#141414] border border-[#262626] rounded-xl p-3.5 flex items-center gap-3 text-xs text-zinc-200 mt-3 hover:border-[#3ECF8E]/30 transition">
-                <div className="w-7 h-7 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center"><Navigation size={14} /></div> 
-                Gradient-Boosted ETA Models
+            <ul className="space-y-3 mb-10">
+              <li className="bg-[#141414] border border-[#262626] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
+                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Navigation size={14} /></div> 
+                <span className="text-xs font-semibold text-zinc-200 tracking-wide">Gradient-Boosted ETA Models</span>
               </li>
-              <li className="bg-[#141414] border border-[#262626] rounded-xl p-3.5 flex items-center gap-3 text-xs text-zinc-200 mt-3 hover:border-[#3ECF8E]/30 transition">
-                <div className="w-7 h-7 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center"><Shield size={14} /></div> 
-                Security-Aware Rerouting (FR-08)
+              <li className="bg-[#141414] border border-[#262626] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
+                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Shield size={14} /></div> 
+                <span className="text-xs font-semibold text-zinc-200 tracking-wide">Security-Aware Rerouting (FR-08)</span>
               </li>
-              <li className="bg-[#141414] border border-[#262626] rounded-xl p-3.5 flex items-center gap-3 text-xs text-zinc-200 mt-3 hover:border-[#3ECF8E]/30 transition">
-                <div className="w-7 h-7 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center"><MapPin size={14} /></div> 
-                810km Djibouti–Modjo Route Tracking
+              <li className="bg-[#141414] border border-[#262626] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
+                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><MapPin size={14} /></div> 
+                <span className="text-xs font-semibold text-zinc-200 tracking-wide">810km Djibouti–Modjo Route Tracking</span>
               </li>
             </ul>
             
-            <button className="group flex items-center gap-2 bg-[#EDEDED] hover:bg-white text-black px-6 py-3 rounded-full font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
+            <button className="group flex w-fit items-center gap-2 bg-[#EDEDED] hover:bg-white text-black px-6 py-3 rounded-full font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
               See Live Demo
               <ChevronDown className="w-4 h-4 -rotate-90 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
-          <div className="flex-1 w-full h-[400px] lg:h-[480px] rounded-3xl bg-[#141414] border border-[#262626] p-2 shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 group">
+          <div className="lg:col-span-7 w-full h-[400px] lg:h-[480px] rounded-2xl bg-[#141414] border border-[#262626] p-2 relative overflow-hidden shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 group">
             <LiveTelematicsMap />
             
             {/* Floating Live Status Card */}
@@ -392,7 +392,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0C0C0C] to-[#0C0C0C] pointer-events-none"></div>
         <div className="absolute top-1/2 right-1/4 w-[500px] h-[500px] bg-[#3ECF8E]/5 blur-[120px] rounded-full pointer-events-none"></div>
 
-        <div className="max-w-7xl mx-auto px-8 md:px-12 flex flex-col md:flex-row-reverse items-center gap-16 relative z-10">
+        <div className="max-w-[90rem] mx-auto px-8 md:px-12 flex flex-col md:flex-row-reverse items-center gap-16 relative z-10">
           <div className="flex-1">
 
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] text-[10px] font-mono uppercase tracking-widest mb-6">
@@ -448,7 +448,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           IMPACT METRICS
           ================================================================================= */}
       <section className="w-full bg-[#0C0C0C] py-24 relative z-40 border-y border-[#262626]">
-        <div className="max-w-7xl mx-auto px-8 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-[#262626]">
+        <div className="max-w-[90rem] mx-auto px-8 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-[#262626]">
           <div className="flex flex-col items-center pt-8 md:pt-0">
             <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-[#EDEDED]">{impactMetrics.activeTransporters}<span className="text-[#3ECF8E]">+</span></div>
             <div className="text-sm font-bold text-[#8F8F8F] uppercase tracking-widest">Active Transporters</div>
@@ -468,7 +468,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           SECTION 3: DYNAMIC RATES
           ================================================================================= */}
       <section id="dynamic-rates" className="w-full bg-[#0C0C0C] py-32 relative z-40 border-b border-[#262626]">
-        <div className="max-w-7xl mx-auto px-8 md:px-12 flex flex-col md:flex-row items-center gap-16">
+        <div className="max-w-[90rem] mx-auto px-8 md:px-12 flex flex-col md:flex-row items-center gap-16">
           <div className="flex-1">
 
             <h2 className="text-4xl md:text-5xl font-black text-[#EDEDED] tracking-tight mb-6">
@@ -505,7 +505,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           ================================================================================= */}
       <section id="customs-sync" className="w-full bg-[#0C0C0C] py-32 relative z-40 overflow-hidden">
         <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-[#3ECF8E]/5 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="max-w-7xl mx-auto px-8 md:px-12 flex flex-col md:flex-row-reverse items-center gap-16 relative z-10">
+        <div className="max-w-[90rem] mx-auto px-8 md:px-12 flex flex-col md:flex-row-reverse items-center gap-16 relative z-10">
           <div className="flex-1">
 
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] text-[10px] font-mono uppercase tracking-widest mb-6">
@@ -555,13 +555,13 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           INTERACTIVE FREIGHT CALCULATOR (CTA)
           ================================================================================= */}
       <section className="w-full bg-[#0C0C0C] py-32 relative z-40 border-t border-[#262626]">
-        <div className="max-w-5xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-[#EDEDED]">Instant AI Spot Rate</h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed max-w-2xl mx-auto">Get a predictive, data-driven freight quote instantly.</p>
           </div>
           
-          <div className="max-w-5xl mx-auto p-8 rounded-2xl bg-[#141414] border border-[#262626] shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="max-w-7xl mx-auto p-8 rounded-2xl bg-[#141414] border border-[#262626] shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex flex-col space-y-6 relative z-10">
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">Origin (Port)</label>
@@ -665,7 +665,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           SECTION 5: ENTERPRISE STATS & COMPLIANCE FOOTER
           ================================================================================= */}
       <footer className="w-full bg-[#0C0C0C] border-t border-[#262626] py-12 px-6 relative z-40">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[90rem] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div>
               <h3 className="text-xl font-bold text-[#EDEDED] mb-4">TradeFlow Logistics Engine</h3>
