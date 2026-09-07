@@ -399,7 +399,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
               Matching Engine
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-[#EDEDED] tracking-tight mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-[#EDEDED] tracking-tight mb-6">
               AI-Powered <br/> Freight Matching
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
@@ -471,7 +471,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         <div className="max-w-[90rem] mx-auto px-8 md:px-12 flex flex-col md:flex-row items-center gap-16">
           <div className="flex-1">
 
-            <h2 className="text-4xl md:text-5xl font-black text-[#EDEDED] tracking-tight mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-[#EDEDED] tracking-tight mb-6">
               Dynamic Pricing <br/> & Settlement
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
@@ -512,7 +512,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
               Customs Sync
             </div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 text-[#EDEDED]">
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight mb-6 text-[#EDEDED]">
               Digital Customs <br/> <span className="text-[#3ECF8E]">Documentation</span>
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
@@ -557,7 +557,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       <section className="w-full bg-[#0C0C0C] py-32 relative z-40 border-t border-[#262626]">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-[#EDEDED]">Instant AI Spot Rate</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight mb-4 text-[#EDEDED]">Instant AI Spot Rate</h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed max-w-2xl mx-auto">Get a predictive, data-driven freight quote instantly.</p>
           </div>
           
