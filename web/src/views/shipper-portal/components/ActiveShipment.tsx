@@ -84,8 +84,8 @@ TradeFlow MVP Platform
     URL.revokeObjectURL(url);
   };
 
-  if (loading) return <div className="p-4 text-xs text-slate-500">Loading active shipment...</div>;
-  if (!shipment) return <div className="p-4 bg-white border border-slate-200 rounded-md text-xs text-slate-500 text-center">No active shipments in transit.</div>;
+  if (loading) return <div className="p-4 text-xs text-[#8F8F8F]">Loading active shipment...</div>;
+  if (!shipment) return <div className="p-4 bg-[#232323] border border-[#2E2E2E] rounded-md text-xs text-[#8F8F8F] text-center">No active shipments in transit.</div>;
 
   const djibouti = [11.5890, 43.1458] as [number, number];
   const galafi = [11.7200, 41.8333] as [number, number];
@@ -94,7 +94,7 @@ TradeFlow MVP Platform
   const routeLine = [djibouti, galafi, awash, modjo];
 
   return (
-    <div className="bg-white border border-slate-200 rounded-md shadow-lg shadow-slate-200/40">
+    <div className="bg-[#232323] border border-[#2E2E2E] rounded-md shadow-lg shadow-slate-200/40">
       {showRatingModal && (
         <RatingModal
           transporterName="Kangaroo Freight"
@@ -105,10 +105,10 @@ TradeFlow MVP Platform
       )}
 
       {/* Header */}
-      <div className="p-3.5 border-b border-slate-100 flex justify-between items-center">
+      <div className="p-3.5 border-b border-[#2E2E2E] flex justify-between items-center">
         <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{t('live_shipment_track')}</span>
-          <h2 className="text-sm font-semibold text-slate-900">{shipment?.trackingNumber || 'SHP-9021-DJM'}</h2>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#8F8F8F]">{t('live_shipment_track')}</span>
+          <h2 className="text-sm font-semibold text-[#EDEDED]">{shipment?.trackingNumber || 'SHP-9021-DJM'}</h2>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -117,14 +117,14 @@ TradeFlow MVP Platform
           >
             <Star size={11} className="fill-amber-500 text-amber-500" /> {t('rate_carrier')}
           </button>
-          <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-medium rounded border border-blue-100">
+          <span className="px-2 py-0.5 bg-[#3ECF8E]/10 text-[#3ECF8E] text-[11px] font-medium rounded border border-blue-100">
             {shipment?.status === 'IN_TRANSIT' ? t('in_transit') : shipment?.status || t('in_transit')}
           </span>
         </div>
       </div>
 
       {/* Mini Map */}
-      <div className="h-64 w-full border-b border-slate-100 relative">
+      <div className="h-64 w-full border-b border-[#2E2E2E] relative">
         <MapContainer center={[10.5, 41.5]} zoom={6} scrollWheelZoom={false} className="h-full w-full">
           <TileLayer
             attribution="&copy; Google"
@@ -135,7 +135,7 @@ TradeFlow MVP Platform
           <Marker position={awash} />
           <Marker position={modjo} />
         </MapContainer>
-        <div className="absolute bottom-2 left-2 z-[400] bg-white/90 backdrop-blur-xs px-2 py-1 rounded text-[10px] font-mono border border-slate-200 shadow-xs">
+        <div className="absolute bottom-2 left-2 z-[400] bg-[#232323]/90 backdrop-blur-xs px-2 py-1 rounded text-[10px] font-mono border border-[#2E2E2E] shadow-xs">
           GPS: Awash Checkpoint • Speed: 62 km/h
         </div>
       </div>
@@ -143,19 +143,19 @@ TradeFlow MVP Platform
       {/* Progress Track */}
       <div className="p-4 space-y-4">
         <div>
-          <div className="flex justify-between text-xs text-slate-600 mb-1.5 font-medium">
+          <div className="flex justify-between text-xs text-[#8F8F8F] mb-1.5 font-medium">
             <span>{t('milestone_progress')} (68%)</span>
             <span>{t('eta_today')}</span>
           </div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-slate-900 h-full w-[68%]" />
+          <div className="w-full bg-[#181818] h-1.5 rounded-full overflow-hidden">
+            <div className="bg-[#1C1C1C] h-full w-[68%]" />
           </div>
         </div>
 
         {/* Milestones list */}
-        <div className="pt-2 border-t border-slate-100">
+        <div className="pt-2 border-t border-[#2E2E2E]">
           <div className="relative pl-6 space-y-4">
-            <div className="absolute top-2 bottom-2 left-[9px] w-[2px] bg-slate-100"></div>
+            <div className="absolute top-2 bottom-2 left-[9px] w-[2px] bg-[#181818]"></div>
             {[
               { title: t('djibouti_cleared'), time: 'Yesterday 14:00', state: 'done' },
               { title: t('galafi_verified'), time: 'Today 06:15', state: 'done' },
@@ -164,9 +164,9 @@ TradeFlow MVP Platform
             ].map((m, idx) => (
               <div key={idx} className="relative flex items-center justify-between text-xs">
                 <div
-                  className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-white transition-all ${m.state === 'done' || m.state === 'active'
+                  className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-[#232323] transition-all ${m.state === 'done' || m.state === 'active'
                       ? 'border-emerald-500 text-emerald-600'
-                      : 'border-slate-200 text-slate-300'
+                      : 'border-[#2E2E2E] text-[#8F8F8F]'
                     } ${m.state === 'active' ? 'shadow-[0_0_12px_rgba(16,185,129,0.4)] ring-4 ring-emerald-500/20' : ''}`}
                 >
                   {m.state === 'done' || m.state === 'active' ? (
@@ -177,21 +177,21 @@ TradeFlow MVP Platform
                     <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
                   )}
                 </div>
-                <span className={`pl-2 truncate ${m.state === 'done' || m.state === 'active' ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
+                <span className={`pl-2 truncate ${m.state === 'done' || m.state === 'active' ? 'text-[#EDEDED] font-medium' : 'text-[#8F8F8F]'}`}>
                   {m.title}
                 </span>
-                <span className="text-[11px] text-slate-400 font-medium shrink-0">{m.time}</span>
+                <span className="text-[11px] text-[#8F8F8F] font-medium shrink-0">{m.time}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Action button */}
-        <div className="pt-2 border-t border-slate-100">
+        <div className="pt-2 border-t border-[#2E2E2E]">
           <button
             type="button"
             onClick={handleDownloadWaybill}
-            className="w-full bg-slate-300 border border-black hover:bg-slate-400 text-slate-900 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-[#2E2E2E] border border-[#2E2E2E] hover:bg-[#3E3E3E] text-[#EDEDED] py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {t('download_waybill')}
           </button>
