@@ -184,7 +184,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             className="w-full h-full object-cover"
             src="/video.mp4"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1C1C1C]/85 via-[#1C1C1C]/60 to-[#1C1C1C]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1C1C1C]/95 via-[#1C1C1C]/85 to-[#1C1C1C]" />
         </div>
 
         {/* TOP NAVIGATION HEADER */}
@@ -302,7 +302,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               { src: '/DPCA.jpg', alt: 'DPCA', title: 'Djibouti Ports and Corridor Authority', height: 'h-10' }
             ].map((logo, idx) => (
               <div key={idx} className="h-12 px-5 rounded-xl bg-[#232323]/90 border border-[#2E2E2E] flex items-center justify-center transition-all duration-300 hover:border-[#3ECF8E]/40 hover:bg-[#2E2E2E] group">
-                <img src={logo.src} alt={logo.alt} className="h-7 w-auto max-w-[90px] object-contain mix-blend-screen opacity-80 hover:opacity-100 transition" title={logo.title} />
+                <img src={logo.src} alt={logo.alt} className="h-7 w-auto max-w-[90px] object-contain mix-blend-screen grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-500" title={logo.title} />
               </div>
             ))}
           </div>
@@ -344,7 +344,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               </li>
             </ul>
             
-            <button className="group flex w-fit items-center gap-2 bg-[#EDEDED] hover:bg-white text-black px-6 py-3 rounded-full font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
+            <button className="group flex w-fit items-center gap-2 bg-[#232323] border border-[#2E2E2E] hover:border-[#8F8F8F] text-white px-6 py-3 rounded-full font-bold text-sm transition-all shadow-lg hover:bg-[#2A2A2A]">
               See Live Demo
               <ChevronDown className="w-4 h-4 -rotate-90 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -652,7 +652,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                     <Zap size={24} className="text-[#3ECF8E]" />
                   </div>
                   <p className="font-mono text-[11px] text-[#8F8F8F] max-w-[220px] uppercase tracking-widest leading-relaxed">
-                    Awaiting freight parameters...
+                    <div className="flex flex-col items-center justify-center h-full opacity-50"><MapPin size={32} className="text-[#3ECF8E] mb-4 animate-bounce" /><div className="text-[#8F8F8F] font-mono text-xs tracking-widest uppercase">AWAITING FREIGHT PARAMETERS...</div></div>
                   </p>
                 </div>
               )}
