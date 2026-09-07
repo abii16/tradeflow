@@ -454,7 +454,7 @@ export default function DynamicPricing() {
         
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-[#8F8F8F]">
-            <thead className="text-xs text-[#8F8F8F] bg-[#181818] uppercase border-b border-[#2E2E2E] font-semibold">
+            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
                 <th className="px-6 py-3 rounded-tl-lg">{t('dp_col_contract_id', 'Contract ID')}</th>
                 <th className="px-6 py-3">{t('dp_col_shipper', 'Shipper Entity')}</th>
@@ -465,7 +465,7 @@ export default function DynamicPricing() {
                 <th className="px-6 py-3 text-right rounded-tr-lg">{t('dp_col_actions', 'Actions')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E]">
+            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
               {divergingContracts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-[#8F8F8F]">
@@ -474,7 +474,7 @@ export default function DynamicPricing() {
                 </tr>
               ) : (
                 divergingContracts.map(contract => (
-                  <tr key={contract.id} className="hover:bg-[#181818]/80 transition-colors border-b border-[#2E2E2E] last:border-0">
+                  <tr key={contract.id} className="hover:bg-[#2A2A2A] transition-colors">
                     <td className="px-6 py-4 font-mono font-bold text-[#EDEDED]">{contract.id}</td>
                     <td className="px-6 py-4 font-medium text-[#EDEDED]">{contract.shipperName}</td>
                     <td className="px-6 py-4 font-mono text-[#8F8F8F]">ETB {contract.lockedRate.toLocaleString()}</td>

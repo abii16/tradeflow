@@ -149,7 +149,7 @@ export default function FuelAnalytics() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-[#181818] border-b border-[#2E2E2E] text-[#8F8F8F] text-xs">
+            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Vehicle & Driver</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Active Route</th>
@@ -159,12 +159,12 @@ export default function FuelAnalytics() {
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E]">
+            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
               {vehicles.map((v, idx) => {
                 const percent = Math.min(100, Math.round((v.actualLiters / v.estimatedLiters) * 100));
                 return (
                   <React.Fragment key={idx}>
-                    <tr className="hover:bg-[#181818] transition-colors">
+                    <tr className="hover:bg-[#2A2A2A] transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-mono text-sm font-bold text-[#EDEDED]">{v.vehicleId}</div>
                         <div className="text-[11px] text-[#8F8F8F]">{v.driverName}</div>

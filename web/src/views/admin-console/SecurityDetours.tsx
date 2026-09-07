@@ -266,7 +266,7 @@ export default function SecurityDetours() {
         
         <div className="flex-1 overflow-x-auto">
           <table className="w-full text-left text-sm text-[#8F8F8F]">
-            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#232323] uppercase border-b border-[#2E2E2E] tracking-wider">
+            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
                 <th className="px-6 py-3">Incident ID</th>
                 <th className="px-6 py-3">Route Segment</th>
@@ -276,9 +276,9 @@ export default function SecurityDetours() {
                 <th className="px-6 py-3 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E] text-xs">
+            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
               {history.map((inc) => (
-                <tr key={inc.id} className="hover:bg-[#181818]/50 transition-colors">
+                <tr key={inc.id} className="hover:bg-[#2A2A2A] transition-colors">
                   <td className="px-6 py-3 font-mono font-bold text-[#EDEDED]">{inc.id.substring(0,8)}</td>
                   <td className="px-6 py-3 font-semibold text-[#EDEDED]">{inc.name}</td>
                   <td className="px-6 py-3">

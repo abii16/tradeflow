@@ -103,7 +103,7 @@ export default function VerificationQueue() {
           <div className="overflow-x-auto mt-2">
             <table className="w-full text-left text-sm text-[#8F8F8F]">
               {filteredRequests.length > 0 && (
-                <thead className="text-xs text-[#8F8F8F] bg-[#181818] uppercase border-b border-[#2E2E2E] font-semibold">
+                <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                   <tr>
                     <th className="px-6 py-3 rounded-tl-lg">{t('vq_col_app_id')}</th>
                     <th className="px-6 py-3">{t('vq_col_entity')}</th>
@@ -114,7 +114,7 @@ export default function VerificationQueue() {
                   </tr>
                 </thead>
               )}
-              <tbody className="divide-y divide-[#2E2E2E]">
+              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
                 {filteredRequests.length === 0 && !loading && (
                   <tr>
                     <td colSpan={6} className="px-6 py-16 text-center">

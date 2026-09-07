@@ -251,7 +251,7 @@ export default function ControlTowerDashboard() {
 
           <div className="overflow-x-auto flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <table className="w-full text-left text-sm text-[#8F8F8F]">
-              <thead className="text-xs text-[#8F8F8F] bg-[#181818] uppercase border-b border-[#2E2E2E] sticky top-0 z-10">
+              <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Load ID</th>
                   <th className="px-4 py-3 font-semibold">Cargo / Weight</th>
@@ -259,7 +259,7 @@ export default function ControlTowerDashboard() {
                   <th className="px-4 py-3 text-right font-semibold">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2E2E2E]">
+              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
                 {loadingVerifications ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-sm text-[#8F8F8F]">
@@ -274,7 +274,7 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   loads.map((load) => (
-                    <tr key={load.id} className="hover:bg-[#181818]/80 transition-colors">
+                    <tr key={load.id} className="hover:bg-[#2A2A2A] transition-colors">
                       <td className="px-4 py-3 leading-normal">
                         <span className="font-mono text-xs font-semibold bg-[#232323] text-[#EDEDED] px-2 py-0.5 rounded">
                           TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
@@ -327,7 +327,7 @@ export default function ControlTowerDashboard() {
           <div className="overflow-x-auto flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <table className="w-full text-left text-sm text-[#8F8F8F]">
               {verifications.length > 0 && (
-                <thead className="text-xs text-[#8F8F8F] bg-[#181818] uppercase border-b border-[#2E2E2E] sticky top-0 z-10">
+                <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                   <tr>
                     <th className="px-6 py-3 font-semibold">{t('vr_app_id')}</th>
                     <th className="px-6 py-3 font-semibold">{t('vr_entity')}</th>
@@ -337,7 +337,7 @@ export default function ControlTowerDashboard() {
                   </tr>
                 </thead>
               )}
-              <tbody className="divide-y divide-[#2E2E2E]">
+              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
                 {loadingVerifications ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-sm text-[#8F8F8F]">
@@ -360,7 +360,7 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   verifications.map((v) => (
-                    <tr key={v.id} className="hover:bg-[#181818]/80 transition-colors">
+                    <tr key={v.id} className="hover:bg-[#2A2A2A] transition-colors">
                       <td className="px-6 py-3 leading-normal">
                         <span className="font-mono text-xs font-semibold bg-[#232323] text-[#EDEDED] px-2 py-0.5 rounded">
                           REQ-{v.id.toString().slice(0, 8).toUpperCase()}

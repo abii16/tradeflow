@@ -138,7 +138,7 @@ export default function AuditLogs() {
         {/* Dense Data Grid */}
         <div className="flex-1 overflow-x-auto">
           <table className="w-full text-left text-sm text-[#8F8F8F]">
-            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#232323] uppercase border-b border-[#2E2E2E] tracking-wider">
+            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
                 <th className="px-6 py-3">{t('al_col_time')}</th>
                 <th className="px-6 py-3">{t('al_col_action')}</th>
@@ -148,7 +148,7 @@ export default function AuditLogs() {
                 <th className="px-6 py-3 text-right">{t('al_col_status')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono">
+            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
               {loading && (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-[#8F8F8F] font-sans">
@@ -158,7 +158,7 @@ export default function AuditLogs() {
               )}
               
               {!loading && logs.map((log, index) => (
-                <tr key={index} className="hover:bg-[#181818]/80 transition-colors">
+                <tr key={index} className="hover:bg-[#2A2A2A] transition-colors">
                   <td className="px-6 py-3 text-[#8F8F8F]">[{new Date(log.createdAt || log.timestamp).toLocaleString()}]</td>
                   <td className="px-6 py-3">
                     <span className="font-bold text-[#EDEDED]">{log.action}</span>
