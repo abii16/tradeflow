@@ -493,7 +493,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             </div>
             <div className="flex items-end gap-2 h-40 relative z-10 opacity-80 mt-auto">
               {[40, 55, 45, 70, 60, 85, 90, 75, 100].map((h, i) => (
-                <div key={i} className="flex-1 bg-[#3ECF8E] hover:bg-[#34b27b] transition-colors cursor-pointer rounded-t-sm" style={{ height: `${h}%` }}></div>
+                <div key={i} className="flex-1 bg-gradient-to-t from-[#3ECF8E]/10 to-[#3ECF8E]/90 border-t border-[#3ECF8E] hover:to-[#3ECF8E] transition-all duration-300 cursor-pointer rounded-t-sm hover:shadow-[0_0_20px_rgba(62,207,142,0.3)]" style={{ height: `${h}%` }}></div>
               ))}
             </div>
           </div>
