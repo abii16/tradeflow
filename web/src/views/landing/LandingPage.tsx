@@ -448,18 +448,18 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           IMPACT METRICS
           ================================================================================= */}
       <section className="w-full bg-[#0C0C0C] py-24 relative z-40 border-y border-[#262626]">
-        <div className="max-w-[90rem] mx-auto px-8 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-[#262626]">
+        <div className="max-w-[90rem] mx-auto px-8 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-white/5">
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-[#EDEDED]">{impactMetrics.activeTransporters}<span className="text-[#3ECF8E]">+</span></div>
-            <div className="text-sm font-bold text-[#8F8F8F] uppercase tracking-widest">Active Transporters</div>
+            <div className="text-5xl lg:text-6xl font-black tracking-tighter mb-2 text-white">{impactMetrics.activeTransporters}<span className="text-[#3ECF8E]">+</span></div>
+            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Active Transporters</div>
           </div>
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-[#EDEDED]">{impactMetrics.tonsDelivered}<span className="text-[#3ECF8E]">+</span></div>
-            <div className="text-sm font-bold text-[#8F8F8F] uppercase tracking-widest">Tons Delivered</div>
+            <div className="text-5xl lg:text-6xl font-black tracking-tighter mb-2 text-white">{impactMetrics.tonsDelivered}<span className="text-[#3ECF8E]">+</span></div>
+            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Tons Delivered</div>
           </div>
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 text-[#EDEDED]">{impactMetrics.uptime}<span className="text-[#3ECF8E]">%</span></div>
-            <div className="text-sm font-bold text-[#8F8F8F] uppercase tracking-widest">Platform Uptime</div>
+            <div className="text-5xl lg:text-6xl font-black tracking-tighter mb-2 text-white">{impactMetrics.uptime}<span className="text-[#3ECF8E]">%</span></div>
+            <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Platform Uptime</div>
           </div>
         </div>
       </section>
