@@ -49,7 +49,7 @@ const LocationMarker = ({ latitude, longitude, radius, severity, onLocationSelec
 
 export default function MiniIncidentMap(props: MiniIncidentMapProps) {
   return (
-    <div className="relative w-full h-full min-h-[220px] rounded-lg overflow-hidden border border-slate-700">
+    <div className="relative w-full h-full min-h-[220px] rounded-lg overflow-hidden border border-[#2E2E2E]">
       <MapContainer 
         bounds={bounds}
         zoomControl={false}
@@ -76,7 +76,7 @@ export default function MiniIncidentMap(props: MiniIncidentMapProps) {
       {/* Crosshair Overlay hint */}
       {!props.latitude && (
         <div className="absolute inset-0 z-[400] flex items-center justify-center pointer-events-none">
-          <div className="bg-slate-900/80 backdrop-blur text-white text-[10px] font-mono px-3 py-1.5 rounded border border-slate-700 animate-pulse">
+          <div className="bg-[#1C1C1C]/80 backdrop-blur text-[#EDEDED] text-[10px] font-mono px-3 py-1.5 rounded border border-[#2E2E2E] animate-pulse">
             Click anywhere on corridor to set incident coordinates
           </div>
         </div>

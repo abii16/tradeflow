@@ -22,10 +22,10 @@ const createVehicleMarker = (id: string, colorClass = "bg-cyan-400") => {
     className: 'bg-transparent border-none',
     html: `
       <div class="relative group cursor-pointer w-6 h-6 flex items-center justify-center -ml-3 -mt-3">
-        <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[10px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+        <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#232323] text-[#EDEDED] text-[10px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
           ${id}
         </div>
-        <div class="w-3 h-3 rounded-full bg-white flex items-center justify-center z-10 relative shadow-md">
+        <div class="w-3 h-3 rounded-full bg-[#232323] flex items-center justify-center z-10 relative shadow-md">
           <div class="w-1.5 h-1.5 rounded-full ${colorClass}"></div>
         </div>
         <div class="absolute inset-0 rounded-full bg-cyan-400 opacity-60 animate-ping"></div>
@@ -92,7 +92,7 @@ export default function LiveRadarMap() {
               >
                 <Popup>
                   <div className="font-bold text-amber-600 text-sm mb-1">{t(title) || title}</div>
-                  <div className="text-xs text-slate-600">{t(desc) || desc}</div>
+                  <div className="text-xs text-[#8F8F8F]">{t(desc) || desc}</div>
                 </Popup>
               </Polygon>
             );
@@ -106,7 +106,7 @@ export default function LiveRadarMap() {
               >
                 <Popup>
                   <div className="font-bold text-amber-600 text-sm mb-1">{t(title) || title}</div>
-                  <div className="text-xs text-slate-600">{t(desc) || desc}</div>
+                  <div className="text-xs text-[#8F8F8F]">{t(desc) || desc}</div>
                 </Popup>
               </Circle>
             );
@@ -124,7 +124,7 @@ export default function LiveRadarMap() {
             >
               <Popup>
                 <div className="font-bold text-red-600 text-sm mb-1">{t(alert.title) || alert.title}</div>
-                <div className="text-xs text-slate-600">{t(alert.description) || alert.description}</div>
+                <div className="text-xs text-[#8F8F8F]">{t(alert.description) || alert.description}</div>
               </Popup>
             </Polygon>
           ) : (
@@ -136,7 +136,7 @@ export default function LiveRadarMap() {
             >
               <Popup>
                 <div className="font-bold text-red-600 text-sm mb-1">{t(alert.title) || alert.title}</div>
-                <div className="text-xs text-slate-600">{t(alert.description) || alert.description}</div>
+                <div className="text-xs text-[#8F8F8F]">{t(alert.description) || alert.description}</div>
               </Popup>
             </Circle>
           )
@@ -151,9 +151,9 @@ export default function LiveRadarMap() {
           {telemetry.trucks.map(truck => (
             <Marker key={truck.id} position={[truck.lat, truck.lng]} icon={createVehicleMarker(truck.id, truck.status === 'GEOFENCE_BREACH' ? 'bg-red-500' : 'bg-cyan-400')}>
               <Popup className="rounded shadow-xl">
-                <div className="text-[11px] space-y-1.5 font-mono text-slate-700 min-w-[180px]">
-                  <div className="border-b border-slate-100 pb-1 mb-1">
-                    <strong className="text-slate-900">{t('radar_truck_id')}</strong> {truck.id}
+                <div className="text-[11px] space-y-1.5 font-mono text-[#EDEDED] min-w-[180px]">
+                  <div className="border-b border-[#2E2E2E] pb-1 mb-1">
+                    <strong className="text-[#EDEDED]">{t('radar_truck_id')}</strong> {truck.id}
                   </div>
                   <div className="flex justify-between"><strong>{t('radar_cargo')}</strong> {truck.cargo}</div>
                   <div className="flex justify-between"><strong>{t('radar_speed')}</strong> {truck.speed} km/h</div>
@@ -166,7 +166,7 @@ export default function LiveRadarMap() {
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between text-blue-600 mt-2 border-t border-slate-100 pt-1">
+                  <div className="flex justify-between text-[#3ECF8E] mt-2 border-t border-[#2E2E2E] pt-1">
                     <strong>{t('radar_eta_modjo')}</strong> {truck.eta}
                   </div>
                 </div>
@@ -180,10 +180,10 @@ export default function LiveRadarMap() {
 
       {/* Floating HUD */}
       <div className="absolute top-4 left-4 z-[400] pointer-events-none">
-        <div className="bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-lg p-4 shadow-xl text-slate-300 w-auto min-w-[300px] pointer-events-auto">
-          <div className="flex justify-between items-center mb-3 border-b border-slate-700/50 pb-2">
-            <h2 className="text-xs font-bold text-white tracking-widest flex items-center gap-2">
-              <Radar size={14} className="text-blue-500 animate-pulse" />
+        <div className="bg-[#1C1C1C]/85 backdrop-blur-md border border-[#2E2E2E]/60 rounded-lg p-4 shadow-xl text-[#8F8F8F] w-auto min-w-[300px] pointer-events-auto">
+          <div className="flex justify-between items-center mb-3 border-b border-[#2E2E2E]/50 pb-2">
+            <h2 className="text-xs font-bold text-[#EDEDED] tracking-widest flex items-center gap-2">
+              <Radar size={14} className="text-[#3ECF8E] animate-pulse" />
               {t('radar_hud_title')}
             </h2>
             <div className="text-[10px] font-mono flex items-center gap-1.5 text-emerald-400">
@@ -193,20 +193,20 @@ export default function LiveRadarMap() {
           </div>
           
           <div className="space-y-2">
-            <div className="text-[11px] flex justify-between items-center bg-slate-950/50 px-2 py-1.5 rounded border border-slate-800">
-              <span className="text-slate-400 uppercase tracking-wider font-semibold text-[10px]">{t('radar_corridor_status')}</span>
+            <div className="text-[11px] flex justify-between items-center bg-slate-950/50 px-2 py-1.5 rounded border border-[#2E2E2E]">
+              <span className="text-[#8F8F8F] uppercase tracking-wider font-semibold text-[10px]">{t('radar_corridor_status')}</span>
               <span className={`font-bold font-mono text-[10px] ${isConnected ? 'text-emerald-400' : 'text-amber-500'}`}>
                 {isConnected ? t('radar_operational') : t('radar_reconnecting', 'RECONNECTING...')}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 flex flex-col items-center justify-center text-center">
-                <div className="text-lg font-mono font-bold text-white leading-tight">{telemetry.trucks.length}</div>
-                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-1">{t('radar_active_assets')}</div>
+              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-[#2E2E2E] flex flex-col items-center justify-center text-center">
+                <div className="text-lg font-mono font-bold text-[#EDEDED] leading-tight">{telemetry.trucks.length}</div>
+                <div className="text-[10px] font-medium tracking-wide text-[#8F8F8F] mt-1">{t('radar_active_assets')}</div>
               </div>
-              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-slate-800 flex flex-col items-center justify-center text-center">
-                <div className="text-lg font-mono font-bold text-white leading-tight">{telemetry.alerts.length}</div>
-                <div className="text-[10px] font-medium tracking-wide text-slate-400 mt-1">{t('radar_active_corridors', 'Active Corridors')}</div>
+              <div className="bg-slate-950/40 rounded px-2.5 py-2 border border-[#2E2E2E] flex flex-col items-center justify-center text-center">
+                <div className="text-lg font-mono font-bold text-[#EDEDED] leading-tight">{telemetry.alerts.length}</div>
+                <div className="text-[10px] font-medium tracking-wide text-[#8F8F8F] mt-1">{t('radar_active_corridors', 'Active Corridors')}</div>
               </div>
             </div>
           </div>
@@ -215,19 +215,19 @@ export default function LiveRadarMap() {
 
       {/* Bottom Controls */}
       <div className="absolute bottom-4 right-4 z-[400] flex flex-col items-end gap-2 pointer-events-none">
-        <div className="bg-slate-900/85 backdrop-blur-md border border-slate-700/60 shadow-lg rounded-lg p-1 flex gap-1 pointer-events-auto text-[10px] font-semibold">
-          <button className="bg-white/10 text-white px-3 py-1.5 rounded-lg border border-slate-600/50 transition-colors hover:bg-white/20">
+        <div className="bg-[#1C1C1C]/85 backdrop-blur-md border border-[#2E2E2E]/60 shadow-lg rounded-lg p-1 flex gap-1 pointer-events-auto text-[10px] font-semibold">
+          <button className="bg-[#232323]/10 text-[#EDEDED] px-3 py-1.5 rounded-lg border border-slate-600/50 transition-colors hover:bg-[#232323]/20">
             {t('radar_btn_satellite')}
           </button>
-          <button className="text-slate-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-800/60">
+          <button className="text-[#8F8F8F] hover:text-[#EDEDED] px-3 py-1.5 rounded-lg transition-colors hover:bg-[#232323]/60">
             {t('radar_btn_vector')}
           </button>
-          <button className="text-slate-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-800/60">
+          <button className="text-[#8F8F8F] hover:text-[#EDEDED] px-3 py-1.5 rounded-lg transition-colors hover:bg-[#232323]/60">
             {t('radar_btn_weather')}
           </button>
         </div>
         
-        <button id="reset-map-btn" className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 text-slate-300 hover:text-white px-4 py-2 rounded-lg text-[11px] font-mono pointer-events-auto transition-all hover:bg-slate-800 shadow-lg">
+        <button id="reset-map-btn" className="bg-[#1C1C1C]/80 backdrop-blur-sm border border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] px-4 py-2 rounded-lg text-[11px] font-mono pointer-events-auto transition-all hover:bg-[#232323] shadow-lg">
           {t('radar_btn_reset')}
         </button>
       </div>
