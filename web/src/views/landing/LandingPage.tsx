@@ -165,7 +165,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   ];
 
   return (
-    <div className="min-h-screen w-full overflow-y-auto bg-[#0C0C0C] font-inter text-[#EDEDED] smooth-scroll relative">
+    <div className="min-h-screen w-full overflow-y-auto bg-[#1C1C1C] font-inter text-[#EDEDED] smooth-scroll relative">
       {renderComplianceModal()}
       {showRegistration && <RegistrationFlow onClose={() => setShowRegistration(false)} />}
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
@@ -184,14 +184,14 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             className="w-full h-full object-cover"
             src="/video.mp4"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0C0C0C]/85 via-[#0C0C0C]/60 to-[#0C0C0C]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1C1C1C]/85 via-[#1C1C1C]/60 to-[#1C1C1C]" />
         </div>
 
         {/* TOP NAVIGATION HEADER */}
         <header className={`fixed top-0 left-0 w-full h-16 border-b px-8 flex items-center justify-between z-[60] backdrop-blur-md transition-all duration-300 ${
           isScrolled 
-            ? 'bg-[#0C0C0C]/95 border-[#262626] shadow-2xl' 
-            : 'bg-[#0C0C0C]/80 border-[#262626]'
+            ? 'bg-[#1C1C1C]/95 border-[#2E2E2E] shadow-2xl' 
+            : 'bg-[#1C1C1C]/80 border-[#2E2E2E]'
         }`}>
           <div 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -212,7 +212,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <div className="hidden md:block w-px h-6 bg-[#262626]"></div>
 
             <div className="flex items-center gap-4">
-              <button className="px-2.5 py-1 text-xs font-mono border border-[#262626] text-zinc-300 rounded-lg hover:border-[#3ECF8E]/50 transition">EN | አማ</button>
+              <button className="px-2.5 py-1 text-xs font-mono border border-[#2E2E2E] text-zinc-300 rounded-lg hover:border-[#3ECF8E]/50 transition">EN | አማ</button>
               {!isAuthenticated ? (
               <>
                 <button
@@ -289,7 +289,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           TRUSTED BY
           ================================================================================= */}
-      <section id="platform-overview" className="w-full bg-[#0C0C0C] border-y border-[#262626] py-10 relative z-40">
+      <section id="platform-overview" className="w-full bg-[#1C1C1C] border-y border-[#2E2E2E] py-10 relative z-40">
         <div className="max-w-[90rem] mx-auto px-6 text-center">
           <p className="text-[11px] font-mono tracking-widest text-[#8F8F8F] uppercase text-center mb-6">TRUSTED BY EAST Africa'S PRINCIPAL LOGISTICS ACTORS</p>
           <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8">
@@ -301,7 +301,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               { src: '/EAC.png', alt: 'EAC', title: 'Ethiopian Airlines Cargo', height: 'h-6' },
               { src: '/DPCA.jpg', alt: 'DPCA', title: 'Djibouti Ports and Corridor Authority', height: 'h-10' }
             ].map((logo, idx) => (
-              <div key={idx} className="h-12 px-5 rounded-xl bg-[#141414]/90 border border-[#262626] flex items-center justify-center transition-all duration-300 hover:border-[#3ECF8E]/40 hover:bg-[#1A1A1A] group">
+              <div key={idx} className="h-12 px-5 rounded-xl bg-[#232323]/90 border border-[#2E2E2E] flex items-center justify-center transition-all duration-300 hover:border-[#3ECF8E]/40 hover:bg-[#2E2E2E] group">
                 <img src={logo.src} alt={logo.alt} className="h-7 w-auto max-w-[90px] object-contain mix-blend-screen opacity-80 hover:opacity-100 transition" title={logo.title} />
               </div>
             ))}
@@ -312,7 +312,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           SECTION 1: CORRIDOR TELEMATICS
           ================================================================================= */}
-      <section id="corridor-telematics" className="w-full bg-[#0C0C0C] py-20 relative z-40 border-b border-[#262626] overflow-hidden">
+      <section id="corridor-telematics" className="w-full bg-[#1C1C1C] py-20 relative z-40 border-b border-[#2E2E2E] overflow-hidden">
         {/* Subtle background effect */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#3ECF8E]/5 blur-[120px] rounded-full pointer-events-none"></div>
         
@@ -330,15 +330,15 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               GPS position updates ingested at least every 5 minutes while in transit. ETA model recalculates predicted arrival using live position, historical corridor transit-time data, weather, and known congestion/conflict alerts.
             </p>
             <ul className="space-y-3 mb-10">
-              <li className="bg-[#141414] border border-[#262626] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
+              <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
                 <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Navigation size={14} /></div> 
                 <span className="text-xs font-semibold text-zinc-200 tracking-wide">Gradient-Boosted ETA Models</span>
               </li>
-              <li className="bg-[#141414] border border-[#262626] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
+              <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
                 <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Shield size={14} /></div> 
                 <span className="text-xs font-semibold text-zinc-200 tracking-wide">Security-Aware Rerouting (FR-08)</span>
               </li>
-              <li className="bg-[#141414] border border-[#262626] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
+              <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
                 <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><MapPin size={14} /></div> 
                 <span className="text-xs font-semibold text-zinc-200 tracking-wide">810km Djibouti–Modjo Route Tracking</span>
               </li>
@@ -349,12 +349,12 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <ChevronDown className="w-4 h-4 -rotate-90 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
-          <div className="lg:col-span-7 w-full h-[400px] lg:h-[480px] rounded-2xl bg-[#141414] border border-[#262626] p-2 relative overflow-hidden shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 group">
+          <div className="lg:col-span-7 w-full h-[400px] lg:h-[480px] rounded-2xl bg-[#232323] border border-[#2E2E2E] p-2 relative overflow-hidden shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 group">
             <LiveTelematicsMap />
             
             {/* Floating Live Status Card */}
-            <div className="absolute top-8 right-8 bg-[#0C0C0C]/90 border border-[#262626] backdrop-blur-md rounded-2xl p-4 shadow-xl transition-transform duration-500 hover:scale-105 z-20 hidden md:block">
-              <div className="flex items-center justify-between mb-3 border-b border-[#262626] pb-3 gap-6">
+            <div className="absolute top-8 right-8 bg-[#1C1C1C]/90 border border-[#2E2E2E] backdrop-blur-md rounded-2xl p-4 shadow-xl transition-transform duration-500 hover:scale-105 z-20 hidden md:block">
+              <div className="flex items-center justify-between mb-3 border-b border-[#2E2E2E] pb-3 gap-6">
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 bg-[#3ECF8E]/10 rounded-lg border border-[#3ECF8E]/20">
                     <Truck size={14} className="text-[#3ECF8E]" />
@@ -388,8 +388,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           SECTION 2: AI LOAD BOARD
           ================================================================================= */}
-      <section id="load-board" className="w-full bg-[#0C0C0C] py-32 relative z-40 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0C0C0C] to-[#0C0C0C] pointer-events-none"></div>
+      <section id="load-board" className="w-full bg-[#1C1C1C] py-32 relative z-40 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1C1C1C] to-[#1C1C1C] pointer-events-none"></div>
         <div className="absolute top-1/2 right-1/4 w-[500px] h-[500px] bg-[#3ECF8E]/5 blur-[120px] rounded-full pointer-events-none"></div>
 
         <div className="max-w-[90rem] mx-auto px-8 md:px-12 flex flex-col md:flex-row-reverse items-center gap-16 relative z-10">
@@ -413,8 +413,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           </div>
           <div className="flex-1 w-full relative group">
             <div className="absolute inset-0 bg-[#3ECF8E]/5 rounded-3xl blur-2xl transform scale-105 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="w-full bg-[#141414] border border-[#262626] rounded-2xl p-6 shadow-2xl relative z-10">
-              <div className="flex justify-between items-center mb-8 border-b border-[#262626] pb-4">
+            <div className="w-full bg-[#232323] border border-[#2E2E2E] rounded-2xl p-6 shadow-2xl relative z-10">
+              <div className="flex justify-between items-center mb-8 border-b border-[#2E2E2E] pb-4">
                 <div className="font-bold text-lg text-[#EDEDED]">Load Board</div>
                 <div className="flex items-center gap-2 text-[10px] font-mono border border-[#3ECF8E]/50 text-[#3ECF8E] bg-[#3ECF8E]/10 px-3 py-1 rounded-full uppercase tracking-wider">
                   <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
@@ -423,9 +423,9 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               </div>
               <div className="space-y-4">
                 {liveBids.map((bid, i) => (
-                  <div key={bid.id} className={`flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${i === 0 ? 'bg-[#1A1A1A] border border-[#3ECF8E]/40 shadow-[0_0_20px_rgba(62,207,142,0.06)]' : 'bg-[#0C0C0C] border border-[#262626] hover:border-[#262626]/80'}`}>
+                  <div key={bid.id} className={`flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${i === 0 ? 'bg-[#2E2E2E] border border-[#3ECF8E]/40 shadow-[0_0_20px_rgba(62,207,142,0.06)]' : 'bg-[#1C1C1C] border border-[#2E2E2E] hover:border-[#2E2E2E]/80'}`}>
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg ${i === 0 ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/30' : 'bg-[#141414] text-[#EDEDED] border border-[#262626]'}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg ${i === 0 ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/30' : 'bg-[#232323] text-[#EDEDED] border border-[#2E2E2E]'}`}>
                         T{i + 1}
                       </div>
                       <div>
@@ -433,7 +433,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                         <div className="text-xs text-[#8F8F8F] font-medium">Score: <span className={i === 0 ? 'text-[#3ECF8E] font-bold' : 'text-[#8F8F8F]'}>{bid.score.toFixed(1)}%</span> Match</div>
                       </div>
                     </div>
-                    <button className={`px-4 py-2 text-xs font-bold transition-colors ${i === 0 ? 'bg-[#3ECF8E] hover:bg-[#34b27b] text-black rounded-lg' : 'border border-[#262626] text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#141414] rounded-lg'}`}>
+                    <button className={`px-4 py-2 text-xs font-bold transition-colors ${i === 0 ? 'bg-[#3ECF8E] hover:bg-[#34b27b] text-black rounded-lg' : 'border border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#232323] rounded-lg'}`}>
                       {i === 0 ? 'Accept Match' : 'View'}
                     </button>
                   </div>
@@ -447,18 +447,18 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           IMPACT METRICS
           ================================================================================= */}
-      <section className="w-full bg-[#0C0C0C] py-24 relative z-40 border-y border-[#262626]">
+      <section className="w-full bg-[#1C1C1C] py-24 relative z-40 border-y border-[#2E2E2E]">
         <div className="max-w-[90rem] mx-auto px-8 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-white/5">
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-black tracking-tighter mb-2 text-white">{impactMetrics.activeTransporters}<span className="text-[#3ECF8E]">+</span></div>
+            <div className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-white">{impactMetrics.activeTransporters}<span className="text-[#3ECF8E]">+</span></div>
             <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Active Transporters</div>
           </div>
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-black tracking-tighter mb-2 text-white">{impactMetrics.tonsDelivered}<span className="text-[#3ECF8E]">+</span></div>
+            <div className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-white">{impactMetrics.tonsDelivered}<span className="text-[#3ECF8E]">+</span></div>
             <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Tons Delivered</div>
           </div>
           <div className="flex flex-col items-center pt-8 md:pt-0">
-            <div className="text-5xl lg:text-6xl font-black tracking-tighter mb-2 text-white">{impactMetrics.uptime}<span className="text-[#3ECF8E]">%</span></div>
+            <div className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-white">{impactMetrics.uptime}<span className="text-[#3ECF8E]">%</span></div>
             <div className="text-[11px] font-bold text-[#8F8F8F] uppercase tracking-widest">Platform Uptime</div>
           </div>
         </div>
@@ -467,7 +467,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           SECTION 3: DYNAMIC RATES
           ================================================================================= */}
-      <section id="dynamic-rates" className="w-full bg-[#0C0C0C] py-32 relative z-40 border-b border-[#262626]">
+      <section id="dynamic-rates" className="w-full bg-[#1C1C1C] py-32 relative z-40 border-b border-[#2E2E2E]">
         <div className="max-w-[90rem] mx-auto px-8 md:px-12 flex flex-col md:flex-row items-center gap-16">
           <div className="flex-1">
 
@@ -483,7 +483,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <li className="flex items-center gap-3"><Check size={20} className="text-[#3ECF8E]" /> Mobile-Money Escrow Engine</li>
             </ul>
           </div>
-          <div className="flex-1 w-full bg-[#141414] rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-end h-80 border border-[#262626]">
+          <div className="flex-1 w-full bg-[#232323] rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-end h-80 border border-[#2E2E2E]">
             <div className="absolute top-8 left-8 text-[#EDEDED] z-10">
               <div className="flex items-center gap-2 mb-2">
                  <div className="w-2 h-2 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
@@ -503,7 +503,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           SECTION 4: CUSTOMS SYNC
           ================================================================================= */}
-      <section id="customs-sync" className="w-full bg-[#0C0C0C] py-32 relative z-40 overflow-hidden">
+      <section id="customs-sync" className="w-full bg-[#1C1C1C] py-32 relative z-40 overflow-hidden">
         <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-[#3ECF8E]/5 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="max-w-[90rem] mx-auto px-8 md:px-12 flex flex-col md:flex-row-reverse items-center gap-16 relative z-10">
           <div className="flex-1">
@@ -519,16 +519,16 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               Support upload and structured capture of key clearance documents (commercial invoice, packing list, bill of lading). Automated validation checks for completeness and consistency before submission.
             </p>
             <ul className="space-y-4 font-bold text-sm text-[#EDEDED]">
-              <li className="flex items-center gap-4 bg-[#141414] p-3 rounded-xl border border-[#262626] hover:border-[#3ECF8E]/30 transition-colors"><Check size={20} className="text-[#3ECF8E]" /> Immutable Document Vault</li>
-              <li className="flex items-center gap-4 bg-[#141414] p-3 rounded-xl border border-[#262626] hover:border-[#3ECF8E]/30 transition-colors"><Check size={20} className="text-[#3ECF8E]" /> Status Tracking & Validation</li>
-              <li className="flex items-center gap-4 bg-[#141414] p-3 rounded-xl border border-[#262626] hover:border-[#3ECF8E]/30 transition-colors"><Check size={20} className="text-[#3ECF8E]" /> 7-Year Audit Ledger Compliance</li>
+              <li className="flex items-center gap-4 bg-[#232323] p-3 rounded-xl border border-[#2E2E2E] hover:border-[#3ECF8E]/30 transition-colors"><Check size={20} className="text-[#3ECF8E]" /> Immutable Document Vault</li>
+              <li className="flex items-center gap-4 bg-[#232323] p-3 rounded-xl border border-[#2E2E2E] hover:border-[#3ECF8E]/30 transition-colors"><Check size={20} className="text-[#3ECF8E]" /> Status Tracking & Validation</li>
+              <li className="flex items-center gap-4 bg-[#232323] p-3 rounded-xl border border-[#2E2E2E] hover:border-[#3ECF8E]/30 transition-colors"><Check size={20} className="text-[#3ECF8E]" /> 7-Year Audit Ledger Compliance</li>
             </ul>
           </div>
           <div className="flex-1 w-full relative group">
             <div className="absolute inset-0 bg-[#3ECF8E]/10 rounded-3xl blur-2xl transform scale-105 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="w-full bg-[#141414] border border-[#262626] rounded-3xl p-6 shadow-2xl relative z-10">
-              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-[#262626]">
-                <div className="w-12 h-12 bg-[#0C0C0C] text-[#3ECF8E] rounded-2xl flex items-center justify-center shadow-lg border border-[#262626]">
+            <div className="w-full bg-[#232323] border border-[#2E2E2E] rounded-3xl p-6 shadow-2xl relative z-10">
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-[#2E2E2E]">
+                <div className="w-12 h-12 bg-[#1C1C1C] text-[#3ECF8E] rounded-2xl flex items-center justify-center shadow-lg border border-[#2E2E2E]">
                   <ShieldCheck size={24} />
                 </div>
                 <div>
@@ -538,7 +538,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               </div>
               <div className="space-y-3">
                 {['Commercial Invoice', 'Packing List', 'Certificate of Origin', 'Bill of Lading'].map((doc, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 border border-[#262626] rounded-xl bg-[#0C0C0C] hover:border-[#3ECF8E]/30 transition-colors">
+                  <div key={i} className="flex items-center justify-between p-4 border border-[#2E2E2E] rounded-xl bg-[#1C1C1C] hover:border-[#3ECF8E]/30 transition-colors">
                     <span className="text-sm font-bold text-[#EDEDED]">{doc}</span>
                     <div className="w-6 h-6 rounded-full bg-[#3ECF8E]/10 flex items-center justify-center border border-[#3ECF8E]/20">
                       <Check size={14} className="text-[#3ECF8E]" />
@@ -554,21 +554,21 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           INTERACTIVE FREIGHT CALCULATOR (CTA)
           ================================================================================= */}
-      <section className="w-full bg-[#0C0C0C] py-32 relative z-40 border-t border-[#262626]">
+      <section className="w-full bg-[#1C1C1C] py-32 relative z-40 border-t border-[#2E2E2E]">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="text-center mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight mb-4 text-[#EDEDED]">Instant AI Spot Rate</h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed max-w-2xl mx-auto">Get a predictive, data-driven freight quote instantly.</p>
           </div>
           
-          <div className="max-w-7xl mx-auto p-8 rounded-2xl bg-[#141414] border border-[#262626] shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="max-w-7xl mx-auto p-8 rounded-2xl bg-[#232323] border border-[#2E2E2E] shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex flex-col space-y-6 relative z-10">
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">Origin (Port)</label>
                 <select 
                   value={calcFrom} 
                   onChange={(e) => setCalcFrom(e.target.value)}
-                  className="w-full bg-[#0C0C0C] border border-[#262626] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
+                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
                 >
                   <option value="" disabled>Select Origin</option>
                   <option value="djibouti">Djibouti Port (SGTD)</option>
@@ -580,7 +580,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 <select 
                   value={calcTo} 
                   onChange={(e) => setCalcTo(e.target.value)}
-                  className="w-full bg-[#0C0C0C] border border-[#262626] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
+                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
                 >
                   <option value="" disabled>Select Destination</option>
                   <option value="modjo">Modjo Dry Port</option>
@@ -595,7 +595,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                   value={calcWeight}
                   onChange={(e) => setCalcWeight(e.target.value)}
                   placeholder="e.g. 40"
-                  className="w-full bg-[#0C0C0C] border border-[#262626] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
+                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
                 />
               </div>
               <button 
@@ -612,9 +612,9 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               </button>
             </div>
             
-            <div className="bg-[#0C0C0C] border border-[#262626] rounded-xl p-8 flex flex-col justify-center items-center text-center relative overflow-hidden">
+            <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl p-8 flex flex-col justify-center items-center text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('/telematics_map.jpg')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C]/90 to-[#0C0C0C]/40"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1C]/90 to-[#1C1C1C]/40"></div>
               
               {calcState === 'result' && calcRate ? (
                 <div className="relative z-10 w-full animate-in fade-in zoom-in duration-500">
@@ -627,15 +627,15 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                   </div>
                   
                   <div className="w-full space-y-2 text-left">
-                    <div className="bg-[#141414] border border-[#262626] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
+                    <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
                       <span>Fuel Index:</span>
                       <span className="font-bold text-[#EDEDED]">1.08x</span>
                     </div>
-                    <div className="bg-[#141414] border border-[#262626] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
+                    <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
                       <span>Congestion Surcharge:</span>
                       <span className="font-bold text-[#EDEDED]">Low</span>
                     </div>
-                    <div className="bg-[#141414] border border-[#262626] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
+                    <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
                       <span>Corridor Transit:</span>
                       <span className="font-bold text-[#EDEDED]">28 hrs</span>
                     </div>
@@ -664,7 +664,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       {/* =================================================================================
           SECTION 5: ENTERPRISE STATS & COMPLIANCE FOOTER
           ================================================================================= */}
-      <footer className="w-full bg-[#0C0C0C] border-t border-[#262626] py-12 px-6 relative z-40">
+      <footer className="w-full bg-[#1C1C1C] border-t border-[#2E2E2E] py-12 px-6 relative z-40">
         <div className="max-w-[90rem] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div>
@@ -699,7 +699,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               </div>
             </div>
             
-            <div className="flex flex-col gap-4 bg-[#141414] border border-[#262626] rounded-xl p-6">
+            <div className="flex flex-col gap-4 bg-[#232323] border border-[#2E2E2E] rounded-xl p-6">
               <h4 className="text-sm font-bold text-[#EDEDED] mb-2">Regulatory Alignment</h4>
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-sm text-[#8F8F8F]">
@@ -718,7 +718,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             </div>
           </div>
 
-          <div className="border-t border-[#262626] pt-8 flex flex-col md:flex-row items-center justify-between text-[11px] font-mono text-[#8F8F8F]">
+          <div className="border-t border-[#2E2E2E] pt-8 flex flex-col md:flex-row items-center justify-between text-[11px] font-mono text-[#8F8F8F]">
             <p>© 2026 TradeFlow Logistics Platform. Developed for East Africa's Principal Corridor.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="#" className="hover:text-[#EDEDED] transition-colors">Terms of Service</a>
