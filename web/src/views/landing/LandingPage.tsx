@@ -399,8 +399,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
               Matching Engine
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-[#EDEDED] tracking-tight mb-6">
-              AI-Powered <br/> Freight Matching
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-[#EDEDED] tracking-tight whitespace-nowrap mb-6">
+              AI-Powered Freight Matching
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
               Two-sided marketplace onboarding with verified transporter identity. Matching engine ranks eligible transporters by a weighted score of cost, historical reliability, fuel efficiency, and proximity.
@@ -471,8 +471,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         <div className="max-w-[90rem] mx-auto px-8 md:px-12 flex flex-col md:flex-row items-center gap-16">
           <div className="flex-1">
 
-            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-[#EDEDED] tracking-tight mb-6">
-              Dynamic Pricing <br/> & Settlement
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-[#EDEDED] tracking-tight whitespace-nowrap mb-6">
+              Dynamic Pricing & Settlement
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
               Spot rates computed from current demand/capacity balance, fuel-cost index, and corridor congestion. Integrated with Mobile-Money platforms (TeleBirr) for automated payout scheduling and reconciliation.
@@ -512,8 +512,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <div className="w-1.5 h-1.5 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
               Customs Sync
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight mb-6 text-[#EDEDED]">
-              Digital Customs <br/> <span className="text-[#3ECF8E]">Documentation</span>
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight whitespace-nowrap mb-6 text-[#EDEDED]">
+              Digital Customs <span className="text-[#3ECF8E]">Documentation</span>
             </h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed mb-8 max-w-lg">
               Support upload and structured capture of key clearance documents (commercial invoice, packing list, bill of lading). Automated validation checks for completeness and consistency before submission.
