@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShieldAlert, Map, AlertOctagon, TriangleAlert, Info, Radio, Crosshair, Navigation, FileSignature, CheckCircle, Clock } from 'lucide-react';
+import { ShieldAlert, Map, AlertOctagon, TriangleAlert, Info, Radio, Crosshair, Navigation, FileSignature, CheckCircle, Clock, ChevronDown } from 'lucide-react';
 import MiniIncidentMap from './MiniIncidentMap';
 import { fetchRiskZones, broadcastRiskZone, resolveRiskZone, fetchSecurityHistory } from '../../lib/apiClient';
 import toast from 'react-hot-toast';
@@ -15,6 +15,9 @@ export default function SecurityDetours() {
   const [name, setName] = useState('');
   const [incidentType, setIncidentType] = useState('Road Closure');
   const [description, setDescription] = useState('');
+  
+  const [severityOpen, setSeverityOpen] = useState(false);
+  const [typeOpen, setTypeOpen] = useState(false);
 
   const [activeZones, setActiveZones] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
@@ -84,7 +87,7 @@ export default function SecurityDetours() {
       {/* Header */}
       <div className="bg-[#232323] p-5 rounded-xl border border-[#2E2E2E] shadow-sm shrink-0">
         <h2 className="text-lg font-bold text-[#EDEDED] flex items-center gap-2">
-          <ShieldAlert size={20} className="text-rose-600" /> 
+          <ShieldAlert size={20} className="text-[#3ECF8E]" /> 
           {t('sec_detours_title')}
         </h2>
         <p className="text-xs text-[#8F8F8F] mt-1">{t('sec_detours_subtitle')}</p>
@@ -172,11 +175,11 @@ export default function SecurityDetours() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">{t('sec_gps_lat')}</label>
-                  <input type="text" readOnly value={lat ? lat.toFixed(5) : ''} placeholder="Click map..." className="w-full px-3 py-2 text-xs font-mono border border-[#2E2E2E] rounded-lg bg-[#181818] focus:outline-none" />
+                  <input type="text" readOnly value={lat ? lat.toFixed(5) : ''} placeholder="Click map..." className="w-full px-3 py-2 text-xs font-mono border border-[#2E2E2E] rounded-lg bg-[#181818] text-[#EDEDED] focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">{t('sec_gps_lng')}</label>
-                  <input type="text" readOnly value={lng ? lng.toFixed(5) : ''} placeholder="Click map..." className="w-full px-3 py-2 text-xs font-mono border border-[#2E2E2E] rounded-lg bg-[#181818] focus:outline-none" />
+                  <input type="text" readOnly value={lng ? lng.toFixed(5) : ''} placeholder="Click map..." className="w-full px-3 py-2 text-xs font-mono border border-[#2E2E2E] rounded-lg bg-[#181818] text-[#EDEDED] focus:outline-none" />
                 </div>
               </div>
 
@@ -192,7 +195,7 @@ export default function SecurityDetours() {
                   step="1000"
                   value={radius} 
                   onChange={(e) => setRadius(Number(e.target.value))}
-                  className="w-full h-1.5 bg-[#2E2E2E] rounded-lg appearance-none cursor-pointer accent-blue-600" 
+                  className="w-full h-1.5 bg-[#2E2E2E] rounded-lg appearance-none cursor-pointer accent-[#3ECF8E]" 
                 />
                 <div className="flex justify-between text-[10px] text-[#8F8F8F] mt-1">
                   <span>1km</span>
@@ -201,30 +204,65 @@ export default function SecurityDetours() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="relative">
                   <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">{t('sec_severity')}</label>
-                  <select 
-                    value={severity}
-                    onChange={(e) => setSeverity(e.target.value as any)}
-                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:border-[#3ECF8E] appearance-none bg-[#232323] font-medium"
+                  <button 
+                    type="button"
+                    onClick={() => { setSeverityOpen(!severityOpen); setTypeOpen(false); }}
+                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] rounded-lg bg-[#232323] text-[#EDEDED] outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] flex items-center justify-between"
                   >
-                    <option value="low">Low Advisory</option>
-                    <option value="medium">Moderate Warning</option>
-                    <option value="critical">Critical Blockage</option>
-                  </select>
+                    <span>{severity === 'low' ? 'Low Advisory' : severity === 'medium' ? 'Moderate Warning' : 'Critical Blockage'}</span>
+                    <ChevronDown size={14} className="text-[#8F8F8F]" />
+                  </button>
+                  {severityOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setSeverityOpen(false)}></div>
+                      <div className="absolute top-full left-0 mt-1 w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-lg shadow-xl z-20 py-1">
+                        {[
+                          { val: 'low', label: 'Low Advisory' },
+                          { val: 'medium', label: 'Moderate Warning' },
+                          { val: 'critical', label: 'Critical Blockage' }
+                        ].map(opt => (
+                          <button
+                            key={opt.val}
+                            type="button"
+                            onClick={() => { setSeverity(opt.val as any); setSeverityOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-xs transition-colors ${severity === opt.val ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] font-bold' : 'text-[#EDEDED] hover:bg-[#232323]'}`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div>
+                <div className="relative">
                   <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">{t('sec_incident_type')}</label>
-                  <select 
-                    value={incidentType}
-                    onChange={(e) => setIncidentType(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:border-[#3ECF8E] appearance-none bg-[#232323] font-medium"
+                  <button 
+                    type="button"
+                    onClick={() => { setTypeOpen(!typeOpen); setSeverityOpen(false); }}
+                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] rounded-lg bg-[#232323] text-[#EDEDED] outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] flex items-center justify-between"
                   >
-                    <option>Road Closure</option>
-                    <option>Security / Conflict</option>
-                    <option>Fuel Outage</option>
-                    <option>Checkpoint Delay</option>
-                  </select>
+                    <span>{incidentType}</span>
+                    <ChevronDown size={14} className="text-[#8F8F8F]" />
+                  </button>
+                  {typeOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setTypeOpen(false)}></div>
+                      <div className="absolute top-full left-0 mt-1 w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-lg shadow-xl z-20 py-1">
+                        {['Road Closure', 'Security / Conflict', 'Fuel Outage', 'Checkpoint Delay'].map(opt => (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => { setIncidentType(opt); setTypeOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-xs transition-colors ${incidentType === opt ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] font-bold' : 'text-[#EDEDED] hover:bg-[#232323]'}`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -235,7 +273,7 @@ export default function SecurityDetours() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Enter message to push to driver mobile terminals..."
-                  className="w-full px-3 py-2 text-xs border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:border-[#3ECF8E] resize-none"
+                  className="w-full px-3 py-2 text-xs border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:border-[#3ECF8E] resize-none bg-[#181818] text-[#EDEDED]"
                 ></textarea>
               </div>
 
@@ -243,9 +281,9 @@ export default function SecurityDetours() {
                 <button 
                   type="submit"
                   disabled={broadcasting}
-                  className="w-full bg-[#0F172A] hover:bg-[#232323] text-[#EDEDED] font-bold py-3 rounded-lg text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] font-bold py-3 rounded-lg text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <Radio size={16} className="text-blue-400" /> {broadcasting ? 'Broadcasting...' : t('sec_btn_broadcast')}
+                  <Radio size={16} className="text-[#1C1C1C]" /> {broadcasting ? 'Broadcasting...' : t('sec_btn_broadcast')}
                 </button>
               </div>
 
@@ -290,8 +328,8 @@ export default function SecurityDetours() {
                   </td>
                   <td className="px-6 py-3 font-mono text-[#8F8F8F]">{new Date(inc.updatedAt).toLocaleString()}</td>
                   <td className="px-6 py-3 text-right">
-                    <span className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap">
-                      <CheckCircle size={12} className="text-emerald-500" /> Resolved
+                    <span className="inline-flex items-center gap-1.5 bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap">
+                      <CheckCircle size={12} className="text-[#3ECF8E]" /> Resolved
                     </span>
                   </td>
                 </tr>
