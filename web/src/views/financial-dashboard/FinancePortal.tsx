@@ -110,7 +110,7 @@ export default function FinancePortal({ onSwitchPortal }: FinancePortalProps) {
   };
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#1C1C1C] overflow-hidden font-sans">
       <FinanceSidebar
         activeSubTab={activeSubTab}
         setActiveSubTab={setActiveSubTab}
@@ -119,15 +119,15 @@ export default function FinancePortal({ onSwitchPortal }: FinancePortalProps) {
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <UniversalTopBar />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#1C1C1C] p-6">
           <div className="max-w-[1320px] mx-auto space-y-5">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2E2E2E]">
               <div>
-                <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+                <h1 className="text-xl font-semibold text-[#EDEDED] tracking-tight">
                   Financial & Settlement Management
                 </h1>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-[#8F8F8F] mt-0.5">
                   Multi-currency escrow balances, carrier payout settlement, and rate calculations.
                 </p>
               </div>
