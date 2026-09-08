@@ -54,10 +54,10 @@ export default function CustomsInspections() {
 
   const getTriggerClass = (color: string) => {
     switch (color) {
-      case 'rose': return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'amber': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'blue': return 'bg-blue-50 text-blue-700 border-blue-200';
-      default: return 'bg-slate-50 text-slate-700 border-slate-200';
+      case 'rose': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+      case 'amber': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'blue': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      default: return 'bg-[#181818] text-[#8F8F8F] border-[#2E2E2E]';
     }
   };
 
@@ -81,73 +81,73 @@ export default function CustomsInspections() {
   };
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col relative">
+    <div className="flex flex-col relative">
       {/* Header */}
-      <div className="mb-6 shrink-0">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="mb-5 shrink-0">
+        <h2 className="text-xl font-bold text-[#EDEDED] flex items-center gap-2">
           {t('sec_inspection_bay_title')}
         </h2>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-white border border-[#E2E8F0] rounded-xl flex flex-col overflow-hidden shadow-sm min-h-0">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
+      <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl flex flex-col overflow-hidden">
+        <div className="p-4 border-b border-[#2E2E2E] flex items-center justify-between shrink-0">
           <div>
-            <h3 className="font-bold text-slate-900">{t('active_inspection_queue')}</h3>
-            <p className="text-xs text-slate-500 mt-1">{loading ? t('containers_stationed_loading') : t('containers_stationed', { count: inspections.length })}</p>
+            <h3 className="font-bold text-[#EDEDED] text-sm">{t('active_inspection_queue')}</h3>
+            <p className="text-xs text-[#8F8F8F] mt-0.5">{loading ? t('containers_stationed_loading') : t('containers_stationed', { count: inspections.length })}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-1.5 text-slate-400 hover:text-blue-600 bg-white border border-slate-200 rounded shadow-sm transition-colors">
-              <Filter size={16} />
+            <button className="p-1.5 text-[#8F8F8F] hover:text-[#3ECF8E] bg-[#181818] border border-[#2E2E2E] rounded transition-colors">
+              <Filter size={15} />
             </button>
             <div className="relative">
-              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
               <input
                 type="text"
                 placeholder={t('search_container_id')}
-                className="pl-8 pr-3 py-1.5 text-sm border border-slate-200 rounded bg-white shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64"
+                className="pl-8 pr-3 py-1.5 text-xs border border-[#2E2E2E] rounded bg-[#181818] text-[#EDEDED] focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] w-60 placeholder:text-[#8F8F8F]"
               />
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto">
+        <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse table-fixed min-w-[800px]">
-            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
+            <thead className="bg-[#181818] border-b border-[#2E2E2E]">
               <tr>
-                <th className="w-[20%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('manifest_container_id')}</th>
-                <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('transporter_col')}</th>
-                <th className="w-[20%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('detected_trigger')}</th>
-                <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('inspection_bay_col')}</th>
-                <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('officer_assigned_col')}</th>
-                <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">{t('action')}</th>
+                <th className="w-[20%] px-5 py-3 text-[10px] font-bold text-[#8F8F8F] uppercase tracking-wider">{t('manifest_container_id')}</th>
+                <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-[#8F8F8F] uppercase tracking-wider">{t('transporter_col')}</th>
+                <th className="w-[20%] px-5 py-3 text-[10px] font-bold text-[#8F8F8F] uppercase tracking-wider">{t('detected_trigger')}</th>
+                <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-[#8F8F8F] uppercase tracking-wider">{t('inspection_bay_col')}</th>
+                <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-[#8F8F8F] uppercase tracking-wider">{t('officer_assigned_col')}</th>
+                <th className="w-[15%] px-5 py-3 text-[10px] font-bold text-[#8F8F8F] uppercase tracking-wider text-right">{t('action')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+            <tbody className="divide-y divide-[#2E2E2E] text-xs">
               {inspections.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-5 py-4 whitespace-nowrap truncate">
-                    <span className="font-mono text-sm font-bold text-slate-900">{row.id}</span>
+                <tr key={row.id} className="hover:bg-[#2A2A2A] transition-colors">
+                  <td className="px-5 py-3.5 whitespace-nowrap truncate">
+                    <span className="font-mono text-xs font-bold text-[#EDEDED]">{row.id}</span>
                   </td>
-                  <td className="px-5 py-4 whitespace-nowrap truncate">
-                    <span className="text-sm font-medium text-slate-700">{row.transporter}</span>
+                  <td className="px-5 py-3.5 whitespace-nowrap truncate">
+                    <span className="text-xs font-medium text-[#EDEDED]">{row.transporter}</span>
                   </td>
-                  <td className="px-5 py-4 whitespace-nowrap truncate">
-                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold border shadow-sm ${getTriggerClass(row.color)}`}>
+                  <td className="px-5 py-3.5 whitespace-nowrap truncate">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${getTriggerClass(row.color)}`}>
                       {colorToIcon(row.color)}
                       <span className="ml-1.5">{row.trigger}</span>
                     </span>
                   </td>
-                  <td className="px-5 py-4 whitespace-nowrap truncate">
-                    <span className="text-sm font-medium text-slate-700">{row.bay}</span>
+                  <td className="px-5 py-3.5 whitespace-nowrap truncate">
+                    <span className="text-xs font-medium text-[#8F8F8F]">{row.bay}</span>
                   </td>
-                  <td className="px-5 py-4 whitespace-nowrap truncate">
-                    <span className="text-sm font-medium text-slate-600">{row.officer}</span>
+                  <td className="px-5 py-3.5 whitespace-nowrap truncate">
+                    <span className="text-xs font-medium text-[#8F8F8F]">{row.officer}</span>
                   </td>
-                  <td className="px-5 py-4 whitespace-nowrap text-right truncate">
+                  <td className="px-5 py-3.5 whitespace-nowrap text-right truncate">
                     <button
                       onClick={() => handleOpenModal(row)}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded transition-all shadow-sm bg-white text-blue-700 border border-blue-200 hover:border-blue-300 hover:bg-blue-50"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded transition-all bg-[#181818] text-[#3ECF8E] border border-[#3ECF8E]/20 hover:bg-[#3ECF8E]/10"
                     >
                       [{row.action}]
                     </button>
@@ -159,31 +159,25 @@ export default function CustomsInspections() {
         </div>
 
         {/* Bottom Bay Capacity Status Strip */}
-        <div className="border-t border-slate-100 p-4 bg-slate-50 shrink-0 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('bay_01')}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-bold">
-              <CircleDot size={14} className="fill-emerald-500" />
+        <div className="border-t border-[#2E2E2E] p-3 bg-[#181818] shrink-0 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="flex items-center justify-between bg-[#232323] border border-[#2E2E2E] rounded-lg p-2.5">
+            <span className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider">{t('bay_01')}</span>
+            <div className="flex items-center gap-1.5 text-[#3ECF8E] text-xs font-bold">
+              <CircleDot size={13} className="fill-[#3ECF8E]" />
               {t('available')}
             </div>
           </div>
-          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('bay_02')}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-bold">
-              <CircleDot size={14} className="fill-emerald-500" />
+          <div className="flex items-center justify-between bg-[#232323] border border-[#2E2E2E] rounded-lg p-2.5">
+            <span className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider">{t('bay_02')}</span>
+            <div className="flex items-center gap-1.5 text-[#3ECF8E] text-xs font-bold">
+              <CircleDot size={13} className="fill-[#3ECF8E]" />
               {t('available')}
             </div>
           </div>
-          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('bay_03')}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-bold">
-              <CircleDot size={14} className="fill-emerald-500" />
+          <div className="flex items-center justify-between bg-[#232323] border border-[#2E2E2E] rounded-lg p-2.5">
+            <span className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider">{t('bay_03')}</span>
+            <div className="flex items-center gap-1.5 text-[#3ECF8E] text-xs font-bold">
+              <CircleDot size={13} className="fill-[#3ECF8E]" />
               {t('available')}
             </div>
           </div>
@@ -192,37 +186,37 @@ export default function CustomsInspections() {
 
       {/* Modal Overlay */}
       {isModalOpen && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-xl" onClick={() => setIsModalOpen(false)}></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
 
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50">
+          <div className="relative bg-[#232323] rounded-xl shadow-2xl w-full max-w-2xl border border-[#2E2E2E] flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-5 border-b border-[#2E2E2E]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600">
-                  <FileText size={20} />
+                <div className="w-10 h-10 rounded-full bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 flex items-center justify-center text-[#3ECF8E]">
+                  <FileText size={18} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">{t('physical_inspection_log')}</h3>
-                  <p className="text-xs text-slate-500 font-mono font-medium">{activeInspection?.id}</p>
+                  <h3 className="font-bold text-[#EDEDED] text-base">{t('physical_inspection_log')}</h3>
+                  <p className="text-xs text-[#8F8F8F] font-mono">{activeInspection?.id}</p>
                 </div>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-2">
-                <X size={20} />
+              <button onClick={() => setIsModalOpen(false)} className="text-[#8F8F8F] hover:text-[#EDEDED] p-2">
+                <X size={18} />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-6">
+            <div className="p-5 overflow-y-auto space-y-5">
               {/* Weight Recalibration */}
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <label className="block text-sm font-bold text-slate-700 mb-2">{t('reweighed_scale_value')}</label>
+              <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-lg p-4">
+                <label className="block text-sm font-bold text-[#EDEDED] mb-2">{t('reweighed_scale_value')}</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
                     value="24,550 kg"
                     readOnly
-                    className="w-1/2 border border-slate-300 rounded-md p-2.5 text-sm focus:outline-none font-mono font-bold bg-white text-slate-900 shadow-inner"
+                    className="w-1/2 border border-[#2E2E2E] rounded-md p-2.5 text-sm focus:outline-none font-mono font-bold bg-[#232323] text-[#EDEDED] shadow-inner"
                   />
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-md">
+                  <span className="text-xs font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-3 py-2 rounded-md">
                     {t('variance_reduced')}
                   </span>
                 </div>
@@ -230,46 +224,46 @@ export default function CustomsInspections() {
 
               {/* Contraband & Security Checks */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-3">{t('contraband_security_check')}</label>
-                <div className="space-y-3">
+                <label className="block text-sm font-bold text-[#EDEDED] mb-3">{t('contraband_security_check')}</label>
+                <div className="space-y-2">
                   <button
                     onClick={() => setToggles({ ...toggles, visual: !toggles.visual })}
-                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.visual ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.visual ? 'bg-[#3ECF8E]/10 border-[#3ECF8E]/20 text-[#3ECF8E]' : 'bg-[#181818] border-[#2E2E2E] text-[#8F8F8F]'}`}
                   >
                     <span className="font-medium text-sm">{t('visual_inspection')}</span>
-                    {toggles.visual ? <span className="font-bold text-xs bg-emerald-100 px-2 py-1 rounded">{t('passed')}</span> : <span className="font-bold text-xs bg-slate-100 px-2 py-1 rounded">{t('pending')}</span>}
+                    {toggles.visual ? <span className="font-bold text-xs bg-[#3ECF8E]/10 px-2 py-1 rounded text-[#3ECF8E]">{t('passed')}</span> : <span className="font-bold text-xs bg-[#181818] px-2 py-1 rounded text-[#8F8F8F]">{t('pending')}</span>}
                   </button>
                   <button
                     onClick={() => setToggles({ ...toggles, tamper: !toggles.tamper })}
-                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.tamper ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.tamper ? 'bg-[#3ECF8E]/10 border-[#3ECF8E]/20 text-[#3ECF8E]' : 'bg-[#181818] border-[#2E2E2E] text-[#8F8F8F]'}`}
                   >
                     <span className="font-medium text-sm">{t('cargo_tamper_inspection')}</span>
-                    {toggles.tamper ? <span className="font-bold text-xs bg-emerald-100 px-2 py-1 rounded">{t('passed')}</span> : <span className="font-bold text-xs bg-slate-100 px-2 py-1 rounded">{t('pending')}</span>}
+                    {toggles.tamper ? <span className="font-bold text-xs bg-[#3ECF8E]/10 px-2 py-1 rounded text-[#3ECF8E]">{t('passed')}</span> : <span className="font-bold text-xs bg-[#181818] px-2 py-1 rounded text-[#8F8F8F]">{t('pending')}</span>}
                   </button>
                   <button
                     onClick={() => setToggles({ ...toggles, eSeal: !toggles.eSeal })}
-                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.eSeal ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                    className={`w-full flex items-center justify-between p-3 border rounded-lg transition-colors ${toggles.eSeal ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-[#181818] border-[#2E2E2E] text-[#8F8F8F]'}`}
                   >
                     <span className="font-medium text-sm">{t('new_eseal_applied')}</span>
-                    {toggles.eSeal ? <span className="font-bold text-xs bg-blue-100 px-2 py-1 rounded font-mono">#SEAL-ET-9941</span> : <span className="font-bold text-xs bg-slate-100 px-2 py-1 rounded">{t('not_applied')}</span>}
+                    {toggles.eSeal ? <span className="font-bold text-xs bg-blue-500/10 px-2 py-1 rounded font-mono text-blue-400">#SEAL-ET-9941</span> : <span className="font-bold text-xs bg-[#181818] px-2 py-1 rounded text-[#8F8F8F]">{t('not_applied')}</span>}
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="p-5 border-t border-slate-100 bg-slate-50 flex flex-col gap-3 shrink-0">
+            <div className="p-4 border-t border-[#2E2E2E] flex flex-col gap-2 shrink-0">
               <button
                 onClick={handleClearInspection}
-                className="w-full py-3 bg-[#059669] hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold rounded-lg shadow-sm transition-all text-sm border border-emerald-800/20 flex justify-center items-center gap-2"
+                className="w-full py-2.5 bg-[#3ECF8E] hover:bg-[#34b27b] active:scale-[0.99] text-[#1C1C1C] font-bold rounded-lg transition-all text-sm flex justify-center items-center gap-2"
               >
-                <CheckCircle2 size={18} />
+                <CheckCircle2 size={16} />
                 ✓ {t('issue_cleared_pass')}
               </button>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-full py-3 bg-[#DC2626] hover:bg-rose-700 active:scale-[0.99] text-white font-semibold rounded-lg shadow-sm transition-all text-sm border border-rose-800/20 flex justify-center items-center gap-2"
+                className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:scale-[0.99] text-rose-400 border border-rose-500/20 font-bold rounded-lg transition-all text-sm flex justify-center items-center gap-2"
               >
-                <AlertTriangle size={18} />
+                <AlertTriangle size={16} />
                 ⚠️ {t('impound_container')}
               </button>
             </div>

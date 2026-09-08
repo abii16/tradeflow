@@ -91,7 +91,7 @@ export default function FreightOrderForm() {
 
   return (
     <div className="space-y-5">
-      <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl shadow-lg shadow-slate-200/40 overflow-hidden">
+      <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl shadow-lg shadow-black/40 overflow-hidden">
         <div className="bg-[#1C1C1C]/50 border-b border-[#2E2E2E] px-5 py-4">
           <h2 className="text-base font-bold text-[#EDEDED]">{t('post_new_freight_order')}</h2>
         </div>
@@ -200,14 +200,14 @@ export default function FreightOrderForm() {
           type="submit"
           form="quote-form"
           disabled={loading}
-          className="bg-[#2E2E2E] border border-[#2E2E2E] hover:bg-[#3E3E3E] text-[#EDEDED] px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+          className="bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
         >
           {t('generate_instant_spot_quote')}
         </button>
       </div>
 
       {quoteGenerated && (
-        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-5 shadow-lg shadow-slate-200/40 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-5 shadow-lg shadow-black/40 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex justify-between items-start">
             <div>
               <span className="inline-block bg-[#181818] text-[#EDEDED] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-[#2E2E2E] mb-1.5">{t('dynamic_pricing_engine')}</span>
@@ -236,7 +236,7 @@ export default function FreightOrderForm() {
             type="button"
             onClick={handleConfirmBroadcast}
             disabled={loading}
-            className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-black py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? 'Posting...' : t('confirm_post_load')}
           </button>

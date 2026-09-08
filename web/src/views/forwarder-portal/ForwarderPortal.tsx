@@ -25,21 +25,23 @@ export default function ForwarderPortal({ onSwitchPortal }: ForwarderPortalProps
         return <ForwarderAnalytics />;
       default:
         return (
-          <div className="flex items-center justify-center h-64 bg-white border border-slate-200 rounded-xl">
-            <p className="text-slate-500 font-medium text-sm">Module under construction</p>
+          <div className="flex items-center justify-center h-64 bg-[#232323] border border-[#2E2E2E] rounded-xl">
+            <p className="text-[#8F8F8F] font-medium text-sm">Module under construction</p>
           </div>
         );
     }
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
+    <div className="flex min-h-screen bg-[#1C1C1C] font-sans">
       <ForwarderSidebar activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <UniversalTopBar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="sticky top-0 z-20">
+          <UniversalTopBar />
+        </div>
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8">
+        <main className="flex-1 p-5 md:p-6">
           {renderSubTab()}
         </main>
       </div>

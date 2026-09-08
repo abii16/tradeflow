@@ -84,7 +84,7 @@ export default function BidsTab() {
         </div>
 
         {/* Filter Segmented Control */}
-        <div className="flex bg-[#181818]/80 p-1.5 rounded-xl border border-[#2E2E2E]/60 shadow-inner backdrop-blur-sm relative z-10">
+        <div className="flex flex-wrap gap-3 items-center relative z-10">
           {FILTER_OPTIONS.map((opt) => {
             const isActive = filter === opt.value;
             const count = getFilterCount(opt.value);
@@ -92,21 +92,16 @@ export default function BidsTab() {
               <button
                 key={opt.value}
                 onClick={() => setFilter(opt.value)}
-                className={`relative flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ${
+                className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border transition-all ${
                   isActive
-                    ? 'text-[#EDEDED] shadow-sm'
-                    : 'text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-slate-200/50'
+                    ? 'bg-[#3ECF8E]/10 border-[#3ECF8E]/30 text-[#3ECF8E]'
+                    : 'bg-[#232323] border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] hover:border-[#8F8F8F]'
                 }`}
               >
-                {isActive && (
-                  <div className="absolute inset-0 bg-[#232323] rounded-lg shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] border border-[#2E2E2E]/50 -z-10 transition-all" />
-                )}
-                <span className={`${isActive ? 'text-[#3ECF8E]' : 'text-[#8F8F8F]'}`}>
-                  {opt.icon}
-                </span>
+                {opt.icon}
                 {opt.label}
-                <span className={`ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
-                  isActive ? 'bg-[#181818] text-[#EDEDED]' : 'bg-slate-200/50 text-[#8F8F8F]'
+                <span className={`px-1.5 py-0.5 rounded-sm text-[10px] font-bold ${
+                  isActive ? 'bg-[#3ECF8E]/20 text-[#3ECF8E]' : 'bg-[#1C1C1C] text-[#8F8F8F]'
                 }`}>
                   {count}
                 </span>
@@ -143,33 +138,33 @@ export default function BidsTab() {
               >
                 <div
                   onClick={() => setExpandedLoad(isExpanded ? null : load.id)}
-                  className={`p-5 flex flex-col lg:flex-row lg:items-center justify-between cursor-pointer transition-colors relative overflow-hidden ${
-                    isExpanded ? 'bg-[#3ECF8E]/10/30' : 'hover:bg-[#1C1C1C]/50'
+                  className={`p-3 flex flex-col lg:flex-row lg:items-center justify-between cursor-pointer transition-colors relative overflow-hidden ${
+                    isExpanded ? 'bg-[#3ECF8E]/10' : 'hover:bg-[#1C1C1C]/50'
                   }`}
                 >
                   {/* Left Side: ID and Title */}
                   <div className="flex items-start gap-4 mb-4 lg:mb-0 w-full lg:w-1/3">
-                    <div className={`mt-1.5 w-8 h-8 shrink-0 rounded-full flex items-center justify-center transition-colors ${
-                      isExpanded ? 'bg-blue-100 text-[#3ECF8E]' : 'bg-[#181818] text-[#8F8F8F] group-hover:bg-[#3ECF8E]/10 group-hover:text-[#3ECF8E]'
+                    <div className={`mt-0.5 w-6 h-6 shrink-0 rounded-full flex items-center justify-center transition-colors ${
+                      isExpanded ? 'bg-[#3ECF8E]/20 text-[#3ECF8E]' : 'bg-[#181818] text-[#8F8F8F] group-hover:bg-[#3ECF8E]/10 group-hover:text-[#3ECF8E]'
                     }`}>
                       <ChevronDown
-                        size={18}
+                        size={14}
                         className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
                       />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-[10px] font-mono font-bold bg-[#181818] text-[#8F8F8F] px-2 py-0.5 rounded-sm tracking-widest border border-[#2E2E2E]/60">
+                        <span className="text-[9px] font-mono font-bold bg-[#181818] text-[#8F8F8F] px-2 py-0.5 rounded-sm tracking-widest border border-[#2E2E2E]/60">
                           TF-LOAD-{load.id?.substring(0, 4)?.toUpperCase()}
                         </span>
                         {load.bids?.length > 0 && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-sm border border-amber-100 animate-pulse">
+                          <span className="flex items-center gap-1 text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-sm border border-amber-500/20 animate-pulse">
                             <Activity size={10} />
                             {load.bids.length} BIDS
                           </span>
                         )}
                       </div>
-                      <h3 className="text-[15px] font-bold text-[#EDEDED] group-hover:text-[#3ECF8E] transition-colors leading-snug">
+                      <h3 className="text-sm font-bold text-[#EDEDED] group-hover:text-[#3ECF8E] transition-colors leading-snug">
                         {load.title || load.cargoType || 'Freight Order'}
                       </h3>
                     </div>
@@ -203,15 +198,15 @@ export default function BidsTab() {
                   {/* Right Side: Status */}
                   <div className="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto border-t lg:border-t-0 border-[#2E2E2E] pt-3 lg:pt-0">
                     <span
-                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full border shadow-sm capitalize ${
+                      className={`flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-bold rounded-full border shadow-sm capitalize ${
                         statusLabel === 'open'
-                          ? 'bg-gradient-to-br from-emerald-50 to-green-100 text-emerald-800 border-emerald-200'
+                          ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/20'
                           : statusLabel === 'transit'
-                          ? 'bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-800 border-blue-200'
-                          : 'bg-gradient-to-br from-slate-50 to-slate-100 text-[#8F8F8F] border-[#2E2E2E]'
+                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                          : 'bg-[#1C1C1C] text-[#8F8F8F] border-[#2E2E2E]'
                       }`}
                     >
-                      {statusLabel === 'open' ? <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> : null}
+                      {statusLabel === 'open' ? <div className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-ping" /> : null}
                       {statusLabel === 'transit' ? <Zap size={12} className="text-[#3ECF8E]" /> : null}
                       {statusLabel === 'completed' ? <ShieldCheck size={12} className="text-[#8F8F8F]" /> : null}
                       {getStatusLabel(load.status)}
@@ -221,10 +216,10 @@ export default function BidsTab() {
 
                 {/* Expanded Details Area */}
                 {isExpanded && (
-                  <div className="border-t border-blue-100 bg-gradient-to-b from-blue-50/50 to-white p-5 animate-in slide-in-from-top-2 duration-300">
+                  <div className="border-t border-[#2E2E2E] bg-[#181818] p-4 animate-in slide-in-from-top-2 duration-300">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 uppercase tracking-wider shadow-sm shadow-blue-500/20">
+                        <div className="bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 uppercase tracking-wider">
                           <Sparkles size={12} /> AI Smart Match
                         </div>
                         <span className="text-xs font-medium text-[#8F8F8F] flex items-center gap-1">

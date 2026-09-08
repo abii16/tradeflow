@@ -19,7 +19,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [lang, setLang] = useState<'en' | 'am'>('en');
   const t = lang === 'en' ? en : am;
-  
+
   // Live Data Simulation State
   const [liveSpotIndex, setLiveSpotIndex] = useState(356000);
   const [liveBids, setLiveBids] = useState([
@@ -29,7 +29,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   ]);
   const [etaMins, setEtaMins] = useState(45);
   const [etaConfidence, setEtaConfidence] = useState(94.2);
-  
+
   // Calculator State
   const [calcFrom, setCalcFrom] = useState('');
   const [calcTo, setCalcTo] = useState('');
@@ -47,13 +47,13 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         weightKg: parseFloat(calcWeight) * 1000, // convert tons to kg
         cargoType: 'dry'
       };
-      
+
       const response = await fetch('http://localhost:3000/api/v1/pricing/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         // Assuming data returns totalRate or baseRate
@@ -86,7 +86,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
-    
+
     // Initial fetch
     fetchLandingMetrics();
 
@@ -134,23 +134,23 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
     if (!activeComplianceModal) return null;
     return (
       <div className="fixed inset-0 z-[100] bg-[#18191c] backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-slate-200">
-          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-              <ShieldCheck size={20} className="text-emerald-600" />
+        <div className="bg-[#232323] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-[#2E2E2E]">
+          <div className="p-6 border-b border-[#2E2E2E] flex justify-between items-center bg-[#181818]">
+            <h3 className="font-bold text-lg text-[#EDEDED] flex items-center gap-2">
+              <ShieldCheck size={20} className="text-[#3ECF8E]" />
               {activeComplianceModal.title}
             </h3>
-            <button onClick={() => setActiveComplianceModal(null)} className="text-slate-400 hover:text-slate-700">
+            <button onClick={() => setActiveComplianceModal(null)} className="text-[#8F8F8F] hover:text-[#EDEDED]">
               <X size={20} />
             </button>
           </div>
           <div className="p-6">
-            <p className="text-sm text-slate-600 leading-relaxed font-mono whitespace-pre-wrap bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <p className="text-sm text-[#EDEDED] leading-relaxed font-mono whitespace-pre-wrap bg-[#181818] p-4 rounded-lg border border-[#2E2E2E]">
               {activeComplianceModal.content}
             </p>
           </div>
-          <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
-            <button onClick={() => setActiveComplianceModal(null)} className="bg-slate-900 text-white px-6 py-2 rounded-lg text-sm font-bold">
+          <div className="p-4 bg-[#181818] border-t border-[#2E2E2E] flex justify-end">
+            <button onClick={() => setActiveComplianceModal(null)} className="bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] px-6 py-2 rounded-lg text-sm font-bold shadow-md">
               Acknowledge
             </button>
           </div>
@@ -191,12 +191,11 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
         </div>
 
         {/* TOP NAVIGATION HEADER */}
-        <header className={`fixed top-0 left-0 w-full h-16 border-b px-8 flex items-center justify-between z-[60] backdrop-blur-md transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-[#1C1C1C]/95 border-[#2E2E2E] shadow-2xl' 
+        <header className={`fixed top-0 left-0 w-full h-16 border-b px-8 flex items-center justify-between z-[60] backdrop-blur-md transition-all duration-300 ${isScrolled
+            ? 'bg-[#1C1C1C]/95 border-[#2E2E2E] shadow-2xl'
             : 'bg-[#1C1C1C]/80 border-[#2E2E2E]'
-        }`}>
-          <div 
+          }`}>
+          <div
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-baseline select-none cursor-pointer hover:opacity-80 hover:scale-[1.02] active:scale-95 transition-all duration-300"
           >
@@ -206,10 +205,10 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
           <div className="flex items-center gap-6 md:gap-10">
             <nav className="hidden md:flex items-center space-x-1">
-              <a href="#platform-overview" onClick={(e) => handleSmoothScroll(e, 'platform-overview')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.platformOverview}</a>
-              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.loadBoard}</a>
-              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.dynamicRates}</a>
-              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.customsSync}</a>
+              <a href="#platform-overview" onClick={(e) => handleSmoothScroll(e, 'platform-overview')} className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.platformOverview}</a>
+              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.loadBoard}</a>
+              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.dynamicRates}</a>
+              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.customsSync}</a>
             </nav>
 
             <div className="hidden md:block w-px h-6 bg-[#262626]"></div>
@@ -217,37 +216,37 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <div className="flex items-center gap-4">
               <button className="px-2.5 py-1 text-xs font-mono border border-[#2E2E2E] text-zinc-300 rounded-lg hover:border-[#3ECF8E]/50 transition" onClick={() => setLang(l => l === 'en' ? 'am' : 'en')}>{lang === 'en' ? 'EN | አማ' : 'አማ | EN'}</button>
               {!isAuthenticated ? (
-              <>
-                <button
-                  onClick={() => setShowLoginModal(true)}
-                  className="text-sm font-bold text-slate-200 hover:text-white px-4 py-2 rounded-full hover:bg-white/10 transition-all duration-300"
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => setShowRegistration(true)}
-                  className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-4 py-2 rounded-xl transition"
-                >
-                  Register
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={logout}
-                  className="text-sm font-bold text-slate-200 hover:text-white px-4 py-2 rounded-full hover:bg-white/10 transition-all duration-300"
-                >
-                  Logout
-                </button>
-                <button
-                  onClick={() => onSelectPortal('shipper')}
-                  className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-4 py-2 rounded-xl transition"
-                >
-                  Launch Platform
-                </button>
-              </>
-            )}
-          </div>
+                <>
+                  <button
+                    onClick={() => setShowLoginModal(true)}
+                    className="text-sm font-bold text-[#EDEDED] hover:text-white px-4 py-2 rounded-full hover:bg-[#2A2A2A] transition-all duration-300"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => setShowRegistration(true)}
+                    className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-4 py-2 rounded-xl transition"
+                  >
+                    Register
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={logout}
+                    className="text-sm font-bold text-[#EDEDED] hover:text-white px-4 py-2 rounded-full hover:bg-[#2A2A2A] transition-all duration-300"
+                  >
+                    Logout
+                  </button>
+                  <button
+                    onClick={() => onSelectPortal('shipper')}
+                    className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-4 py-2 rounded-xl transition"
+                  >
+                    Launch Platform
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
@@ -259,7 +258,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             Intelligent <span className="text-[#3ECF8E]">{t.hero.titleHighlight}</span>.
           </h1>
           <p className="text-base md:text-lg leading-relaxed text-[#EDEDED] font-bold mb-10 max-w-3xl mx-auto">
-          AI matching, live tracking, and digital customs.<span className="inline-block animate-pulse ml-1 text-[#3ECF8E]">|</span>
+            AI matching, live tracking, and digital customs.<span className="inline-block animate-pulse ml-1 text-[#3ECF8E]">|</span>
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 w-full max-w-2xl mx-auto">
@@ -318,7 +317,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       <section id="corridor-telematics" className="w-full bg-[#1C1C1C] py-20 relative z-40 border-b border-[#2E2E2E] overflow-hidden">
         {/* Subtle background effect */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#3ECF8E]/5 blur-[120px] rounded-full pointer-events-none"></div>
-        
+
         <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center relative z-10">
           <div className="lg:col-span-5 flex flex-col justify-center animate-in fade-in slide-in-from-left-8 duration-1000">
 
@@ -334,19 +333,19 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             </p>
             <ul className="space-y-3 mb-10">
               <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
-                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Navigation size={14} /></div> 
+                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Navigation size={14} /></div>
                 <span className="text-xs font-semibold text-zinc-200 tracking-wide">{t.telematics.features[0]}</span>
               </li>
               <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
-                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Shield size={14} /></div> 
+                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><Shield size={14} /></div>
                 <span className="text-xs font-semibold text-zinc-200 tracking-wide">{t.telematics.features[1]}</span>
               </li>
               <li className="bg-[#232323] border border-[#2E2E2E] rounded-xl px-4 py-3 flex items-center gap-3.5 hover:border-[#3ECF8E]/30 transition duration-200">
-                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><MapPin size={14} /></div> 
+                <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center shrink-0"><MapPin size={14} /></div>
                 <span className="text-xs font-semibold text-zinc-200 tracking-wide">{t.telematics.features[2]}</span>
               </li>
             </ul>
-            
+
             <button className="group flex w-fit items-center gap-2 bg-[#232323] border border-[#2E2E2E] hover:border-[#8F8F8F] text-white px-6 py-3 rounded-full font-bold text-sm transition-all shadow-lg hover:bg-[#2A2A2A]">
               See Live Demo
               <ChevronDown className="w-4 h-4 -rotate-90 group-hover:translate-x-1 transition-transform" />
@@ -354,7 +353,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           </div>
           <div className="lg:col-span-7 w-full h-[400px] lg:h-[480px] rounded-2xl bg-[#232323] border border-[#2E2E2E] p-2 relative overflow-hidden shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 group">
             <LiveTelematicsMap />
-            
+
             {/* Floating Live Status Card */}
             <div className="absolute top-8 right-8 bg-[#1C1C1C]/90 border border-[#2E2E2E] backdrop-blur-md rounded-2xl p-4 shadow-xl transition-transform duration-500 hover:scale-105 z-20 hidden md:block">
               <div className="flex items-center justify-between mb-3 border-b border-[#2E2E2E] pb-3 gap-6">
@@ -489,8 +488,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
           <div className="flex-1 w-full bg-[#232323] rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-end h-80 border border-[#2E2E2E]">
             <div className="absolute top-8 left-8 text-[#EDEDED] z-10">
               <div className="flex items-center gap-2 mb-2">
-                 <div className="w-2 h-2 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
-                 <div className="text-[10px] font-mono uppercase tracking-widest text-[#3ECF8E]">{t.pricing.liveSpotIndex}</div>
+                <div className="w-2 h-2 bg-[#3ECF8E] rounded-full animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-[#3ECF8E]">{t.pricing.liveSpotIndex}</div>
               </div>
               <div className="text-3xl font-extrabold">ETB {(liveSpotIndex / 1000).toFixed(1)}K</div>
             </div>
@@ -563,13 +562,13 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black tracking-tight mb-4 text-[#EDEDED]">{t.calculator.title}</h2>
             <p className="text-sm text-[#8F8F8F] leading-relaxed max-w-2xl mx-auto">{t.calculator.desc}</p>
           </div>
-          
+
           <div className="max-w-7xl mx-auto p-8 rounded-2xl bg-[#232323] border border-[#2E2E2E] shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex flex-col space-y-6 relative z-10">
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">{t.calculator.origin}</label>
-                <select 
-                  value={calcFrom} 
+                <select
+                  value={calcFrom}
                   onChange={(e) => setCalcFrom(e.target.value)}
                   className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
                 >
@@ -580,8 +579,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               </div>
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">{t.calculator.destination}</label>
-                <select 
-                  value={calcTo} 
+                <select
+                  value={calcTo}
                   onChange={(e) => setCalcTo(e.target.value)}
                   className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
                 >
@@ -593,15 +592,15 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               </div>
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-2">{t.calculator.weight}</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={calcWeight}
                   onChange={(e) => setCalcWeight(e.target.value)}
                   placeholder="e.g. 40"
                   className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-4 py-3 text-sm text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] outline-none transition"
                 />
               </div>
-              <button 
+              <button
                 onClick={handleCalculate}
                 disabled={!calcFrom || !calcTo || !calcWeight || calcState === 'loading'}
                 className="w-full py-3 rounded-xl bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-sm tracking-wide transition disabled:opacity-50 mt-2"
@@ -614,11 +613,11 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 ) : 'Calculate AI Spot Rate'}
               </button>
             </div>
-            
+
             <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl p-8 flex flex-col justify-center items-center text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('/telematics_map.jpg')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1C]/90 to-[#1C1C1C]/40"></div>
-              
+
               {calcState === 'result' && calcRate ? (
                 <div className="relative z-10 w-full animate-in fade-in zoom-in duration-500">
                   <div className="text-[10px] font-mono uppercase tracking-widest text-[#3ECF8E] mb-4 flex items-center justify-center gap-2">
@@ -628,7 +627,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                   <div className="text-3xl font-mono font-black text-[#3ECF8E] mb-6 tracking-tight">
                     ETB {calcRate.toLocaleString()}
                   </div>
-                  
+
                   <div className="w-full space-y-2 text-left">
                     <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
                       <span>{t.calculator.fuelIndex}</span>
@@ -643,7 +642,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                       <span className="font-bold text-[#EDEDED]">28 hrs</span>
                     </div>
                   </div>
-                  
+
                   <div className="mt-6 flex items-center justify-center gap-2 text-xs font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-4 py-2 rounded-lg border border-[#3ECF8E]/20">
                     <Check size={14} /> TeleBirr Instant Escrow Settlement Supported
                   </div>
@@ -701,7 +700,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 </ul>
               </div>
             </div>
-            
+
             <div className="flex flex-col gap-4 bg-[#232323] border border-[#2E2E2E] rounded-xl p-6">
               <h4 className="text-sm font-bold text-[#EDEDED] mb-2">{t.footer.regulatory}</h4>
               <div className="space-y-4">

@@ -94,7 +94,7 @@ export default function ControlTowerDashboard() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-2xl font-mono font-bold text-[#EDEDED]">{telemetry.trucks.length > 0 ? telemetry.trucks.length : summary.activeAssets}</span>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1.5 py-0.5 rounded-full">
                 +12.5%
               </span>
             </div>
@@ -115,7 +115,7 @@ export default function ControlTowerDashboard() {
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_avg_spot_rate')}</div>
             <div className="text-[11px] text-[#8F8F8F]">{t('kpi_baseline')}</div>
           </div>
-          <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl flex items-center justify-center">
+          <div className="bg-[#3ECF8E]/10 text-[#3ECF8E] p-3 rounded-xl flex items-center justify-center">
             <CircleDollarSign size={18} />
           </div>
         </div>
@@ -127,7 +127,7 @@ export default function ControlTowerDashboard() {
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_eta_reliability')}</div>
             <div className="text-[11px] text-[#8F8F8F]">{t('kpi_mae_accuracy')}</div>
           </div>
-          <div className="bg-indigo-50 text-indigo-600 p-3 rounded-xl flex items-center justify-center">
+          <div className="bg-indigo-500/10 text-indigo-400 p-3 rounded-xl flex items-center justify-center">
             <Clock size={18} />
           </div>
         </div>
@@ -139,7 +139,7 @@ export default function ControlTowerDashboard() {
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_customs_queue')}</div>
             <div className="text-[11px] text-[#8F8F8F]">{t('kpi_galafi_throughput')}</div>
           </div>
-          <div className="bg-rose-50 text-rose-600 p-3 rounded-xl flex items-center justify-center">
+          <div className="bg-rose-500/10 text-rose-500 p-3 rounded-xl flex items-center justify-center">
             <ShieldCheck size={18} />
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function ControlTowerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column (65%): Live Interactive Corridor Radar */}
-        <div className="lg:col-span-2 bg-[#0F172A] rounded-xl shadow-sm overflow-hidden relative h-full min-h-[480px] border border-[#2E2E2E]">
+        <div className="lg:col-span-2 bg-[#1C1C1C] rounded-xl shadow-sm overflow-hidden relative h-full min-h-[480px] border border-[#2E2E2E]">
           <LiveRadarMap />
         </div>
 
@@ -188,7 +188,7 @@ export default function ControlTowerDashboard() {
             <button 
               onClick={handleRecalculate}
               disabled={recalculating}
-              className="w-full mt-4 bg-[#0F172A] text-[#EDEDED] text-xs font-medium py-2.5 rounded-lg hover:bg-[#232323] transition-colors disabled:opacity-50"
+              className="w-full mt-4 bg-[#181818] text-[#3ECF8E] border border-[#2E2E2E] text-xs font-bold py-2.5 rounded-lg hover:bg-[#3ECF8E]/10 transition-colors disabled:opacity-50"
             >
               {recalculating ? 'Recalculating...' : t('spo_recalc')}
             </button>
@@ -224,7 +224,7 @@ export default function ControlTowerDashboard() {
               {etaData.length > 0 && (
                 <div className="pt-2 border-t border-[#2E2E2E] flex justify-between items-center">
                   <span className="text-[11px] text-[#8F8F8F]">{t('eta_confidence')}</span>
-                  <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{etaData[0].confidence}</span>
+                  <span className="text-xs font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded">{etaData[0].confidence}</span>
                 </div>
               )}
             </div>
@@ -245,7 +245,7 @@ export default function ControlTowerDashboard() {
             </div>
             <span className="bg-[#232323] border border-[#2E2E2E] text-[#8F8F8F] text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
               Active Loads
-              <span className="bg-indigo-600 text-[#EDEDED] text-[10px] px-1.5 rounded-full">{loads.filter(l => l.status !== 'COMPLETED').length}</span>
+              <span className="bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold text-[10px] px-1.5 rounded-full">{loads.filter(l => l.status !== 'COMPLETED').length}</span>
             </span>
           </div>
 

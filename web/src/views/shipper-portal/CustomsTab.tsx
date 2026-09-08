@@ -90,7 +90,7 @@ export default function CustomsTab() {
           <div>
             <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight">{t('customs_vault')}</h1>
             <div className="flex items-center gap-3 mt-1.5">
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2.5 py-0.5 rounded-full border border-[#3ECF8E]/20">
                 <CheckCircle2 size={12} /> ERCA Synced
               </span>
               <span className="text-xs text-[#8F8F8F] font-medium flex items-center gap-1.5">
@@ -102,7 +102,7 @@ export default function CustomsTab() {
         <button
           type="button"
           onClick={handleUploadClick}
-          className="group relative flex items-center gap-2 bg-[#3ECF8E] text-black hover:bg-[#34b27b] transition-colors font-bold px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#232323] transition-all shadow-md hover:shadow-xl overflow-hidden"
+          className="group relative flex items-center gap-2 bg-[#3ECF8E] text-[#1C1C1C] hover:bg-[#34b27b] font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md hover:shadow-xl overflow-hidden hover:-translate-y-0.5"
         >
           <div className="absolute inset-0 bg-[#232323]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
           <UploadCloud size={18} className="relative z-10 group-hover:-translate-y-0.5 transition-transform" /> 
@@ -118,7 +118,7 @@ export default function CustomsTab() {
               Active Shipment Dossier
             </h2>
             <p className="text-xs text-[#8F8F8F] mt-1 font-medium">
-              ID: <span className="font-mono font-bold bg-slate-200/60 px-1.5 py-0.5 rounded text-[#EDEDED] ml-1">{shipmentId ? shipmentId.substring(0, 8).toUpperCase() : 'AWAITING'}</span>
+              ID: <span className="font-mono font-bold bg-[#181818] border border-[#2E2E2E] px-1.5 py-0.5 rounded text-[#EDEDED] ml-1">{shipmentId ? shipmentId.substring(0, 8).toUpperCase() : 'AWAITING'}</span>
             </p>
           </div>
         </div>
@@ -126,33 +126,33 @@ export default function CustomsTab() {
         <Table>
           <TableHeader>
             <TableRow className="border-[#2E2E2E] hover:bg-transparent">
-              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-4">Document Type</TableHead>
-              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-4">Status</TableHead>
-              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-4">Attached File</TableHead>
-              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-4 text-right">Action</TableHead>
+              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-2.5">Document Type</TableHead>
+              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-2.5">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-2.5">Attached File</TableHead>
+              <TableHead className="text-xs font-semibold text-[#8F8F8F] uppercase tracking-wider py-2.5 text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {documents.length === 0 && !loading && (
-              <TableRow><TableCell colSpan={4} className="text-center text-xs text-[#8F8F8F] py-4">No documents found. Click upload.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center text-xs text-[#8F8F8F] py-2.5">No documents found. Click upload.</TableCell></TableRow>
             )}
             {documents.map((doc, idx) => {
               const renderStatus = () => {
                 switch (doc.status) {
                   case 'CLEARED':
                     return (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/20">
                         <CheckCircle2 size={11} /> Cleared
                       </span>
                     );
                   case 'REJECTED':
                     return (
                       <div className="flex flex-col gap-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-red-50 text-red-700 border-red-100">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-rose-500/10 text-rose-500 border-rose-500/20">
                           <X size={11} /> Rejected
                         </span>
                         {doc.rejectionReason && (
-                          <span className="text-[10px] text-red-600 max-w-[150px] leading-tight" title={doc.rejectionReason}>
+                          <span className="text-[10px] text-rose-500 max-w-[150px] leading-tight" title={doc.rejectionReason}>
                             {doc.rejectionReason}
                           </span>
                         )}
@@ -160,14 +160,14 @@ export default function CustomsTab() {
                     );
                   case 'UNDER_REVIEW':
                     return (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-[#3ECF8E]/10 text-[#3ECF8E] border-blue-100">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/20">
                         <Clock size={11} /> Under Review
                       </span>
                     );
                   case 'SUBMITTED':
                   default:
                     return (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-amber-50 text-amber-700 border-amber-100">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border bg-amber-500/10 text-amber-500 border-amber-500/20">
                         <Clock size={11} /> Submitted
                       </span>
                     );
@@ -177,11 +177,11 @@ export default function CustomsTab() {
               return (
               <React.Fragment key={idx}>
                 {/* Invoice Row */}
-                <TableRow className="border-[#2E2E2E] hover:bg-indigo-50/40 transition-colors group">
-                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-4">
+                <TableRow className="border-[#2E2E2E] hover:bg-[#2A2A2A] transition-colors group">
+                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-2.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
-                        <FileText size={16} className="text-indigo-600" />
+                      <div className="w-8 h-8 rounded-lg bg-[#181818] flex items-center justify-center group-hover:bg-[#3ECF8E]/10 transition-colors border border-[#2E2E2E]">
+                        <FileText size={16} className="text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors" />
                       </div>
                       Commercial Invoice
                     </div>
@@ -191,22 +191,22 @@ export default function CustomsTab() {
                   </TableCell>
                   <TableCell className="text-xs font-mono font-medium text-[#8F8F8F] truncate max-w-[200px]">
                     <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${doc.invoiceUrl ? 'bg-indigo-400' : 'bg-slate-300'}`}></div>
+                      <div className={`w-1.5 h-1.5 rounded-full ${doc.invoiceUrl ? 'bg-[#3ECF8E]' : 'bg-slate-500'}`}></div>
                       {doc.invoiceUrl ? doc.invoiceUrl.split('/').pop() : 'Pending'}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] hover:border-[#2E2E2E] px-2.5 py-1 rounded transition-colors">
+                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] bg-[#232323] hover:bg-[#2A2A2A] hover:border-[#8F8F8F] px-2.5 py-1 rounded transition-colors">
                       View
                     </button>
                   </TableCell>
                 </TableRow>
                 {/* Packing List Row */}
-                <TableRow className="border-[#2E2E2E] hover:bg-indigo-50/40 transition-colors group">
-                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-4">
+                <TableRow className="border-[#2E2E2E] hover:bg-[#2A2A2A] transition-colors group">
+                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-2.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
-                        <FileText size={16} className="text-indigo-600" />
+                      <div className="w-8 h-8 rounded-lg bg-[#181818] flex items-center justify-center group-hover:bg-[#3ECF8E]/10 transition-colors border border-[#2E2E2E]">
+                        <FileText size={16} className="text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors" />
                       </div>
                       Packing List
                     </div>
@@ -216,22 +216,22 @@ export default function CustomsTab() {
                   </TableCell>
                   <TableCell className="text-xs font-mono font-medium text-[#8F8F8F] truncate max-w-[200px]">
                     <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${doc.packingListUrl ? 'bg-indigo-400' : 'bg-slate-300'}`}></div>
+                      <div className={`w-1.5 h-1.5 rounded-full ${doc.packingListUrl ? 'bg-[#3ECF8E]' : 'bg-slate-500'}`}></div>
                       {doc.packingListUrl ? doc.packingListUrl.split('/').pop() : 'Pending'}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] hover:border-[#2E2E2E] px-2.5 py-1 rounded transition-colors">
+                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] bg-[#232323] hover:bg-[#2A2A2A] hover:border-[#8F8F8F] px-2.5 py-1 rounded transition-colors">
                       View
                     </button>
                   </TableCell>
                 </TableRow>
                 {/* Bill of Lading Row */}
-                <TableRow className="border-[#2E2E2E] hover:bg-indigo-50/40 transition-colors group">
-                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-4">
+                <TableRow className="border-[#2E2E2E] hover:bg-[#2A2A2A] transition-colors group">
+                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-2.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
-                        <FileText size={16} className="text-indigo-600" />
+                      <div className="w-8 h-8 rounded-lg bg-[#181818] flex items-center justify-center group-hover:bg-[#3ECF8E]/10 transition-colors border border-[#2E2E2E]">
+                        <FileText size={16} className="text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors" />
                       </div>
                       Bill of Lading
                     </div>
@@ -241,22 +241,22 @@ export default function CustomsTab() {
                   </TableCell>
                   <TableCell className="text-xs font-mono font-medium text-[#8F8F8F] truncate max-w-[200px]">
                     <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${doc.billOfLadingUrl ? 'bg-indigo-400' : 'bg-slate-300'}`}></div>
+                      <div className={`w-1.5 h-1.5 rounded-full ${doc.billOfLadingUrl ? 'bg-[#3ECF8E]' : 'bg-slate-500'}`}></div>
                       {doc.billOfLadingUrl ? doc.billOfLadingUrl.split('/').pop() : 'Pending'}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] hover:border-[#2E2E2E] px-2.5 py-1 rounded transition-colors">
+                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] bg-[#232323] hover:bg-[#2A2A2A] hover:border-[#8F8F8F] px-2.5 py-1 rounded transition-colors">
                       View
                     </button>
                   </TableCell>
                 </TableRow>
                 {/* Certificate of Origin Row */}
-                <TableRow className="border-[#2E2E2E] hover:bg-indigo-50/40 transition-colors group">
-                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-4">
+                <TableRow className="border-[#2E2E2E] hover:bg-[#2A2A2A] transition-colors group">
+                  <TableCell className="font-semibold text-sm text-[#EDEDED] py-2.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
-                        <FileText size={16} className="text-indigo-600" />
+                      <div className="w-8 h-8 rounded-lg bg-[#181818] flex items-center justify-center group-hover:bg-[#3ECF8E]/10 transition-colors border border-[#2E2E2E]">
+                        <FileText size={16} className="text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors" />
                       </div>
                       Certificate of Origin
                     </div>
@@ -266,12 +266,12 @@ export default function CustomsTab() {
                   </TableCell>
                   <TableCell className="text-xs font-mono font-medium text-[#8F8F8F] truncate max-w-[200px]">
                     <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${doc.certificateOfOriginUrl ? 'bg-indigo-400' : 'bg-slate-300'}`}></div>
+                      <div className={`w-1.5 h-1.5 rounded-full ${doc.certificateOfOriginUrl ? 'bg-[#3ECF8E]' : 'bg-slate-500'}`}></div>
                       {doc.certificateOfOriginUrl ? doc.certificateOfOriginUrl.split('/').pop() : 'Pending'}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] hover:border-[#2E2E2E] px-2.5 py-1 rounded transition-colors">
+                    <button type="button" className="text-xs font-medium text-[#EDEDED] hover:text-[#EDEDED] border border-[#2E2E2E] bg-[#232323] hover:bg-[#2A2A2A] hover:border-[#8F8F8F] px-2.5 py-1 rounded transition-colors">
                       View
                     </button>
                   </TableCell>
@@ -300,7 +300,7 @@ export default function CustomsTab() {
                   accept="application/pdf"
                   required
                   onChange={e => setFiles({ ...files, invoice: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-[#2E2E2E] rounded-lg"
+                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#181818] file:text-[#EDEDED] hover:file:bg-[#2E2E2E]/40 cursor-pointer border border-[#2E2E2E] rounded-lg"
                 />
               </div>
               <div>
@@ -310,7 +310,7 @@ export default function CustomsTab() {
                   accept="application/pdf"
                   required
                   onChange={e => setFiles({ ...files, packingList: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-[#2E2E2E] rounded-lg"
+                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#181818] file:text-[#EDEDED] hover:file:bg-[#2E2E2E]/40 cursor-pointer border border-[#2E2E2E] rounded-lg"
                 />
               </div>
               <div>
@@ -320,7 +320,7 @@ export default function CustomsTab() {
                   accept="application/pdf"
                   required
                   onChange={e => setFiles({ ...files, billOfLading: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-[#2E2E2E] rounded-lg"
+                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#181818] file:text-[#EDEDED] hover:file:bg-[#2E2E2E]/40 cursor-pointer border border-[#2E2E2E] rounded-lg"
                 />
               </div>
               <div>
@@ -330,14 +330,14 @@ export default function CustomsTab() {
                   accept="application/pdf"
                   required
                   onChange={e => setFiles({ ...files, certificateOfOrigin: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-[#2E2E2E] rounded-lg"
+                  className="w-full text-sm text-[#8F8F8F] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#181818] file:text-[#EDEDED] hover:file:bg-[#2E2E2E]/40 cursor-pointer border border-[#2E2E2E] rounded-lg"
                 />
               </div>
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={!files.invoice || !files.packingList || !files.billOfLading || !files.certificateOfOrigin}
-                  className="w-full bg-[#1C1C1C] hover:bg-[#232323] text-white font-medium py-2 rounded-lg transition-colors text-sm disabled:opacity-50"
+                  className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] font-bold py-2 rounded-lg transition-colors text-sm disabled:opacity-50 shadow-md"
                 >
                   Upload & Generate SHA-256 Hash
                 </button>

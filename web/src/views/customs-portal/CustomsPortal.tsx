@@ -22,33 +22,26 @@ export default function CustomsPortal({ onSwitchPortal }: CustomsPortalProps) {
         return <CustomsReports />;
       default:
         return (
-          <div className="h-full flex flex-col items-center justify-center bg-white border border-[#E2E8F0] rounded-xl shadow-sm">
-            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-200">
+          <div className="flex flex-col items-center justify-center h-64 bg-[#232323] border border-[#2E2E2E] rounded-xl">
+            <div className="w-14 h-14 rounded-full bg-[#1C1C1C] flex items-center justify-center mb-4 border border-[#2E2E2E]">
               <span className="text-2xl">🚧</span>
             </div>
-            <h2 className="text-xl font-bold text-slate-800">Module Under Construction</h2>
-            <p className="text-slate-500 mt-2">The {activeSubTab} module is currently being built.</p>
+            <h2 className="text-base font-bold text-[#EDEDED]">Module Under Construction</h2>
+            <p className="text-[#8F8F8F] text-sm mt-1">The {activeSubTab} module is currently being built.</p>
           </div>
         );
     }
   };
 
   return (
-    <div className="flex h-screen bg-slate-900 overflow-hidden font-inter">
-      {/* Sidebar Navigation */}
+    <div className="flex min-h-screen bg-[#1C1C1C] font-inter">
       <CustomsSidebar activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
-
-      {/* Main Layout Area */}
-      <div className="flex-1 flex flex-col relative min-w-0">
-
-        {/* Global Identity & Notification Bar */}
-        <UniversalTopBar />
-
-        {/* Dynamic Workspace Canvas */}
-        <main className="flex-1 bg-[#F8FAFC] relative overflow-hidden">
-          <div className="absolute inset-0 p-5 flex flex-col">
-            {renderActiveTab()}
-          </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="sticky top-0 z-20">
+          <UniversalTopBar />
+        </div>
+        <main className="flex-1 p-5 md:p-6">
+          {renderActiveTab()}
         </main>
       </div>
     </div>

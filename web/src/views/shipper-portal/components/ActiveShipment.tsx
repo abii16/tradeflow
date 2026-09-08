@@ -94,7 +94,7 @@ TradeFlow MVP Platform
   const routeLine = [djibouti, galafi, awash, modjo];
 
   return (
-    <div className="bg-[#232323] border border-[#2E2E2E] rounded-md shadow-lg shadow-slate-200/40">
+    <div className="bg-[#232323] border border-[#2E2E2E] rounded-md shadow-lg shadow-black/40">
       {showRatingModal && (
         <RatingModal
           transporterName="Kangaroo Freight"
@@ -113,11 +113,11 @@ TradeFlow MVP Platform
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowRatingModal(true)}
-            className="flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-1 rounded transition-colors"
+            className="flex items-center gap-1 text-[11px] font-medium text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 px-2 py-1 rounded transition-colors"
           >
             <Star size={11} className="fill-amber-500 text-amber-500" /> {t('rate_carrier')}
           </button>
-          <span className="px-2 py-0.5 bg-[#3ECF8E]/10 text-[#3ECF8E] text-[11px] font-medium rounded border border-blue-100">
+          <span className="px-2 py-0.5 bg-[#3ECF8E]/10 text-[#3ECF8E] text-[11px] font-medium rounded border border-[#3ECF8E]/20">
             {shipment?.status === 'IN_TRANSIT' ? t('in_transit') : shipment?.status || t('in_transit')}
           </span>
         </div>
@@ -148,7 +148,7 @@ TradeFlow MVP Platform
             <span>{t('eta_today')}</span>
           </div>
           <div className="w-full bg-[#181818] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#1C1C1C] h-full w-[68%]" />
+            <div className="bg-[#3ECF8E] h-full w-[68%]" />
           </div>
         </div>
 
@@ -165,9 +165,9 @@ TradeFlow MVP Platform
               <div key={idx} className="relative flex items-center justify-between text-xs">
                 <div
                   className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-[#232323] transition-all ${m.state === 'done' || m.state === 'active'
-                      ? 'border-emerald-500 text-emerald-600'
+                      ? 'border-[#3ECF8E] text-[#3ECF8E]'
                       : 'border-[#2E2E2E] text-[#8F8F8F]'
-                    } ${m.state === 'active' ? 'shadow-[0_0_12px_rgba(16,185,129,0.4)] ring-4 ring-emerald-500/20' : ''}`}
+                    } ${m.state === 'active' ? 'shadow-[0_0_12px_rgba(62,207,142,0.4)] ring-4 ring-[#3ECF8E]/20' : ''}`}
                 >
                   {m.state === 'done' || m.state === 'active' ? (
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -191,7 +191,7 @@ TradeFlow MVP Platform
           <button
             type="button"
             onClick={handleDownloadWaybill}
-            className="w-full bg-[#2E2E2E] border border-[#2E2E2E] hover:bg-[#3E3E3E] text-[#EDEDED] py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {t('download_waybill')}
           </button>

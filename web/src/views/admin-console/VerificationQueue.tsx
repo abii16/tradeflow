@@ -69,13 +69,13 @@ export default function VerificationQueue() {
             <div className="w-2 h-2 rounded-full bg-amber-500"></div>
             <span className="text-xs font-semibold text-[#EDEDED]">{pendingRequests.length} {t('vq_pending_metric')}</span>
           </div>
-          <div className="bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-            <span className="text-xs font-semibold text-emerald-800">{verifiedRequests.length} {t('vq_verified_metric')}</span>
+          <div className="bg-[#181818] border border-[#2E2E2E] px-3 py-1.5 rounded-lg flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#3ECF8E]"></div>
+            <span className="text-xs font-semibold text-[#EDEDED]">{verifiedRequests.length} {t('vq_verified_metric')}</span>
           </div>
-          <div className="bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
+          <div className="bg-[#181818] border border-[#2E2E2E] px-3 py-1.5 rounded-lg flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-            <span className="text-xs font-semibold text-rose-800">{suspendedRequests.length} {t('vq_suspended_metric')}</span>
+            <span className="text-xs font-semibold text-[#EDEDED]">{suspendedRequests.length} {t('vq_suspended_metric')}</span>
           </div>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function VerificationQueue() {
                   <tr>
                     <td colSpan={6} className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center justify-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center ring-1 ring-emerald-100">
+                        <div className="w-16 h-16 rounded-2xl bg-[#3ECF8E]/10 text-[#3ECF8E] flex items-center justify-center ring-1 ring-[#3ECF8E]/20">
                           <ShieldCheck size={32} />
                         </div>
                         <div className="space-y-1">
@@ -142,17 +142,17 @@ export default function VerificationQueue() {
                     <td className="px-6 py-4">{req.tradeLicenseNumber || 'N/A'}</td>
                     <td className="px-6 py-4">
                       {req.status === 'PENDING' && (
-                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                        <span className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[11px] font-semibold px-2.5 py-1 rounded-full">
                           <FileText size={12} className="text-amber-500" /> {t('vq_status_pending', 'Pending Review')}
                         </span>
                       )}
                       {req.status === 'VERIFIED' && (
-                        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                          <CheckCircle size={12} className="text-emerald-500" /> {t('vq_status_verified', 'Verified')}
+                        <span className="inline-flex items-center gap-1.5 bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                          <CheckCircle size={12} className="text-[#3ECF8E]" /> {t('vq_status_verified', 'Verified')}
                         </span>
                       )}
                       {req.status === 'REJECTED' && (
-                        <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-100 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                        <span className="inline-flex items-center gap-1.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[11px] font-semibold px-2.5 py-1 rounded-full">
                           <AlertTriangle size={12} className="text-rose-500" /> {t('vq_status_mismatch', 'Mismatch Flagged')}
                         </span>
                       )}
@@ -246,7 +246,7 @@ export default function VerificationQueue() {
                       <div className="text-sm font-semibold text-[#EDEDED]">{t('vq_drawer_inspection_cert')}</div>
                       <div className="text-[10px] text-[#8F8F8F]">{t('vq_drawer_scanned_size')}</div>
                     </div>
-                    <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2 py-0.5 rounded-md font-semibold">{t('vq_drawer_check_expiry')}</span>
+                    <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] px-2 py-0.5 rounded-md font-semibold">{t('vq_drawer_check_expiry')}</span>
                     <button className="opacity-0 group-hover:opacity-100 p-1.5 text-[#8F8F8F] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 rounded-md transition-all ml-1">
                       <Eye size={16} />
                     </button>

@@ -19,18 +19,22 @@ export default function CustomsSidebar({ activeSubTab, setActiveSubTab }: Custom
   ];
 
   return (
-    <aside className="w-64 bg-[#0B0F17] text-slate-400 flex flex-col border-r border-slate-800 shrink-0">
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
-        <Shield className="text-blue-500 mr-3" size={24} />
-        <span className="text-white font-bold text-lg tracking-tight">TradeFlow</span>
+    <aside className="w-60 bg-[#181818] text-[#8F8F8F] flex flex-col border-r border-[#2E2E2E] shrink-0 sticky top-0 h-screen">
+      <div className="h-16 flex items-center px-5 border-b border-[#2E2E2E] gap-3">
+        <div className="w-7 h-7 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 flex items-center justify-center shrink-0">
+          <Shield className="text-[#3ECF8E]" size={15} />
+        </div>
+        <div>
+          <span className="text-[#EDEDED] font-bold text-sm tracking-tight">TradeFlow</span>
+        </div>
       </div>
 
-      <div className="p-4">
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-2">
+      <div className="p-3">
+        <div className="text-[10px] font-semibold text-[#8F8F8F] uppercase tracking-widest mb-3 px-2">
           {t('customs_authority')}
         </div>
 
-        <nav className="space-y-1">
+        <nav className="space-y-0.5">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSubTab === item.id;
@@ -39,30 +43,31 @@ export default function CustomsSidebar({ activeSubTab, setActiveSubTab }: Custom
               <button
                 key={item.id}
                 onClick={() => setActiveSubTab(item.id)}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${isActive
-                    ? 'bg-white/10 text-white border-l-2 border-blue-500'
-                    : 'hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'
-                  }`}
+                className={`w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
+                  isActive
+                    ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 font-semibold shadow-sm'
+                    : 'text-[#8F8F8F] hover:bg-[#232323] hover:text-[#EDEDED] border border-transparent'
+                }`}
               >
-                <Icon size={18} className={isActive ? 'text-blue-400' : 'text-slate-500'} />
-                <span className="font-medium text-sm">{item.label}</span>
+                <Icon size={15} className={isActive ? 'text-[#3ECF8E]' : 'text-[#8F8F8F]'} />
+                <span>{item.label}</span>
               </button>
             );
           })}
         </nav>
       </div>
 
-      <div className="mt-auto p-4 border-t border-slate-800 space-y-1">
-        <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800/50 hover:text-slate-200 transition-colors border-l-2 border-transparent">
-          <Settings size={18} className="text-slate-500" />
-          <span className="font-medium text-sm">{t('settings')}</span>
+      <div className="mt-auto p-3 border-t border-[#2E2E2E] space-y-0.5">
+        <button className="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded text-xs text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#232323] transition-colors">
+          <Settings size={15} className="text-[#8F8F8F]" />
+          <span className="font-medium">{t('settings')}</span>
         </button>
         <button
           onClick={logout}
-          className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition-colors border-l-2 border-transparent"
+          className="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
         >
-          <LogOut size={18} />
-          <span className="font-medium text-sm">{t('logout')}</span>
+          <LogOut size={15} />
+          <span className="font-medium">{t('logout')}</span>
         </button>
       </div>
     </aside>

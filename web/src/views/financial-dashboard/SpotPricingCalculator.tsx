@@ -166,15 +166,15 @@ export default function SpotPricingCalculator({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Input Form (7 Cols) */}
         <div className="lg:col-span-7 space-y-5">
-          <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5 sm:p-6 space-y-5 transition-all duration-200 hover:shadow-md">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="font-bold text-slate-900 text-base tracking-tight">Route & Freight Parameters</h2>
-              <p className="text-slate-500 text-sm mt-0.5">Configure transit corridor route, cargo specifications, and market indexes.</p>
+          <div className="bg-[#232323] border border-[#2E2E2E] shadow-black/20 rounded-xl p-5 sm:p-6 space-y-5 transition-all duration-200">
+            <div className="border-b border-[#2E2E2E] pb-4">
+              <h2 className="font-bold text-[#EDEDED] text-base tracking-tight">Route & Freight Parameters</h2>
+              <p className="text-[#8F8F8F] text-sm mt-0.5">Configure transit corridor route, cargo specifications, and market indexes.</p>
             </div>
 
             {/* Route Selection */}
             <div>
-              <label className="font-semibold text-slate-700 text-sm block mb-2">
+              <label className="font-semibold text-[#EDEDED] text-sm block mb-2">
                 Corridor Route
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -185,14 +185,14 @@ export default function SpotPricingCalculator({
                     onClick={() => setSelectedRouteId(route.id)}
                     className={`w-full text-left p-3 border rounded-lg flex flex-col gap-1 transition-all duration-200 ${
                       selectedRouteId === route.id
-                        ? 'border-indigo-600 bg-indigo-50/50 shadow-sm ring-1 ring-indigo-600/20'
-                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        ? 'border-[#3ECF8E]/50 bg-[#3ECF8E]/10 shadow-sm ring-1 ring-[#3ECF8E]/20'
+                        : 'border-[#2E2E2E] hover:border-[#3ECF8E]/30 hover:bg-[#2A2A2A]'
                     }`}
                   >
-                    <span className={`text-sm font-medium ${selectedRouteId === route.id ? 'text-indigo-900' : 'text-slate-700'}`}>
+                    <span className={`text-sm font-medium ${selectedRouteId === route.id ? 'text-[#3ECF8E]' : 'text-[#EDEDED]'}`}>
                       {route.name}
                     </span>
-                    <span className={`font-mono text-xs ${selectedRouteId === route.id ? 'text-indigo-600' : 'text-slate-500'}`}>
+                    <span className={`font-mono text-xs ${selectedRouteId === route.id ? 'text-[#3ECF8E]' : 'text-[#8F8F8F]'}`}>
                       {route.distanceKm} km • Base: ETB {route.baseRatePerKm}/km
                     </span>
                   </button>
@@ -203,7 +203,7 @@ export default function SpotPricingCalculator({
             {/* Cargo Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="space-y-2">
-                <label className="font-semibold text-slate-700 text-sm block">
+                <label className="font-semibold text-[#EDEDED] text-sm block">
                   Commodity Type
                 </label>
                 <select
@@ -213,7 +213,7 @@ export default function SpotPricingCalculator({
                     const c = CARGO_TYPES.find(item => item.id === e.target.value);
                     if (c) setCargoWeight(c.defaultWeight.toString());
                   }}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-shadow shadow-sm"
+                  className="w-full px-3 py-2 border border-[#2E2E2E] bg-[#181818] rounded-lg text-sm text-[#EDEDED] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-shadow shadow-sm"
                 >
                   {CARGO_TYPES.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -222,7 +222,7 @@ export default function SpotPricingCalculator({
               </div>
 
               <div className="space-y-2">
-                <label className="font-semibold text-slate-700 text-sm block">
+                <label className="font-semibold text-[#EDEDED] text-sm block">
                   Weight (Metric Tons)
                 </label>
                 <div className="relative">
@@ -232,9 +232,9 @@ export default function SpotPricingCalculator({
                     onChange={(e) => setCargoWeight(e.target.value)}
                     min="5"
                     max="60"
-                    className="w-full pl-3 pr-10 py-2 border border-slate-300 rounded-lg font-mono text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-shadow shadow-sm"
+                    className="w-full pl-3 pr-10 py-2 border border-[#2E2E2E] bg-[#181818] rounded-lg font-mono text-sm font-medium text-[#EDEDED] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-shadow shadow-sm"
                   />
-                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 text-sm font-medium">
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-[#8F8F8F] text-sm font-medium">
                     MT
                   </div>
                 </div>
@@ -242,14 +242,14 @@ export default function SpotPricingCalculator({
             </div>
 
             {/* Modifiers */}
-            <div className="pt-4 border-t border-slate-100 space-y-5">
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+            <div className="pt-4 border-t border-[#2E2E2E] space-y-5">
+              <div className="bg-[#181818] p-4 rounded-lg border border-[#2E2E2E]">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex items-center gap-2">
-                    <Fuel className="w-4 h-4 text-slate-500" />
-                    <span className="font-semibold text-slate-700 text-sm">Fuel Price Index</span>
+                    <Fuel className="w-4 h-4 text-[#8F8F8F]" />
+                    <span className="font-semibold text-[#EDEDED] text-sm">Fuel Price Index</span>
                   </div>
-                  <Badge variant="outline" className="font-mono text-xs bg-white text-slate-700">
+                  <Badge variant="outline" className="font-mono text-xs bg-[#232323] text-[#EDEDED] border-[#2E2E2E]">
                     {Math.round(105 * fuelIndexModifier)} ETB/L
                   </Badge>
                 </div>
@@ -260,17 +260,17 @@ export default function SpotPricingCalculator({
                   step="0.01"
                   value={fuelIndexModifier}
                   onChange={(e) => setFuelIndexModifier(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-700 transition-all"
+                  className="w-full h-2 bg-[#2E2E2E] rounded-lg appearance-none cursor-pointer accent-[#3ECF8E] hover:accent-[#34b27b] transition-all"
                 />
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+              <div className="bg-[#181818] p-4 rounded-lg border border-[#2E2E2E]">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-slate-500" />
-                    <span className="font-semibold text-slate-700 text-sm">Demand / Capacity Ratio</span>
+                    <TrendingUp className="w-4 h-4 text-[#8F8F8F]" />
+                    <span className="font-semibold text-[#EDEDED] text-sm">Demand / Capacity Ratio</span>
                   </div>
-                  <Badge variant="outline" className="font-mono text-xs bg-white text-slate-700">
+                  <Badge variant="outline" className="font-mono text-xs bg-[#232323] text-[#EDEDED] border-[#2E2E2E]">
                     {demandSurgeScore.toFixed(2)}x
                   </Badge>
                 </div>
@@ -281,7 +281,7 @@ export default function SpotPricingCalculator({
                   step="0.01"
                   value={demandSurgeScore}
                   onChange={(e) => setDemandSurgeScore(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-700 transition-all"
+                  className="w-full h-2 bg-[#2E2E2E] rounded-lg appearance-none cursor-pointer accent-[#3ECF8E] hover:accent-[#34b27b] transition-all"
                 />
               </div>
             </div>
@@ -290,20 +290,20 @@ export default function SpotPricingCalculator({
 
         {/* Right Column: Pricing Breakdown (5 Cols) */}
         <div className="lg:col-span-5">
-          <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl shadow-xl overflow-hidden text-slate-300 relative border border-slate-700/50">
+          <div className="bg-[#181818] rounded-xl shadow-xl overflow-hidden text-[#EDEDED] relative border border-[#3ECF8E]/30">
             {/* Decorative top pattern */}
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 via-indigo-500 to-emerald-400 opacity-80" />
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#3ECF8E]/20 via-[#3ECF8E] to-[#3ECF8E]/20 opacity-80" />
             
             <div className="p-6 pb-0">
-              <div className="text-emerald-400/90 font-medium text-xs tracking-wider uppercase mb-1">
+              <div className="text-[#3ECF8E]/90 font-medium text-xs tracking-wider uppercase mb-1">
                 Guaranteed Spot Rate (FR-04)
               </div>
               <div className="text-3xl font-bold font-mono text-white tracking-tight flex items-baseline gap-1">
-                <span className="text-lg text-slate-400 font-sans tracking-normal">ETB</span>
+                <span className="text-lg text-[#8F8F8F] font-sans tracking-normal">ETB</span>
                 {calculation.finalSpotRate.toLocaleString()}
               </div>
-              <div className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1.5 bg-slate-800/50 inline-flex px-2 py-1 rounded">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="text-[11px] text-[#8F8F8F] mt-1.5 flex items-center gap-1.5 bg-[#232323] inline-flex px-2 py-1 rounded">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse" />
                 Quote valid for 60m • 96.4% confidence
               </div>
             </div>
@@ -311,40 +311,40 @@ export default function SpotPricingCalculator({
             <div className="p-6 space-y-4">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Base Distance ({selectedRoute.distanceKm} km)</span>
-                  <span className="font-mono text-slate-200">{formatMoney(calculation.baseDistanceTariff)}</span>
+                  <span className="text-[#8F8F8F]">Base Distance ({selectedRoute.distanceKm} km)</span>
+                  <span className="font-mono text-[#EDEDED]">{formatMoney(calculation.baseDistanceTariff)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Cargo Type Adj.</span>
-                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.cargoSurcharge)}</span>
+                  <span className="text-[#8F8F8F]">Cargo Type Adj.</span>
+                  <span className="font-mono text-[#3ECF8E]">+{formatMoney(calculation.cargoSurcharge)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Weight Surcharge (&gt;20t)</span>
-                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.weightSurcharge)}</span>
+                  <span className="text-[#8F8F8F]">Weight Surcharge (&gt;20t)</span>
+                  <span className="font-mono text-[#3ECF8E]">+{formatMoney(calculation.weightSurcharge)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Fuel Surcharge</span>
-                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.fuelSurcharge)}</span>
+                  <span className="text-[#8F8F8F]">Fuel Surcharge</span>
+                  <span className="font-mono text-[#3ECF8E]">+{formatMoney(calculation.fuelSurcharge)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Market Demand</span>
-                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.demandSurgeAmount)}</span>
+                  <span className="text-[#8F8F8F]">Market Demand</span>
+                  <span className="font-mono text-[#3ECF8E]">+{formatMoney(calculation.demandSurgeAmount)}</span>
                 </div>
                 <div className="flex justify-between items-center pb-3">
-                  <span className="text-slate-400">Route Risk Buffer</span>
-                  <span className="font-mono text-emerald-400">+{formatMoney(calculation.riskSurcharge)}</span>
+                  <span className="text-[#8F8F8F]">Route Risk Buffer</span>
+                  <span className="font-mono text-[#3ECF8E]">+{formatMoney(calculation.riskSurcharge)}</span>
                 </div>
 
-                <div className="border-t border-dashed border-slate-600 pt-3 flex justify-between items-center text-slate-300">
+                <div className="border-t border-dashed border-[#2E2E2E] pt-3 flex justify-between items-center text-[#EDEDED]">
                   <span>Platform Fee (3%)</span>
-                  <span className="font-mono text-rose-400">- {formatMoney(calculation.platformCommission)}</span>
+                  <span className="font-mono text-rose-500">- {formatMoney(calculation.platformCommission)}</span>
                 </div>
               </div>
 
-              <div className="border-t border-slate-700 pt-4 mt-2">
+              <div className="border-t border-[#2E2E2E] pt-4 mt-2">
                 <div className="flex justify-between items-end">
-                  <div className="text-sm font-medium text-slate-300">Net Carrier Payout</div>
-                  <div className="text-xl font-bold font-mono text-emerald-400 tracking-tight">
+                  <div className="text-sm font-medium text-[#EDEDED]">Net Carrier Payout</div>
+                  <div className="text-xl font-bold font-mono text-[#3ECF8E] tracking-tight">
                     {formatMoney(calculation.netCarrierPayout)}
                   </div>
                 </div>
@@ -355,7 +355,7 @@ export default function SpotPricingCalculator({
               <button
                 type="button"
                 onClick={handleLockQuote}
-                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold text-sm rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] font-bold text-sm rounded-lg transition-all shadow-md flex items-center justify-center gap-2"
               >
                 {lockedSuccess ? (
                   <>

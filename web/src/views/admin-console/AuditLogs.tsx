@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Database, Download, Search, Filter, Calendar } from 'lucide-react';
+import { Database, Download, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
 import { fetchAuditLogs, exportAuditLogs } from '../../lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -11,6 +11,7 @@ export default function AuditLogs() {
   const [actionFilter, setActionFilter] = useState('');
   const [exportingCSV, setExportingCSV] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const loadData = async () => {
     try {
@@ -86,16 +87,16 @@ export default function AuditLogs() {
           <button 
             onClick={() => handleExport('csv')}
             disabled={exportingCSV}
-            className="bg-[#232323] text-[#EDEDED] hover:text-[#EDEDED] font-semibold py-2 px-4 border border-[#2E2E2E] hover:border-[#2E2E2E] rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="bg-[#232323] hover:bg-[#2A2A2A] text-[#EDEDED] font-semibold py-2 px-4 border border-[#2E2E2E] hover:border-[#8F8F8F] rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             <Download size={16} /> {exportingCSV ? 'Exporting...' : t('al_export_csv')}
           </button>
           <button 
             onClick={() => handleExport('pdf')}
             disabled={exportingPDF}
-            className="bg-[#0F172A] hover:bg-[#232323] text-[#EDEDED] font-semibold py-2 px-4 rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] font-semibold py-2 px-4 rounded-lg text-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
           >
-            <Download size={16} /> {exportingPDF ? 'Exporting...' : t('al_export_pdf')}
+            <Download size={16} className="text-[#1C1C1C]" /> {exportingPDF ? 'Exporting...' : t('al_export_pdf')}
           </button>
         </div>
       </div>
@@ -114,22 +115,41 @@ export default function AuditLogs() {
           <div className="flex items-center gap-3">
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" size={14} />
-              <input type="text" placeholder={t('al_date_today')} readOnly className="w-32 pl-9 pr-4 py-2 text-xs border border-[#2E2E2E] rounded-lg bg-[#232323] cursor-pointer" />
+              <input type="text" placeholder={t('al_date_today')} readOnly className="w-32 pl-9 pr-4 py-2 text-xs border border-[#2E2E2E] rounded-lg bg-[#232323] text-[#EDEDED] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E]" />
             </div>
 
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" size={14} />
-              <select 
-                value={actionFilter}
-                onChange={(e) => setActionFilter(e.target.value)}
-                className="w-40 pl-9 pr-4 py-2 text-xs border border-[#2E2E2E] rounded-lg bg-[#232323] appearance-none cursor-pointer"
+              <button
+                type="button"
+                onClick={() => setFilterOpen(!filterOpen)}
+                className="w-44 pl-9 pr-3 py-2 text-xs border border-[#2E2E2E] rounded-lg bg-[#232323] text-[#EDEDED] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] flex justify-between items-center"
               >
-                <option value="">{t('al_filter_all')}</option>
-                <option value="AUTH">AUTH</option>
-                <option value="ESCROW_MUTATION">ESCROW_MUTATION</option>
-                <option value="PRICING_ENGINE">PRICING_ENGINE</option>
-                <option value="DISPUTE_RAISED">DISPUTE</option>
-              </select>
+                <span>{actionFilter === '' ? t('al_filter_all') : actionFilter}</span>
+                <ChevronDown size={14} className="text-[#8F8F8F]" />
+              </button>
+              {filterOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setFilterOpen(false)}></div>
+                  <div className="absolute top-full right-0 mt-1 w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-lg shadow-xl z-20 py-1 flex flex-col">
+                    {[
+                      { val: '', label: t('al_filter_all') },
+                      { val: 'AUTH', label: 'AUTH' },
+                      { val: 'ESCROW_MUTATION', label: 'ESCROW_MUTATION' },
+                      { val: 'PRICING_ENGINE', label: 'PRICING_ENGINE' },
+                      { val: 'DISPUTE_RAISED', label: 'DISPUTE' }
+                    ].map(opt => (
+                      <button
+                        key={opt.val}
+                        onClick={() => { setActionFilter(opt.val); setFilterOpen(false); }}
+                        className={`text-left px-3 py-2 text-xs transition-colors ${actionFilter === opt.val ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] font-bold' : 'text-[#EDEDED] hover:bg-[#232323]'}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -169,9 +189,9 @@ export default function AuditLogs() {
                   </td>
                   <td className="px-6 py-3 text-[#8F8F8F]">{log.ipAddress || '10.0.4.12'}</td>
                   <td className="px-6 py-3 text-right">
-                    {((log.statusCode && log.statusCode < 400) || log.status === 'SUCCESS') && <span className="text-emerald-600 font-bold">{t('al_status_success')}</span>}
-                    {log.status === 'WARNING' && <span className="text-amber-600 font-bold">{t('al_status_warning')}</span>}
-                    {((log.statusCode && log.statusCode >= 400) || log.status === 'FAILED') && <span className="text-rose-600 font-bold">{t('al_status_failed')}</span>}
+                    {((log.statusCode && log.statusCode < 400) || log.status === 'SUCCESS') && <span className="text-[#3ECF8E] font-bold">{t('al_status_success')}</span>}
+                    {log.status === 'WARNING' && <span className="text-amber-500 font-bold">{t('al_status_warning')}</span>}
+                    {((log.statusCode && log.statusCode >= 400) || log.status === 'FAILED') && <span className="text-rose-500 font-bold">{t('al_status_failed')}</span>}
                   </td>
                 </tr>
               ))}
