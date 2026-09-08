@@ -104,18 +104,18 @@ export default function ContractRates() {
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
-                <th className="px-6 py-4 font-semibold">{t('crm_col_id')}</th>
-                <th className="px-6 py-4 font-semibold">{t('crm_col_carrier')}</th>
-                <th className="px-6 py-4 font-semibold">{t('crm_col_locked')}</th>
-                <th className="px-6 py-4 font-semibold">{t('crm_col_spot')}</th>
-                <th className="px-6 py-4 font-semibold">{t('crm_col_divergence')}</th>
-                <th className="px-6 py-4 font-semibold">{t('crm_col_status')}</th>
-                <th className="px-6 py-4 font-semibold">{t('crm_col_actions')}</th>
+                <th className="px-4 py-2.5 font-semibold">{t('crm_col_id')}</th>
+                <th className="px-4 py-2.5 font-semibold">{t('crm_col_carrier')}</th>
+                <th className="px-4 py-2.5 font-semibold">{t('crm_col_locked')}</th>
+                <th className="px-4 py-2.5 font-semibold">{t('crm_col_spot')}</th>
+                <th className="px-4 py-2.5 font-semibold">{t('crm_col_divergence')}</th>
+                <th className="px-4 py-2.5 font-semibold">{t('crm_col_status')}</th>
+                <th className="px-4 py-2.5 font-semibold">{t('crm_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
               {contracts.length === 0 && !loading && (
-                <tr><td colSpan={7} className="px-6 py-4 text-center text-[#8F8F8F]">{t('crm_no_contracts')}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-4 text-center text-[#8F8F8F]">{t('crm_no_contracts')}</td></tr>
               )}
               {contracts.map((contract) => {
                 const currentSpot = contract.currentSpotRate ? Number(contract.currentSpotRate) : Number(contract.lockedRate);
@@ -123,21 +123,21 @@ export default function ContractRates() {
 
                 return (
                   <tr key={contract.id} className="hover:bg-[#2A2A2A] transition-colors">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <span className="font-mono text-xs font-bold text-[#EDEDED]">{contract.id.split('-')[0]}...</span>
                       <div className="text-[11px] text-[#8F8F8F]">{t('crm_valid_to')} {new Date(contract.validUntil).toLocaleDateString()}</div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <div className="font-semibold text-[#EDEDED]">{contract.companyName || contract.transporterName || 'Transporter'}</div>
                       <div className="text-xs text-[#8F8F8F]">{contract.origin} → {contract.destination}</div>
                     </td>
-                    <td className="px-6 py-4 font-mono font-medium text-[#EDEDED]">
+                    <td className="px-4 py-2.5 font-mono font-medium text-[#EDEDED]">
                       ETB {Number(contract.lockedRate).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 font-mono text-[#8F8F8F]">
+                    <td className="px-4 py-2.5 font-mono text-[#8F8F8F]">
                       ETB {currentSpot.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       {Math.abs(divergence) > 15 ? (
                         <div className="flex items-center gap-1 text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded text-xs font-bold w-fit">
                           <AlertTriangle size={12} /> {divergence > 0 ? '+' : ''}{divergence.toFixed(1)}%
@@ -148,7 +148,7 @@ export default function ContractRates() {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] border font-bold uppercase tracking-wider ${
                         contract.status === 'REVIEW_REQUIRED' || Math.abs(divergence) > 15
                           ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
@@ -157,7 +157,7 @@ export default function ContractRates() {
                         {contract.status === 'REVIEW_REQUIRED' ? t('crm_review_required') : Math.abs(divergence) > 15 ? t('crm_flagged') : t('crm_active')}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       {Math.abs(divergence) > 15 && contract.status === 'ACTIVE' ? (
                         <button onClick={() => handleRenegotiate(contract.id)} className="text-[#3ECF8E] hover:text-blue-800 text-xs font-bold">
                           {t('crm_renegotiate')}
