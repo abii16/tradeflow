@@ -82,24 +82,24 @@ export default function DisputeResolution({
   return (
     <div className="space-y-4">
       {/* Summary Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 border border-slate-200 rounded-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#232323] p-4 border border-[#2E2E2E] rounded-md shadow-black/20">
         <div>
-          <h2 className="text-sm font-semibold text-slate-900">Dispute & Demurrage Mediation (FR-10.3)</h2>
-          <p className="text-xs text-slate-500">Resolution queue for terminal demurrage and unplanned route claims</p>
+          <h2 className="text-sm font-semibold text-[#EDEDED]">Dispute & Demurrage Mediation (FR-10.3)</h2>
+          <p className="text-xs text-[#8F8F8F]">Resolution queue for terminal demurrage and unplanned route claims</p>
         </div>
 
-        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded text-xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
-          <span className="text-slate-500 text-[11px] font-medium">Disputed Sum:</span>
-          <span className="font-mono font-semibold text-slate-900">{formatMoney(totalDisputed)}</span>
+        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-[#181818] border border-[#2E2E2E] rounded text-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+          <span className="text-[#8F8F8F] text-[11px] font-medium">Disputed Sum:</span>
+          <span className="font-mono font-semibold text-[#EDEDED]">{formatMoney(totalDisputed)}</span>
         </div>
       </div>
 
       {/* Clean Table */}
-      <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
+      <div className="bg-[#232323] border border-[#2E2E2E] rounded-md overflow-hidden shadow-black/20">
         <Table>
-          <TableHeader className="bg-slate-50 text-[11px] font-semibold text-slate-600">
-            <TableRow>
+          <TableHeader className="bg-[#181818] text-[11px] font-semibold text-[#8F8F8F] border-b border-[#2E2E2E]">
+            <TableRow className="border-none hover:bg-transparent">
               <TableHead>Waybill & Parties</TableHead>
               <TableHead>Dispute Grounds & Evidence</TableHead>
               <TableHead className="text-right">Sum</TableHead>
@@ -109,34 +109,34 @@ export default function DisputeResolution({
           </TableHeader>
           <TableBody className="text-xs">
             {disputes.map((item) => (
-              <TableRow key={item.id} className="hover:bg-slate-50/50">
+              <TableRow key={item.id} className="hover:bg-[#2A2A2A] border-[#2E2E2E]">
                 <TableCell className="align-top">
-                  <div className="font-mono font-medium text-slate-900">{item.waybillId}</div>
-                  <div className="text-[11px] text-slate-500">{item.shipmentRef}</div>
-                  <div className="text-[11px] text-slate-600 mt-1">
+                  <div className="font-mono font-medium text-[#EDEDED]">{item.waybillId}</div>
+                  <div className="text-[11px] text-[#8F8F8F]">{item.shipmentRef}</div>
+                  <div className="text-[11px] text-[#8F8F8F] mt-1">
                     <div>{item.shipper}</div>
-                    <div className="text-slate-500">→ {item.transporter}</div>
+                    <div className="text-[#8F8F8F]">→ {item.transporter}</div>
                   </div>
                 </TableCell>
 
                 <TableCell className="align-top max-w-md space-y-1">
-                  <div className="font-medium text-slate-900">{item.reason}</div>
-                  <div className="text-[11px] text-slate-500">{item.evidence}</div>
+                  <div className="font-medium text-[#EDEDED]">{item.reason}</div>
+                  <div className="text-[11px] text-[#8F8F8F]">{item.evidence}</div>
                   {item.resolutionOutcome && (
-                    <div className="text-[11px] text-slate-700 font-medium pt-1">
+                    <div className="text-[11px] text-[#8F8F8F] font-medium pt-1">
                       Resolution: {item.resolutionOutcome}
                     </div>
                   )}
                 </TableCell>
 
-                <TableCell className="align-top text-right font-mono font-semibold text-slate-900">
+                <TableCell className="align-top text-right font-mono font-semibold text-[#EDEDED]">
                   {formatMoney(item.disputedAmountETB)}
                 </TableCell>
 
                 <TableCell className="align-top text-center">
-                  <span className={`text-[11px] ${
-                    item.status === 'Resolved' ? 'text-slate-500' :
-                    item.status === 'In Review' ? 'text-amber-800 font-medium' : 'text-red-700 font-medium'
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                    item.status === 'Resolved' ? 'bg-[#3ECF8E]/10 text-[#3ECF8E]' :
+                    item.status === 'In Review' ? 'bg-amber-500/10 text-amber-500' : 'bg-rose-500/10 text-rose-500'
                   }`}>
                     {item.status}
                   </span>
@@ -148,20 +148,20 @@ export default function DisputeResolution({
                       <button
                         type="button"
                         onClick={() => handleResolve(item.id, `Surcharge approved (${formatMoney(item.disputedAmountETB)})`)}
-                        className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-medium rounded transition-colors"
+                        className="px-2 py-1 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] text-[11px] font-bold rounded transition-colors shadow-sm"
                       >
                         Approve
                       </button>
                       <button
                         type="button"
                         onClick={() => handleResolve(item.id, `Refunded to Shipper (${formatMoney(item.disputedAmountETB)})`)}
-                        className="px-2 py-1 border border-slate-300 text-slate-700 hover:bg-slate-50 text-[11px] font-medium rounded transition-colors"
+                        className="px-2 py-1 border border-[#2E2E2E] bg-[#181818] text-[#8F8F8F] hover:bg-[#2A2A2A] hover:text-[#EDEDED] text-[11px] font-medium rounded transition-colors"
                       >
                         Refund
                       </button>
                     </div>
                   ) : (
-                    <span className="text-[11px] text-slate-400">Closed</span>
+                    <span className="text-[11px] text-[#8F8F8F]">Closed</span>
                   )}
                 </TableCell>
               </TableRow>
