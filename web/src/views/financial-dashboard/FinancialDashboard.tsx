@@ -80,19 +80,19 @@ export default function FinancialDashboard() {
   return (
     <div className="max-w-[1320px] mx-auto space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2E2E2E]">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+          <h1 className="text-xl font-semibold text-[#EDEDED] tracking-tight">
             Financial & Settlement Management
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-[#8F8F8F] mt-0.5">
             Multi-currency escrow balances, carrier payout settlement, and rate calculations.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 font-medium">Currency:</span>
-          <div className="inline-flex border border-slate-200 rounded-md bg-slate-100 p-0.5">
+          <span className="text-xs text-[#8F8F8F] font-medium">Currency:</span>
+          <div className="inline-flex border border-[#2E2E2E] rounded-md bg-[#181818] p-0.5">
             {(['ETB', 'USD', 'DJF'] as const).map((curr) => (
               <button
                 key={curr}
@@ -100,8 +100,8 @@ export default function FinancialDashboard() {
                 onClick={() => setCurrency(curr)}
                 className={`text-xs font-mono px-2.5 py-1 rounded transition-colors ${
                   currency === curr
-                    ? 'bg-white text-slate-900 font-semibold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#232323] text-[#3ECF8E] font-semibold border border-[#3ECF8E]/20 shadow-sm'
+                    : 'text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#2A2A2A]'
                 }`}
               >
                 {curr}
