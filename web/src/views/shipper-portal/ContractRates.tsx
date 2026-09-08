@@ -94,7 +94,7 @@ export default function ContractRates() {
             {t('crm_subtitle')}
           </p>
         </div>
-        <button onClick={handleNewContract} className="bg-[#3ECF8E] text-black hover:bg-[#34b27b] transition-colors font-bold px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-[#232323] transition-colors">
+        <button onClick={handleNewContract} className="bg-[#3ECF8E] text-[#1C1C1C] hover:bg-[#34b27b] transition-all font-bold px-4 py-2 rounded-lg text-sm shadow-md hover:-translate-y-0.5">
           {t('crm_btn_new')}
         </button>
       </div>
@@ -139,20 +139,20 @@ export default function ContractRates() {
                     </td>
                     <td className="px-6 py-4">
                       {Math.abs(divergence) > 15 ? (
-                        <div className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded text-xs font-bold w-fit">
+                        <div className="flex items-center gap-1 text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded text-xs font-bold w-fit">
                           <AlertTriangle size={12} /> {divergence > 0 ? '+' : ''}{divergence.toFixed(1)}%
                         </div>
                       ) : (
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold w-fit ${divergence > 0 ? 'text-emerald-600 bg-emerald-50' : 'text-emerald-600 bg-emerald-50'}`}>
+                        <div className={`flex items-center gap-1 px-2 py-1 border rounded text-xs font-bold w-fit ${divergence > 0 ? 'text-[#3ECF8E] bg-[#3ECF8E]/10 border-[#3ECF8E]/20' : 'text-[#3ECF8E] bg-[#3ECF8E]/10 border-[#3ECF8E]/20'}`}>
                           <TrendingUp size={12} /> {divergence > 0 ? '+' : ''}{divergence.toFixed(1)}%
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] border font-bold uppercase tracking-wider ${
                         contract.status === 'REVIEW_REQUIRED' || Math.abs(divergence) > 15
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-emerald-100 text-emerald-700'
+                          ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                          : 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/20'
                       }`}>
                         {contract.status === 'REVIEW_REQUIRED' ? t('crm_review_required') : Math.abs(divergence) > 15 ? t('crm_flagged') : t('crm_active')}
                       </span>
@@ -193,7 +193,7 @@ export default function ContractRates() {
                   required
                   value={newContractForm.transporterId}
                   onChange={e => setNewContractForm({ ...newContractForm, transporterId: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
+                  className="w-full px-3 py-2 text-sm border border-[#2E2E2E] bg-[#181818] text-[#EDEDED] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E]"
                   placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
                 />
               </div>
@@ -205,7 +205,7 @@ export default function ContractRates() {
                     required
                     value={newContractForm.origin}
                     onChange={e => setNewContractForm({ ...newContractForm, origin: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg bg-[#1C1C1C] focus:outline-none"
+                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg bg-[#181818] text-[#EDEDED] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E]"
                   />
                 </div>
                 <div>
@@ -215,7 +215,7 @@ export default function ContractRates() {
                     required
                     value={newContractForm.destination}
                     onChange={e => setNewContractForm({ ...newContractForm, destination: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg bg-[#1C1C1C] focus:outline-none"
+                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg bg-[#181818] text-[#EDEDED] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E]"
                   />
                 </div>
               </div>
@@ -227,7 +227,7 @@ export default function ContractRates() {
                     required
                     value={newContractForm.lockedRate}
                     onChange={e => setNewContractForm({ ...newContractForm, lockedRate: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
+                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] bg-[#181818] text-[#EDEDED] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E]"
                   />
                 </div>
                 <div>
@@ -237,14 +237,14 @@ export default function ContractRates() {
                     required
                     value={newContractForm.validUntil}
                     onChange={e => setNewContractForm({ ...newContractForm, validUntil: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/20"
+                    className="w-full px-3 py-2 text-sm border border-[#2E2E2E] bg-[#181818] text-[#EDEDED] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E]"
                   />
                 </div>
               </div>
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full bg-[#1C1C1C] hover:bg-[#232323] text-white font-medium py-2 rounded-lg transition-colors text-sm"
+                  className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] font-bold py-2 rounded-lg transition-colors text-sm shadow-md"
                 >
                   {t('crm_btn_submit')}
                 </button>
