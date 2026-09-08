@@ -117,6 +117,7 @@ export default function CustomsTab() {
               <FileText size={18} className="text-indigo-600" />
               Active Shipment Dossier
             </h2>
+            <p className="text-xs text-[#8F8F8F] mt-1 font-medium">
               ID: <span className="font-mono font-bold bg-[#181818] border border-[#2E2E2E] px-1.5 py-0.5 rounded text-[#EDEDED] ml-1">{shipmentId ? shipmentId.substring(0, 8).toUpperCase() : 'AWAITING'}</span>
             </p>
           </div>
