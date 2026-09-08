@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Droplet, TrendingDown, AlertTriangle, CheckCircle2, Lightbulb } from 'lucide-react';
+import { Droplet, TrendingDown, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown } from 'lucide-react';
 import { fetchFuelAnalytics, exportFuelReport } from '../../lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -10,6 +10,7 @@ export default function FuelAnalytics() {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [timeframe, setTimeframe] = useState('Last 30 Days');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [metrics, setMetrics] = useState({
     totalFuelBurned: 42590,
     variancePercent: 3.1,
@@ -81,19 +82,38 @@ export default function FuelAnalytics() {
           </p>
         </div>
         <div className="flex gap-2">
-          <select 
-            className="border border-[#2E2E2E] rounded-lg text-sm px-3 py-2 bg-[#232323] outline-none focus:ring-2 focus:ring-slate-900"
-            value={timeframe}
-            onChange={(e) => setTimeframe(e.target.value)}
-          >
-            <option value="Last 30 Days">Last 30 Days</option>
-            <option value="This Week">This Week</option>
-            <option value="Today">Today</option>
-          </select>
+          <div className="relative">
+            <button 
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="border border-[#2E2E2E] rounded-lg text-sm px-3 py-2 bg-[#232323] text-[#EDEDED] outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] flex items-center justify-between gap-2 min-w-[140px] hover:bg-[#2A2A2A] transition-colors"
+            >
+              {timeframe}
+              <ChevronDown size={14} className="text-[#8F8F8F]" />
+            </button>
+            {dropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)}></div>
+                <div className="absolute top-full right-0 mt-1 w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-lg shadow-xl z-20 py-1 flex flex-col">
+                  {['Last 30 Days', 'This Week', 'Today'].map(option => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setTimeframe(option);
+                        setDropdownOpen(false);
+                      }}
+                      className={`text-left px-3 py-2 text-sm transition-colors ${timeframe === option ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] font-bold' : 'text-[#EDEDED] hover:bg-[#232323]'}`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <button 
             onClick={handleExport}
             disabled={exporting}
-            className="bg-[#1C1C1C] text-[#EDEDED] px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-[#232323] transition-colors disabled:opacity-50"
+            className="bg-[#3ECF8E] text-[#1C1C1C] px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-[#34b27b] transition-colors disabled:opacity-50"
           >
             {exporting ? 'Exporting...' : 'Export Report'}
           </button>
@@ -122,7 +142,7 @@ export default function FuelAnalytics() {
               <div className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider mb-1">Avg Variance</div>
               <div className="text-3xl font-black text-[#EDEDED]">+{metrics.variancePercent}%</div>
             </div>
-            <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
+            <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
               <AlertTriangle size={20} />
             </div>
           </div>
@@ -135,7 +155,7 @@ export default function FuelAnalytics() {
               <div className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider mb-1">Flagged Vehicles</div>
               <div className="text-3xl font-black text-[#EDEDED]">{metrics.flaggedVehiclesCount}</div>
             </div>
-            <div className="p-2 bg-rose-50 rounded-lg text-rose-600">
+            <div className="p-2 bg-rose-500/10 rounded-lg text-rose-500">
               <AlertTriangle size={20} />
             </div>
           </div>
@@ -185,7 +205,7 @@ export default function FuelAnalytics() {
                       </td>
                       <td className="px-6 py-4">
                         {v.status === 'FLAGGED' && (
-                          <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-500 border border-rose-500/20 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
                             <AlertTriangle size={12} /> Flagged
                           </span>
                         )}
@@ -195,20 +215,20 @@ export default function FuelAnalytics() {
                           </span>
                         )}
                         {v.status === 'EFFICIENT' && (
-                          <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1 bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
                             <CheckCircle2 size={12} /> Efficient
                           </span>
                         )}
                       </td>
                     </tr>
                     {v.recommendations && v.recommendations.length > 0 && (
-                      <tr className="bg-indigo-50/30">
-                        <td colSpan={6} className="px-6 py-3 border-t border-indigo-100/50">
+                      <tr className="bg-[#3ECF8E]/5 border-t border-[#3ECF8E]/10">
+                        <td colSpan={6} className="px-6 py-3">
                           <div className="flex items-start gap-2">
-                            <Lightbulb size={16} className="text-indigo-600 mt-0.5 shrink-0" />
+                            <Lightbulb size={16} className="text-[#3ECF8E] mt-0.5 shrink-0" />
                             <div>
-                              <div className="text-[11px] font-bold text-indigo-900 uppercase tracking-wider mb-1">AI Efficiency Insights (FR-07.2)</div>
-                              <ul className="list-disc pl-4 text-xs text-indigo-700 space-y-0.5">
+                              <div className="text-[11px] font-bold text-[#3ECF8E] uppercase tracking-wider mb-1">AI Efficiency Insights (FR-07.2)</div>
+                              <ul className="list-disc pl-4 text-xs text-[#3ECF8E]/80 space-y-0.5">
                                 {v.recommendations.map((rec: string, rIdx: number) => (
                                   <li key={rIdx}>{rec}</li>
                                 ))}
