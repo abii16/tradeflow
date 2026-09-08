@@ -176,17 +176,17 @@ export default function DynamicPricing() {
           <button 
             onClick={handleOptimize}
             disabled={optimizing}
-            className="bg-[#232323] hover:bg-[#2E2E2E] text-[#EDEDED] border border-[#2E2E2E] shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
+            className="bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] border border-[#3ECF8E]/20 shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
           >
-            <Sparkles className={`w-4 h-4 text-[#EDEDED] ${optimizing ? "animate-spin" : ""}`} />
+            <Sparkles className={`w-4 h-4 text-[#3ECF8E] ${optimizing ? "animate-spin" : ""}`} />
             {optimizing ? t('dp_optimizing', 'Optimizing...') : t('dp_btn_optimize', 'Trigger AI Optimization')}
           </button>
           <button 
             onClick={handleSync}
             disabled={syncing || saving}
-            className="bg-[#232323] hover:bg-[#2E2E2E] text-[#EDEDED] border border-[#2E2E2E] shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
+            className="bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] shadow-sm px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
           >
-            <Zap className="w-4 h-4 text-[#EDEDED]" />
+            <Zap className="w-4 h-4 text-[#1C1C1C]" />
             {syncing ? t('dp_syncing', 'Syncing...') : t('dp_btn_publish', 'Publish Rates to Marketplace')}
           </button>
         </div>
@@ -241,7 +241,7 @@ export default function DynamicPricing() {
                   step="0.01"
                   value={demandMultiplier}
                   onChange={(e) => setDemandMultiplier(Number(e.target.value))}
-                  className="w-full h-1.5 bg-[#2E2E2E] rounded-lg appearance-none accent-slate-800 cursor-pointer"
+                  className="w-full h-1.5 bg-[#2E2E2E] rounded-lg appearance-none accent-[#3ECF8E] cursor-pointer"
                 />
               </div>
 
@@ -481,7 +481,7 @@ export default function DynamicPricing() {
                     <td className="px-6 py-4 font-mono text-[#8F8F8F]">ETB {contract.currentSpot.toLocaleString()}</td>
                     <td className="px-6 py-4 font-mono font-bold text-rose-600">+{contract.divergencePct.toFixed(1)}%</td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase whitespace-nowrap">
                         {contract.status === 'FLAGGED_FOR_REVIEW' ? t('dp_status_flagged', 'FLAGGED_FOR_REVIEW') : contract.status}
                       </span>
                     </td>
@@ -526,9 +526,9 @@ export default function DynamicPricing() {
               ) : (
                 auditLogs.map(log => (
                   <div key={log.id} className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-3 border-b border-slate-50 pb-2">
+                    <div className="flex justify-between items-center mb-3 border-b border-[#2E2E2E] pb-2">
                       <span className="text-xs font-bold text-[#EDEDED] flex items-center gap-1.5">
-                        <CheckCircle size={14} className="text-emerald-500" /> {t('dp_audit_event', 'Price Broadcast')}
+                        <CheckCircle size={14} className="text-[#3ECF8E]" /> {t('dp_audit_event', 'Price Broadcast')}
                       </span>
                       <span className="text-[10px] text-[#8F8F8F] font-mono">{new Date(log.createdAt).toLocaleString()}</span>
                     </div>
