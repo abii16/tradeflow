@@ -33,13 +33,15 @@ export default function ForwarderPortal({ onSwitchPortal }: ForwarderPortalProps
   };
 
   return (
-    <div className="flex h-screen bg-[#1C1C1C] overflow-hidden font-sans">
+    <div className="flex min-h-screen bg-[#1C1C1C] font-sans">
       <ForwarderSidebar activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <UniversalTopBar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="sticky top-0 z-20">
+          <UniversalTopBar />
+        </div>
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8">
+        <main className="flex-1 p-5 md:p-6">
           {renderSubTab()}
         </main>
       </div>

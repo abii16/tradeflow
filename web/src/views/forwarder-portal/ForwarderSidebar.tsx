@@ -20,7 +20,7 @@ export default function ForwarderSidebar({ activeSubTab, setActiveSubTab }: Forw
   ];
 
   return (
-    <aside className="w-60 bg-[#181818] text-[#8F8F8F] flex flex-col border-r border-[#2E2E2E] shrink-0">
+    <aside className="w-60 bg-[#181818] text-[#8F8F8F] flex flex-col border-r border-[#2E2E2E] shrink-0 sticky top-0 h-screen">
       <div className="h-16 flex items-center px-5 border-b border-[#2E2E2E] gap-3">
         <div className="w-7 h-7 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 flex items-center justify-center shrink-0">
           <Ship className="text-[#3ECF8E]" size={16} />
