@@ -112,16 +112,16 @@ export default function TransactionLedger({
   return (
     <div className="space-y-4">
       {/* Search and Filters Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 border border-slate-200 rounded-md text-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#232323] p-3 border border-[#2E2E2E] rounded-md text-xs shadow-black/20">
         <div className="flex flex-1 items-center gap-2">
           <div className="relative flex-1 max-w-xs">
-            <Search size={14} className="absolute left-2.5 top-2.5 text-slate-400" />
+            <Search size={14} className="absolute left-2.5 top-2.5 text-[#8F8F8F]" />
             <input
               type="text"
               placeholder="Filter waybill, tx, carrier..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:border-slate-900"
+              className="w-full pl-8 pr-3 py-1.5 border border-[#2E2E2E] bg-[#181818] text-[#EDEDED] rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E]"
             />
           </div>
 
@@ -133,8 +133,8 @@ export default function TransactionLedger({
                 onClick={() => setStatusFilter(st)}
                 className={`px-2.5 py-1 rounded text-xs transition-colors ${
                   statusFilter === st
-                    ? 'bg-slate-900 text-white font-medium'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 font-medium shadow-sm'
+                    : 'text-[#8F8F8F] hover:bg-[#2A2A2A] hover:text-[#EDEDED]'
                 }`}
               >
                 {st}
@@ -146,17 +146,17 @@ export default function TransactionLedger({
         <button
           type="button"
           onClick={handleExportCSV}
-          className="px-3 py-1.5 border border-slate-300 rounded text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-1.5"
+          className="px-3 py-1.5 border border-[#2E2E2E] bg-[#181818] rounded text-[#8F8F8F] hover:bg-[#2A2A2A] hover:text-[#EDEDED] font-medium flex items-center gap-1.5 transition-colors"
         >
           <Download size={13} /> Export CSV
         </button>
       </div>
 
       {/* Dense, Clean Ledger Table */}
-      <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
+      <div className="bg-[#232323] border border-[#2E2E2E] rounded-md overflow-hidden shadow-black/20">
         <Table>
-          <TableHeader className="bg-slate-50 text-[11px] font-semibold text-slate-600">
-            <TableRow>
+          <TableHeader className="bg-[#181818] text-[11px] font-semibold text-[#8F8F8F] border-b border-[#2E2E2E]">
+            <TableRow className="border-none hover:bg-transparent">
               <TableHead>Date / Tx Hash</TableHead>
               <TableHead>Waybill & Load</TableHead>
               <TableHead>Transporter</TableHead>
@@ -172,42 +172,42 @@ export default function TransactionLedger({
               <TableRow 
                 key={row.id} 
                 onClick={() => setSelectedTx(row)}
-                className="hover:bg-slate-50/50 cursor-pointer"
+                className="hover:bg-[#2A2A2A] border-[#2E2E2E] cursor-pointer"
               >
                 <TableCell>
-                  <div className="text-slate-800">{row.date}</div>
-                  <div className="text-[10px] font-mono text-slate-400">{row.txHash}</div>
+                  <div className="text-[#EDEDED]">{row.date}</div>
+                  <div className="text-[10px] font-mono text-[#8F8F8F]">{row.txHash}</div>
                 </TableCell>
 
                 <TableCell>
-                  <div className="font-mono font-medium text-slate-900">{row.waybillId}</div>
-                  <div className="text-[11px] text-slate-500">{row.shipmentRef}</div>
+                  <div className="font-mono font-medium text-[#EDEDED]">{row.waybillId}</div>
+                  <div className="text-[11px] text-[#8F8F8F]">{row.shipmentRef}</div>
                 </TableCell>
 
-                <TableCell className="font-medium text-slate-900">
+                <TableCell className="font-medium text-[#EDEDED]">
                   {row.party}
                 </TableCell>
 
-                <TableCell className="text-slate-600">
+                <TableCell className="text-[#8F8F8F]">
                   {row.channel}
                 </TableCell>
 
-                <TableCell className="text-right font-mono text-slate-700">
+                <TableCell className="text-right font-mono text-[#8F8F8F]">
                   {formatMoney(row.grossAmountETB)}
                 </TableCell>
 
-                <TableCell className="text-right font-mono text-slate-500">
+                <TableCell className="text-right font-mono text-[#8F8F8F]">
                   -{formatMoney(row.platformFeeETB)}
                 </TableCell>
 
-                <TableCell className="text-right font-mono font-semibold text-slate-900">
+                <TableCell className="text-right font-mono font-semibold text-[#EDEDED]">
                   {formatMoney(row.netDisbursedETB)}
                 </TableCell>
 
                 <TableCell className="text-center">
-                  <span className={`text-[11px] ${
-                    row.status === 'Released' ? 'text-slate-900 font-medium' :
-                    row.status === 'Locked' ? 'text-amber-800 font-medium' : 'text-red-700 font-medium'
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                    row.status === 'Released' ? 'bg-[#3ECF8E]/10 text-[#3ECF8E]' :
+                    row.status === 'Locked' ? 'bg-amber-500/10 text-amber-500' : 'bg-rose-500/10 text-rose-500'
                   }`}>
                     {row.status}
                   </span>
@@ -220,31 +220,31 @@ export default function TransactionLedger({
 
       {/* Transaction Detail Modal */}
       {selectedTx && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-md shadow-lg max-w-sm w-full p-5 border border-slate-200 text-xs">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h3 className="font-semibold text-slate-900 text-sm">Ledger Audit Record</h3>
+        <div className="fixed inset-0 bg-[#1C1C1C]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#232323] rounded-md shadow-xl max-w-sm w-full p-5 border border-[#2E2E2E] text-xs">
+            <div className="flex justify-between items-center pb-2 border-b border-[#2E2E2E]">
+              <h3 className="font-semibold text-[#EDEDED] text-sm">Ledger Audit Record</h3>
               <button 
                 onClick={() => setSelectedTx(null)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-[#8F8F8F] hover:text-[#EDEDED] font-bold"
               >
                 ✕
               </button>
             </div>
 
             <div className="mt-3 space-y-2 font-mono">
-              <div className="flex justify-between"><span className="text-slate-500 font-sans">Tx Hash:</span> <strong>{selectedTx.txHash}</strong></div>
-              <div className="flex justify-between"><span className="text-slate-500 font-sans">Waybill:</span> <strong>{selectedTx.waybillId}</strong></div>
-              <div className="flex justify-between"><span className="text-slate-500 font-sans">Transporter:</span> <strong className="font-sans">{selectedTx.party}</strong></div>
-              <div className="flex justify-between"><span className="text-slate-500 font-sans">Gross:</span> <strong>{formatMoney(selectedTx.grossAmountETB)}</strong></div>
-              <div className="flex justify-between"><span className="text-slate-500 font-sans">Platform Fee:</span> <strong>{formatMoney(selectedTx.platformFeeETB)}</strong></div>
-              <div className="flex justify-between pt-1 border-t border-slate-100"><span className="text-slate-700 font-sans font-medium">Net Disbursed:</span> <strong className="text-emerald-800">{formatMoney(selectedTx.netDisbursedETB)}</strong></div>
+              <div className="flex justify-between"><span className="text-[#8F8F8F] font-sans">Tx Hash:</span> <strong className="text-[#EDEDED]">{selectedTx.txHash}</strong></div>
+              <div className="flex justify-between"><span className="text-[#8F8F8F] font-sans">Waybill:</span> <strong className="text-[#EDEDED]">{selectedTx.waybillId}</strong></div>
+              <div className="flex justify-between"><span className="text-[#8F8F8F] font-sans">Transporter:</span> <strong className="font-sans text-[#EDEDED]">{selectedTx.party}</strong></div>
+              <div className="flex justify-between"><span className="text-[#8F8F8F] font-sans">Gross:</span> <strong className="text-[#EDEDED]">{formatMoney(selectedTx.grossAmountETB)}</strong></div>
+              <div className="flex justify-between"><span className="text-[#8F8F8F] font-sans">Platform Fee:</span> <strong className="text-[#EDEDED]">{formatMoney(selectedTx.platformFeeETB)}</strong></div>
+              <div className="flex justify-between pt-2 border-t border-[#2E2E2E]"><span className="text-[#EDEDED] font-sans font-medium">Net Disbursed:</span> <strong className="text-[#3ECF8E] text-sm">{formatMoney(selectedTx.netDisbursedETB)}</strong></div>
             </div>
 
             <button
               type="button"
               onClick={() => setSelectedTx(null)}
-              className="w-full mt-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded font-medium text-xs"
+              className="w-full mt-4 py-1.5 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] rounded font-bold text-xs transition-colors shadow-md"
             >
               Close
             </button>
