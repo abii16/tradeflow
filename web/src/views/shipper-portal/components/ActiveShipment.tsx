@@ -191,7 +191,7 @@ TradeFlow MVP Platform
           <button
             type="button"
             onClick={handleDownloadWaybill}
-            className="w-full bg-[#232323] border border-[#2E2E2E] hover:bg-[#2A2A2A] hover:border-[#8F8F8F] text-[#EDEDED] py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
+            className="w-full bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
           >
             {t('download_waybill')}
           </button>
