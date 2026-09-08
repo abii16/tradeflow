@@ -62,12 +62,12 @@ export default function DisputeMediation() {
       <div className="bg-[#232323] p-5 rounded-xl border border-[#2E2E2E] shadow-sm flex justify-between items-center">
         <div>
           <h2 className="text-lg font-bold text-[#EDEDED] flex items-center gap-2">
-            <Scale size={20} className="text-indigo-600" /> 
+            <Scale size={20} className="text-indigo-400" /> 
             {t('dm_title')}
           </h2>
           <p className="text-xs text-[#8F8F8F] mt-1">{t('dm_desc')}</p>
         </div>
-        <div className="bg-indigo-50 text-indigo-700 font-bold px-4 py-2 rounded-lg text-sm border border-indigo-100 flex items-center gap-2">
+        <div className="bg-indigo-500/10 text-indigo-400 font-bold px-4 py-2 rounded-lg text-sm border border-indigo-500/20 flex items-center gap-2">
           <AlertCircle size={16} /> {disputes.filter(d => d.status === 'OPEN').length} {t('dm_active_disputes')}
         </div>
       </div>
@@ -95,11 +95,11 @@ export default function DisputeMediation() {
                 className={`p-4 border-b border-[#2E2E2E] cursor-pointer transition-colors ${selectedDispute?.id === d.id ? 'bg-[#181818]/90 border-l-4 border-slate-900 shadow-sm' : 'hover:bg-[#181818]'}`}
               >
                 <div className="flex justify-between items-start mb-1">
-                  <span className={`text-xs font-bold font-mono ${selectedDispute?.id === d.id ? 'text-indigo-700' : 'text-[#8F8F8F]'}`}>{d.id.substring(0,8)}</span>
-                  {d.status === 'OPEN' && <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_open')}</span>}
-                  {d.status === 'UNDER_REVIEW' && <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_review')}</span>}
+                  <span className={`text-xs font-bold font-mono ${selectedDispute?.id === d.id ? 'text-indigo-400' : 'text-[#8F8F8F]'}`}>{d.id.substring(0,8)}</span>
+                  {d.status === 'OPEN' && <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_open')}</span>}
+                  {d.status === 'UNDER_REVIEW' && <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_review')}</span>}
                   {d.status.startsWith('RESOLVED') && <span className="bg-[#2E2E2E] text-[#8F8F8F] text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_resolved')}</span>}
-                  {d.status === 'ESCALATED_LEGAL' && <span className="bg-rose-600 text-[#EDEDED] text-[10px] font-bold px-2 py-0.5 rounded-full">ESCALATED</span>}
+                  {d.status === 'ESCALATED_LEGAL' && <span className="bg-rose-500/20 text-rose-500 border border-rose-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full">ESCALATED</span>}
                 </div>
                 <h4 className="font-semibold text-[#EDEDED] text-sm mb-1">{d.shipperName || 'Shipper'} <span className="text-[#8F8F8F] font-normal mx-1">{t('dm_vs')}</span> {d.transporterName || 'Transporter'}</h4>
                 <p className="text-[11px] text-[#8F8F8F] line-clamp-1">{d.reason}</p>
@@ -139,11 +139,11 @@ export default function DisputeMediation() {
                   </div>
                 </div>
 
-                <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle size={18} className="text-rose-600 mt-0.5 shrink-0" />
+                <div className="bg-rose-500/10 border border-rose-500/20 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle size={18} className="text-rose-500 mt-0.5 shrink-0" />
                   <div>
-                    <h4 className="font-bold text-rose-800 text-sm mb-1">{t('dm_severity_alert')}: {selectedDispute.reason}</h4>
-                    <p className="text-xs text-rose-700">{selectedDispute.description || t('dm_claim_desc')}</p>
+                    <h4 className="font-bold text-rose-500 text-sm mb-1">{t('dm_severity_alert')}: {selectedDispute.reason}</h4>
+                    <p className="text-xs text-rose-400">{selectedDispute.description || t('dm_claim_desc')}</p>
                   </div>
                 </div>
               </div>
@@ -158,7 +158,7 @@ export default function DisputeMediation() {
               
               {/* Message 1 */}
               <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-[#3ECF8E] flex items-center justify-center font-bold text-xs shrink-0">SH</div>
+                <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-bold text-xs shrink-0">SH</div>
                 <div className="flex-1 bg-[#232323] border border-[#2E2E2E] rounded-lg rounded-tl-none p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-bold text-sm text-[#EDEDED]">{selectedDispute.shipperName || 'Shipper'} ({t('dm_importer_label')})</span>
@@ -169,7 +169,7 @@ export default function DisputeMediation() {
 
               {/* Message 2 */}
               <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">TR</div>
+                <div className="w-8 h-8 rounded-full bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 flex items-center justify-center font-bold text-xs shrink-0">TR</div>
                 <div className="flex-1 bg-[#232323] border border-[#2E2E2E] rounded-lg rounded-tl-none p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-bold text-sm text-[#EDEDED]">{selectedDispute.transporterName || 'Transporter'} ({t('dm_carrier_label')})</span>
@@ -178,8 +178,8 @@ export default function DisputeMediation() {
                   <p className="text-sm text-[#EDEDED] mb-3">Carrier dispute evidence logged automatically via platform.</p>
                   
                   <div className="flex gap-2 flex-wrap">
-                    <button className="border border-[#2E2E2E] rounded p-2 flex items-center gap-2 bg-[#181818] text-xs w-fit hover:bg-emerald-50 hover:border-emerald-200 transition-colors cursor-pointer group">
-                      <ShieldCheck size={14} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                    <button className="border border-[#2E2E2E] rounded p-2 flex items-center gap-2 bg-[#181818] text-xs text-[#8F8F8F] w-fit hover:bg-[#3ECF8E]/10 hover:text-[#3ECF8E] hover:border-[#3ECF8E]/30 transition-colors cursor-pointer group">
+                      <ShieldCheck size={14} className="text-[#3ECF8E] group-hover:scale-110 transition-transform" />
                       <span>telemetry_log.pdf ({t('dm_attachment_verified')})</span>
                     </button>
                   </div>
@@ -200,7 +200,7 @@ export default function DisputeMediation() {
                 <textarea 
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
-                  className="w-full bg-[#181818] border border-[#2E2E2E] rounded-xl p-3.5 text-xs text-[#EDEDED] placeholder:text-[#8F8F8F] focus:bg-[#232323] focus:ring-1 focus:ring-slate-900 transition-colors resize-none" 
+                  className="w-full bg-[#181818] border border-[#2E2E2E] rounded-xl p-3.5 text-xs text-[#EDEDED] placeholder:text-[#8F8F8F] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-colors resize-none" 
                   rows={3}
                   placeholder={t('dm_resolution_note_placeholder')}
                 ></textarea>
@@ -219,7 +219,7 @@ export default function DisputeMediation() {
                 <button 
                   disabled={actionLoading || selectedDispute.status.startsWith('RESOLVED')}
                   onClick={() => setIsRefundModalOpen(true)}
-                  className="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
+                  className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
                 >
                   <Scale size={16} />
                   {t('dm_issue_refund')}
@@ -228,7 +228,7 @@ export default function DisputeMediation() {
                 <button 
                   disabled={actionLoading || selectedDispute.status.startsWith('RESOLVED')}
                   onClick={() => handleResolve('ESCALATED_LEGAL')}
-                  className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
+                  className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
                 >
                   <Gavel size={16} />
                   {t('dm_escalate_legal')}
