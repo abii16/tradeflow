@@ -25,15 +25,15 @@ export default function ForwarderPortal({ onSwitchPortal }: ForwarderPortalProps
         return <ForwarderAnalytics />;
       default:
         return (
-          <div className="flex items-center justify-center h-64 bg-white border border-slate-200 rounded-xl">
-            <p className="text-slate-500 font-medium text-sm">Module under construction</p>
+          <div className="flex items-center justify-center h-64 bg-[#232323] border border-[#2E2E2E] rounded-xl">
+            <p className="text-[#8F8F8F] font-medium text-sm">Module under construction</p>
           </div>
         );
     }
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#1C1C1C] overflow-hidden font-sans">
       <ForwarderSidebar activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
