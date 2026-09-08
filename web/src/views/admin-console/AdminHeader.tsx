@@ -60,9 +60,9 @@ export default function AdminHeader({ onSwitchPortal }: AdminHeaderProps) {
             <div className="text-sm font-bold text-[#EDEDED] group-hover:text-[#3ECF8E] transition-colors">Habtamu Zewde</div>
             <div className="text-[11px] text-[#8F8F8F] font-medium">{t('admin_role_director')}</div>
           </div>
-          <div className="w-9 h-9 rounded-full bg-blue-100 text-[#3ECF8E] font-bold flex items-center justify-center border-2 border-[#1C1C1C] shadow-sm ring-1 ring-slate-100 relative">
+          <div className="w-9 h-9 rounded-full bg-[#181818] text-[#3ECF8E] font-bold flex items-center justify-center border border-[#2E2E2E] shadow-sm relative">
             HZ
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-[#1C1C1C] rounded-full"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#3ECF8E] border-2 border-[#1C1C1C] rounded-full"></div>
           </div>
         </div>
 
