@@ -54,7 +54,7 @@ export default function TelematicsTab() {
           <p className="text-xs text-[#8F8F8F] mt-0.5">Live GPS tracking and ETA prediction across the Djibouti–Modjo corridor (FR-03)</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+          <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-[#3ECF8E] animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.6)]' : 'bg-rose-500'}`}></div>
           <span className="text-xs font-medium text-[#8F8F8F]">{isConnected ? 'Live Socket Connected' : 'Reconnecting...'}</span>
         </div>
       </div>
@@ -141,12 +141,12 @@ export default function TelematicsTab() {
         <div className="lg:col-span-2 relative h-full flex flex-col min-h-0">
           <div className="flex-1 space-y-3 overflow-y-auto min-h-0 pr-1 pb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {telemetry.alerts.map(alert => (
-            <div key={alert.id} className="bg-red-50 border-l-4 border-l-red-500 border-y border-r border-[#2E2E2E] rounded-md p-3 shadow-sm animate-in fade-in slide-in-from-right-4">
+            <div key={alert.id} className="bg-rose-500/10 border-l-4 border-l-rose-500 border-y border-r border-[#2E2E2E] rounded-md p-3 shadow-black/20 animate-in fade-in slide-in-from-right-4">
               <div className="flex items-start gap-2 text-xs">
-                <AlertTriangle size={16} className="text-red-600 shrink-0 mt-0.5" />
+                <AlertTriangle size={16} className="text-rose-500 shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-red-900 text-sm">{alert.title ? t(alert.title) : 'Risk Alert'}</div>
-                  <p className="text-red-700 mt-1 leading-relaxed">{alert.description ? t(alert.description) : ''}</p>
+                  <div className="font-bold text-rose-400 text-sm">{alert.title ? t(alert.title) : 'Risk Alert'}</div>
+                  <p className="text-rose-500/80 mt-1 leading-relaxed">{alert.description ? t(alert.description) : ''}</p>
                 </div>
               </div>
             </div>
@@ -172,13 +172,13 @@ export default function TelematicsTab() {
           )}
 
           {telemetry.trucks.map(truck => (
-            <div key={truck.id} className="bg-[#232323] border border-[#2E2E2E] rounded-md p-3 hover:border-blue-300 transition-colors shadow-sm">
+            <div key={truck.id} className="bg-[#232323] border border-[#2E2E2E] rounded-md p-3 hover:border-[#3ECF8E]/50 transition-colors shadow-black/20">
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <div className="font-bold text-sm text-[#EDEDED]">{truck.id}</div>
                   <div className="text-xs text-[#8F8F8F] mt-0.5">{truck.cargo} • {truck.driver}</div>
                 </div>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${truck.status === 'SAFE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${truck.status === 'SAFE' ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
                   {truck.status || 'ONLINE'}
                 </span>
               </div>
@@ -196,7 +196,7 @@ export default function TelematicsTab() {
                   <span className="font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded">{truck.eta}</span>
                 </div>
                 <div className="mt-2 h-1.5 w-full bg-[#181818] rounded-full overflow-hidden border border-[#2E2E2E]">
-                   <div className="h-full bg-emerald-500" style={{ width: '65%' }}></div>
+                   <div className="h-full bg-[#3ECF8E]" style={{ width: '65%' }}></div>
                 </div>
               </div>
             </div>
@@ -204,8 +204,8 @@ export default function TelematicsTab() {
           </div>
           
           {/* Custom Scroll Indicator */}
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-slate-100 to-transparent pointer-events-none flex items-end justify-center pb-2">
-            <div className="bg-[#232323]/80 backdrop-blur shadow-sm rounded-full p-1 animate-bounce text-[#8F8F8F] border border-[#2E2E2E]">
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#1C1C1C] to-transparent pointer-events-none flex items-end justify-center pb-2">
+            <div className="bg-[#232323]/80 backdrop-blur shadow-black/40 rounded-full p-1 animate-bounce text-[#8F8F8F] border border-[#2E2E2E]">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
