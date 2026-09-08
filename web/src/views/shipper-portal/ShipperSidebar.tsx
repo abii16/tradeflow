@@ -55,7 +55,7 @@ export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSideb
         {!collapsed && (
           <button
             onClick={() => setActiveTab('operations')}
-            className="w-full bg-[#232323] text-[#EDEDED] hover:bg-[#181818] rounded py-2 px-3 mb-3 font-semibold text-xs transition-colors"
+            className="w-full bg-[#3ECF8E]/10 text-[#3ECF8E] hover:bg-[#3ECF8E]/20 rounded py-2 px-3 mb-3 font-semibold text-xs transition-colors"
           >
             + {t('new_shipment')}
           </button>
@@ -64,7 +64,7 @@ export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSideb
         {collapsed && (
           <button
             onClick={() => setActiveTab('operations')}
-            className="w-full flex items-center justify-center bg-[#232323] text-[#EDEDED] hover:bg-[#181818] rounded p-2 mb-3 transition-colors text-xs font-bold"
+            className="w-full flex items-center justify-center bg-[#3ECF8E]/10 text-[#3ECF8E] hover:bg-[#3ECF8E]/20 rounded p-2 mb-3 transition-colors text-xs font-bold"
             title={t('new_shipment')}
           >
             +
