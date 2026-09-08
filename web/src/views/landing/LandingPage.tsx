@@ -134,23 +134,23 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
     if (!activeComplianceModal) return null;
     return (
       <div className="fixed inset-0 z-[100] bg-[#18191c] backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-slate-200">
-          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-              <ShieldCheck size={20} className="text-emerald-600" />
+        <div className="bg-[#232323] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-[#2E2E2E]">
+          <div className="p-6 border-b border-[#2E2E2E] flex justify-between items-center bg-[#181818]">
+            <h3 className="font-bold text-lg text-[#EDEDED] flex items-center gap-2">
+              <ShieldCheck size={20} className="text-[#3ECF8E]" />
               {activeComplianceModal.title}
             </h3>
-            <button onClick={() => setActiveComplianceModal(null)} className="text-slate-400 hover:text-slate-700">
+            <button onClick={() => setActiveComplianceModal(null)} className="text-[#8F8F8F] hover:text-[#EDEDED]">
               <X size={20} />
             </button>
           </div>
           <div className="p-6">
-            <p className="text-sm text-slate-600 leading-relaxed font-mono whitespace-pre-wrap bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <p className="text-sm text-[#EDEDED] leading-relaxed font-mono whitespace-pre-wrap bg-[#181818] p-4 rounded-lg border border-[#2E2E2E]">
               {activeComplianceModal.content}
             </p>
           </div>
-          <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
-            <button onClick={() => setActiveComplianceModal(null)} className="bg-slate-900 text-white px-6 py-2 rounded-lg text-sm font-bold">
+          <div className="p-4 bg-[#181818] border-t border-[#2E2E2E] flex justify-end">
+            <button onClick={() => setActiveComplianceModal(null)} className="bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] px-6 py-2 rounded-lg text-sm font-bold shadow-md">
               Acknowledge
             </button>
           </div>
@@ -206,10 +206,10 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
           <div className="flex items-center gap-6 md:gap-10">
             <nav className="hidden md:flex items-center space-x-1">
-              <a href="#platform-overview" onClick={(e) => handleSmoothScroll(e, 'platform-overview')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.platformOverview}</a>
-              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.loadBoard}</a>
-              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.dynamicRates}</a>
-              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-slate-300 hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.customsSync}</a>
+              <a href="#platform-overview" onClick={(e) => handleSmoothScroll(e, 'platform-overview')} className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.platformOverview}</a>
+              <a href="#load-board" onClick={(e) => handleSmoothScroll(e, 'load-board')} className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.loadBoard}</a>
+              <a href="#dynamic-rates" onClick={(e) => handleSmoothScroll(e, 'dynamic-rates')} className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.dynamicRates}</a>
+              <a href="#customs-sync" onClick={(e) => handleSmoothScroll(e, 'customs-sync')} className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105">{t.nav.customsSync}</a>
             </nav>
 
             <div className="hidden md:block w-px h-6 bg-[#262626]"></div>
@@ -220,7 +220,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <>
                 <button
                   onClick={() => setShowLoginModal(true)}
-                  className="text-sm font-bold text-slate-200 hover:text-white px-4 py-2 rounded-full hover:bg-white/10 transition-all duration-300"
+                  className="text-sm font-bold text-[#EDEDED] hover:text-white px-4 py-2 rounded-full hover:bg-[#2A2A2A] transition-all duration-300"
                 >
                   Sign In
                 </button>
@@ -235,7 +235,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <>
                 <button
                   onClick={logout}
-                  className="text-sm font-bold text-slate-200 hover:text-white px-4 py-2 rounded-full hover:bg-white/10 transition-all duration-300"
+                  className="text-sm font-bold text-[#EDEDED] hover:text-white px-4 py-2 rounded-full hover:bg-[#2A2A2A] transition-all duration-300"
                 >
                   Logout
                 </button>
