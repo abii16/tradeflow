@@ -114,7 +114,7 @@
   "eta_galafi": "ETA AT GALAFI",
   "eta_est": "Est.",
   "eta_confidence": "Model Confidence Interval",
-  "vr_title": "Verification Registry (FR-01.4)",
+  "vr_title": "Verification Registry",
   "vr_desc": "Audit log of entity applications and customs clearances.",
   "vr_queue": "Queue",
   "vr_app_id": "Application ID",

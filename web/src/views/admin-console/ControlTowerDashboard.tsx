@@ -328,7 +328,6 @@ export default function ControlTowerDashboard() {
           <div className="p-5 border-b border-[#2E2E2E] flex items-center justify-between shrink-0">
             <div>
               <h3 className="font-semibold text-[#EDEDED] text-sm">{t('vr_title')}</h3>
-              <p className="text-[11px] text-[#8F8F8F] mt-0.5">{t('vr_desc')}</p>
             </div>
             <span className="bg-[#232323] border border-[#2E2E2E] text-[#8F8F8F] text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
               {t('vr_queue')}
@@ -341,15 +340,15 @@ export default function ControlTowerDashboard() {
               {verifications.length > 0 && (
                 <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                   <tr>
-                    <th className="px-6 py-3 font-semibold">{t('vr_app_id')}</th>
-                    <th className="px-6 py-3 font-semibold">{t('vr_entity')}</th>
-                    <th className="px-6 py-3 font-semibold">{t('vr_license')}</th>
-                    <th className="px-6 py-3 font-semibold">{t('vr_status')}</th>
-                    <th className="px-6 py-3 text-right font-semibold">{t('vr_action')}</th>
+                    <th className="px-6 py-4 font-semibold whitespace-nowrap">{t('vr_app_id')}</th>
+                    <th className="px-6 py-4 font-semibold whitespace-nowrap">{t('vr_entity')}</th>
+                    <th className="px-6 py-4 font-semibold whitespace-nowrap">{t('vr_license')}</th>
+                    <th className="px-6 py-4 font-semibold whitespace-nowrap">{t('vr_status')}</th>
+                    <th className="px-6 py-4 text-right font-semibold whitespace-nowrap">{t('vr_action')}</th>
                   </tr>
                 </thead>
               )}
-              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+              <tbody className="divide-y divide-[#2E2E2E] text-sm text-[#EDEDED] bg-[#232323]">
                 {loadingVerifications ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-sm text-[#8F8F8F]">
@@ -372,22 +371,22 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   verifications.map((v) => (
-                    <tr key={v.id} className="hover:bg-[#2A2A2A] transition-colors">
-                      <td className="px-6 py-3 leading-normal">
-                        <span className="font-mono text-xs font-semibold bg-[#232323] text-[#EDEDED] px-2 py-0.5 rounded">
+                    <tr key={v.id} className="hover:bg-[#2A2A2A] transition-colors group cursor-default">
+                      <td className="px-6 py-4 leading-normal whitespace-nowrap">
+                        <span className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm">
                           REQ-{v.id.toString().slice(0, 8).toUpperCase()}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-medium text-[#EDEDED]">{v.userFullName || 'Unknown Entity'}</td>
-                      <td className="px-6 py-4 font-mono text-xs">{v.taxId || v.tradeLicenseNumber || 'N/A'}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      <td className="px-6 py-4 font-medium text-[#EDEDED] whitespace-nowrap">{v.userFullName || 'Unknown Entity'}</td>
+                      <td className="px-6 py-4 font-mono text-xs whitespace-nowrap">{v.taxId || v.tradeLicenseNumber || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
                           {t('vr_pending')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="text-[#3ECF8E] font-semibold text-xs hover:text-blue-700 flex items-center justify-end gap-1 ml-auto">
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
+                        <button className="text-[#3ECF8E] font-semibold text-xs hover:text-[#3ECF8E]/80 flex items-center justify-end gap-1 ml-auto transition-colors">
                           {t('vr_review')} <ChevronRight size={14} />
                         </button>
                       </td>
