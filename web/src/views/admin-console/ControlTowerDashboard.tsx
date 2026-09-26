@@ -253,13 +253,13 @@ export default function ControlTowerDashboard() {
             <table className="w-full text-left text-sm text-[#8F8F8F]">
               <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Load ID</th>
-                  <th className="px-4 py-3 font-semibold">Cargo / Weight</th>
-                  <th className="px-4 py-3 font-semibold">Route</th>
-                  <th className="px-4 py-3 text-right font-semibold">Status</th>
+                  <th className="px-6 py-4 font-semibold whitespace-nowrap">Load ID</th>
+                  <th className="px-6 py-4 font-semibold">Cargo / Weight</th>
+                  <th className="px-6 py-4 font-semibold">Route</th>
+                  <th className="px-6 py-4 text-right font-semibold whitespace-nowrap">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+              <tbody className="divide-y divide-[#2E2E2E] text-sm text-[#EDEDED] bg-[#232323]">
                 {loadingVerifications ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-sm text-[#8F8F8F]">
@@ -274,32 +274,44 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   loads.map((load) => (
-                    <tr key={load.id} className="hover:bg-[#2A2A2A] transition-colors">
-                      <td className="px-4 py-3 leading-normal">
-                        <span className="font-mono text-xs font-semibold bg-[#232323] text-[#EDEDED] px-2 py-0.5 rounded">
+                    <tr key={load.id} className="hover:bg-[#2A2A2A] transition-colors group cursor-default">
+                      <td className="px-6 py-4 leading-normal whitespace-nowrap">
+                        <span className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm">
                           TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 leading-normal font-medium text-[#EDEDED]">
-                        <div className="text-xs max-w-[160px]" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
-                        <div className="text-[10px] text-[#8F8F8F] mt-0.5">{load.weightKg} kg • ETB {Number(load.budgetAmount).toLocaleString()}</div>
+                      <td className="px-6 py-4 leading-normal">
+                        <div className="text-sm font-semibold text-[#EDEDED] max-w-[180px] truncate" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
+                        <div className="text-xs text-[#8F8F8F] mt-1 flex items-center gap-1.5">
+                          <span className="font-medium text-[#D1D1D1]">{load.weightKg} kg</span> 
+                          <span className="w-1 h-1 rounded-full bg-[#404040]"></span> 
+                          <span className="font-mono text-[#3ECF8E]">ETB {Number(load.budgetAmount).toLocaleString()}</span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 leading-normal text-[11px] max-w-[220px]" title={`${typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin} → ${typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination}`}>
-                        <span className="block whitespace-normal text-xs text-[#8F8F8F] leading-tight">{String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')} → {String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}</span>
+                      <td className="px-6 py-4 leading-normal">
+                        <div className="flex items-center gap-2 text-xs text-[#A0A0A0] max-w-[240px]">
+                          <span className="truncate flex-1" title={String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')}>
+                            {String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')}
+                          </span>
+                          <ArrowRight size={14} className="text-[#555] shrink-0" />
+                          <span className="truncate flex-1 text-[#EDEDED] font-medium" title={String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}>
+                            {String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 leading-normal text-right">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                          load.status === 'IN_TRANSIT' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' :
-                          load.status === 'POSTED' ? 'bg-[#3ECF8E]/10 text-blue-700 ring-1 ring-blue-200' :
-                          load.status === 'MATCHED' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' :
-                          load.status === 'EXPIRED' || load.status === 'CANCELLED' ? 'bg-[#232323] text-[#8F8F8F] ring-1 ring-slate-200' :
-                          'bg-[#232323] text-[#8F8F8F]'
+                      <td className="px-6 py-4 leading-normal text-right whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full ${
+                          load.status === 'IN_TRANSIT' ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] ring-1 ring-[#3ECF8E]/20' :
+                          load.status === 'POSTED' ? 'bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20' :
+                          load.status === 'MATCHED' ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' :
+                          load.status === 'EXPIRED' || load.status === 'CANCELLED' ? 'bg-[#181818] text-[#707070] ring-1 ring-[#2E2E2E]' :
+                          'bg-[#181818] text-[#8F8F8F]'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${
-                            load.status === 'IN_TRANSIT' ? 'bg-emerald-500' :
-                            load.status === 'POSTED' ? 'bg-[#3ECF8E]' :
-                            load.status === 'MATCHED' ? 'bg-amber-500' : 'bg-slate-400'
-                          }`} />
+                            load.status === 'IN_TRANSIT' ? 'bg-[#3ECF8E]' :
+                            load.status === 'POSTED' ? 'bg-blue-400' :
+                            load.status === 'MATCHED' ? 'bg-amber-400' : 'bg-[#505050]'
+                          } ${['IN_TRANSIT', 'POSTED', 'MATCHED'].includes(load.status) ? 'animate-pulse' : ''}`} />
                           {load.status}
                         </span>
                       </td>
