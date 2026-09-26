@@ -8,6 +8,8 @@ from fastapi.security import APIKeyHeader # type: ignore
 from pydantic import BaseModel # type: ignore
 from typing import Optional
 
+from app.services.routing_engine import routing_engine
+
 router = APIRouter(prefix="/route", tags=["Route Optimizer (FR-05)"])
 
 logger = logging.getLogger("ai_engine_audit")
@@ -53,34 +55,19 @@ class IncidentReport(BaseModel):
 
 @router.post("/optimize", dependencies=[Depends(get_api_key)])
 async def optimize_route(data: OptimizeRouteRequest):
-    if not route_model:
-        # Fallback to a dummy implementation if model isn't loaded properly
-        return {
-            "better_route_found": False,
-            "cost_savings_percentage": 0.0,
-            "recommended_path": [],
-            "message": "Model not loaded"
-        }
-
     try:
-        # FR-05.1: Predict optimal route minimizing cost
-        # The exact input structure depends on how route_model was trained.
-        # This is a generic inference wrapper.
-        features = [[
-            data.current_lat, 
-            data.current_lng, 
-            data.destination_lat, 
-            data.destination_lng, 
-            data.vehicle_weight, 
-            data.fuel_level
-        ]]
+        # FR-05.1: Predict optimal route minimizing cost (distance, time, fuel, risk)
+        result = routing_engine.get_optimal_route(
+            start_lat=data.current_lat,
+            start_lng=data.current_lng,
+            dest_lat=data.destination_lat,
+            dest_lng=data.destination_lng,
+            vehicle_weight=data.vehicle_weight,
+            fuel_level=data.fuel_level
+        )
         
-        # We assume the model returns a dictionary or object with route metrics
-        prediction = route_model.predict(features)
-        
-        # Simulated interpretation of prediction (adjust based on actual model output)
-        better_route_found = bool(prediction[0].get("better_route", False)) if isinstance(prediction[0], dict) else True
-        cost_savings = float(prediction[0].get("savings", 6.5)) if isinstance(prediction[0], dict) else 6.5
+        better_route_found = len(result["path"]) > 1
+        cost_savings = result["savings"]
         
         # NFR 5.4 Security: Full audit logging of routing decisions
         audit_entry = {
@@ -89,7 +76,8 @@ async def optimize_route(data: OptimizeRouteRequest):
             "inputs": data.dict() if hasattr(data, "dict") else {},
             "outputs": {
                 "better_route_found": better_route_found,
-                "cost_savings_percentage": cost_savings
+                "cost_savings_percentage": cost_savings,
+                "recommended_path": result["path"]
             }
         }
         logger.info(json.dumps(audit_entry))
@@ -97,7 +85,7 @@ async def optimize_route(data: OptimizeRouteRequest):
         return {
             "better_route_found": better_route_found,
             "cost_savings_percentage": cost_savings,
-            "recommended_path": prediction[0].get("path", []) if isinstance(prediction[0], dict) else [],
+            "recommended_path": result["path"],
             "message": "Optimization successful"
         }
     except Exception as e:
@@ -106,23 +94,14 @@ async def optimize_route(data: OptimizeRouteRequest):
 
 @router.post("/incident", dependencies=[Depends(get_api_key)])
 async def report_incident(data: IncidentReport):
-    if not route_model:
-        return {"status": "ignored", "message": "Model not loaded"}
-
     try:
         # FR-05.2: Near real-time model state update
-        # If the model has a method to update its risk/graph weights dynamically:
-        if hasattr(route_model, "update_incident"):
-            route_model.update_incident(
-                lat=data.latitude, 
-                lng=data.longitude, 
-                incident_type=data.incidentType, 
-                severity=data.severity
-            )
-            status_msg = "Model updated with new incident"
-        else:
-            # If not supported, we just log it for the next full retrain
-            status_msg = "Incident logged for batch retraining"
+        updated, status_msg = routing_engine.update_incident(
+            lat=data.latitude, 
+            lng=data.longitude, 
+            incident_type=data.incidentType, 
+            severity=data.severity
+        )
             
         # NFR 5.4 Security: Full audit logging of incidents
         audit_entry = {
@@ -133,7 +112,7 @@ async def report_incident(data: IncidentReport):
         }
         logger.info(json.dumps(audit_entry))
         
-        return {"status": "success", "message": status_msg}
+        return {"status": "success" if updated else "ignored", "message": status_msg}
     except Exception as e:
         logger.error(f"Incident update error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

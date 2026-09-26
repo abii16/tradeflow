@@ -214,12 +214,12 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
             <div className="hidden md:block w-px h-6 bg-[#262626]"></div>
 
             <div className="flex items-center gap-4">
-              <button className="px-2.5 py-1 text-xs font-mono border border-[#2E2E2E] text-zinc-300 rounded-lg hover:border-[#3ECF8E]/50 transition" onClick={() => setLang(l => l === 'en' ? 'am' : 'en')}>{lang === 'en' ? 'EN | አማ' : 'አማ | EN'}</button>
+              <button className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105" onClick={() => setLang(l => l === 'en' ? 'am' : 'en')}>{lang === 'en' ? 'አማ' : 'EN'}</button>
               {!isAuthenticated ? (
                 <>
                   <button
                     onClick={() => setShowLoginModal(true)}
-                    className="text-sm font-bold text-[#EDEDED] hover:text-white px-4 py-2 rounded-full hover:bg-[#2A2A2A] transition-all duration-300"
+                    className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105"
                   >
                     Sign In
                   </button>
@@ -234,7 +234,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 <>
                   <button
                     onClick={logout}
-                    className="text-sm font-bold text-[#EDEDED] hover:text-white px-4 py-2 rounded-full hover:bg-[#2A2A2A] transition-all duration-300"
+                    className="text-sm font-bold text-[#EDEDED] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 border border-transparent hover:border-[#3ECF8E]/50 rounded-full px-4 py-2 transition-all duration-300 transform hover:scale-105"
                   >
                     Logout
                   </button>
