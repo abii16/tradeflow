@@ -108,40 +108,46 @@ export default function SecurityDetours() {
             </div>
           )}
 
-          {activeZones.map((zone) => (
-            <div key={zone.id} className={`bg-[#232323] rounded-xl border shadow-sm overflow-hidden relative ${zone.severity === 'critical' ? 'border-rose-200' : zone.severity === 'medium' ? 'border-amber-200' : 'border-blue-200'}`}>
-              <div className={`absolute top-0 left-0 w-1 h-full ${zone.severity === 'critical' ? 'bg-rose-500' : zone.severity === 'medium' ? 'bg-amber-500' : 'bg-[#3ECF8E]'}`}></div>
-              <div className={`p-4 flex justify-between items-start border-b ${zone.severity === 'critical' ? 'bg-rose-50/50 border-rose-100' : zone.severity === 'medium' ? 'bg-amber-50/50 border-amber-100' : 'bg-[#3ECF8E]/10/50 border-blue-100'}`}>
-                <div className="flex gap-3 items-start">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${zone.severity === 'critical' ? 'bg-rose-100 text-rose-600' : zone.severity === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-[#3ECF8E]'}`}>
-                    {zone.severity === 'critical' ? <AlertOctagon size={16} /> : zone.severity === 'medium' ? <TriangleAlert size={16} /> : <Info size={16} />}
+          {activeZones.map((zone) => {
+            const sevLower = String(zone.severity || '').toLowerCase();
+            const isCritical = sevLower.includes('critical') || sevLower.includes('high');
+            const isMedium = sevLower.includes('medium') || sevLower.includes('warning');
+
+            return (
+              <div key={zone.id} className={`bg-[#232323] rounded-xl border shadow-sm overflow-hidden relative ${isCritical ? 'border-rose-500/30' : isMedium ? 'border-amber-500/30' : 'border-[#3ECF8E]/30'}`}>
+                <div className={`absolute top-0 left-0 w-1 h-full ${isCritical ? 'bg-rose-500' : isMedium ? 'bg-amber-500' : 'bg-[#3ECF8E]'}`}></div>
+                <div className={`p-4 flex justify-between items-start border-b ${isCritical ? 'bg-rose-500/10 border-rose-500/20' : isMedium ? 'bg-amber-500/10 border-amber-500/20' : 'bg-[#3ECF8E]/10 border-[#3ECF8E]/20'}`}>
+                  <div className="flex gap-3 items-start">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isCritical ? 'bg-rose-500/20 text-rose-400' : isMedium ? 'bg-amber-500/20 text-amber-400' : 'bg-[#3ECF8E]/20 text-[#3ECF8E]'}`}>
+                      {isCritical ? <AlertOctagon size={16} /> : isMedium ? <TriangleAlert size={16} /> : <Info size={16} />}
+                    </div>
+                    <div>
+                      <div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isCritical ? 'text-rose-400' : isMedium ? 'text-amber-400' : 'text-[#3ECF8E]'}`}>[{zone.type || 'SYSTEM NOTIFICATION'}] {zone.severity}</div>
+                      <h4 className="font-semibold text-[#EDEDED] text-sm">{zone.name}</h4>
+                    </div>
                   </div>
-                  <div>
-                    <div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${zone.severity === 'critical' ? 'text-rose-600' : zone.severity === 'medium' ? 'text-amber-600' : 'text-[#3ECF8E]'}`}>[{zone.type}] {zone.severity}</div>
-                    <h4 className="font-semibold text-[#EDEDED] text-sm">{zone.name}</h4>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F]">
+                    <Crosshair size={14} className="text-[#8F8F8F]" /> Lat: {Number(zone.latitude || 0).toFixed(3)}, Lng: {Number(zone.longitude || 0).toFixed(3)} | Radius: {zone.radiusKm || 0} km
+                  </div>
+                  
+                  {zone.description && (
+                    <div className={`text-xs p-3.5 rounded-lg border flex items-start gap-2.5 ${isCritical ? 'bg-[#181818] text-[#EDEDED] border-rose-500/20' : isMedium ? 'bg-[#181818] text-[#EDEDED] border-amber-500/20' : 'bg-[#181818] text-[#EDEDED] border-[#3ECF8E]/20'}`}>
+                      <Navigation size={14} className={`shrink-0 mt-0.5 ${isCritical ? 'text-rose-400' : isMedium ? 'text-amber-400' : 'text-[#3ECF8E]'}`} />
+                      <div className="leading-relaxed text-[#EDEDED]/90">{zone.description}</div>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <button onClick={() => handleResolve(zone.id)} className={`text-xs font-bold px-4 py-2 rounded-lg transition-colors shadow-sm border ${isCritical ? 'text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20' : isMedium ? 'text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20' : 'text-[#3ECF8E] bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/20 border-[#3ECF8E]/20'}`}>
+                      Resolve Incident
+                    </button>
                   </div>
                 </div>
               </div>
-              <div className="p-4 space-y-4">
-                <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F]">
-                  <Crosshair size={14} className="text-[#8F8F8F]" /> Lat: {Number(zone.latitude).toFixed(3)}, Lng: {Number(zone.longitude).toFixed(3)} | Radius: {zone.radiusKm} km
-                </div>
-                
-                {zone.description && (
-                  <div className={`text-xs p-3 rounded-lg border flex items-start gap-2 ${zone.severity === 'critical' ? 'bg-rose-50 text-rose-800 border-rose-100' : zone.severity === 'medium' ? 'bg-amber-50 text-amber-800 border-amber-100' : 'bg-[#3ECF8E]/10 text-blue-800 border-blue-100'}`}>
-                    <Navigation size={14} className={`shrink-0 mt-0.5 ${zone.severity === 'critical' ? 'text-rose-600' : zone.severity === 'medium' ? 'text-amber-600' : 'text-[#3ECF8E]'}`} />
-                    <div>{zone.description}</div>
-                  </div>
-                )}
-                
-                <div className="flex gap-2">
-                  <button onClick={() => handleResolve(zone.id)} className={`text-xs font-bold px-4 py-2 rounded transition-colors shadow-sm ${zone.severity === 'critical' ? 'text-rose-600 bg-rose-50 hover:bg-rose-100' : zone.severity === 'medium' ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-[#3ECF8E] bg-[#3ECF8E]/10 hover:bg-blue-100'}`}>
-                    Resolve Incident
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
         </div>
 
