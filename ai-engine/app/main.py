@@ -3,6 +3,7 @@ from app.api.v1.spot_pricing import router as spot_pricing_router
 from app.api.v1.eta_prediction import router as eta_prediction_router
 from app.api.v1.freight_matching import router as freight_matching_router
 from app.api.v1.route_optimizer import router as route_optimizer_router
+from app.api.v1.document_validation import router as document_validation_router
 
 app = FastAPI(
     title="TradeFlow AI Engine Microservice",
@@ -18,4 +19,5 @@ def health_check():
 app.include_router(spot_pricing_router, prefix="/api/v1")
 app.include_router(eta_prediction_router, prefix="/api/v1")
 app.include_router(route_optimizer_router, prefix="/api/v1")
+app.include_router(document_validation_router, prefix="/api/v1")
 app.include_router(freight_matching_router) # Not prefixed with /api/v1 to keep backward compatibility
