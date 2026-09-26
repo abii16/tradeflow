@@ -203,7 +203,7 @@
   "dp_algo_rate": "Algorithm Rate",
   "dp_market_avg": "Market Avg",
   "dm_title": "Escrow Discrepancy & Cargo Claims Mediation",
-  "dm_desc": "Resolve escrow payment disputes between Shippers and Transporters (FR-10.3).",
+  "dm_desc": "Resolve escrow payment disputes between Shippers and Transporters.",
   "dm_active_disputes": "Active Disputes",
   "dm_search": "Search Claim ID or Entity...",
   "dm_status_open": "OPEN",
