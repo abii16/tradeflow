@@ -73,7 +73,7 @@
   "ledger": "Transaction Ledger",
   "disputes": "Dispute Mediation",
   "sec_detours_title": "Corridor Hazard Management & Active Geofences",
-  "sec_detours_subtitle": "Manage physical risks, road closures, and automated rerouting logic (FR-05 & FR-08).",
+  "sec_detours_subtitle": "Manage physical risks, road closures, and automated rerouting logic.",
   "sec_active_geofences": "Active Regional Geofences",
   "sec_broadcast_new": "Broadcast New Incident / Geofence",
   "sec_resolved_history": "Resolved Incident History (Last 30 Days)",

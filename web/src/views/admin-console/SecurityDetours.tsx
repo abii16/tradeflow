@@ -314,20 +314,22 @@ export default function SecurityDetours() {
                 <th className="px-6 py-3 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+            <tbody className="divide-y divide-[#2E2E2E] text-sm text-[#EDEDED] bg-[#232323]">
               {history.map((inc) => (
                 <tr key={inc.id} className="hover:bg-[#2A2A2A] transition-colors">
-                  <td className="px-6 py-3 font-mono font-bold text-[#EDEDED]">{inc.id.substring(0,8)}</td>
-                  <td className="px-6 py-3 font-semibold text-[#EDEDED]">{inc.name}</td>
-                  <td className="px-6 py-3">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm inline-block">INC-{inc.id.substring(0,8).toUpperCase()}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-[#EDEDED]">{inc.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-semibold text-[#EDEDED]">{inc.type}</div>
-                    <div className="text-[10px] text-[#8F8F8F] uppercase">{inc.severity}</div>
+                    <div className="text-[11px] text-[#8F8F8F] uppercase mt-0.5">{inc.severity}</div>
                   </td>
-                  <td className="px-6 py-3">
-                    <div className="font-semibold text-[#EDEDED] flex items-center gap-1"><Clock size={12}/> {new Date(inc.createdAt).toLocaleString()}</div>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="font-medium text-[#EDEDED] flex items-center gap-1.5"><Clock size={14} className="text-[#8F8F8F]"/> {new Date(inc.createdAt).toLocaleString()}</div>
                   </td>
-                  <td className="px-6 py-3 font-mono text-[#8F8F8F]">{new Date(inc.updatedAt).toLocaleString()}</td>
-                  <td className="px-6 py-3 text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-xs text-[#8F8F8F] font-mono">{new Date(inc.updatedAt).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-right whitespace-nowrap">
                     <span className="inline-flex items-center gap-1.5 bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap">
                       <CheckCircle size={12} className="text-[#3ECF8E]" /> Resolved
                     </span>
