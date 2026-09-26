@@ -99,7 +99,7 @@ export default function ControlTowerDashboard() {
               </span>
             </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_active_assets')}</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('kpi_active_corridors')}</div>
+
           </div>
           <div className="bg-[#3ECF8E]/10 text-[#3ECF8E] p-3 rounded-xl flex items-center justify-center">
             <Truck size={18} />
@@ -113,7 +113,7 @@ export default function ControlTowerDashboard() {
               ETB {loads.length > 0 ? Math.round(loads.reduce((acc, curr) => acc + Number(curr.budgetAmount || 0), 0) / loads.length).toLocaleString() : '356,229'}
             </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_avg_spot_rate')}</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('kpi_baseline')}</div>
+
           </div>
           <div className="bg-[#3ECF8E]/10 text-[#3ECF8E] p-3 rounded-xl flex items-center justify-center">
             <CircleDollarSign size={18} />
@@ -125,7 +125,7 @@ export default function ControlTowerDashboard() {
           <div>
             <div className="text-2xl font-mono font-bold text-[#EDEDED] mb-1">98.28%</div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_eta_reliability')}</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('kpi_mae_accuracy')}</div>
+
           </div>
           <div className="bg-indigo-500/10 text-indigo-400 p-3 rounded-xl flex items-center justify-center">
             <Clock size={18} />
@@ -137,7 +137,7 @@ export default function ControlTowerDashboard() {
           <div>
             <div className="text-2xl font-mono font-bold text-[#EDEDED] mb-1">{verifications.length} {t('kpi_pending', 'Pending')}</div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_customs_queue')}</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('kpi_galafi_throughput')}</div>
+
           </div>
           <div className="bg-rose-500/10 text-rose-500 p-3 rounded-xl flex items-center justify-center">
             <ShieldCheck size={18} />
@@ -164,16 +164,16 @@ export default function ControlTowerDashboard() {
                 <TrendingUp size={16} className="text-[#8F8F8F]" />
                 {t('spo_title')}
               </h3>
-              <span className="bg-[#232323] text-[#8F8F8F] text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">FR-04</span>
+
             </div>
 
             <div className="space-y-3 flex-1">
               {routes.map((route, i) => (
-                <div key={route.id} className={`flex items-center justify-between p-3 border border-[#2E2E2E] rounded-lg ${i === 0 ? 'bg-[#181818] relative overflow-hidden' : ''}`}>
-                  {i === 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>}
+                <div key={route.id} className="flex items-center justify-between p-3 border border-[#2E2E2E] rounded-lg bg-[#181818] relative overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
                   <div>
                     <div className="text-xs font-semibold text-[#EDEDED]">{route.name}</div>
-                    <div className="text-[10px] text-[#8F8F8F]">{i === 0 ? t('route_a_desc') : t('route_b_desc')}</div>
+
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-mono font-bold text-[#EDEDED]">ETB {route.price.toLocaleString()}</div>
@@ -253,13 +253,13 @@ export default function ControlTowerDashboard() {
             <table className="w-full text-left text-sm text-[#8F8F8F]">
               <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Load ID</th>
-                  <th className="px-4 py-3 font-semibold">Cargo / Weight</th>
-                  <th className="px-4 py-3 font-semibold">Route</th>
-                  <th className="px-4 py-3 text-right font-semibold">Status</th>
+                  <th className="px-6 py-4 font-semibold whitespace-nowrap">Load ID</th>
+                  <th className="px-6 py-4 font-semibold">Cargo / Weight</th>
+                  <th className="px-6 py-4 font-semibold">Route</th>
+                  <th className="px-6 py-4 text-right font-semibold whitespace-nowrap">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+              <tbody className="divide-y divide-[#2E2E2E] text-sm text-[#EDEDED] bg-[#232323]">
                 {loadingVerifications ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-sm text-[#8F8F8F]">
@@ -274,32 +274,44 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   loads.map((load) => (
-                    <tr key={load.id} className="hover:bg-[#2A2A2A] transition-colors">
-                      <td className="px-4 py-3 leading-normal">
-                        <span className="font-mono text-xs font-semibold bg-[#232323] text-[#EDEDED] px-2 py-0.5 rounded">
+                    <tr key={load.id} className="hover:bg-[#2A2A2A] transition-colors group cursor-default">
+                      <td className="px-6 py-4 leading-normal whitespace-nowrap">
+                        <span className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm">
                           TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 leading-normal font-medium text-[#EDEDED]">
-                        <div className="text-xs max-w-[160px]" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
-                        <div className="text-[10px] text-[#8F8F8F] mt-0.5">{load.weightKg} kg • ETB {Number(load.budgetAmount).toLocaleString()}</div>
+                      <td className="px-6 py-4 leading-normal">
+                        <div className="text-sm font-semibold text-[#EDEDED] max-w-[180px] truncate" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
+                        <div className="text-xs text-[#8F8F8F] mt-1 flex items-center gap-1.5">
+                          <span className="font-medium text-[#D1D1D1]">{load.weightKg} kg</span> 
+                          <span className="w-1 h-1 rounded-full bg-[#404040]"></span> 
+                          <span className="font-mono text-[#3ECF8E]">ETB {Number(load.budgetAmount).toLocaleString()}</span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 leading-normal text-[11px] max-w-[220px]" title={`${typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin} → ${typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination}`}>
-                        <span className="block whitespace-normal text-xs text-[#8F8F8F] leading-tight">{String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')} → {String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}</span>
+                      <td className="px-6 py-4 leading-normal">
+                        <div className="flex items-center gap-2 text-xs text-[#A0A0A0] max-w-[240px]">
+                          <span className="truncate flex-1" title={String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')}>
+                            {String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')}
+                          </span>
+                          <ArrowRight size={14} className="text-[#555] shrink-0" />
+                          <span className="truncate flex-1 text-[#EDEDED] font-medium" title={String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}>
+                            {String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 leading-normal text-right">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                          load.status === 'IN_TRANSIT' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' :
-                          load.status === 'POSTED' ? 'bg-[#3ECF8E]/10 text-blue-700 ring-1 ring-blue-200' :
-                          load.status === 'MATCHED' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' :
-                          load.status === 'EXPIRED' || load.status === 'CANCELLED' ? 'bg-[#232323] text-[#8F8F8F] ring-1 ring-slate-200' :
-                          'bg-[#232323] text-[#8F8F8F]'
+                      <td className="px-6 py-4 leading-normal text-right whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full ${
+                          load.status === 'IN_TRANSIT' ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] ring-1 ring-[#3ECF8E]/20' :
+                          load.status === 'POSTED' ? 'bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20' :
+                          load.status === 'MATCHED' ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' :
+                          load.status === 'EXPIRED' || load.status === 'CANCELLED' ? 'bg-[#181818] text-[#707070] ring-1 ring-[#2E2E2E]' :
+                          'bg-[#181818] text-[#8F8F8F]'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${
-                            load.status === 'IN_TRANSIT' ? 'bg-emerald-500' :
-                            load.status === 'POSTED' ? 'bg-[#3ECF8E]' :
-                            load.status === 'MATCHED' ? 'bg-amber-500' : 'bg-slate-400'
-                          }`} />
+                            load.status === 'IN_TRANSIT' ? 'bg-[#3ECF8E]' :
+                            load.status === 'POSTED' ? 'bg-blue-400' :
+                            load.status === 'MATCHED' ? 'bg-amber-400' : 'bg-[#505050]'
+                          } ${['IN_TRANSIT', 'POSTED', 'MATCHED'].includes(load.status) ? 'animate-pulse' : ''}`} />
                           {load.status}
                         </span>
                       </td>
@@ -316,7 +328,6 @@ export default function ControlTowerDashboard() {
           <div className="p-5 border-b border-[#2E2E2E] flex items-center justify-between shrink-0">
             <div>
               <h3 className="font-semibold text-[#EDEDED] text-sm">{t('vr_title')}</h3>
-              <p className="text-[11px] text-[#8F8F8F] mt-0.5">{t('vr_desc')}</p>
             </div>
             <span className="bg-[#232323] border border-[#2E2E2E] text-[#8F8F8F] text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
               {t('vr_queue')}
@@ -329,15 +340,15 @@ export default function ControlTowerDashboard() {
               {verifications.length > 0 && (
                 <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                   <tr>
-                    <th className="px-6 py-3 font-semibold">{t('vr_app_id')}</th>
-                    <th className="px-6 py-3 font-semibold">{t('vr_entity')}</th>
-                    <th className="px-6 py-3 font-semibold">{t('vr_license')}</th>
-                    <th className="px-6 py-3 font-semibold">{t('vr_status')}</th>
-                    <th className="px-6 py-3 text-right font-semibold">{t('vr_action')}</th>
+                    <th className="px-6 py-4 font-semibold whitespace-nowrap">{t('vr_app_id')}</th>
+                    <th className="px-6 py-4 font-semibold whitespace-nowrap">{t('vr_entity')}</th>
+                    <th className="px-6 py-4 font-semibold whitespace-nowrap">{t('vr_license')}</th>
+                    <th className="px-6 py-4 font-semibold whitespace-nowrap">{t('vr_status')}</th>
+                    <th className="px-6 py-4 text-right font-semibold whitespace-nowrap">{t('vr_action')}</th>
                   </tr>
                 </thead>
               )}
-              <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+              <tbody className="divide-y divide-[#2E2E2E] text-sm text-[#EDEDED] bg-[#232323]">
                 {loadingVerifications ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-sm text-[#8F8F8F]">
@@ -360,22 +371,22 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   verifications.map((v) => (
-                    <tr key={v.id} className="hover:bg-[#2A2A2A] transition-colors">
-                      <td className="px-6 py-3 leading-normal">
-                        <span className="font-mono text-xs font-semibold bg-[#232323] text-[#EDEDED] px-2 py-0.5 rounded">
+                    <tr key={v.id} className="hover:bg-[#2A2A2A] transition-colors group cursor-default">
+                      <td className="px-6 py-4 leading-normal whitespace-nowrap">
+                        <span className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm">
                           REQ-{v.id.toString().slice(0, 8).toUpperCase()}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-medium text-[#EDEDED]">{v.userFullName || 'Unknown Entity'}</td>
-                      <td className="px-6 py-4 font-mono text-xs">{v.taxId || v.tradeLicenseNumber || 'N/A'}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      <td className="px-6 py-4 font-medium text-[#EDEDED] whitespace-nowrap">{v.userFullName || 'Unknown Entity'}</td>
+                      <td className="px-6 py-4 font-mono text-xs whitespace-nowrap">{v.taxId || v.tradeLicenseNumber || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
                           {t('vr_pending')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="text-[#3ECF8E] font-semibold text-xs hover:text-blue-700 flex items-center justify-end gap-1 ml-auto">
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
+                        <button className="text-[#3ECF8E] font-semibold text-xs hover:text-[#3ECF8E]/80 flex items-center justify-end gap-1 ml-auto transition-colors">
                           {t('vr_review')} <ChevronRight size={14} />
                         </button>
                       </td>

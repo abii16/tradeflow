@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
 from app.api.v1.route_optimizer import get_api_key
 
 router = APIRouter(prefix="/fraud", tags=["Fraud Detection (Security)"])
+
 
 class BidEvaluationRequest(BaseModel):
     transporter_id: str
@@ -11,12 +13,18 @@ class BidEvaluationRequest(BaseModel):
     current_market_rate: float
     user_bids_last_hour: int
 
+
 class FraudEvaluationResponse(BaseModel):
     is_suspicious: bool
     risk_score: float  # 0.0 to 1.0
     flags: list[str]
 
-@router.post("/evaluate-bid", response_model=FraudEvaluationResponse, dependencies=[Depends(get_api_key)])
+
+@router.post(
+    "/evaluate-bid",
+    response_model=FraudEvaluationResponse,
+    dependencies=[Depends(get_api_key)],
+)
 async def evaluate_bid(data: BidEvaluationRequest):
     """
     Rule-based & Statistical Fraud Detection for Bidding.
@@ -44,7 +52,5 @@ async def evaluate_bid(data: BidEvaluationRequest):
     is_suspicious = risk_score >= 0.5
 
     return FraudEvaluationResponse(
-        is_suspicious=is_suspicious,
-        risk_score=risk_score,
-        flags=flags
+        is_suspicious=is_suspicious, risk_score=risk_score, flags=flags
     )

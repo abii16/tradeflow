@@ -66,19 +66,19 @@ export async function apiClient<T = any>(endpoint: string, options: FetchOptions
 }
 
 export async function fetchRiskZones() {
-  return apiClient('/security/geofences', { method: 'GET' });
+  return apiClient('/admin/security/geofences', { method: 'GET' });
 }
 
 export async function broadcastRiskZone(data: any) {
-  return apiClient('/security/broadcast-geofence', { method: 'POST', data });
+  return apiClient('/admin/security/broadcast-geofence', { method: 'POST', data });
 }
 
 export async function resolveRiskZone(id: string) {
-  return apiClient(`/security/geofences/${id}/resolve`, { method: 'PATCH' });
+  return apiClient(`/admin/security/geofences/${id}/resolve`, { method: 'PATCH' });
 }
 
 export async function fetchSecurityHistory() {
-  return apiClient('/security/history', { method: 'GET' });
+  return apiClient('/admin/security/history', { method: 'GET' });
 }
 
 // Verification Queue (Tab 2)

@@ -140,21 +140,8 @@ export default function DynamicPricing() {
     return <div className="h-full flex items-center justify-center text-[#8F8F8F]">{t('dp_loading', 'Loading AI Engine...')}</div>;
   }
 
-  // Calculate Trend SVG Path
+  // Calculate Max Value for Bar Chart
   const maxVal = Math.max(...historicalTrend.map(d => Math.max(d.algorithmic, d.market)), 1) * 1.35;
-  let trendSvgPath = '';
-  let aiSvgPath = '';
-  
-  historicalTrend.forEach((data, i) => {
-    const x = (i / Math.max(1, historicalTrend.length - 1)) * 100;
-    const yMarket = 100 - (data.market / maxVal) * 100;
-    const yAi = 100 - (data.algorithmic / maxVal) * 100;
-    
-    trendSvgPath += (i === 0 ? `M ${x} ${yMarket}` : ` L ${x} ${yMarket}`);
-    aiSvgPath += (i === 0 ? `M ${x} ${yAi}` : ` L ${x} ${yAi}`);
-  });
-
-  const aiAreaPath = `${aiSvgPath} L 100 100 L 0 100 Z`;
 
   return (
     <div className="bg-[#181818]/70 min-h-screen text-[#EDEDED] p-8 space-y-6">
@@ -289,9 +276,6 @@ export default function DynamicPricing() {
                   />
                   <span className="absolute right-3 text-[11px] font-semibold text-[#8F8F8F] bg-transparent">ETB / L</span>
                 </div>
-                <p className="text-[10px] text-[#8F8F8F] mt-2 font-medium">
-                  {t('dp_fuel_helper', 'Live sync with National Petroleum Authority')}
-                </p>
               </div>
             </div>
           </div>
@@ -378,58 +362,39 @@ export default function DynamicPricing() {
               </div>
             </div>
 
-            <div className="flex-1 w-full flex items-end justify-between gap-2 md:gap-3 relative z-10 pt-10 pb-6 px-8">
-              {/* SVG Trend Lines & Area */}
-              <div className="absolute inset-0 pt-10 pb-6 px-8 pointer-events-none">
-                <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-                  {/* AI Area Fill */}
-                  <path 
-                    d={aiAreaPath}
-                    fill="currentColor"
-                    className="text-[#EDEDED]/10"
-                  />
-                  {/* Market Line */}
-                  <path 
-                    d={trendSvgPath} 
-                    fill="none" 
-                    className="stroke-slate-400 stroke-[1.5] stroke-dasharray-[4,4]" 
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  {/* AI Line */}
-                  <path 
-                    d={aiSvgPath} 
-                    fill="none" 
-                    className="stroke-slate-800 stroke-2 drop-shadow-sm" 
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </svg>
-              </div>
+            <div className="flex-1 w-full flex items-end justify-between gap-1.5 md:gap-2.5 relative z-10 pt-10 pb-6 px-8">
               
               {/* Grid Lines */}
-              <div className="absolute inset-x-8 bottom-6 h-px border-b border-[#2E2E2E]"></div>
-              <div className="absolute inset-x-8 bottom-[30%] h-px border-b border-[#2E2E2E]"></div>
-              <div className="absolute inset-x-8 bottom-[60%] h-px border-b border-[#2E2E2E]"></div>
-              <div className="absolute inset-x-8 bottom-[90%] h-px border-b border-[#2E2E2E]"></div>
+              <div className="absolute inset-x-8 bottom-6 h-px border-b border-[#2E2E2E] pointer-events-none"></div>
+              <div className="absolute inset-x-8 bottom-[30%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
+              <div className="absolute inset-x-8 bottom-[60%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
+              <div className="absolute inset-x-8 bottom-[90%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
               
               {/* Y-Axis Labels */}
-              <div className="absolute left-0 bottom-[90%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F]">400K</div>
-              <div className="absolute left-0 bottom-[60%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F]">300K</div>
-              <div className="absolute left-0 bottom-[30%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F]">200K</div>
+              <div className="absolute left-0 bottom-[90%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">400K</div>
+              <div className="absolute left-0 bottom-[60%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">300K</div>
+              <div className="absolute left-0 bottom-[30%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">200K</div>
 
-              {/* Interactive Hover Zones */}
-              <div className="absolute inset-0 pt-10 pb-6 px-8 flex">
-                {historicalTrend.map((data, i) => (
-                  <div key={i} className="flex-1 group/zone relative cursor-crosshair">
+              {/* Gradient Bars */}
+              {historicalTrend.map((data, i) => {
+                const heightPct = (data.algorithmic / maxVal) * 100;
+                return (
+                  <div 
+                    key={i} 
+                    className="flex-1 rounded-t-sm relative group/bar cursor-crosshair transition-all duration-300 hover:brightness-125"
+                    style={{ 
+                      height: `${heightPct}%`, 
+                      background: 'linear-gradient(to top, rgba(35,35,35,0) 0%, rgba(62,207,142,0.85) 100%)' 
+                    }}
+                  >
                     {/* Tooltip */}
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#1C1C1C] text-[#EDEDED] text-[10px] font-mono px-3 py-2 rounded opacity-0 group-hover/zone:opacity-100 z-30 pointer-events-none whitespace-nowrap transition-opacity shadow-lg flex flex-col gap-1 items-center">
-                      <span className="font-bold text-[#EDEDED]">Day {data.day}: ETB {(data.algorithmic).toLocaleString()} (AI)</span>
-                      <span className="text-[#8F8F8F]">vs ETB {(data.market).toLocaleString()} (Market)</span>
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#1C1C1C] border border-[#2E2E2E] text-[#EDEDED] text-[10px] font-mono px-3 py-2 rounded-md opacity-0 group-hover/bar:opacity-100 z-30 pointer-events-none whitespace-nowrap shadow-lg flex flex-col gap-1 items-center transition-opacity">
+                      <span className="font-bold text-[#3ECF8E]">ETB {(data.algorithmic).toLocaleString()}</span>
+                      <span className="text-[#8F8F8F] text-[9px] uppercase tracking-wider">Day {data.day}</span>
                     </div>
-                    {/* Hover indicator line */}
-                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-[#232323]/0 group-hover/zone:bg-[#232323]/30 transition-colors z-20"></div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
             
             {/* X-Axis Labels */}
@@ -456,16 +421,16 @@ export default function DynamicPricing() {
           <table className="w-full text-left text-sm text-[#8F8F8F]">
             <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
               <tr>
-                <th className="px-6 py-3 rounded-tl-lg">{t('dp_col_contract_id', 'Contract ID')}</th>
-                <th className="px-6 py-3">{t('dp_col_shipper', 'Shipper Entity')}</th>
-                <th className="px-6 py-3">{t('dp_col_locked', 'Locked Rate')}</th>
-                <th className="px-6 py-3">{t('dp_col_spot', 'Spot Rate')}</th>
-                <th className="px-6 py-3">{t('dp_col_divergence', 'Divergence %')}</th>
-                <th className="px-6 py-3">{t('dp_col_status', 'Status')}</th>
-                <th className="px-6 py-3 text-right rounded-tr-lg">{t('dp_col_actions', 'Actions')}</th>
+                <th className="px-6 py-4 rounded-tl-lg whitespace-nowrap">{t('dp_col_contract_id', 'Contract ID')}</th>
+                <th className="px-6 py-4 whitespace-nowrap">{t('dp_col_shipper', 'Shipper Entity')}</th>
+                <th className="px-6 py-4 whitespace-nowrap">{t('dp_col_locked', 'Locked Rate')}</th>
+                <th className="px-6 py-4 whitespace-nowrap">{t('dp_col_spot', 'Spot Rate')}</th>
+                <th className="px-6 py-4 whitespace-nowrap">{t('dp_col_divergence', 'Divergence %')}</th>
+                <th className="px-6 py-4 whitespace-nowrap">{t('dp_col_status', 'Status')}</th>
+                <th className="px-6 py-4 text-right rounded-tr-lg whitespace-nowrap">{t('dp_col_actions', 'Actions')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+            <tbody className="divide-y divide-[#2E2E2E] text-sm text-[#EDEDED] bg-[#232323]">
               {divergingContracts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-[#8F8F8F]">
@@ -474,14 +439,19 @@ export default function DynamicPricing() {
                 </tr>
               ) : (
                 divergingContracts.map(contract => (
-                  <tr key={contract.id} className="hover:bg-[#2A2A2A] transition-colors">
-                    <td className="px-6 py-4 font-mono font-bold text-[#EDEDED]">{contract.id}</td>
-                    <td className="px-6 py-4 font-medium text-[#EDEDED]">{contract.shipperName}</td>
-                    <td className="px-6 py-4 font-mono text-[#8F8F8F]">ETB {contract.lockedRate.toLocaleString()}</td>
-                    <td className="px-6 py-4 font-mono text-[#8F8F8F]">ETB {contract.currentSpot.toLocaleString()}</td>
-                    <td className="px-6 py-4 font-mono font-bold text-rose-600">+{contract.divergencePct.toFixed(1)}%</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase whitespace-nowrap">
+                  <tr key={contract.id} className="hover:bg-[#2A2A2A] transition-colors group cursor-default">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm">
+                        {contract.id}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-medium text-[#EDEDED] whitespace-nowrap">{contract.shipperName}</td>
+                    <td className="px-6 py-4 font-mono text-[#8F8F8F] text-xs whitespace-nowrap">ETB {contract.lockedRate.toLocaleString()}</td>
+                    <td className="px-6 py-4 font-mono text-[#8F8F8F] text-xs whitespace-nowrap">ETB {contract.currentSpot.toLocaleString()}</td>
+                    <td className="px-6 py-4 font-mono font-bold text-rose-500 text-xs whitespace-nowrap">+{contract.divergencePct.toFixed(1)}%</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20 text-[11px] font-bold px-3 py-1.5 rounded-full uppercase whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
                         {contract.status === 'FLAGGED_FOR_REVIEW' ? t('dp_status_flagged', 'FLAGGED_FOR_REVIEW') : contract.status}
                       </span>
                     </td>

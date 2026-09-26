@@ -8,17 +8,18 @@ Exposes REST endpoints for:
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query, status # type: ignore
+
+from fastapi import APIRouter, HTTPException, Query, status  # type: ignore
 from pydantic import BaseModel
 
 from app.services.pricing_engine import (
-    pricing_engine,
-    SpotPriceRequest,
-    SpotPriceResponse,
+    AuditLogRecord,
     ContractEvaluationRequest,
     ContractEvaluationResponse,
     CorridorBenchmark,
-    AuditLogRecord,
+    SpotPriceRequest,
+    SpotPriceResponse,
+    pricing_engine,
 )
 
 router = APIRouter(prefix="/pricing", tags=["Dynamic Spot Pricing Engine (FR-04)"])

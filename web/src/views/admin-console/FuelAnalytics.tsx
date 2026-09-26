@@ -75,11 +75,8 @@ export default function FuelAnalytics() {
         <div>
           <h1 className="text-xl font-semibold text-[#EDEDED] tracking-tight flex items-center gap-2">
             <Droplet size={24} className="text-[#EDEDED]" />
-            Fuel Consumption Analytics (FR-07)
+            Fuel Consumption Analytics
           </h1>
-          <p className="text-xs text-[#8F8F8F] mt-0.5">
-            Track estimated vs. actual fuel consumption per trip and surface efficiency trends.
-          </p>
         </div>
         <div className="flex gap-2">
           <div className="relative">
@@ -179,17 +176,17 @@ export default function FuelAnalytics() {
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+            <tbody className="divide-y divide-[#2E2E2E] text-sm text-[#EDEDED] bg-[#232323]">
               {vehicles.map((v, idx) => {
                 const percent = Math.min(100, Math.round((v.actualLiters / v.estimatedLiters) * 100));
                 return (
                   <React.Fragment key={idx}>
                     <tr className="hover:bg-[#2A2A2A] transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-mono text-sm font-bold text-[#EDEDED]">{v.vehicleId}</div>
-                        <div className="text-[11px] text-[#8F8F8F]">{v.driverName}</div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm inline-block mb-1.5">{v.vehicleId}</div>
+                        <div className="text-[11px] text-[#8F8F8F] font-sans block">{v.driverName}</div>
                       </td>
-                      <td className="px-6 py-4 text-xs font-medium text-[#EDEDED]">{v.activeRoute}</td>
+                      <td className="px-6 py-4 font-medium text-[#EDEDED] whitespace-nowrap">{v.activeRoute}</td>
                       <td className="px-6 py-4 font-mono">{v.estimatedLiters}</td>
                       <td className="px-6 py-4 font-mono font-bold">{v.actualLiters}</td>
                       <td className="px-6 py-4">
