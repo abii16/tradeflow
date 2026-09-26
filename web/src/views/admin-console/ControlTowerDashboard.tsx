@@ -99,7 +99,7 @@ export default function ControlTowerDashboard() {
               </span>
             </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_active_assets')}</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('kpi_active_corridors')}</div>
+
           </div>
           <div className="bg-[#3ECF8E]/10 text-[#3ECF8E] p-3 rounded-xl flex items-center justify-center">
             <Truck size={18} />
@@ -113,7 +113,7 @@ export default function ControlTowerDashboard() {
               ETB {loads.length > 0 ? Math.round(loads.reduce((acc, curr) => acc + Number(curr.budgetAmount || 0), 0) / loads.length).toLocaleString() : '356,229'}
             </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_avg_spot_rate')}</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('kpi_baseline')}</div>
+
           </div>
           <div className="bg-[#3ECF8E]/10 text-[#3ECF8E] p-3 rounded-xl flex items-center justify-center">
             <CircleDollarSign size={18} />
@@ -125,7 +125,7 @@ export default function ControlTowerDashboard() {
           <div>
             <div className="text-2xl font-mono font-bold text-[#EDEDED] mb-1">98.28%</div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_eta_reliability')}</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('kpi_mae_accuracy')}</div>
+
           </div>
           <div className="bg-indigo-500/10 text-indigo-400 p-3 rounded-xl flex items-center justify-center">
             <Clock size={18} />
@@ -137,7 +137,7 @@ export default function ControlTowerDashboard() {
           <div>
             <div className="text-2xl font-mono font-bold text-[#EDEDED] mb-1">{verifications.length} {t('kpi_pending', 'Pending')}</div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_customs_queue')}</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('kpi_galafi_throughput')}</div>
+
           </div>
           <div className="bg-rose-500/10 text-rose-500 p-3 rounded-xl flex items-center justify-center">
             <ShieldCheck size={18} />
@@ -164,16 +164,16 @@ export default function ControlTowerDashboard() {
                 <TrendingUp size={16} className="text-[#8F8F8F]" />
                 {t('spo_title')}
               </h3>
-              <span className="bg-[#232323] text-[#8F8F8F] text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">FR-04</span>
+
             </div>
 
             <div className="space-y-3 flex-1">
               {routes.map((route, i) => (
-                <div key={route.id} className={`flex items-center justify-between p-3 border border-[#2E2E2E] rounded-lg ${i === 0 ? 'bg-[#181818] relative overflow-hidden' : ''}`}>
-                  {i === 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>}
+                <div key={route.id} className="flex items-center justify-between p-3 border border-[#2E2E2E] rounded-lg bg-[#181818] relative overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
                   <div>
                     <div className="text-xs font-semibold text-[#EDEDED]">{route.name}</div>
-                    <div className="text-[10px] text-[#8F8F8F]">{i === 0 ? t('route_a_desc') : t('route_b_desc')}</div>
+
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-mono font-bold text-[#EDEDED]">ETB {route.price.toLocaleString()}</div>
