@@ -292,7 +292,7 @@
   "dp_leg_subtotal": "Subtotal",
   "dp_seg2_name": "Galafi ➔ Modjo Dry Port",
   "dp_computed_rate": "Algorithm Computed Rate",
-  "dp_contract_divergence_title": "Contract Rates Divergence Monitor (FR-04.2)",
+  "dp_contract_divergence_title": "Contract Rates Divergence Monitor",
   "dp_col_contract_id": "Contract ID",
   "dp_col_shipper": "Shipper Entity",
   "dp_col_locked": "Locked Rate",
