@@ -92,18 +92,18 @@ export default function DisputeMediation() {
               <div 
                 key={d.id}
                 onClick={() => setSelectedDispute(d)}
-                className={`p-4 border-b border-[#2E2E2E] cursor-pointer transition-colors ${selectedDispute?.id === d.id ? 'bg-[#181818]/90 border-l-4 border-slate-900 shadow-sm' : 'hover:bg-[#181818]'}`}
+                className={`p-4 border-b border-[#2E2E2E] cursor-pointer transition-colors ${selectedDispute?.id === d.id ? 'bg-[#1C1C1C] border-l-2 border-[#3ECF8E] shadow-sm' : 'hover:bg-[#181818] border-l-2 border-transparent'}`}
               >
-                <div className="flex justify-between items-start mb-1">
-                  <span className={`text-xs font-bold font-mono ${selectedDispute?.id === d.id ? 'text-indigo-400' : 'text-[#8F8F8F]'}`}>{d.id.substring(0,8)}</span>
-                  {d.status === 'OPEN' && <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_open')}</span>}
-                  {d.status === 'UNDER_REVIEW' && <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_review')}</span>}
-                  {d.status.startsWith('RESOLVED') && <span className="bg-[#2E2E2E] text-[#8F8F8F] text-[10px] font-bold px-2 py-0.5 rounded-full">{t('dm_status_resolved')}</span>}
-                  {d.status === 'ESCALATED_LEGAL' && <span className="bg-rose-500/20 text-rose-500 border border-rose-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full">ESCALATED</span>}
+                <div className="flex justify-between items-start mb-2">
+                  <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded ${selectedDispute?.id === d.id ? 'bg-[#3ECF8E]/10 text-[#3ECF8E]' : 'bg-[#181818] border border-[#2E2E2E] text-[#EDEDED]'}`}>INC-{d.id.substring(0,8).toUpperCase()}</span>
+                  {d.status === 'OPEN' && <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{t('dm_status_open')}</span>}
+                  {d.status === 'UNDER_REVIEW' && <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{t('dm_status_review')}</span>}
+                  {d.status.startsWith('RESOLVED') && <span className="bg-[#181818] border border-[#2E2E2E] text-[#8F8F8F] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{t('dm_status_resolved')}</span>}
+                  {d.status === 'ESCALATED_LEGAL' && <span className="bg-rose-500/20 text-rose-500 border border-rose-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">ESCALATED</span>}
                 </div>
-                <h4 className="font-semibold text-[#EDEDED] text-sm mb-1">{d.shipperName || 'Shipper'} <span className="text-[#8F8F8F] font-normal mx-1">{t('dm_vs')}</span> {d.transporterName || 'Transporter'}</h4>
+                <h4 className="font-semibold text-[#EDEDED] text-sm mb-1">{d.shipperName || 'Shipper'} <span className="text-[#8F8F8F] text-[10px] mx-1">{t('dm_vs')}</span> {d.transporterName || 'Transporter'}</h4>
                 <p className="text-[11px] text-[#8F8F8F] line-clamp-1">{d.reason}</p>
-                <div className="text-[10px] text-[#8F8F8F] mt-2">{new Date(d.createdAt).toLocaleString()}</div>
+                <div className="text-[10px] text-[#8F8F8F] mt-3 font-mono">{new Date(d.createdAt).toLocaleString()}</div>
               </div>
             ))}
             
@@ -123,27 +123,31 @@ export default function DisputeMediation() {
               <div className="bg-[#232323] rounded-xl border border-[#2E2E2E] shadow-sm p-6">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-xl font-bold text-[#EDEDED] mb-1 flex items-center gap-3">
-                      {t('dm_claim')} #{selectedDispute.id.substring(0,8)}
-                      <a href="#" className="text-[10px] font-mono bg-[#3ECF8E]/10 text-[#3ECF8E] border border-blue-100 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors">
-                        [{selectedDispute.jobId}]
-                      </a>
+                    <h3 className="text-xl font-bold text-[#EDEDED] mb-2 flex items-center gap-3">
+                      {t('dm_claim')} <span className="font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded-lg border border-[#3ECF8E]/20 text-lg">INC-{selectedDispute.id.substring(0,8).toUpperCase()}</span>
+                      <span className="text-[10px] font-mono bg-[#181818] text-[#8F8F8F] border border-[#2E2E2E] px-2 py-1 rounded-md">
+                        JOB-{selectedDispute.jobId?.substring(0,8).toUpperCase() || 'UNKNOWN'}
+                      </span>
                     </h3>
-                    <div className="text-sm font-semibold text-[#8F8F8F]">{selectedDispute.shipperName || 'Shipper'} ({t('dm_importer_label')}) <span className="text-[#8F8F8F] mx-2">{t('dm_vs')}</span> {selectedDispute.transporterName || 'Transporter'} ({t('dm_carrier_label')})</div>
+                    <div className="text-sm font-semibold text-[#EDEDED] flex items-center gap-2">
+                      <span className="text-[#8F8F8F] text-xs font-normal">Importer:</span> {selectedDispute.shipperName || 'Shipper'} 
+                      <span className="text-[#8F8F8F] mx-2 text-xs font-normal">{t('dm_vs')}</span> 
+                      <span className="text-[#8F8F8F] text-xs font-normal">Carrier:</span> {selectedDispute.transporterName || 'Transporter'}
+                    </div>
                   </div>
-                  <div className="bg-[#181818] border border-[#2E2E2E] p-3 rounded-lg text-right">
-                    <div className="text-xs font-bold text-[#8F8F8F] uppercase tracking-wider mb-1 flex items-center gap-1.5 justify-end">
+                  <div className="bg-[#181818] border border-[#2E2E2E] p-3.5 rounded-lg text-right shadow-sm">
+                    <div className="text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1 flex items-center gap-1.5 justify-end">
                       <Lock size={12} className="text-amber-500" /> {t('dm_escrow_multi_sig')}
                     </div>
                     <div className="text-lg font-mono font-bold text-[#EDEDED]">ETB {Number(selectedDispute.amountDisputed).toLocaleString()}</div>
                   </div>
                 </div>
 
-                <div className="bg-rose-500/10 border border-rose-500/20 rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle size={18} className="text-rose-500 mt-0.5 shrink-0" />
+                <div className="bg-[#181818] border border-rose-500/20 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle size={18} className="text-rose-400 mt-0.5 shrink-0" />
                   <div>
-                    <h4 className="font-bold text-rose-500 text-sm mb-1">{t('dm_severity_alert')}: {selectedDispute.reason}</h4>
-                    <p className="text-xs text-rose-400">{selectedDispute.description || t('dm_claim_desc')}</p>
+                    <h4 className="font-bold text-rose-400 text-sm mb-1">{selectedDispute.reason}</h4>
+                    <p className="text-xs text-[#EDEDED]/80 leading-relaxed">{selectedDispute.description || 'The parties have entered mediation regarding the escrow balance for this job. Cargo arrived damaged or delayed.'}</p>
                   </div>
                 </div>
               </div>
@@ -158,29 +162,31 @@ export default function DisputeMediation() {
               
               {/* Message 1 */}
               <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-bold text-xs shrink-0">SH</div>
-                <div className="flex-1 bg-[#232323] border border-[#2E2E2E] rounded-lg rounded-tl-none p-4 shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#232323] to-[#2E2E2E] border border-[#2E2E2E] text-[#EDEDED] flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">SH</div>
+                <div className="flex-1 bg-[#232323] border border-[#2E2E2E] rounded-xl rounded-tl-none p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-sm text-[#EDEDED]">{selectedDispute.shipperName || 'Shipper'} ({t('dm_importer_label')})</span>
-                    <span className="text-[10px] text-[#8F8F8F]">{new Date(selectedDispute.createdAt).toLocaleTimeString()}</span>
+                    <span className="font-bold text-sm text-[#EDEDED]">{selectedDispute.shipperName || 'Shipper'} <span className="text-xs text-[#8F8F8F] font-normal">({t('dm_importer_label')})</span></span>
+                    <span className="text-[10px] font-mono text-[#8F8F8F]">{new Date(selectedDispute.createdAt).toLocaleString()}</span>
                   </div>
+                  <p className="text-sm text-[#EDEDED]/90 mb-3">Initiated dispute claim on the platform.</p>
                 </div>
               </div>
 
               {/* Message 2 */}
               <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 flex items-center justify-center font-bold text-xs shrink-0">TR</div>
-                <div className="flex-1 bg-[#232323] border border-[#2E2E2E] rounded-lg rounded-tl-none p-4 shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#3ECF8E]/20 to-[#3ECF8E]/5 border border-[#3ECF8E]/30 text-[#3ECF8E] flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">TR</div>
+                <div className="flex-1 bg-[#232323] border border-[#2E2E2E] rounded-xl rounded-tl-none p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-sm text-[#EDEDED]">{selectedDispute.transporterName || 'Transporter'} ({t('dm_carrier_label')})</span>
-                    <span className="text-[10px] text-[#8F8F8F]">{new Date(selectedDispute.createdAt).toLocaleTimeString()}</span>
+                    <span className="font-bold text-sm text-[#EDEDED]">{selectedDispute.transporterName || 'Transporter'} <span className="text-xs text-[#8F8F8F] font-normal">({t('dm_carrier_label')})</span></span>
+                    <span className="text-[10px] font-mono text-[#8F8F8F]">{new Date(selectedDispute.createdAt).toLocaleString()}</span>
                   </div>
-                  <p className="text-sm text-[#EDEDED] mb-3">Carrier dispute evidence logged automatically via platform.</p>
+                  <p className="text-sm text-[#EDEDED]/90 mb-3">Carrier dispute evidence logged automatically via platform.</p>
                   
                   <div className="flex gap-2 flex-wrap">
-                    <button className="border border-[#2E2E2E] rounded p-2 flex items-center gap-2 bg-[#181818] text-xs text-[#8F8F8F] w-fit hover:bg-[#3ECF8E]/10 hover:text-[#3ECF8E] hover:border-[#3ECF8E]/30 transition-colors cursor-pointer group">
-                      <ShieldCheck size={14} className="text-[#3ECF8E] group-hover:scale-110 transition-transform" />
-                      <span>telemetry_log.pdf ({t('dm_attachment_verified')})</span>
+                    <button className="border border-[#2E2E2E] rounded-lg px-3 py-2 flex items-center gap-2 bg-[#181818] text-xs text-[#EDEDED] w-fit hover:bg-[#232323] hover:border-[#8F8F8F] transition-colors cursor-pointer group shadow-sm">
+                      <ShieldCheck size={14} className="text-[#3ECF8E]" />
+                      <span className="font-mono text-[#8F8F8F] group-hover:text-[#EDEDED] transition-colors">telemetry_log.pdf</span>
+                      <span className="text-[9px] uppercase tracking-wider text-[#3ECF8E] font-bold ml-1">({t('dm_attachment_verified')})</span>
                     </button>
                   </div>
                 </div>
