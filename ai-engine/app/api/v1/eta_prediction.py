@@ -75,6 +75,10 @@ async def predict_eta(request: ETARequest):
             has_security_flag=request.has_security_flag,
         )
 
+        print(
+            f"🧠 [PyTorch ETADeepModel] Inferred ETA: Dist={request.distance_km}km, Weight={request.cargo_weight_tons}t -> Predicted={predicted_hours:.2f} hrs"
+        )
+
         return ETAResponse(
             predicted_travel_hours=round(predicted_hours, 2),
             predicted_eta_minutes=round(predicted_hours * 60, 2),
