@@ -13,6 +13,19 @@ const router = Router();
 // POST /loads - Create a new load (Requires Auth + Roles: SHIPPER, SYSTEM_ADMIN)
 router.post('/', JwtAuthGuard, RolesGuard(['SHIPPER', 'SYSTEM_ADMIN']), async (req: Request, res: Response): Promise<void> => {
   try {
+    // SRS FR-01 Acceptance Criteria: Unverified shippers cannot post freight loads
+    if (req.user!.role === 'SHIPPER') {
+      const isVerified = req.user!.isVerified && req.user!.verificationStatus === 'VERIFIED';
+      if (!isVerified) {
+        res.status(403).json({
+          error: 'Forbidden: Shipper verification required',
+          message: `Your account is currently in ${req.user!.verificationStatus || 'PENDING'} status. Per SRS Section 3.1 (FR-01), freight load posting and marketplace broadcasting are locked until a Platform Administrator reviews and verifies your Trade License and TIN credentials.`,
+          verificationStatus: req.user!.verificationStatus || 'PENDING'
+        });
+        return;
+      }
+    }
+
     const parsed = CreateLoadSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: 'Invalid input', details: parsed.error.errors });
@@ -88,11 +101,34 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     if (minPrice !== undefined) conditions.push(gte(loads.budgetAmount, minPrice.toString()));
     if (maxPrice !== undefined) conditions.push(lte(loads.budgetAmount, maxPrice.toString()));
 
-    const query = db.select().from(loads)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .limit(limit)
-      .offset(offset)
-      .orderBy(desc(loads.createdAt));
+    const query = db.select({
+      id: loads.id,
+      shipperId: loads.shipperId,
+      title: loads.title,
+      description: loads.description,
+      origin: loads.origin,
+      destination: loads.destination,
+      weightKg: loads.weightKg,
+      volumeM3: loads.volumeM3,
+      cargoType: loads.cargoType,
+      budgetAmount: loads.budgetAmount,
+      currency: loads.currency,
+      status: loads.status,
+      expiresAt: loads.expiresAt,
+      createdAt: loads.createdAt,
+      updatedAt: loads.updatedAt,
+      shipperName: users.fullName,
+      shipperCompany: users.companyName,
+      shipperEmail: users.email,
+      shipperPhone: users.phone,
+      shipperVerified: users.isVerified,
+    })
+    .from(loads)
+    .leftJoin(users, eq(loads.shipperId, users.id))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(loads.createdAt));
 
     const results = await query;
     res.json({ loads: results });
@@ -106,7 +142,31 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const [load] = await db.select().from(loads).where(eq(loads.id, id));
+    const [load] = await db.select({
+      id: loads.id,
+      shipperId: loads.shipperId,
+      title: loads.title,
+      description: loads.description,
+      origin: loads.origin,
+      destination: loads.destination,
+      weightKg: loads.weightKg,
+      volumeM3: loads.volumeM3,
+      cargoType: loads.cargoType,
+      budgetAmount: loads.budgetAmount,
+      currency: loads.currency,
+      status: loads.status,
+      expiresAt: loads.expiresAt,
+      createdAt: loads.createdAt,
+      updatedAt: loads.updatedAt,
+      shipperName: users.fullName,
+      shipperCompany: users.companyName,
+      shipperEmail: users.email,
+      shipperPhone: users.phone,
+      shipperVerified: users.isVerified,
+    })
+    .from(loads)
+    .leftJoin(users, eq(loads.shipperId, users.id))
+    .where(eq(loads.id, id));
 
     if (!load) {
       res.status(404).json({ error: 'Load not found' });

@@ -60,7 +60,7 @@ app.get('/health', (req, res) => {
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 
-app.use('/auth', AuthController);
+app.use('/api/v1/auth', AuthController);
 app.use('/api/v1/shipper', JwtAuthGuard, RolesGuard(['SHIPPER']), shipperRoutes);
 app.use('/api/v1/loads', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), loadsRoutes);
 app.use('/api/v1/bids', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SHIPPER', 'ADMIN']), bidsRoutes);
@@ -72,6 +72,7 @@ app.use('/api/v1/admin', JwtAuthGuard, RolesGuard(['ADMIN', 'SYSTEM_ADMIN']), ad
 app.use('/api/v1/payments', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), paymentsRoutes);
 app.use('/api/v1/telemetry', telemetryRoutes); // Route itself uses JwtAuthGuard
 app.use('/api/v1/risk-zones', riskZonesRoutes); // Public - map overlay, no auth required
+app.use('/api/v1/public', publicRoutes); // Public metrics for landing and portal selector
 app.use('/sync', JwtAuthGuard, offlineSyncRoutes);
 app.use('/offline-sync', JwtAuthGuard, offlineSyncRoutes);
 

@@ -42,6 +42,17 @@ async function executeAcceptBid(bidId: string, driverId: string | undefined, use
       return { errorStatus: 403, errorMessage: 'Forbidden: You do not own the load for this bid' };
     }
 
+    // SRS FR-01: Ensure shipper account is verified before accepting bids and dispatching
+    if (user.role === 'SHIPPER') {
+      const isVerified = user.isVerified && user.verificationStatus === 'VERIFIED';
+      if (!isVerified) {
+        return {
+          errorStatus: 403,
+          errorMessage: 'Forbidden: Your shipper account is pending verification. Bids cannot be accepted until approved by Platform Administrator.'
+        };
+      }
+    }
+
     // Check load status - prevent double acceptance / race condition
     if (load.status !== 'POSTED') {
       return { errorStatus: 409, errorMessage: `Load is no longer available for bidding (current status: ${load.status})` };

@@ -63,12 +63,33 @@ export default function SpotPricingCalculator({
       try {
         const { calculateSpotRate } = await import('@/lib/apiClient');
         const weight = parseFloat(cargoWeight) || selectedCargo.defaultWeight;
-        const [originCity, destCity] = selectedRoute.name.split(' → ').map(s => s.trim());
+        const [rawOrigin, rawDest] = selectedRoute.name.split(' → ').map(s => s.trim());
         
+        const cleanCity = (name: string) => {
+          if (!name) return 'Djibouti';
+          if (name.includes('Djibouti')) return 'Djibouti';
+          if (name.includes('Modjo')) return 'Modjo';
+          if (name.includes('Addis')) return 'Addis Ababa';
+          if (name.includes('Hawassa')) return 'Hawassa';
+          if (name.includes('Kombolcha')) return 'Kombolcha';
+          if (name.includes('Dire')) return 'Dire Dawa';
+          if (name.includes('Galafi')) return 'Galafi';
+          return name.split(' ')[0];
+        };
+
+        const cargoMap: Record<string, 'dry' | 'bulk' | 'hazmat' | 'perishable' | 'refrigerated'> = {
+          'cont-20': 'dry',
+          'cont-40': 'dry',
+          'bulk-fert': 'bulk',
+          'steel': 'dry',
+          'fuel': 'hazmat',
+          'coffee-exp': 'perishable',
+        };
+
         const payload = {
-          origin: { city: originCity },
-          destination: { city: destCity },
-          cargoType: 'dry',
+          origin: { city: cleanCity(rawOrigin) },
+          destination: { city: cleanCity(rawDest) },
+          cargoType: cargoMap[selectedCargo.id] || 'dry',
           weightKg: weight * 1000,
           customFuelPrice: fuelIndexModifier * 95.5,
           urgency: demandSurgeScore > 1.05 ? 'high' : 'standard'
@@ -88,46 +109,56 @@ export default function SpotPricingCalculator({
   const calculation = useMemo(() => {
     const weight = parseFloat(cargoWeight) || selectedCargo.defaultWeight;
     
-    // If backend returns a quote, use its values
-    if (quoteData && quoteData.totalAmount) {
-      const finalSpotRate = Math.round(Number(quoteData.totalAmount));
+    // Use real ML Quote response from AI Microservice / Backend
+    const spotPrice = quoteData?.spot_price ?? quoteData?.recommended_spot_rate ?? quoteData?.final_spot_price;
+    if (spotPrice) {
+      const finalSpotRate = Math.round(Number(spotPrice));
       const platformCommission = Math.round(finalSpotRate * 0.03);
-      
+      const b = quoteData.breakdown || {};
+
+      const baseDistanceTariff = Math.round(Number(b.base_corridor_rate || (selectedRoute.distanceKm * selectedRoute.baseRatePerKm)));
+      const fuelMultiplier = Number(b.fuel_multiplier ?? fuelIndexModifier);
+      const fuelSurcharge = Math.round(baseDistanceTariff * Math.max(0, fuelMultiplier - 1));
+
+      const demandMultiplier = Number(b.demand_multiplier ?? demandSurgeScore);
+      const demandSurgeAmount = Math.round(baseDistanceTariff * Math.max(0, demandMultiplier - 1));
+
+      const cargoMultiplier = Number(b.cargo_type_multiplier ?? selectedCargo.multiplier);
+      const cargoSurcharge = Math.round(baseDistanceTariff * Math.max(0, cargoMultiplier - 1));
+
+      const weightSurcharge = Math.round(baseDistanceTariff * (Math.max(0, weight - 20) * 0.015));
+      const confidence = quoteData.model_confidence_r2 ? Number((quoteData.model_confidence_r2 * 100).toFixed(1)) : 96.4;
+
       return {
         weight,
-        baseDistanceTariff: Math.round(Number(quoteData.baseRate)),
-        fuelSurcharge: Math.round(Number(quoteData.fuelSurcharge)),
-        demandSurgeAmount: Math.round(Number(quoteData.surgeAmount)),
-        riskSurcharge: Math.round(Number(quoteData.riskSurcharge) || 0),
-        cargoSurcharge: 0,
-        weightSurcharge: 0,
+        baseDistanceTariff,
+        fuelSurcharge,
+        demandSurgeAmount,
+        riskSurcharge: 0,
+        cargoSurcharge,
+        weightSurcharge,
         finalSpotRate,
         platformCommission,
         netCarrierPayout: finalSpotRate - platformCommission,
-        confidenceScore: 96.4,
-        fuelBurnLiters: Math.round((selectedRoute.distanceKm / 100) * 32.4)
+        confidenceScore: confidence,
+        fuelBurnLiters: Math.round((selectedRoute.distanceKm / 100) * 32.4),
+        isClamped: b.is_clamped || false,
+        clampReason: b.clamp_reason || null,
+        minRate: quoteData.rate_range?.min_rate || b.price_floor,
+        maxRate: quoteData.rate_range?.max_rate || b.price_ceiling
       };
     }
     
-    // Fallback to local calculation: strictly additive components
+    // Analytical fallback when initial network request is loading
     const baseDistanceTariff = selectedRoute.distanceKm * selectedRoute.baseRatePerKm;
-    
-    // Additive surcharges
     const cargoSurcharge = Math.round(baseDistanceTariff * (selectedCargo.multiplier - 1));
     const weightSurcharge = Math.round(baseDistanceTariff * ((weight - 20) * 0.015));
     const fuelSurcharge = Math.round(baseDistanceTariff * (fuelIndexModifier - 1));
     const demandSurgeAmount = Math.round(baseDistanceTariff * (demandSurgeScore - 1));
     const riskSurcharge = Math.round(baseDistanceTariff * (selectedRoute.riskFactor - 1));
-    
-    // Exact sum of all components
     const exactTotal = baseDistanceTariff + cargoSurcharge + weightSurcharge + fuelSurcharge + demandSurgeAmount + riskSurcharge;
-    
-    // Final rate rounded to nearest 500 ETB
     const finalSpotRate = Math.round(exactTotal / 500) * 500;
-    
-    // Absorb the rounding difference into demand surge to ensure math adds up visually
     const adjustedDemandSurgeAmount = demandSurgeAmount + (finalSpotRate - exactTotal);
-
     const platformCommission = Math.round(finalSpotRate * 0.03);
     const netCarrierPayout = finalSpotRate - platformCommission;
 
@@ -142,8 +173,12 @@ export default function SpotPricingCalculator({
       finalSpotRate,
       platformCommission,
       netCarrierPayout,
-      confidenceScore: 96.4,
-      fuelBurnLiters: Math.round((selectedRoute.distanceKm / 100) * 32.4)
+      confidenceScore: 0,
+      fuelBurnLiters: Math.round((selectedRoute.distanceKm / 100) * 32.4),
+      isClamped: false,
+      clampReason: null,
+      minRate: Math.round(finalSpotRate * 0.7),
+      maxRate: Math.round(finalSpotRate * 1.85)
     };
   }, [quoteData, selectedRoute, selectedCargo, cargoWeight, fuelIndexModifier, demandSurgeScore]);
 
@@ -302,9 +337,12 @@ export default function SpotPricingCalculator({
                 <span className="text-lg text-[#8F8F8F] font-sans tracking-normal">ETB</span>
                 {calculation.finalSpotRate.toLocaleString()}
               </div>
-              <div className="text-[11px] text-[#8F8F8F] mt-1.5 flex items-center gap-1.5 bg-[#232323] inline-flex px-2 py-1 rounded">
+              <div className="text-[11px] text-[#8F8F8F] mt-1.5 flex flex-wrap items-center gap-1.5 bg-[#232323] inline-flex px-2 py-1 rounded">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse" />
-                Quote valid for 60m • 96.4% confidence
+                <span>Quote valid for 60m • {calculation.confidenceScore > 0 ? `${calculation.confidenceScore}%` : 'AI'} confidence</span>
+                {calculation.isClamped && (
+                  <span className="text-amber-400 font-semibold ml-1">({calculation.clampReason || 'Volatility bounded'})</span>
+                )}
               </div>
             </div>
 

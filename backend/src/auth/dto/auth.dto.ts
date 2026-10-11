@@ -30,6 +30,9 @@ export const RegisterDto = z.object({
   fleetName: z.string().optional(),
   operatorLicense: z.string().optional(),
   vehicleCapacity: z.string().optional(),
+  businessSector: z.string().optional(),
+  businessAddress: z.string().optional(),
+  documentUrls: z.record(z.string()).optional(),
 }).refine((data) => {
   // Add custom validations depending on the role
   if (['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(data.role)) {

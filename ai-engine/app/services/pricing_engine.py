@@ -190,6 +190,8 @@ class DynamicSpotPricingEngine:
         "kombolcha industrial park": "origin_Kombolcha Industrial Park",
         "modjo": "origin_Modjo Dry Port",
         "modjo dry port": "origin_Modjo Dry Port",
+        "galafi": "origin_Djibouti Port",
+        "semera": "origin_Kombolcha Industrial Park",
         "addis ababa": "origin_Modjo Dry Port",
         "addis": "origin_Modjo Dry Port",
     }
@@ -365,7 +367,82 @@ class DynamicSpotPricingEngine:
                 road_condition_factor=1.00,
                 seasonality_index=1.00,
             ),
+            "GALAFI_ADDIS": CorridorBenchmark(
+                id="GALAFI_ADDIS",
+                name="Galafi Border Terminal -> Addis Ababa / Kality",
+                origin_city="Galafi",
+                destination_city="Addis Ababa",
+                distance_km=680.0,
+                base_rate_etb=240000.0,
+                baseline_diesel_etb_per_liter=95.50,
+                current_diesel_etb_per_liter=95.50,
+                active_loads_count=60,
+                available_trucks_count=48,
+                congestion_score=0.18,
+                road_condition_factor=1.00,
+                seasonality_index=1.00,
+            ),
+            "SEMERA_ADDIS": CorridorBenchmark(
+                id="SEMERA_ADDIS",
+                name="Semera Freight Hub -> Addis Ababa",
+                origin_city="Semera",
+                destination_city="Addis Ababa",
+                distance_km=580.0,
+                base_rate_etb=200000.0,
+                baseline_diesel_etb_per_liter=95.50,
+                current_diesel_etb_per_liter=95.50,
+                active_loads_count=45,
+                available_trucks_count=40,
+                congestion_score=0.12,
+                road_condition_factor=1.00,
+                seasonality_index=1.00,
+            ),
+            "DJIBOUTI_ADDIS": CorridorBenchmark(
+                id="DJIBOUTI_ADDIS",
+                name="Djibouti Port -> Addis Ababa / Kality",
+                origin_city="Djibouti",
+                destination_city="Addis Ababa",
+                distance_km=850.0,
+                base_rate_etb=325000.0,
+                baseline_diesel_etb_per_liter=95.50,
+                current_diesel_etb_per_liter=95.50,
+                active_loads_count=75,
+                available_trucks_count=55,
+                congestion_score=0.18,
+                road_condition_factor=1.00,
+                seasonality_index=1.00,
+            ),
+            "DIREDAWA_ADDIS": CorridorBenchmark(
+                id="DIREDAWA_ADDIS",
+                name="Dire Dawa Dry Port -> Addis Ababa",
+                origin_city="Dire Dawa",
+                destination_city="Addis Ababa",
+                distance_km=450.0,
+                base_rate_etb=175000.0,
+                baseline_diesel_etb_per_liter=95.50,
+                current_diesel_etb_per_liter=95.50,
+                active_loads_count=45,
+                available_trucks_count=40,
+                congestion_score=0.12,
+                road_condition_factor=1.00,
+                seasonality_index=1.00,
+            ),
         }
+
+    CITY_COORDS = {
+        "djibouti": (11.588, 43.145),
+        "addis ababa": (9.03, 38.74),
+        "addis": (9.03, 38.74),
+        "modjo": (8.592, 39.123),
+        "adama": (8.54, 39.27),
+        "dire dawa": (9.593, 41.866),
+        "hawassa": (7.05, 38.47),
+        "mekelle": (13.496, 39.475),
+        "galafi": (11.716, 41.836),
+        "semera": (11.794, 41.008),
+        "kombolcha": (11.082, 39.738),
+        "gondar": (12.607, 37.466),
+    }
 
     def _match_corridor(
         self, origin_city: str, dest_city: str
@@ -404,14 +481,30 @@ class DynamicSpotPricingEngine:
         """Calculates distance in km with Haversine formula and highway curvature factor."""
         if matched_corridor:
             return matched_corridor.distance_km
-        if origin.lat and origin.lng and destination.lat and destination.lng:
+
+        orig_lat = origin.lat
+        orig_lng = origin.lng
+        dest_lat = destination.lat
+        dest_lng = destination.lng
+
+        # Fallback to city coordinates map if not explicitly passed
+        if orig_lat is None or orig_lng is None:
+            c = self.CITY_COORDS.get(origin.city.strip().lower())
+            if c:
+                orig_lat, orig_lng = c
+        if dest_lat is None or dest_lng is None:
+            c = self.CITY_COORDS.get(destination.city.strip().lower())
+            if c:
+                dest_lat, dest_lng = c
+
+        if orig_lat and orig_lng and dest_lat and dest_lng:
             r = 6371.0
-            d_lat = math.radians(destination.lat - origin.lat)
-            d_lng = math.radians(destination.lng - origin.lng)
+            d_lat = math.radians(dest_lat - orig_lat)
+            d_lng = math.radians(dest_lng - orig_lng)
             a = (
                 math.sin(d_lat / 2) ** 2
-                + math.cos(math.radians(origin.lat))
-                * math.cos(math.radians(destination.lat))
+                + math.cos(math.radians(orig_lat))
+                * math.cos(math.radians(dest_lat))
                 * math.sin(d_lng / 2) ** 2
             )
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
@@ -449,7 +542,7 @@ class DynamicSpotPricingEngine:
             road_factor = matched_corridor.road_condition_factor
             seasonality = matched_corridor.seasonality_index
         else:
-            base_corridor_rate = distance_km * 20.0 * 3.85
+            base_corridor_rate = max(45000.0, distance_km * 380.0)
             active_loads = 50
             available_trucks = 50
             baseline_diesel = 95.50
@@ -463,20 +556,23 @@ class DynamicSpotPricingEngine:
         fuel_price_index = round(current_diesel / baseline_diesel, 4)
 
         # Urgency numeric level
+        # LightGBM model splits urgency_level at 1.5 and 2.5:
+        # 1.0 = Low / Flexible (>= 48h), 2.0 = Standard (24h), 3.0 = High / Express (<= 12h)
         is_high_urgency = (
             request.is_urgent
-            or (request.pickup_window_hours and request.pickup_window_hours <= 6)
+            or (request.pickup_window_hours is not None and request.pickup_window_hours <= 12)
             or (
                 request.urgency
                 and request.urgency.lower() in ["high", "urgent", "express"]
             )
         )
-        is_low_urgency = request.urgency and request.urgency.lower() in [
-            "low",
-            "economy",
-            "flexible",
-        ]
-        urgency_level = 1.20 if is_high_urgency else (0.85 if is_low_urgency else 1.00)
+        is_low_urgency = (
+            request.urgency
+            and request.urgency.lower() in ["low", "economy", "flexible"]
+        ) or (request.pickup_window_hours is not None and request.pickup_window_hours >= 48)
+
+        urgency_ordinal = 3.0 if is_high_urgency else (1.0 if is_low_urgency else 2.0)
+        urgency_multiplier = 1.15 if is_high_urgency else (0.88 if is_low_urgency else 1.00)
         urgency_name = (
             "high" if is_high_urgency else ("low" if is_low_urgency else "standard")
         )
@@ -500,9 +596,18 @@ class DynamicSpotPricingEngine:
         model_prediction = None
         if self.model and self.feature_names:
             try:
+                # Handle bulk shipments (> 40 tons) via fleet allocation
+                if weight_tons > 40.0:
+                    truck_capacity = 30.0
+                    num_trucks = math.ceil(weight_tons / truck_capacity)
+                    weight_per_truck = min(40.0, round(weight_tons / num_trucks, 2))
+                else:
+                    num_trucks = 1
+                    weight_per_truck = weight_tons
+
                 row = {f: 0 for f in self.feature_names}
                 row["distance_km"] = distance_km
-                row["cargo_weight_tons"] = weight_tons
+                row["cargo_weight_tons"] = weight_per_truck
                 row["fuel_price_etb"] = current_diesel
                 row["base_corridor_rate"] = base_corridor_rate
                 row["seasonality_index"] = seasonality
@@ -510,7 +615,7 @@ class DynamicSpotPricingEngine:
                 row["available_trucks"] = available_trucks
                 row["pending_loads"] = active_loads
                 row["supply_demand_ratio"] = sd_ratio
-                row["urgency_level"] = urgency_level
+                row["urgency_level"] = urgency_ordinal
 
                 # Set One-Hot Columns
                 orig_col = self.ORIGIN_COL_MAP.get(
@@ -539,18 +644,22 @@ class DynamicSpotPricingEngine:
 
                 df = pd.DataFrame([row])[self.feature_names]
                 pred = float(self.model.predict(df)[0])
-                model_prediction = max(1000.0, pred)
+                model_prediction = max(1000.0, pred * num_trucks)
             except Exception as e:
                 print(
                     f"[WARNING] ML inference error: {e}. Falling back to analytical model."
                 )
 
         if model_prediction is None:
-            weight_factor = (
-                (weight_tons / 20.0)
-                if weight_tons <= 20.0
-                else (1.0 + (weight_tons - 20.0) * 0.045)
-            )
+            if weight_tons > 40.0:
+                num_trucks = math.ceil(weight_tons / 30.0)
+                weight_factor = float(num_trucks)
+            else:
+                weight_factor = (
+                    (weight_tons / 20.0)
+                    if weight_tons <= 20.0
+                    else (1.0 + (weight_tons - 20.0) * 0.025)
+                )
             model_prediction = (
                 base_corridor_rate
                 * weight_factor
@@ -558,20 +667,31 @@ class DynamicSpotPricingEngine:
                 * fuel_mult
                 * congestion_mult
                 * cargo_mult
-                * urgency_level
+                * urgency_multiplier
             )
 
         raw_price = model_prediction
 
         # 3. Volatility Floor & Ceiling Protection Bounds (Section 8.3)
-        weight_scale = (
-            (weight_tons / 20.0)
-            if weight_tons <= 20.0
-            else (1.0 + (weight_tons - 20.0) * 0.045)
+        if weight_tons > 40.0:
+            num_trucks = math.ceil(weight_tons / 30.0)
+            weight_scale = float(num_trucks)
+        else:
+            weight_scale = (
+                (weight_tons / 20.0)
+                if weight_tons <= 20.0
+                else (1.0 + (weight_tons - 20.0) * 0.025)
+            )
+
+        baseline_ref = (
+            base_corridor_rate
+            * weight_scale
+            * cargo_mult
+            * fuel_mult
+            * urgency_multiplier
         )
-        scaled_base = base_corridor_rate * weight_scale * cargo_mult
-        price_floor = round(scaled_base * self.FLOOR_MULTIPLIER, 2)
-        price_ceiling = round(scaled_base * self.CEILING_MULTIPLIER, 2)
+        price_floor = round(baseline_ref * self.FLOOR_MULTIPLIER, 2)
+        price_ceiling = round(baseline_ref * self.CEILING_MULTIPLIER, 2)
 
         is_clamped = False
         clamp_reason = None
@@ -605,7 +725,7 @@ class DynamicSpotPricingEngine:
             cargo_type=request.cargo_type,
             cargo_type_multiplier=round(cargo_mult, 2),
             urgency=urgency_name,
-            urgency_multiplier=round(urgency_level, 2),
+            urgency_multiplier=round(urgency_multiplier, 2),
             model_prediction=round(model_prediction, 2),
             raw_calculated_price=round(raw_price, 2),
             price_floor=price_floor,

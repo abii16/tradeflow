@@ -26,15 +26,15 @@ export default function ContractRates() {
       // Fetch live AI spot rate for each contract
       const enrichedContracts = await Promise.all(loadedContracts.map(async (c: any) => {
         try {
+          const originCity = c.origin?.toLowerCase().includes('djibouti') ? 'Djibouti' : (c.origin?.split(' ')[0] || 'Djibouti');
+          const destCity = c.destination?.toLowerCase().includes('modjo') ? 'Modjo' : (c.destination?.split(' ')[0] || 'Modjo');
           const spotData = await calculateSpotRate({
-            originLat: 11.5890,
-            originLng: 43.1450,
-            destLat: 8.9806,
-            destLng: 38.7578,
-            weightKg: 32000,
-            cargoType: 'General'
+            origin: { city: originCity },
+            destination: { city: destCity },
+            weightKg: 30000,
+            cargoType: 'dry'
           });
-          return { ...c, currentSpotRate: spotData.totalEtb };
+          return { ...c, currentSpotRate: spotData.spot_price || spotData.recommended_spot_rate };
         } catch (e) {
           return c;
         }

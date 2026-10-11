@@ -17,9 +17,9 @@ export default function DynamicPricing() {
   const [dieselIndex, setDieselIndex] = useState(95.50);
   const [demandMultiplier, setDemandMultiplier] = useState(1.24);
 
-  const [metrics, setMetrics] = useState({ networkYield24h: 2420000, activeTeus: 142 });
+  const [metrics, setMetrics] = useState({ networkYield24h: 0, activeTeus: 0 });
   const [historicalTrend, setHistoricalTrend] = useState<any[]>([]);
-  const [aiConfidence, setAiConfidence] = useState(94.2);
+  const [aiConfidence, setAiConfidence] = useState(0);
   const [divergingContracts, setDivergingContracts] = useState<any[]>([]);
 
   const [auditDrawerOpen, setAuditDrawerOpen] = useState(false);
@@ -187,7 +187,7 @@ export default function DynamicPricing() {
           {/* AI Status Card */}
           <div className="bg-[#232323] rounded-2xl border border-[#2E2E2E]/80 shadow-sm p-6 hover:shadow transition-shadow">
             <div className="mb-6">
-              <div className="text-3xl font-black text-[#EDEDED] font-mono">{aiConfidence}%</div>
+              <div className="text-3xl font-black text-[#EDEDED] font-mono">{aiConfidence > 0 ? `${aiConfidence}%` : '--'}</div>
               <div className="text-xs font-semibold text-[#8F8F8F]">{t('dp_confidence_score', 'Algorithmic Confidence Score')}</div>
             </div>
 
@@ -202,7 +202,9 @@ export default function DynamicPricing() {
               </div>
               <div className="flex justify-between items-center bg-[#181818] border border-[#2E2E2E]/70 rounded-xl p-3.5">
                 <span className="text-[#8F8F8F] font-medium">{t('dp_network_yield', '24h Network Yield')}</span>
-                <span className="font-bold text-[#EDEDED]">ETB {(metrics.networkYield24h / 1000000).toFixed(2)}M</span>
+                <span className="font-bold text-[#EDEDED]">
+                  {metrics.networkYield24h > 0 ? `ETB ${(metrics.networkYield24h / 1000000).toFixed(2)}M` : 'ETB 0'}
+                </span>
               </div>
             </div>
           </div>
@@ -362,48 +364,61 @@ export default function DynamicPricing() {
               </div>
             </div>
 
-            <div className="flex-1 w-full flex items-end justify-between gap-1.5 md:gap-2.5 relative z-10 pt-10 pb-6 px-8">
-              
-              {/* Grid Lines */}
-              <div className="absolute inset-x-8 bottom-6 h-px border-b border-[#2E2E2E] pointer-events-none"></div>
-              <div className="absolute inset-x-8 bottom-[30%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
-              <div className="absolute inset-x-8 bottom-[60%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
-              <div className="absolute inset-x-8 bottom-[90%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
-              
-              {/* Y-Axis Labels */}
-              <div className="absolute left-0 bottom-[90%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">400K</div>
-              <div className="absolute left-0 bottom-[60%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">300K</div>
-              <div className="absolute left-0 bottom-[30%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">200K</div>
+            {historicalTrend.length === 0 ? (
+              <div className="flex-1 w-full flex flex-col items-center justify-center text-center text-xs text-[#8F8F8F] gap-2 py-16 relative z-10">
+                <div className="w-10 h-10 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center">
+                  <BarChart2 size={18} className="text-[#555]" />
+                </div>
+                <span className="font-semibold text-[#EDEDED]">No historical spot transactions recorded</span>
+                <span className="text-[11px] text-[#707070] max-w-xs">
+                  Live spot rate trends will plot automatically as loads and freight orders are completed across the corridor network.
+                </span>
+              </div>
+            ) : (
+              <>
+                <div className="flex-1 w-full flex items-end justify-between gap-1.5 md:gap-2.5 relative z-10 pt-10 pb-6 px-8">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-x-8 bottom-6 h-px border-b border-[#2E2E2E] pointer-events-none"></div>
+                  <div className="absolute inset-x-8 bottom-[30%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
+                  <div className="absolute inset-x-8 bottom-[60%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
+                  <div className="absolute inset-x-8 bottom-[90%] h-px border-b border-[#2E2E2E] pointer-events-none"></div>
+                  
+                  {/* Y-Axis Labels */}
+                  <div className="absolute left-0 bottom-[90%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">400K</div>
+                  <div className="absolute left-0 bottom-[60%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">300K</div>
+                  <div className="absolute left-0 bottom-[30%] -translate-y-1/2 text-[11px] font-medium text-[#8F8F8F] pointer-events-none">200K</div>
 
-              {/* Gradient Bars */}
-              {historicalTrend.map((data, i) => {
-                const heightPct = (data.algorithmic / maxVal) * 100;
-                return (
-                  <div 
-                    key={i} 
-                    className="flex-1 rounded-t-sm relative group/bar cursor-crosshair transition-all duration-300 hover:brightness-125"
-                    style={{ 
-                      height: `${heightPct}%`, 
-                      background: 'linear-gradient(to top, rgba(35,35,35,0) 0%, rgba(62,207,142,0.85) 100%)' 
-                    }}
-                  >
-                    {/* Tooltip */}
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#1C1C1C] border border-[#2E2E2E] text-[#EDEDED] text-[10px] font-mono px-3 py-2 rounded-md opacity-0 group-hover/bar:opacity-100 z-30 pointer-events-none whitespace-nowrap shadow-lg flex flex-col gap-1 items-center transition-opacity">
-                      <span className="font-bold text-[#3ECF8E]">ETB {(data.algorithmic).toLocaleString()}</span>
-                      <span className="text-[#8F8F8F] text-[9px] uppercase tracking-wider">Day {data.day}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* X-Axis Labels */}
-            <div className="flex justify-between items-center px-8 mt-2 text-[11px] font-medium text-[#8F8F8F]">
-               <span>Day 1</span>
-               <span>Day 10</span>
-               <span>Day 20</span>
-               <span>Day 30</span>
-            </div>
+                  {/* Gradient Bars */}
+                  {historicalTrend.map((data, i) => {
+                    const heightPct = (data.algorithmic / maxVal) * 100;
+                    return (
+                      <div 
+                        key={i} 
+                        className="flex-1 rounded-t-sm relative group/bar cursor-crosshair transition-all duration-300 hover:brightness-125"
+                        style={{ 
+                          height: `${heightPct}%`, 
+                          background: 'linear-gradient(to top, rgba(35,35,35,0) 0%, rgba(62,207,142,0.85) 100%)' 
+                        }}
+                      >
+                        {/* Tooltip */}
+                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#1C1C1C] border border-[#2E2E2E] text-[#EDEDED] text-[10px] font-mono px-3 py-2 rounded-md opacity-0 group-hover/bar:opacity-100 z-30 pointer-events-none whitespace-nowrap shadow-lg flex flex-col gap-1 items-center transition-opacity">
+                          <span className="font-bold text-[#3ECF8E]">ETB {(data.algorithmic).toLocaleString()}</span>
+                          <span className="text-[#8F8F8F] text-[9px] uppercase tracking-wider">Day {data.day}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* X-Axis Labels */}
+                <div className="flex justify-between items-center px-8 mt-2 text-[11px] font-medium text-[#8F8F8F]">
+                   <span>Day 1</span>
+                   <span>Day 10</span>
+                   <span>Day 20</span>
+                   <span>Day 30</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

@@ -3,10 +3,8 @@ import { priceQuotes } from '../../db/schema/price_quotes';
 import { SpotPricingRequestDto, ContractEvaluationRequestDto } from '../../dto/pricing.dto';
 
 export class PricingService {
-  private aiEngineUrl: string;
-
-  constructor() {
-    this.aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
+  private get aiEngineUrl() {
+    return process.env.AI_ENGINE_URL || 'http://localhost:8000';
   }
 
   /**
@@ -41,19 +39,26 @@ export class PricingService {
       if (response.ok) {
         quoteResponse = await response.json();
       } else {
+        const errText = await response.text();
         if (process.env.NODE_ENV !== 'test') {
-          console.warn(`[PricingService] AI Engine responded with status ${response.status}. Using resilient fallback.`);
+          console.error(`[PricingService] AI Engine error (${response.status}):`, errText);
+          throw new Error(`AI Pricing Engine error (${response.status}): ${errText}`);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       if (process.env.NODE_ENV !== 'test') {
-        console.warn('[PricingService] AI Engine unreachable. Using local calculation fallback:', error);
+        console.error('[PricingService] AI Engine unreachable:', error.message);
+        throw new Error('AI Spot Pricing Engine is offline. Real ML prediction is required and cannot be simulated.');
       }
     }
 
-    // Resilient Fallback Calculation if microservice is offline
+    // Only allow fallback calculation in unit tests (NODE_ENV === 'test')
     if (!quoteResponse) {
-      quoteResponse = this.computeFallbackSpotPrice(dto);
+      if (process.env.NODE_ENV === 'test') {
+        quoteResponse = this.computeFallbackSpotPrice(dto);
+      } else {
+        throw new Error('AI Spot Pricing Engine is offline. Real ML prediction is required.');
+      }
     }
 
     // Persist quote to DB for auditability (FR-04.3) if DB is connected
@@ -166,6 +171,8 @@ export class PricingService {
 
     return [
       { id: 'DJIBOUTI_MODJO', name: 'Djibouti Port -> Modjo Dry Port', distance_km: 810, base_rate_etb: 90000, current_diesel_etb_per_liter: 95.50 },
+      { id: 'GALAFI_ADDIS', name: 'Galafi Border Terminal -> Addis Ababa', distance_km: 680, base_rate_etb: 82000, current_diesel_etb_per_liter: 95.50 },
+      { id: 'SEMERA_ADDIS', name: 'Semera Freight Hub -> Addis Ababa', distance_km: 580, base_rate_etb: 70000, current_diesel_etb_per_liter: 95.50 },
       { id: 'MODJO_ADDIS', name: 'Modjo Dry Port -> Addis Ababa Hub', distance_km: 75, base_rate_etb: 16500, current_diesel_etb_per_liter: 95.50 },
       { id: 'DJIBOUTI_DIREDAWA', name: 'Djibouti Port -> Dire Dawa', distance_km: 360, base_rate_etb: 48000, current_diesel_etb_per_liter: 95.50 },
       { id: 'ADDIS_HAWASSA', name: 'Addis Ababa -> Hawassa Industrial Park', distance_km: 275, base_rate_etb: 35000, current_diesel_etb_per_liter: 95.50 },
@@ -178,8 +185,8 @@ export class PricingService {
    */
   private computeFallbackSpotPrice(dto: SpotPricingRequestDto) {
     const weightTons = Math.max(0.5, dto.weightKg / 1000);
-    const orig = dto.origin.city.toLowerCase();
-    const dest = dto.destination.city.toLowerCase();
+    const orig = (dto.origin.name || dto.origin.city).toLowerCase();
+    const dest = (dto.destination.name || dto.destination.city).toLowerCase();
 
     let distanceKm = 500.0;
     let baseRate = 60000.0;
@@ -189,6 +196,14 @@ export class PricingService {
       distanceKm = 810.0;
       baseRate = 90000.0;
       corridorMatched = 'DJIBOUTI_MODJO';
+    } else if (orig.includes('galafi') && (dest.includes('addis') || dest.includes('kality'))) {
+      distanceKm = 680.0;
+      baseRate = 82000.0;
+      corridorMatched = 'GALAFI_ADDIS';
+    } else if (orig.includes('semera') && (dest.includes('addis') || dest.includes('kality'))) {
+      distanceKm = 580.0;
+      baseRate = 70000.0;
+      corridorMatched = 'SEMERA_ADDIS';
     } else if (orig.includes('modjo') && dest.includes('addis')) {
       distanceKm = 75.0;
       baseRate = 16500.0;

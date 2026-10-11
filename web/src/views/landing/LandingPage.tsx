@@ -5,6 +5,7 @@ import RegistrationFlow from '@/views/auth/RegistrationFlow';
 import LoginModal from '@/views/auth/LoginModal';
 import { useAuth } from '@/hooks/useAuth';
 import LiveTelematicsMap from '@/components/LiveTelematicsMap';
+import { calculateSpotRate, apiClient } from '@/lib/apiClient';
 
 interface LandingPageProps {
   onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
@@ -36,6 +37,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
   const [calcWeight, setCalcWeight] = useState('');
   const [calcState, setCalcState] = useState<'idle' | 'loading' | 'result'>('idle');
   const [calcRate, setCalcRate] = useState<number | null>(null);
+  const [calcBreakdown, setCalcBreakdown] = useState<any>(null);
 
   const handleCalculate = async () => {
     if (!calcFrom || !calcTo || !calcWeight) return;
@@ -44,31 +46,18 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
       const payload = {
         origin: { city: calcFrom },
         destination: { city: calcTo },
-        weightKg: parseFloat(calcWeight) * 1000, // convert tons to kg
+        weightKg: parseFloat(calcWeight) * 1000,
         cargoType: 'dry'
       };
 
-      const response = await fetch('http://localhost:3000/api/v1/pricing/quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Assuming data returns totalRate or baseRate
-        setCalcRate(data.totalRate || data.baseRate || 45000);
-        setCalcState('result');
-      } else {
-        throw new Error('Failed to fetch quote');
-      }
-    } catch (error) {
-      console.error(error);
-      // Fallback for demo purposes if backend quote fails
-      const base = 45000;
-      const weightMultiplier = parseFloat(calcWeight) * 1200;
-      setCalcRate(base + weightMultiplier + 2500);
+      const data = await calculateSpotRate(payload);
+      const spotPrice = data.spot_price ?? data.recommended_spot_rate ?? 0;
+      setCalcRate(spotPrice);
+      setCalcBreakdown(data.breakdown || null);
       setCalcState('result');
+    } catch (error) {
+      console.error('Failed to calculate AI spot price on landing page:', error);
+      setCalcState('idle');
     }
   };
 
@@ -103,9 +92,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
   const fetchLandingMetrics = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/v1/public/landing-metrics');
-      if (response.ok) {
-        const data = await response.json();
+      const data = await apiClient('/public/landing-metrics', { method: 'GET' });
+      if (data) {
         if (data.liveBids) setLiveBids(data.liveBids);
         if (data.spotIndex) setLiveSpotIndex(data.spotIndex);
         if (data.telematics) {
@@ -631,15 +619,15 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                   <div className="w-full space-y-2 text-left">
                     <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
                       <span>{t.calculator.fuelIndex}</span>
-                      <span className="font-bold text-[#EDEDED]">1.08x</span>
+                      <span className="font-bold text-[#EDEDED]">{calcBreakdown?.fuel_multiplier ? `${calcBreakdown.fuel_multiplier}x` : '1.00x'}</span>
                     </div>
                     <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
                       <span>{t.calculator.congestion}</span>
-                      <span className="font-bold text-[#EDEDED]">Low</span>
+                      <span className="font-bold text-[#EDEDED]">{calcBreakdown?.congestion_multiplier && calcBreakdown.congestion_multiplier > 1.05 ? 'Surge / Congested' : 'Normal / Low'}</span>
                     </div>
                     <div className="bg-[#232323] border border-[#2E2E2E] rounded-lg p-3 text-sm text-[#8F8F8F] flex justify-between">
                       <span>{t.calculator.transit}</span>
-                      <span className="font-bold text-[#EDEDED]">28 hrs</span>
+                      <span className="font-bold text-[#EDEDED]">{calcBreakdown?.distance_km ? `${calcBreakdown.distance_km} km` : 'Corridor Transit'}</span>
                     </div>
                   </div>
 

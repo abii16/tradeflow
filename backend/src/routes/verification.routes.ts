@@ -3,7 +3,7 @@ import { db } from '../db';
 import { users } from '../db/schema/users';
 import { verifications } from '../db/schema/verifications';
 import { vehicles } from '../db/schema/vehicles';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { SubmitVerificationSchema } from '../dto/verification.dto';
@@ -94,11 +94,32 @@ router.post('/submit', JwtAuthGuard, async (req: Request, res: Response): Promis
 router.get('/status', JwtAuthGuard, async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const [verificationRecord] = await db.select().from(verifications).where(eq(verifications.userId, userId));
-    const [userRecord] = await db.select({ status: users.verificationStatus }).from(users).where(eq(users.id, userId));
+    const [verificationRecord] = await db
+      .select()
+      .from(verifications)
+      .where(eq(verifications.userId, userId))
+      .orderBy(desc(verifications.createdAt))
+      .limit(1);
+
+    const [userRecord] = await db
+      .select({
+        status: users.verificationStatus,
+        isVerified: users.isVerified,
+        companyName: users.companyName,
+        tinNumber: users.tinNumber,
+        tradeLicense: users.tradeLicense,
+        role: users.role,
+      })
+      .from(users)
+      .where(eq(users.id, userId));
     
     res.status(200).json({
       status: userRecord?.status || 'UNVERIFIED',
+      isVerified: userRecord?.isVerified || false,
+      companyName: userRecord?.companyName || null,
+      tinNumber: userRecord?.tinNumber || null,
+      tradeLicense: userRecord?.tradeLicense || null,
+      role: userRecord?.role || req.user!.role,
       verificationDetails: verificationRecord || null,
     });
   } catch (error) {

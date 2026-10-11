@@ -10,6 +10,11 @@ jest.mock('../src/db', () => ({
         onConflictDoNothing: jest.fn().mockResolvedValue(true)
       })
     }),
+    update: jest.fn().mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(true)
+      })
+    }),
     select: jest.fn().mockReturnValue({
       from: jest.fn().mockReturnValue({
         where: jest.fn().mockResolvedValue([
@@ -146,5 +151,29 @@ describe('Authentication Flow Tests', () => {
     };
 
     await expect(authService.login(payload)).rejects.toThrow('Invalid email or password');
+  });
+
+  it('Should reject login when Supabase is offline and password is incorrect', async () => {
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network offline'));
+
+    const payload = {
+      email: 'test@example.com',
+      password: 'IncorrectPassword999'
+    };
+
+    await expect(authService.login(payload)).rejects.toThrow('Invalid email or password');
+  });
+
+  it('Should allow login when Supabase is offline and password is valid', async () => {
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network offline'));
+
+    const payload = {
+      email: 'test@example.com',
+      password: 'Password123!'
+    };
+
+    const result = await authService.login(payload);
+    expect(result.access_token).toBeDefined();
+    expect(result.user.email).toBe('test@example.com');
   });
 });

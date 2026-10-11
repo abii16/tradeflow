@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Truck, Briefcase, ChevronRight, CheckCircle2, UploadCloud, X, Loader2, Eye, EyeOff, ShieldCheck, UserCog } from 'lucide-react';
+import { Building2, Truck, Briefcase, ChevronRight, CheckCircle2, UploadCloud, X, Loader2, Eye, EyeOff, ShieldCheck, UserCog, Clock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface RegistrationFlowProps {
@@ -7,7 +7,7 @@ interface RegistrationFlowProps {
 }
 
 export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,8 +21,13 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
     phone: '',
     password: '',
     companyName: '',
+    businessSector: 'Importer (Dry Cargo / Industrial Goods)',
     taxId: '',
     licenseNumber: '',
+    businessAddress: '',
+    city: 'Addis Ababa',
+    tradeLicenseFile: 'trade_license_certificate.pdf',
+    tinDocFile: 'tin_registration_cert.pdf',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -43,6 +48,9 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
       if (role === 'customs_officer') mappedRole = 'CUSTOMS_OFFICER';
       if (role === 'admin') mappedRole = 'ADMIN';
 
+      const tinClean = formData.taxId.trim();
+      const licenseClean = formData.licenseNumber.trim();
+
       await register({
         email: formData.email,
         password: formData.password,
@@ -50,7 +58,14 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
         phone: formData.phone,
         role: mappedRole,
         companyName: formData.companyName,
-        licenseNumber: formData.licenseNumber || formData.taxId,
+        tinNumber: tinClean,
+        tradeLicense: licenseClean,
+        businessSector: formData.businessSector,
+        businessAddress: `${formData.businessAddress || 'Kirkos Sub-City'}, ${formData.city}`,
+        documentUrls: {
+          tradeLicense: `https://storage.tradeflow.et/docs/${encodeURIComponent(licenseClean || 'mti_license')}.pdf`,
+          taxId: `https://storage.tradeflow.et/docs/${encodeURIComponent(tinClean || 'tin_doc')}.pdf`,
+        },
       });
 
       setStep(role === 'transporter' ? 5 : 4); // Go to success step
@@ -77,7 +92,17 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
       </div>
 
       {/* Google Button */}
-      <button className="w-full flex items-center justify-center gap-3 bg-[#232323] hover:bg-[#2A2A2A] text-[#EDEDED] border border-[#2E2E2E] hover:border-[#8F8F8F] transition-all px-4 py-3 rounded-xl font-bold text-sm mb-6">
+      <button 
+        type="button" 
+        onClick={async () => {
+          try {
+            await loginWithGoogle();
+          } catch(err: any) {
+            setError(err.message || 'Google Sign Up failed');
+          }
+        }} 
+        className="w-full flex items-center justify-center gap-3 bg-[#232323] hover:bg-[#2A2A2A] text-[#EDEDED] border border-[#2E2E2E] hover:border-[#8F8F8F] transition-all px-4 py-3 rounded-xl font-bold text-sm mb-6"
+      >
         <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -182,50 +207,143 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
   );
 
   const renderStep3 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-      <div className="mb-6">
-        <h3 className="text-xl font-bold text-[#EDEDED] tracking-tight mb-1">Business Details</h3>
-        <p className="text-sm text-[#8F8F8F]">Provide your legal entity information.</p>
+    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="mb-4">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 mb-2">
+          <ShieldCheck size={12} /> SRS FR-01 Legal Identity Verification
+        </div>
+        <h3 className="text-xl font-bold text-[#EDEDED] tracking-tight mb-1">Business & Legal Entity Registration</h3>
+        <p className="text-xs text-[#8F8F8F]">Required by Ethiopian Ministry of Trade & Regional Integration and Customs Commission.</p>
       </div>
       
-      {error && <div className="p-3 bg-red-500/10 text-red-400 text-sm rounded-lg border border-red-500/20 mb-4">{error}</div>}
+      {error && <div className="p-3 bg-red-500/10 text-red-400 text-xs rounded-xl border border-red-500/20 mb-3">{error}</div>}
 
-      <div className="space-y-4">
+      <div className="space-y-3.5 max-h-[52vh] overflow-y-auto pr-1">
         <div>
-          <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1.5">Company / Legal Name</label>
-          <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-3 text-sm focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" placeholder="e.g. Abyssinia Transit PLC" />
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1">Company / Legal Entity Name *</label>
+          <input 
+            type="text" 
+            name="companyName" 
+            value={formData.companyName} 
+            onChange={handleChange} 
+            required 
+            className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" 
+            placeholder="e.g. Ethiopian Freight & Trading Enterprise PLC" 
+          />
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1">Business Classification / Sector *</label>
+          <select 
+            name="businessSector" 
+            value={formData.businessSector} 
+            onChange={handleChange}
+            className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all"
+          >
+            <option value="Importer (Dry Cargo / Industrial Goods)">Importer (Dry Cargo / Industrial & Construction Goods)</option>
+            <option value="Exporter (Coffee / Agricultural Commodities / Pulses)">Exporter (Coffee / Agricultural Commodities / Pulses)</option>
+            <option value="Industrial Manufacturer / Agro-Processing">Industrial Manufacturer / Agro-Processing Enterprise</option>
+            <option value="Wholesale Distributor & FMCG Retail">Wholesale Distributor & FMCG Logistics</option>
+            <option value="Freight Forwarder & Customs Clearance Agency">Freight Forwarder & Customs Clearance Agency</option>
+          </select>
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1.5">Tax ID (TIN)</label>
-            <input type="text" name="taxId" value={formData.taxId} onChange={handleChange} className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-3 text-sm focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" placeholder="10 digit number" />
+            <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1">Tax ID (TIN Number) *</label>
+            <input 
+              type="text" 
+              name="taxId" 
+              value={formData.taxId} 
+              onChange={handleChange} 
+              required
+              maxLength={12}
+              className="w-full bg-[#1C1C1C] text-[#EDEDED] font-mono border border-[#2E2E2E] rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" 
+              placeholder="10-digit TIN (e.g. 0049281742)" 
+            />
           </div>
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1.5">Trade License No.</label>
-            <input type="text" name="licenseNumber" value={formData.licenseNumber} onChange={handleChange} className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-3 text-sm focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" placeholder="MTI/..." />
+            <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1">Trade License No. (MTI) *</label>
+            <input 
+              type="text" 
+              name="licenseNumber" 
+              value={formData.licenseNumber} 
+              onChange={handleChange} 
+              required
+              className="w-full bg-[#1C1C1C] text-[#EDEDED] font-mono border border-[#2E2E2E] rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" 
+              placeholder="MTI/AA/2026/0984" 
+            />
           </div>
         </div>
 
-        <div>
-          <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1.5">Upload Business Documents</label>
-          <div className="border-2 border-dashed border-[#2E2E2E] hover:border-[#3ECF8E]/50 bg-[#1C1C1C] rounded-xl p-8 text-center transition-all cursor-pointer group">
-            <UploadCloud size={28} className="mx-auto text-[#8F8F8F] group-hover:text-[#3ECF8E] mb-3 transition-colors" />
-            <p className="text-sm font-bold text-[#EDEDED]">Click to upload Trade License & TIN</p>
-            <p className="text-[10px] font-mono tracking-widest text-[#8F8F8F] mt-2">PDF OR JPEG, MAX 5MB</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1">Commercial Hub / City</label>
+            <select 
+              name="city" 
+              value={formData.city} 
+              onChange={handleChange}
+              className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all"
+            >
+              <option value="Addis Ababa">Addis Ababa</option>
+              <option value="Modjo Dry Port">Modjo Dry Port</option>
+              <option value="Dire Dawa Free Trade Zone">Dire Dawa Free Trade Zone</option>
+              <option value="Hawassa Industrial Park">Hawassa Industrial Park</option>
+              <option value="Adama Logistics Hub">Adama Logistics Hub</option>
+              <option value="Semera / Galafi Border">Semera / Galafi Border</option>
+              <option value="Djibouti Port / DFTZ">Djibouti Port / DFTZ</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1">Registered Head Office</label>
+            <input 
+              type="text" 
+              name="businessAddress" 
+              value={formData.businessAddress} 
+              onChange={handleChange} 
+              className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" 
+              placeholder="Kirkos Sub-City, Woreda 03" 
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2 pt-1">
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F]">Regulatory Document Uploads (FR-01.1)</label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="border border-[#2E2E2E] hover:border-[#3ECF8E]/60 bg-[#1C1C1C] rounded-xl p-3 text-center transition-all cursor-pointer group">
+              <UploadCloud size={20} className="mx-auto text-[#8F8F8F] group-hover:text-[#3ECF8E] mb-1.5 transition-colors" />
+              <p className="text-[11px] font-bold text-[#EDEDED]">Trade License Certificate</p>
+              <p className="text-[9px] font-mono text-[#3ECF8E] mt-1 flex items-center justify-center gap-1">
+                <CheckCircle2 size={10} /> {formData.tradeLicenseFile}
+              </p>
+            </div>
+            <div className="border border-[#2E2E2E] hover:border-[#3ECF8E]/60 bg-[#1C1C1C] rounded-xl p-3 text-center transition-all cursor-pointer group">
+              <UploadCloud size={20} className="mx-auto text-[#8F8F8F] group-hover:text-[#3ECF8E] mb-1.5 transition-colors" />
+              <p className="text-[11px] font-bold text-[#EDEDED]">TIN Tax Registration</p>
+              <p className="text-[9px] font-mono text-[#3ECF8E] mt-1 flex items-center justify-center gap-1">
+                <CheckCircle2 size={10} /> {formData.tinDocFile}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-2.5 text-[11px] text-amber-300">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0 animate-ping"></div>
+          <div>
+            <span className="font-bold">SRS FR-01 Acceptance Policy:</span> Your account will be submitted in <strong>PENDING</strong> status. Load posting and marketplace broadcasting will unlock once an Administrator verifies your credentials in the Verification Queue.
           </div>
         </div>
       </div>
 
-      <div className="pt-6 flex justify-between border-t border-[#2E2E2E]">
-        <button onClick={handleBack} disabled={isSubmitting} className="text-[#8F8F8F] hover:text-[#EDEDED] px-4 py-2 text-sm font-bold rounded-lg disabled:opacity-50 transition-colors">Back</button>
+      <div className="pt-4 flex justify-between border-t border-[#2E2E2E]">
+        <button onClick={handleBack} disabled={isSubmitting} className="text-[#8F8F8F] hover:text-[#EDEDED] px-4 py-2 text-xs font-bold rounded-lg disabled:opacity-50 transition-colors">Back</button>
         <button 
           onClick={role === 'transporter' ? handleNext : handleSubmit} 
-          disabled={isSubmitting || !formData.companyName}
-          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
+          disabled={isSubmitting || !formData.companyName || !formData.taxId || !formData.licenseNumber}
+          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
         >
-          {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : (role === 'transporter' ? 'Next: Fleet Details' : 'Submit Registration')}
-          {!isSubmitting && <ChevronRight size={16} />}
+          {isSubmitting ? <><Loader2 size={14} className="animate-spin" /> Submitting for Review...</> : (role === 'transporter' ? 'Next: Fleet Details' : 'Submit Registration')}
+          {!isSubmitting && <ChevronRight size={14} />}
         </button>
       </div>
     </div>
@@ -285,19 +403,42 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
   );
 
   const renderSuccess = () => (
-    <div className="text-center py-10 animate-in zoom-in-95 duration-500">
-      <div className="w-20 h-20 bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/30 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(62,207,142,0.2)]">
-        <CheckCircle2 size={40} />
+    <div className="text-center py-6 animate-in zoom-in-95 duration-500">
+      <div className="w-16 h-16 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+        <Clock size={32} />
       </div>
-      <h3 className="text-2xl font-bold text-[#EDEDED] tracking-tight mb-3">Registration Submitted!</h3>
-      <p className="text-sm text-[#8F8F8F] max-w-sm mx-auto mb-8 leading-relaxed">
-        Your account has been created successfully. You are now logged in and can access the platform, but some features may require Verification Queue administrator approval.
+      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
+        ● STATUS: PENDING VERIFICATION
+      </div>
+      <h3 className="text-xl font-bold text-[#EDEDED] tracking-tight mb-2">Registration Submitted for Review</h3>
+      
+      <p className="text-xs text-[#8F8F8F] max-w-sm mx-auto mb-5 leading-relaxed">
+        Your account for <strong className="text-[#EDEDED]">{formData.companyName || 'your company'}</strong> has been submitted.
       </p>
+
+      <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl p-4 max-w-md mx-auto text-left space-y-2 mb-6 text-xs">
+        <div className="flex justify-between border-b border-[#2E2E2E]/60 pb-2">
+          <span className="text-[#8F8F8F]">Assigned Role:</span>
+          <span className="font-bold text-[#EDEDED]">{role?.toUpperCase()}</span>
+        </div>
+        <div className="flex justify-between border-b border-[#2E2E2E]/60 pb-2">
+          <span className="text-[#8F8F8F]">TIN Number:</span>
+          <span className="font-mono text-[#EDEDED]">{formData.taxId || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between border-b border-[#2E2E2E]/60 pb-2">
+          <span className="text-[#8F8F8F]">Trade License:</span>
+          <span className="font-mono text-[#EDEDED]">{formData.licenseNumber || 'N/A'}</span>
+        </div>
+        <div className="text-[11px] text-amber-300/90 pt-1 leading-normal">
+          🔒 <strong>SRS FR-01 Acceptance Notice:</strong> You can browse corridor analytics, but load posting and carrier dispatch are locked until a Platform Administrator approves your credentials in the Verification Queue.
+        </div>
+      </div>
+
       <button 
         onClick={onClose} 
-        className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-8 py-3.5 rounded-xl text-sm font-bold w-full transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
+        className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-8 py-3 rounded-xl text-xs font-bold w-full transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
       >
-        Access Portal
+        Enter Shipper Portal
       </button>
     </div>
   );

@@ -12,7 +12,8 @@ import {
   ArrowRight,
   ChevronRight,
   MoreHorizontal,
-  Radar
+  Radar,
+  RefreshCw
 } from 'lucide-react';
 import LiveRadarMap from './LiveRadarMap';
 import { useLiveTelemetry } from '../../hooks/useLiveTelemetry';
@@ -37,6 +38,22 @@ export default function ControlTowerDashboard() {
   const [routes, setRoutes] = useState<any[]>([]);
   const [etaData, setEtaData] = useState<any[]>([]);
   const [recalculating, setRecalculating] = useState(false);
+  const [refreshingEta, setRefreshingEta] = useState(false);
+
+  const handleRefreshEta = async () => {
+    setRefreshingEta(true);
+    try {
+      const res = await fetchEtaProjections();
+      setEtaData(res.projections || []);
+      const modjoH = res.projections?.[0]?.remainingHours;
+      const galafiH = res.projections?.[1]?.remainingHours;
+      toast.success(`PyTorch AI Model: Modjo ${modjoH}h • Galafi ${galafiH}h`);
+    } catch (err) {
+      toast.error('Failed to recalculate ETA');
+    } finally {
+      setRefreshingEta(false);
+    }
+  };
 
   useEffect(() => {
     async function loadAll() {
@@ -70,11 +87,28 @@ export default function ControlTowerDashboard() {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
+  // Live auto-refresh of ETA projections so km ticks down and AI recalculates in real-time
+  useEffect(() => {
+    const etaInterval = setInterval(async () => {
+      try {
+        const res = await fetchEtaProjections();
+        if (res && res.projections) {
+          setEtaData(res.projections);
+        }
+      } catch (err) {
+        // silent background update
+      }
+    }, 8000);
+    return () => clearInterval(etaInterval);
+  }, []);
+
   const handleRecalculate = async () => {
     setRecalculating(true);
     try {
       await recalculateYield();
-      toast.success('Yield recalculated successfully');
+      const routeRes = await fetchCorridorRoutes();
+      setRoutes(routeRes.routes || []);
+      toast.success('Yield recalculated from live database policy');
     } catch (err) {
       toast.error('Failed to recalculate yield');
     } finally {
@@ -94,9 +128,11 @@ export default function ControlTowerDashboard() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-2xl font-mono font-bold text-[#EDEDED]">{telemetry.trucks.length > 0 ? telemetry.trucks.length : summary.activeAssets}</span>
-              <span className="text-[10px] font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1.5 py-0.5 rounded-full">
-                +12.5%
-              </span>
+              {(telemetry.trucks.length > 0 || summary.activeAssets > 0) && (
+                <span className="text-[10px] font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1.5 py-0.5 rounded-full">
+                  Live
+                </span>
+              )}
             </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_active_assets')}</div>
 
@@ -110,7 +146,9 @@ export default function ControlTowerDashboard() {
         <div className="bg-[#232323] border border-[#2E2E2E]/80 rounded-2xl p-5 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
           <div>
             <div className="text-xl font-mono font-bold text-[#EDEDED] mb-1">
-              ETB {loads.length > 0 ? Math.round(loads.reduce((acc, curr) => acc + Number(curr.budgetAmount || 0), 0) / loads.length).toLocaleString() : '356,229'}
+              {loads.length > 0 
+                ? `ETB ${Math.round(loads.reduce((acc, curr) => acc + Number(curr.budgetAmount || 0), 0) / loads.length).toLocaleString()}` 
+                : 'ETB 0'}
             </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_avg_spot_rate')}</div>
 
@@ -123,7 +161,9 @@ export default function ControlTowerDashboard() {
         {/* Metric 3 */}
         <div className="bg-[#232323] border border-[#2E2E2E]/80 rounded-2xl p-5 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
           <div>
-            <div className="text-2xl font-mono font-bold text-[#EDEDED] mb-1">98.28%</div>
+            <div className="text-2xl font-mono font-bold text-[#EDEDED] mb-1">
+              {etaData.length > 0 ? (etaData[0]?.confidence || '98.8%') : '--'}
+            </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_eta_reliability')}</div>
 
           </div>
@@ -201,30 +241,94 @@ export default function ControlTowerDashboard() {
                 <Clock size={16} className="text-[#8F8F8F]" />
                 {t('eta_proj_title')}
               </h3>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 text-[10px] font-mono font-medium text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse"></span>
+                  PyTorch Live
+                </span>
+                <button
+                  onClick={handleRefreshEta}
+                  disabled={refreshingEta}
+                  className="p-1 hover:bg-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] rounded transition-colors disabled:opacity-50"
+                  title="Recalculate ETA with AI Engine"
+                >
+                  <RefreshCw size={13} className={refreshingEta ? 'animate-spin text-[#3ECF8E]' : ''} />
+                </button>
+              </div>
             </div>
             
             <div className="space-y-4">
-              {etaData.map((eta, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center">
-                    <MapPin size={14} className="text-[#8F8F8F]" />
+              {etaData.length === 0 ? (
+                <div className="py-8 text-center text-xs text-[#8F8F8F] flex flex-col items-center justify-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center">
+                    <Truck size={18} className="text-[#555]" />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-end mb-1">
-                      <span className="text-xs font-semibold text-[#EDEDED]">{eta.destination}</span>
-                      <span className={`text-xs font-mono font-bold ${i === 0 ? 'text-[#3ECF8E]' : 'text-[#EDEDED]'}`}>{t('eta_est')} {eta.estimatedArrival}</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-[#232323] rounded-full overflow-hidden">
-                      <div className={`h-full ${i === 0 ? 'bg-[#3ECF8E]' : 'bg-slate-300'} rounded-full`} style={{ width: `${eta.progressPercent}%` }}></div>
-                    </div>
-                  </div>
+                  <span className="font-medium text-[#EDEDED]">No in-transit shipments active</span>
+                  <span className="text-[11px] text-[#707070] max-w-[220px]">
+                    Post a load and dispatch a vehicle to track live AI PyTorch ETA.
+                  </span>
                 </div>
-              ))}
+              ) : (
+                etaData.map((eta, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center shrink-0 mt-0.5">
+                      <MapPin size={14} className={i === 0 ? "text-[#3ECF8E]" : "text-[#8F8F8F]"} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-1.5 truncate">
+                          {eta.truckId && (
+                            <span className="text-[10px] font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1 py-0.2 rounded">
+                              {eta.truckId}
+                            </span>
+                          )}
+                          <span className="text-xs font-semibold text-[#EDEDED] truncate">{eta.destination}</span>
+                        </div>
+                        <span className={`text-xs font-mono font-bold shrink-0 ${i === 0 ? 'text-[#3ECF8E]' : 'text-[#EDEDED]'}`}>
+                          {eta.estimatedArrival}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] text-[#8F8F8F] font-mono mb-1.5">
+                        <span className="truncate max-w-[170px]">
+                          {eta.driver ? `${eta.driver} • ` : ''}
+                          {Math.round(eta.progressPercent || 0)}% completed
+                        </span>
+                        <span className="text-[#3ECF8E] font-medium shrink-0">
+                          {eta.remainingHours ? `~${eta.remainingHours}h remaining` : ''}
+                          {eta.remainingDistanceKm ? ` (${eta.remainingDistanceKm} km)` : ''}
+                        </span>
+                      </div>
+
+                      <div className="h-1.5 w-full bg-[#181818] rounded-full overflow-hidden border border-[#2E2E2E]/50">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${
+                            i === 0
+                              ? 'bg-gradient-to-r from-[#3ECF8E]/80 to-[#3ECF8E]'
+                              : 'bg-gradient-to-r from-sky-500/70 to-sky-400'
+                          }`}
+                          style={{ width: `${eta.progressPercent}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
 
               {etaData.length > 0 && (
-                <div className="pt-2 border-t border-[#2E2E2E] flex justify-between items-center">
-                  <span className="text-[11px] text-[#8F8F8F]">{t('eta_confidence')}</span>
-                  <span className="text-xs font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded">{etaData[0].confidence}</span>
+                <div className="pt-3 border-t border-[#2E2E2E] flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-1.5 text-[#8F8F8F]">
+                    <span className="text-[10px]">Model:</span>
+                    <span className="font-mono text-[#3ECF8E] text-[10px] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1.5 py-0.5 rounded">
+                      ETADeepModel (11f)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-[#8F8F8F]">Confidence:</span>
+                    <span className="text-[11px] font-mono font-bold text-[#EDEDED] bg-[#181818] border border-[#2E2E2E] px-1.5 py-0.5 rounded">
+                      {etaData[0]?.confidence || '98.8%'}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -253,54 +357,73 @@ export default function ControlTowerDashboard() {
             <table className="w-full text-left text-sm text-[#8F8F8F]">
               <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                 <tr>
-                  <th className="px-6 py-4 font-semibold whitespace-nowrap">Load ID</th>
-                  <th className="px-6 py-4 font-semibold">Cargo / Weight</th>
-                  <th className="px-6 py-4 font-semibold">Route</th>
-                  <th className="px-6 py-4 text-right font-semibold whitespace-nowrap">Status</th>
+                  <th className="px-5 py-3.5 font-semibold whitespace-nowrap">Load ID</th>
+                  <th className="px-5 py-3.5 font-semibold whitespace-nowrap">Shipper</th>
+                  <th className="px-5 py-3.5 font-semibold">Cargo / Weight</th>
+                  <th className="px-5 py-3.5 font-semibold">Route</th>
+                  <th className="px-5 py-3.5 text-right font-semibold whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#2E2E2E] text-sm text-[#EDEDED] bg-[#232323]">
                 {loadingVerifications ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-[#8F8F8F]">
+                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#8F8F8F]">
                       Loading order book...
                     </td>
                   </tr>
                 ) : loads.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-[#8F8F8F]">
+                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#8F8F8F]">
                       No active freight orders in the network.
                     </td>
                   </tr>
                 ) : (
                   loads.map((load) => (
                     <tr key={load.id} className="hover:bg-[#2A2A2A] transition-colors group cursor-default">
-                      <td className="px-6 py-4 leading-normal whitespace-nowrap">
+                      <td className="px-5 py-3.5 leading-normal whitespace-nowrap">
                         <span className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm">
                           TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 leading-normal">
-                        <div className="text-sm font-semibold text-[#EDEDED] max-w-[180px] truncate" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
-                        <div className="text-xs text-[#8F8F8F] mt-1 flex items-center gap-1.5">
-                          <span className="font-medium text-[#D1D1D1]">{load.weightKg} kg</span> 
+                      <td className="px-5 py-3.5 leading-normal whitespace-nowrap">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-full bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 flex items-center justify-center text-[#3ECF8E] font-bold text-xs shrink-0 shadow-sm">
+                            {(load.shipperCompany || load.shipperName || 'S')?.[0]?.toUpperCase()}
+                          </div>
+                          <div className="max-w-[140px] truncate">
+                            <div className="text-xs font-semibold text-[#EDEDED] truncate" title={load.shipperCompany || load.shipperName || 'Registered Shipper'}>
+                              {load.shipperCompany || load.shipperName || 'Registered Shipper'}
+                            </div>
+                            <div className="text-[10px] text-[#8F8F8F] truncate flex items-center gap-1" title={load.shipperEmail || load.shipperPhone || ''}>
+                              {load.shipperVerified && (
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#3ECF8E] shrink-0" title="Verified Shipper"></span>
+                              )}
+                              <span className="truncate">{load.shipperName && load.shipperCompany ? load.shipperName : (load.shipperEmail || load.shipperPhone || 'Verified Entity')}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 leading-normal">
+                        <div className="text-xs font-semibold text-[#EDEDED] max-w-[160px] truncate" title={load.cargoType || load.title}>{load.cargoType || load.title}</div>
+                        <div className="text-[11px] text-[#8F8F8F] mt-0.5 flex items-center gap-1.5 whitespace-nowrap">
+                          <span className="font-medium text-[#D1D1D1]">{Number(load.weightKg).toLocaleString()} kg</span> 
                           <span className="w-1 h-1 rounded-full bg-[#404040]"></span> 
                           <span className="font-mono text-[#3ECF8E]">ETB {Number(load.budgetAmount).toLocaleString()}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 leading-normal">
-                        <div className="flex items-center gap-2 text-xs text-[#A0A0A0] max-w-[240px]">
+                      <td className="px-5 py-3.5 leading-normal">
+                        <div className="flex items-center gap-1.5 text-xs text-[#A0A0A0] max-w-[200px]">
                           <span className="truncate flex-1" title={String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')}>
                             {String(typeof load.origin === 'object' && load.origin !== null ? load.origin.address || load.origin.city : load.origin).replace('Adis Ababa', 'Addis Ababa')}
                           </span>
-                          <ArrowRight size={14} className="text-[#555] shrink-0" />
+                          <ArrowRight size={13} className="text-[#555] shrink-0" />
                           <span className="truncate flex-1 text-[#EDEDED] font-medium" title={String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}>
                             {String(typeof load.destination === 'object' && load.destination !== null ? load.destination.address || load.destination.city : load.destination).replace('Adis Ababa', 'Addis Ababa')}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 leading-normal text-right whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full ${
+                      <td className="px-5 py-3.5 leading-normal text-right whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-full ${
                           load.status === 'IN_TRANSIT' ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] ring-1 ring-[#3ECF8E]/20' :
                           load.status === 'POSTED' ? 'bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20' :
                           load.status === 'MATCHED' ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' :

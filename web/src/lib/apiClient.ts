@@ -90,8 +90,12 @@ export async function reviewVerification(id: string, data: { status: string; rej
   return apiClient(`/admin/verifications/${id}/review`, { method: 'POST', data });
 }
 
-export async function submitVerification(data: { tradeLicenseNumber: string; taxId: string; documentUrls?: string[] }) {
+export async function submitVerification(data: { tradeLicenseNumber: string; taxId: string; documentUrls?: any }) {
   return apiClient('/verification/submit', { method: 'POST', data });
+}
+
+export async function getVerificationStatus() {
+  return apiClient('/verification/status', { method: 'GET' });
 }
 
 // Telematics (Tab 1)

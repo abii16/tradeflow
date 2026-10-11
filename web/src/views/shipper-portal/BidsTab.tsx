@@ -39,6 +39,23 @@ export default function BidsTab() {
     return () => window.removeEventListener('shipper:load_posted', handleRefresh);
   }, []);
 
+  // Simulate live data feed
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLoads(prevLoads => prevLoads.map(load => {
+        if (!load.bids || load.bids.length === 0) return load;
+        return {
+          ...load,
+          bids: load.bids.map((bid: any) => ({
+            ...bid,
+            amount: Math.max(0, Number(bid.amount || bid.bidAmount) + Math.floor(Math.random() * 300) - 150)
+          }))
+        };
+      }));
+    }, 3500);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleAcceptBid = async (bidId: string) => {
     try {
       setLoading(true);

@@ -1,13 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
-import { removeAuthToken } from '../lib/apiClient';
+import { removeAuthToken, apiClient } from '../lib/apiClient';
 
 export interface User {
   id: string;
   email: string;
   fullName: string;
   role: 'SHIPPER' | 'TRANSPORTER' | 'FORWARDER' | 'CUSTOMS_OFFICER' | 'ADMIN';
+  isVerified?: boolean;
+  verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
+  companyName?: string;
+  tinNumber?: string;
+  tradeLicense?: string;
   [key: string]: any;
 }
 
@@ -16,7 +21,9 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (data: any) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   register: (data: any) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -27,11 +34,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const refreshUser = async () => {
+    try {
+      const res = await apiClient('/auth/me', { method: 'GET' });
+      if (res && res.user) {
+        setUser((prev) => ({ ...prev, ...res.user }));
+      }
+    } catch (err) {
+      // Ignore if unauthenticated
+    }
+  };
+
   useEffect(() => {
     // 1. Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user?.user_metadata as User || null);
+      if (session) {
+        refreshUser();
+      }
       setIsLoading(false);
     }).catch(err => {
       console.error('Failed to get session:', err);
@@ -42,6 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user?.user_metadata as User || null);
+      if (session) {
+        refreshUser();
+      }
       setIsLoading(false);
     });
 
@@ -51,36 +75,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (data: any) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
+    const result = await apiClient('/auth/login', {
+      method: 'POST',
+      data: {
+        email: data.email,
+        password: data.password,
+      }
     });
-    
+
+    if (result.access_token && result.refresh_token) {
+      await supabase.auth.setSession({
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+      });
+      if (result.user) {
+        setUser((prev) => ({ ...prev, ...result.user }));
+      }
+      await refreshUser();
+    } else {
+      throw new Error('Authentication failed: missing tokens');
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
     if (error) throw error;
   };
 
   const register = async (data: any) => {
-    // Supabase sign-up and pass KYC data into metadata
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: {
-          full_name: data.fullName,
-          phone: data.phone,
-          role: data.role,
-          company_name: data.companyName,
-          tin_number: data.tinNumber,
-          trade_license: data.tradeLicense,
-          badge_id: data.badgeId,
-          fleet_name: data.fleetName,
-          operator_license: data.operatorLicense,
-          vehicle_capacity: data.vehicleCapacity,
-        }
+    return await apiClient('/auth/register', {
+      method: 'POST',
+      data: {
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+        phone: data.phone,
+        role: data.role,
+        companyName: data.companyName,
+        tinNumber: data.tinNumber,
+        tradeLicense: data.tradeLicense,
+        businessSector: data.businessSector,
+        businessAddress: data.businessAddress,
+        documentUrls: data.documentUrls,
+        badgeId: data.badgeId,
+        fleetName: data.fleetName,
+        operatorLicense: data.operatorLicense,
+        vehicleCapacity: data.vehicleCapacity,
       }
     });
-
-    if (error) throw error;
   };
 
   const logout = async () => {
@@ -91,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, loginWithGoogle, register, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );
