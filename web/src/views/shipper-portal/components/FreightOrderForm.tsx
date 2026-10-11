@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ export default function FreightOrderForm({
 }: FreightOrderFormProps) {
   const { t } = useTranslation();
   const [quoteGenerated, setQuoteGenerated] = useState(false);
-  const [leadTime, setLeadTime] = useState('');
+  const [leadTime, setLeadTime] = useState('24h');
   const [loading, setLoading] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [formData, setFormData] = useState({
@@ -36,8 +36,10 @@ export default function FreightOrderForm({
   const [quoteDetails, setQuoteDetails] = useState<any>(null);
   const [aiError, setAiError] = useState<string | null>(null);
 
-  const handleRequestQuote = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRequestQuote = async (e?: React.FormEvent) => {
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     setAiError(null);
     try {
       setLoading(true);
@@ -71,6 +73,12 @@ export default function FreightOrderForm({
         return fallback;
       };
 
+      const lt = (leadTime || '24h').toLowerCase();
+      const is12 = lt.includes('12') || lt.includes('express');
+      const is48 = lt.includes('48') || lt.includes('flexible') || lt.includes('economy');
+      const urgency: 'high' | 'low' | 'standard' = is12 ? 'high' : (is48 ? 'low' : 'standard');
+      const pickupWindowHours = is12 ? 12 : (is48 ? 48 : 24);
+
       const payload = {
         origin: {
           name: formData.origin,
@@ -83,9 +91,9 @@ export default function FreightOrderForm({
         cargoType: mappedCargoType,
         truckType: mappedTruckType,
         weightKg: Number(formData.weightKg) || 0,
-        urgency: leadTime === '12h' ? 'high' : leadTime === '48h' ? 'low' : 'standard',
-        isUrgent: leadTime === '12h',
-        pickupWindowHours: leadTime === '12h' ? 12 : leadTime === '24h' ? 24 : 48,
+        urgency,
+        isUrgent: is12,
+        pickupWindowHours,
       };
 
       const response = await calculateSpotRate(payload);
@@ -105,6 +113,16 @@ export default function FreightOrderForm({
       setLoading(false);
     }
   };
+
+  // Dynamically recalculate if a quote was already active and the user adjusts any parameter
+  useEffect(() => {
+    if (quoteGenerated && formData.origin && formData.destination && formData.weightKg) {
+      const timer = setTimeout(() => {
+        handleRequestQuote();
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [leadTime, formData.cargoType, formData.weightKg, formData.origin, formData.destination]);
 
   const handleConfirmBroadcast = async () => {
     if (!isVerified) {
@@ -228,22 +246,18 @@ export default function FreightOrderForm({
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-[#EDEDED]">{t('lead_time_window')}</Label>
               <div className="relative">
-                <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
-                <input
-                  type="text"
-                  list="lead-time-list"
+                <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
+                <select
                   name="leadTime"
                   value={leadTime}
                   onChange={(e) => setLeadTime(e.target.value)}
                   required
-                  className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:bg-[#232323] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-all appearance-none"
-                  placeholder={t('lead_time_window')}
-                />
-                <datalist id="lead-time-list">
-                  <option value="12h">{t('express_12h')}</option>
-                  <option value="24h">{t('standard_24h')}</option>
-                  <option value="48h">{t('flexible_48h')}</option>
-                </datalist>
+                  className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:bg-[#232323] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-all appearance-none cursor-pointer"
+                >
+                  <option value="12h">12h - {t('express_12h', 'Express Dispatch')}</option>
+                  <option value="24h">24h - {t('standard_24h', 'Standard Dispatch')}</option>
+                  <option value="48h">48h - {t('flexible_48h', 'Flexible Economy Dispatch')}</option>
+                </select>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
               </div>
             </div>
