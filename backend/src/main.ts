@@ -60,7 +60,7 @@ app.get('/health', (req, res) => {
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 
-app.use('/auth', AuthController);
+app.use('/api/v1/auth', AuthController);
 app.use('/api/v1/shipper', JwtAuthGuard, RolesGuard(['SHIPPER']), shipperRoutes);
 app.use('/api/v1/loads', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), loadsRoutes);
 app.use('/api/v1/bids', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SHIPPER', 'ADMIN']), bidsRoutes);
