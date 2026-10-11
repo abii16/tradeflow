@@ -142,12 +142,8 @@ export default function LiveRadarMap() {
           )
         ))}
 
-        {/* Live Vehicles with Marker Clustering */}
-        <MarkerClusterGroup 
-          chunkedLoading 
-          maxClusterRadius={60}
-          spiderfyOnMaxZoom={true}
-        >
+        {/* Live Vehicles (Removed Clustering to show individual movement) */}
+        <>
           {telemetry.trucks.map(truck => (
             <Marker key={truck.id} position={[truck.lat, truck.lng]} icon={createVehicleMarker(truck.id, truck.status === 'GEOFENCE_BREACH' ? 'bg-red-500' : 'bg-cyan-400')}>
               <Popup className="rounded shadow-xl">
@@ -173,7 +169,7 @@ export default function LiveRadarMap() {
               </Popup>
             </Marker>
           ))}
-        </MarkerClusterGroup>
+        </>
 
         <MapController />
       </MapContainer>
