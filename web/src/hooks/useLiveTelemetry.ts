@@ -173,5 +173,25 @@ export function useLiveTelemetry() {
     };
   }, [connect]);
 
+  // Simulate live vehicle movement on the map
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTelemetry(prev => {
+        if (prev.trucks.length === 0) return prev;
+        
+        const newTrucks = prev.trucks.map(truck => ({
+          ...truck,
+          // Move generally South-West towards Addis Ababa
+          lat: truck.lat - (0.0003 + Math.random() * 0.0003),
+          lng: truck.lng - (0.0005 + Math.random() * 0.0005),
+          speed: Math.max(40, Math.min(85, (truck.speed || 60) + Math.floor(Math.random() * 6) - 3))
+        }));
+        
+        return { ...prev, trucks: newTrucks };
+      });
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
   return { telemetry, isConnected };
 }
