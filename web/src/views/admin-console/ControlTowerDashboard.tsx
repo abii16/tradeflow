@@ -252,50 +252,62 @@ export default function ControlTowerDashboard() {
             </div>
             
             <div className="space-y-4">
-              {etaData.map((eta, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center shrink-0 mt-0.5">
-                    <MapPin size={14} className={i === 0 ? "text-[#3ECF8E]" : "text-[#8F8F8F]"} />
+              {etaData.length === 0 ? (
+                <div className="py-8 text-center text-xs text-[#8F8F8F] flex flex-col items-center justify-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center">
+                    <Truck size={18} className="text-[#555]" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-1.5 truncate">
-                        {eta.truckId && (
-                          <span className="text-[10px] font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1 py-0.2 rounded">
-                            {eta.truckId}
-                          </span>
-                        )}
-                        <span className="text-xs font-semibold text-[#EDEDED] truncate">{eta.destination}</span>
-                      </div>
-                      <span className={`text-xs font-mono font-bold shrink-0 ${i === 0 ? 'text-[#3ECF8E]' : 'text-[#EDEDED]'}`}>
-                        {eta.estimatedArrival}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[10px] text-[#8F8F8F] font-mono mb-1.5">
-                      <span className="truncate max-w-[170px]">
-                        {eta.driver ? `${eta.driver} • ` : ''}
-                        {Math.round(eta.progressPercent || 0)}% completed
-                      </span>
-                      <span className="text-[#3ECF8E] font-medium shrink-0">
-                        {eta.remainingHours ? `~${eta.remainingHours}h remaining` : ''}
-                        {eta.remainingDistanceKm ? ` (${eta.remainingDistanceKm} km)` : ''}
-                      </span>
-                    </div>
-
-                    <div className="h-1.5 w-full bg-[#181818] rounded-full overflow-hidden border border-[#2E2E2E]/50">
-                      <div
-                        className={`h-full rounded-full transition-all duration-700 ${
-                          i === 0
-                            ? 'bg-gradient-to-r from-[#3ECF8E]/80 to-[#3ECF8E]'
-                            : 'bg-gradient-to-r from-sky-500/70 to-sky-400'
-                        }`}
-                        style={{ width: `${eta.progressPercent}%` }}
-                      ></div>
-                    </div>
-                  </div>
+                  <span className="font-medium text-[#EDEDED]">No in-transit shipments active</span>
+                  <span className="text-[11px] text-[#707070] max-w-[220px]">
+                    Post a load and dispatch a vehicle to track live AI PyTorch ETA.
+                  </span>
                 </div>
-              ))}
+              ) : (
+                etaData.map((eta, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center shrink-0 mt-0.5">
+                      <MapPin size={14} className={i === 0 ? "text-[#3ECF8E]" : "text-[#8F8F8F]"} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-1.5 truncate">
+                          {eta.truckId && (
+                            <span className="text-[10px] font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1 py-0.2 rounded">
+                              {eta.truckId}
+                            </span>
+                          )}
+                          <span className="text-xs font-semibold text-[#EDEDED] truncate">{eta.destination}</span>
+                        </div>
+                        <span className={`text-xs font-mono font-bold shrink-0 ${i === 0 ? 'text-[#3ECF8E]' : 'text-[#EDEDED]'}`}>
+                          {eta.estimatedArrival}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] text-[#8F8F8F] font-mono mb-1.5">
+                        <span className="truncate max-w-[170px]">
+                          {eta.driver ? `${eta.driver} • ` : ''}
+                          {Math.round(eta.progressPercent || 0)}% completed
+                        </span>
+                        <span className="text-[#3ECF8E] font-medium shrink-0">
+                          {eta.remainingHours ? `~${eta.remainingHours}h remaining` : ''}
+                          {eta.remainingDistanceKm ? ` (${eta.remainingDistanceKm} km)` : ''}
+                        </span>
+                      </div>
+
+                      <div className="h-1.5 w-full bg-[#181818] rounded-full overflow-hidden border border-[#2E2E2E]/50">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${
+                            i === 0
+                              ? 'bg-gradient-to-r from-[#3ECF8E]/80 to-[#3ECF8E]'
+                              : 'bg-gradient-to-r from-sky-500/70 to-sky-400'
+                          }`}
+                          style={{ width: `${eta.progressPercent}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
 
               {etaData.length > 0 && (
                 <div className="pt-3 border-t border-[#2E2E2E] flex items-center justify-between text-[11px]">
