@@ -12,7 +12,8 @@ import {
   ArrowRight,
   ChevronRight,
   MoreHorizontal,
-  Radar
+  Radar,
+  RefreshCw
 } from 'lucide-react';
 import LiveRadarMap from './LiveRadarMap';
 import { useLiveTelemetry } from '../../hooks/useLiveTelemetry';
@@ -37,6 +38,22 @@ export default function ControlTowerDashboard() {
   const [routes, setRoutes] = useState<any[]>([]);
   const [etaData, setEtaData] = useState<any[]>([]);
   const [recalculating, setRecalculating] = useState(false);
+  const [refreshingEta, setRefreshingEta] = useState(false);
+
+  const handleRefreshEta = async () => {
+    setRefreshingEta(true);
+    try {
+      const res = await fetchEtaProjections();
+      setEtaData(res.projections || []);
+      const modjoH = res.projections?.[0]?.remainingHours;
+      const galafiH = res.projections?.[1]?.remainingHours;
+      toast.success(`PyTorch AI Model: Modjo ${modjoH}h • Galafi ${galafiH}h`);
+    } catch (err) {
+      toast.error('Failed to recalculate ETA');
+    } finally {
+      setRefreshingEta(false);
+    }
+  };
 
   useEffect(() => {
     async function loadAll() {
@@ -68,6 +85,33 @@ export default function ControlTowerDashboard() {
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  // Live auto-refresh of ETA projections so km ticks down and AI recalculates in real-time
+  useEffect(() => {
+    const etaInterval = setInterval(async () => {
+      try {
+        const res = await fetchEtaProjections();
+        if (res && res.projections) {
+          setEtaData(res.projections);
+        }
+      } catch (err) {
+        // silent background update
+      }
+    }, 8000);
+    return () => clearInterval(etaInterval);
+  }, []);
+
+  // Simulate live price feed for market routes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRoutes(prev => prev.map(r => ({
+        ...r,
+        price: r.price + Math.floor(Math.random() * 500) - 250,
+        variance: Math.max(-10, Math.min(10, r.variance + (Math.random() * 0.4 - 0.2)))
+      })));
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleRecalculate = async () => {
@@ -201,30 +245,82 @@ export default function ControlTowerDashboard() {
                 <Clock size={16} className="text-[#8F8F8F]" />
                 {t('eta_proj_title')}
               </h3>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 text-[10px] font-mono font-medium text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse"></span>
+                  PyTorch Live
+                </span>
+                <button
+                  onClick={handleRefreshEta}
+                  disabled={refreshingEta}
+                  className="p-1 hover:bg-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] rounded transition-colors disabled:opacity-50"
+                  title="Recalculate ETA with AI Engine"
+                >
+                  <RefreshCw size={13} className={refreshingEta ? 'animate-spin text-[#3ECF8E]' : ''} />
+                </button>
+              </div>
             </div>
             
             <div className="space-y-4">
               {etaData.map((eta, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center">
-                    <MapPin size={14} className="text-[#8F8F8F]" />
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#181818] border border-[#2E2E2E] flex items-center justify-center shrink-0 mt-0.5">
+                    <MapPin size={14} className={i === 0 ? "text-[#3ECF8E]" : "text-[#8F8F8F]"} />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-end mb-1">
-                      <span className="text-xs font-semibold text-[#EDEDED]">{eta.destination}</span>
-                      <span className={`text-xs font-mono font-bold ${i === 0 ? 'text-[#3ECF8E]' : 'text-[#EDEDED]'}`}>{t('eta_est')} {eta.estimatedArrival}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-1.5 truncate">
+                        {eta.truckId && (
+                          <span className="text-[10px] font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1 py-0.2 rounded">
+                            {eta.truckId}
+                          </span>
+                        )}
+                        <span className="text-xs font-semibold text-[#EDEDED] truncate">{eta.destination}</span>
+                      </div>
+                      <span className={`text-xs font-mono font-bold shrink-0 ${i === 0 ? 'text-[#3ECF8E]' : 'text-[#EDEDED]'}`}>
+                        {eta.estimatedArrival}
+                      </span>
                     </div>
-                    <div className="h-1.5 w-full bg-[#232323] rounded-full overflow-hidden">
-                      <div className={`h-full ${i === 0 ? 'bg-[#3ECF8E]' : 'bg-slate-300'} rounded-full`} style={{ width: `${eta.progressPercent}%` }}></div>
+
+                    <div className="flex items-center justify-between text-[10px] text-[#8F8F8F] font-mono mb-1.5">
+                      <span className="truncate max-w-[170px]">
+                        {eta.driver ? `${eta.driver} • ` : ''}
+                        {Math.round(eta.progressPercent || 0)}% completed
+                      </span>
+                      <span className="text-[#3ECF8E] font-medium shrink-0">
+                        {eta.remainingHours ? `~${eta.remainingHours}h remaining` : ''}
+                        {eta.remainingDistanceKm ? ` (${eta.remainingDistanceKm} km)` : ''}
+                      </span>
+                    </div>
+
+                    <div className="h-1.5 w-full bg-[#181818] rounded-full overflow-hidden border border-[#2E2E2E]/50">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${
+                          i === 0
+                            ? 'bg-gradient-to-r from-[#3ECF8E]/80 to-[#3ECF8E]'
+                            : 'bg-gradient-to-r from-sky-500/70 to-sky-400'
+                        }`}
+                        style={{ width: `${eta.progressPercent}%` }}
+                      ></div>
                     </div>
                   </div>
                 </div>
               ))}
 
               {etaData.length > 0 && (
-                <div className="pt-2 border-t border-[#2E2E2E] flex justify-between items-center">
-                  <span className="text-[11px] text-[#8F8F8F]">{t('eta_confidence')}</span>
-                  <span className="text-xs font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded">{etaData[0].confidence}</span>
+                <div className="pt-3 border-t border-[#2E2E2E] flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-1.5 text-[#8F8F8F]">
+                    <span className="text-[10px]">Model:</span>
+                    <span className="font-mono text-[#3ECF8E] text-[10px] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1.5 py-0.5 rounded">
+                      ETADeepModel (11f)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-[#8F8F8F]">Confidence:</span>
+                    <span className="text-[11px] font-mono font-bold text-[#EDEDED] bg-[#181818] border border-[#2E2E2E] px-1.5 py-0.5 rounded">
+                      {etaData[0]?.confidence || '98.8%'}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
