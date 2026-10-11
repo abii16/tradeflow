@@ -56,6 +56,22 @@ export default function LiveRadarMap() {
   const { t } = useTranslation();
   const { telemetry, isConnected } = useLiveTelemetry();
   const { riskZones } = useRiskZones();
+  const [liveEatTime, setLiveEatTime] = React.useState(() => {
+    const d = new Date();
+    const eatH = (d.getUTCHours() + 3) % 24;
+    const m = String(d.getUTCMinutes()).padStart(2, '0');
+    return `${String(eatH).padStart(2, '0')}:${m} EAT`;
+  });
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      const d = new Date();
+      const eatH = (d.getUTCHours() + 3) % 24;
+      const m = String(d.getUTCMinutes()).padStart(2, '0');
+      setLiveEatTime(`${String(eatH).padStart(2, '0')}:${m} EAT`);
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="relative overflow-hidden w-full h-full min-h-[480px]">
@@ -184,7 +200,7 @@ export default function LiveRadarMap() {
             </h2>
             <div className="text-[10px] font-mono flex items-center gap-1.5 text-emerald-400">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              14:32 EAT
+              {liveEatTime}
             </div>
           </div>
           

@@ -128,9 +128,11 @@ export default function ControlTowerDashboard() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-2xl font-mono font-bold text-[#EDEDED]">{telemetry.trucks.length > 0 ? telemetry.trucks.length : summary.activeAssets}</span>
-              <span className="text-[10px] font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1.5 py-0.5 rounded-full">
-                +12.5%
-              </span>
+              {(telemetry.trucks.length > 0 || summary.activeAssets > 0) && (
+                <span className="text-[10px] font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1.5 py-0.5 rounded-full">
+                  Live
+                </span>
+              )}
             </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_active_assets')}</div>
 
@@ -144,7 +146,9 @@ export default function ControlTowerDashboard() {
         <div className="bg-[#232323] border border-[#2E2E2E]/80 rounded-2xl p-5 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
           <div>
             <div className="text-xl font-mono font-bold text-[#EDEDED] mb-1">
-              ETB {loads.length > 0 ? Math.round(loads.reduce((acc, curr) => acc + Number(curr.budgetAmount || 0), 0) / loads.length).toLocaleString() : '356,229'}
+              {loads.length > 0 
+                ? `ETB ${Math.round(loads.reduce((acc, curr) => acc + Number(curr.budgetAmount || 0), 0) / loads.length).toLocaleString()}` 
+                : 'ETB 0'}
             </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_avg_spot_rate')}</div>
 
@@ -157,7 +161,9 @@ export default function ControlTowerDashboard() {
         {/* Metric 3 */}
         <div className="bg-[#232323] border border-[#2E2E2E]/80 rounded-2xl p-5 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
           <div>
-            <div className="text-2xl font-mono font-bold text-[#EDEDED] mb-1">98.28%</div>
+            <div className="text-2xl font-mono font-bold text-[#EDEDED] mb-1">
+              {etaData.length > 0 ? (etaData[0]?.confidence || '98.8%') : '--'}
+            </div>
             <div className="text-xs font-semibold text-[#8F8F8F] mb-0.5">{t('kpi_eta_reliability')}</div>
 
           </div>
