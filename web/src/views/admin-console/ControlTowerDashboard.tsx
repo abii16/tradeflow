@@ -102,23 +102,13 @@ export default function ControlTowerDashboard() {
     return () => clearInterval(etaInterval);
   }, []);
 
-  // Simulate live price feed for market routes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRoutes(prev => prev.map(r => ({
-        ...r,
-        price: r.price + Math.floor(Math.random() * 500) - 250,
-        variance: Math.max(-10, Math.min(10, r.variance + (Math.random() * 0.4 - 0.2)))
-      })));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
   const handleRecalculate = async () => {
     setRecalculating(true);
     try {
       await recalculateYield();
-      toast.success('Yield recalculated successfully');
+      const routeRes = await fetchCorridorRoutes();
+      setRoutes(routeRes.routes || []);
+      toast.success('Yield recalculated from live database policy');
     } catch (err) {
       toast.error('Failed to recalculate yield');
     } finally {
