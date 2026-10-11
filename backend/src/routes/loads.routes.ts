@@ -101,11 +101,34 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     if (minPrice !== undefined) conditions.push(gte(loads.budgetAmount, minPrice.toString()));
     if (maxPrice !== undefined) conditions.push(lte(loads.budgetAmount, maxPrice.toString()));
 
-    const query = db.select().from(loads)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .limit(limit)
-      .offset(offset)
-      .orderBy(desc(loads.createdAt));
+    const query = db.select({
+      id: loads.id,
+      shipperId: loads.shipperId,
+      title: loads.title,
+      description: loads.description,
+      origin: loads.origin,
+      destination: loads.destination,
+      weightKg: loads.weightKg,
+      volumeM3: loads.volumeM3,
+      cargoType: loads.cargoType,
+      budgetAmount: loads.budgetAmount,
+      currency: loads.currency,
+      status: loads.status,
+      expiresAt: loads.expiresAt,
+      createdAt: loads.createdAt,
+      updatedAt: loads.updatedAt,
+      shipperName: users.fullName,
+      shipperCompany: users.companyName,
+      shipperEmail: users.email,
+      shipperPhone: users.phone,
+      shipperVerified: users.isVerified,
+    })
+    .from(loads)
+    .leftJoin(users, eq(loads.shipperId, users.id))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(loads.createdAt));
 
     const results = await query;
     res.json({ loads: results });
@@ -119,7 +142,31 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const [load] = await db.select().from(loads).where(eq(loads.id, id));
+    const [load] = await db.select({
+      id: loads.id,
+      shipperId: loads.shipperId,
+      title: loads.title,
+      description: loads.description,
+      origin: loads.origin,
+      destination: loads.destination,
+      weightKg: loads.weightKg,
+      volumeM3: loads.volumeM3,
+      cargoType: loads.cargoType,
+      budgetAmount: loads.budgetAmount,
+      currency: loads.currency,
+      status: loads.status,
+      expiresAt: loads.expiresAt,
+      createdAt: loads.createdAt,
+      updatedAt: loads.updatedAt,
+      shipperName: users.fullName,
+      shipperCompany: users.companyName,
+      shipperEmail: users.email,
+      shipperPhone: users.phone,
+      shipperVerified: users.isVerified,
+    })
+    .from(loads)
+    .leftJoin(users, eq(loads.shipperId, users.id))
+    .where(eq(loads.id, id));
 
     if (!load) {
       res.status(404).json({ error: 'Load not found' });

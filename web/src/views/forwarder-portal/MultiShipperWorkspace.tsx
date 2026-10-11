@@ -15,8 +15,8 @@ export default function MultiShipperWorkspace() {
           const destAddr = load.destination?.address || load.destination || 'Unknown Destination';
           return {
             mbl: load.id || 'N/A',
-            hbl: load.cargoType || 'N/A',
-            importer: load.shipperId || 'Unknown Shipper',
+            hbl: load.cargoType || load.title || 'N/A',
+            importer: load.shipperCompany || load.shipperName || (load.shipperId ? `Shipper #${load.shipperId.slice(0, 8)}` : 'Registered Shipper'),
             route: `${originAddr} -> ${destAddr}`,
             status: load.status || 'Pending',
             badge: 'bg-[#3ECF8E]/10 text-[#3ECF8E]',
