@@ -34,9 +34,11 @@ export default function FreightOrderForm({
   };
 
   const [quoteDetails, setQuoteDetails] = useState<any>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const handleRequestQuote = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAiError(null);
     try {
       setLoading(true);
 
@@ -91,9 +93,14 @@ export default function FreightOrderForm({
       setCalculatedPrice(response.spot_price ?? response.recommended_spot_rate ?? 0);
       setQuoteDetails(response);
       setQuoteGenerated(true);
+      setAiError(null);
     } catch (error: any) {
       console.error(error);
-      alert('Failed to calculate spot price: ' + (error.message || 'Unknown error'));
+      const errMsg = error.response?.data?.error || error.message || 'AI Spot Pricing Engine is currently offline.';
+      setAiError(errMsg);
+      setQuoteGenerated(false);
+      setQuoteDetails(null);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -257,6 +264,25 @@ export default function FreightOrderForm({
           {t('generate_instant_spot_quote')}
         </button>
       </div>
+
+      {aiError && (
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-2.5">
+            <ShieldAlert size={16} className="text-red-400 shrink-0" />
+            <div>
+              <span className="font-bold text-red-300">AI Pricing Engine Unavailable:</span>{' '}
+              <span>{aiError}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAiError(null)}
+            className="text-red-400/80 hover:text-red-300 font-bold px-2 py-1 text-[11px]"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {quoteGenerated && (
         <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-5 shadow-lg shadow-black/40 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">

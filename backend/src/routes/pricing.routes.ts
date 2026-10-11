@@ -29,9 +29,9 @@ router.post('/quote', auditMiddleware('PRICING_QUOTE'), async (req: Request, res
     const shipperId = req.user?.id;
     const quote = await pricingService.calculateSpotRate(parsed.data, shipperId);
     res.status(200).json(quote);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error calculating spot rate:', error);
-    res.status(500).json({ error: 'Failed to calculate spot rate' });
+    res.status(503).json({ error: error.message || 'AI Spot Pricing Engine is currently unavailable' });
   }
 });
 

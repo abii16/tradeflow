@@ -3,10 +3,8 @@ import { priceQuotes } from '../../db/schema/price_quotes';
 import { SpotPricingRequestDto, ContractEvaluationRequestDto } from '../../dto/pricing.dto';
 
 export class PricingService {
-  private aiEngineUrl: string;
-
-  constructor() {
-    this.aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
+  private get aiEngineUrl() {
+    return process.env.AI_ENGINE_URL || 'http://localhost:8000';
   }
 
   /**
@@ -41,19 +39,26 @@ export class PricingService {
       if (response.ok) {
         quoteResponse = await response.json();
       } else {
+        const errText = await response.text();
         if (process.env.NODE_ENV !== 'test') {
-          console.warn(`[PricingService] AI Engine responded with status ${response.status}. Using resilient fallback.`);
+          console.error(`[PricingService] AI Engine error (${response.status}):`, errText);
+          throw new Error(`AI Pricing Engine error (${response.status}): ${errText}`);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       if (process.env.NODE_ENV !== 'test') {
-        console.warn('[PricingService] AI Engine unreachable. Using local calculation fallback:', error);
+        console.error('[PricingService] AI Engine unreachable:', error.message);
+        throw new Error('AI Spot Pricing Engine is offline. Real ML prediction is required and cannot be simulated.');
       }
     }
 
-    // Resilient Fallback Calculation if microservice is offline
+    // Only allow fallback calculation in unit tests (NODE_ENV === 'test')
     if (!quoteResponse) {
-      quoteResponse = this.computeFallbackSpotPrice(dto);
+      if (process.env.NODE_ENV === 'test') {
+        quoteResponse = this.computeFallbackSpotPrice(dto);
+      } else {
+        throw new Error('AI Spot Pricing Engine is offline. Real ML prediction is required.');
+      }
     }
 
     // Persist quote to DB for auditability (FR-04.3) if DB is connected
