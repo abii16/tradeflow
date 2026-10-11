@@ -7,7 +7,7 @@ interface RegistrationFlowProps {
 }
 
 export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +77,17 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
       </div>
 
       {/* Google Button */}
-      <button className="w-full flex items-center justify-center gap-3 bg-[#232323] hover:bg-[#2A2A2A] text-[#EDEDED] border border-[#2E2E2E] hover:border-[#8F8F8F] transition-all px-4 py-3 rounded-xl font-bold text-sm mb-6">
+      <button 
+        type="button" 
+        onClick={async () => {
+          try {
+            await loginWithGoogle();
+          } catch(err: any) {
+            setError(err.message || 'Google Sign Up failed');
+          }
+        }} 
+        className="w-full flex items-center justify-center gap-3 bg-[#232323] hover:bg-[#2A2A2A] text-[#EDEDED] border border-[#2E2E2E] hover:border-[#8F8F8F] transition-all px-4 py-3 rounded-xl font-bold text-sm mb-6"
+      >
         <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
