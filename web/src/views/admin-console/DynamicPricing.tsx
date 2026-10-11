@@ -17,9 +17,9 @@ export default function DynamicPricing() {
   const [dieselIndex, setDieselIndex] = useState(95.50);
   const [demandMultiplier, setDemandMultiplier] = useState(1.24);
 
-  const [metrics, setMetrics] = useState({ networkYield24h: 2420000, activeTeus: 142 });
+  const [metrics, setMetrics] = useState({ networkYield24h: 0, activeTeus: 0 });
   const [historicalTrend, setHistoricalTrend] = useState<any[]>([]);
-  const [aiConfidence, setAiConfidence] = useState(94.2);
+  const [aiConfidence, setAiConfidence] = useState(0);
   const [divergingContracts, setDivergingContracts] = useState<any[]>([]);
 
   const [auditDrawerOpen, setAuditDrawerOpen] = useState(false);
