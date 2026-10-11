@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
-import { removeAuthToken } from '../lib/apiClient';
+import { removeAuthToken, apiClient } from '../lib/apiClient';
 
 export interface User {
   id: string;
@@ -16,6 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (data: any) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -51,36 +52,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (data: any) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
+    const result = await apiClient('/auth/login', {
+      method: 'POST',
+      data: {
+        email: data.email,
+        password: data.password,
+      }
     });
-    
+
+    if (result.access_token && result.refresh_token) {
+      await supabase.auth.setSession({
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+      });
+    } else {
+      throw new Error('Authentication failed: missing tokens');
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
     if (error) throw error;
   };
 
   const register = async (data: any) => {
-    // Supabase sign-up and pass KYC data into metadata
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: {
-          full_name: data.fullName,
-          phone: data.phone,
-          role: data.role,
-          company_name: data.companyName,
-          tin_number: data.tinNumber,
-          trade_license: data.tradeLicense,
-          badge_id: data.badgeId,
-          fleet_name: data.fleetName,
-          operator_license: data.operatorLicense,
-          vehicle_capacity: data.vehicleCapacity,
-        }
+    await apiClient('/auth/register', {
+      method: 'POST',
+      data: {
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+        phone: data.phone,
+        role: data.role,
+        companyName: data.companyName,
+        tinNumber: data.tinNumber,
+        tradeLicense: data.tradeLicense,
+        badgeId: data.badgeId,
+        fleetName: data.fleetName,
+        operatorLicense: data.operatorLicense,
+        vehicleCapacity: data.vehicleCapacity,
       }
     });
-
-    if (error) throw error;
   };
 
   const logout = async () => {
@@ -91,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, loginWithGoogle, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
