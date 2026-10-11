@@ -29,6 +29,20 @@ export default function FreightOrderForm() {
     try {
       setLoading(true);
 
+      const cLower = (formData.cargoType || '').toLowerCase();
+      const mappedCargoType: 'dry' | 'bulk' | 'fragile' | 'hazmat' | 'perishable' | 'refrigerated' | 'general' =
+        cLower.includes('reefer') || cLower.includes('refrigerat') || cLower.includes('pharma') ? 'refrigerated' :
+        cLower.includes('bulk') || cLower.includes('agricultural') ? 'bulk' :
+        cLower.includes('fuel') || cLower.includes('petroleum') || cLower.includes('tanker') ? 'hazmat' :
+        cLower.includes('perish') ? 'perishable' :
+        'dry';
+
+      const mappedTruckType =
+        cLower.includes('reefer') ? 'REEFER' :
+        cLower.includes('tanker') ? 'TANKER' :
+        cLower.includes('box') ? 'SIDE_WALL' :
+        'FLATBED';
+
       const payload = {
         origin: {
           name: formData.origin,
@@ -38,7 +52,8 @@ export default function FreightOrderForm() {
           name: formData.destination,
           city: formData.destination.toLowerCase().includes('modjo') ? 'Modjo' : formData.destination.toLowerCase().includes('hawassa') ? 'Hawassa' : formData.destination.toLowerCase().includes('dire') ? 'Dire Dawa' : 'Addis Ababa'
         },
-        cargoType: 'dry',
+        cargoType: mappedCargoType,
+        truckType: mappedTruckType,
         weightKg: Number(formData.weightKg) || 0,
         urgency: leadTime === '12h' ? 'high' : leadTime === '48h' ? 'low' : 'standard',
         isUrgent: leadTime === '12h',
@@ -47,7 +62,7 @@ export default function FreightOrderForm() {
 
       const response = await calculateSpotRate(payload);
 
-      setCalculatedPrice(response.spot_price);
+      setCalculatedPrice(response.spot_price ?? response.recommended_spot_rate ?? 0);
       setQuoteDetails(response);
       setQuoteGenerated(true);
     } catch (error: any) {

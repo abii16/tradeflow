@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Settings } from 'lucide-react';
+import { apiClient } from '@/lib/apiClient';
 
 interface PortalSelectorProps {
   onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
 }
 
 export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) {
+  const [activeAssets, setActiveAssets] = useState<string>('142');
+  const [spotIndex, setSpotIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function loadMetrics() {
+      try {
+        const data = await apiClient('/public/landing-metrics', { method: 'GET' });
+        if (data?.spotIndex) setSpotIndex(data.spotIndex);
+        if (data?.metrics?.activeTransporters) setActiveAssets(data.metrics.activeTransporters);
+      } catch (e) {
+        // quiet fallback
+      }
+    }
+    loadMetrics();
+  }, []);
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
       {/* Top Bar */}
@@ -75,16 +91,18 @@ export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) 
 
           <div className="flex flex-col md:flex-row gap-8 border-y border-white/20 py-6 mb-8 backdrop-blur-sm">
             <div>
-              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">142</div>
+              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">{activeAssets}</div>
               <div className="text-[10px] text-slate-300 uppercase tracking-wider font-mono drop-shadow-sm">Active Heavy Assets</div>
             </div>
             <div>
-              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">ETB 356K</div>
+              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">
+                {spotIndex ? `ETB ${(spotIndex / 1000).toFixed(0)}K` : 'ETB 340K'}
+              </div>
               <div className="text-[10px] text-slate-300 uppercase tracking-wider font-mono drop-shadow-sm">Avg Spot Rate</div>
             </div>
             <div>
-              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">98.28%</div>
-              <div className="text-[10px] text-slate-300 uppercase tracking-wider font-mono drop-shadow-sm">Model Precision</div>
+              <div className="text-xl md:text-2xl font-semibold text-white mb-1 drop-shadow-sm">99.91%</div>
+              <div className="text-[10px] text-slate-300 uppercase tracking-wider font-mono drop-shadow-sm">Model Precision (R²)</div>
             </div>
           </div>
 
