@@ -48,7 +48,7 @@ router.post('/login', authLimiter, auditMiddleware('SECURITY_AUTH_LOGIN'), async
   }
 });
 
-router.get('/me', JwtAuthGuard, VerificationGuard, (req: Request, res: Response) => {
+router.get('/me', JwtAuthGuard, (req: Request, res: Response) => {
   // @CurrentUser() decorator equivalent in Express: using req.user
   res.status(200).json({ user: req.user });
 });

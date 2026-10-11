@@ -13,6 +13,19 @@ const router = Router();
 // POST /loads - Create a new load (Requires Auth + Roles: SHIPPER, SYSTEM_ADMIN)
 router.post('/', JwtAuthGuard, RolesGuard(['SHIPPER', 'SYSTEM_ADMIN']), async (req: Request, res: Response): Promise<void> => {
   try {
+    // SRS FR-01 Acceptance Criteria: Unverified shippers cannot post freight loads
+    if (req.user!.role === 'SHIPPER') {
+      const isVerified = req.user!.isVerified && req.user!.verificationStatus === 'VERIFIED';
+      if (!isVerified) {
+        res.status(403).json({
+          error: 'Forbidden: Shipper verification required',
+          message: `Your account is currently in ${req.user!.verificationStatus || 'PENDING'} status. Per SRS Section 3.1 (FR-01), freight load posting and marketplace broadcasting are locked until a Platform Administrator reviews and verifies your Trade License and TIN credentials.`,
+          verificationStatus: req.user!.verificationStatus || 'PENDING'
+        });
+        return;
+      }
+    }
+
     const parsed = CreateLoadSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: 'Invalid input', details: parsed.error.errors });

@@ -1,6 +1,7 @@
 import { RegisterRequestType, LoginRequestType } from './dto/auth.dto';
 import { db } from '../db';
 import { users } from '../db/schema/users';
+import { verifications } from '../db/schema/verifications';
 import { eq } from 'drizzle-orm';
 
 export class AuthService {
@@ -54,6 +55,9 @@ export class AuthService {
     // Fallback for local development where Supabase Auth is cloud-hosted but DB is local.
     // In production, the Supabase Postgres trigger handles this automatically.
     try {
+      const isCommercialEntity = ['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(data.role);
+      const initialVerificationStatus = isCommercialEntity ? 'PENDING' : 'UNVERIFIED';
+
       await db.insert(users).values({
         id: userObj.id,
         email: userObj.email,
@@ -67,9 +71,31 @@ export class AuthService {
         fleetName: data.fleetName,
         operatorLicense: data.operatorLicense,
         vehicleCapacity: data.vehicleCapacity,
+        isVerified: false,
+        verificationStatus: initialVerificationStatus,
+        metadata: {
+          businessSector: data.businessSector,
+          businessAddress: data.businessAddress,
+        },
       }).onConflictDoNothing();
+
+      // If commercial entity, create initial PENDING verification queue record for Platform Administrator review
+      if (isCommercialEntity) {
+        const docUrls = data.documentUrls || {
+          tradeLicense: data.tradeLicense ? `https://storage.tradeflow.et/docs/${encodeURIComponent(data.tradeLicense)}_license.pdf` : 'https://storage.tradeflow.et/docs/sample_license.pdf',
+          taxId: data.tinNumber ? `https://storage.tradeflow.et/docs/${encodeURIComponent(data.tinNumber)}_tin.pdf` : 'https://storage.tradeflow.et/docs/sample_tin.pdf',
+        };
+
+        await db.insert(verifications).values({
+          userId: userObj.id,
+          tradeLicenseNumber: data.tradeLicense || null,
+          taxId: data.tinNumber || null,
+          documentUrls: docUrls,
+          status: 'PENDING',
+        });
+      }
     } catch (dbErr) {
-      console.error('Failed to insert user into public.users:', dbErr);
+      console.error('Failed to insert user or verification record:', dbErr);
     }
 
     return {
@@ -77,7 +103,8 @@ export class AuthService {
       user: {
         id: userObj.id,
         email: userObj.email,
-        role: data.role
+        role: data.role,
+        verificationStatus: ['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(data.role) ? 'PENDING' : 'UNVERIFIED',
       }
     };
   }
@@ -124,7 +151,11 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         role: user.role,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        verificationStatus: user.verificationStatus,
+        companyName: user.companyName,
+        tinNumber: user.tinNumber,
+        tradeLicense: user.tradeLicense,
       } : {
         id: result.user.id,
         email: result.user.email,

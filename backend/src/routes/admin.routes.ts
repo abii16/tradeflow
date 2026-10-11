@@ -37,10 +37,14 @@ router.get('/verifications', async (req: Request, res: Response): Promise<void> 
         taxId: verifications.taxId,
         documentUrls: verifications.documentUrls,
         status: verifications.status,
+        rejectionReason: verifications.rejectionReason,
         createdAt: verifications.createdAt,
         userEmail: users.email,
         userFullName: users.fullName,
+        companyName: users.companyName,
+        userPhone: users.phone,
         userRole: users.role,
+        metadata: users.metadata,
       })
       .from(verifications)
       .leftJoin(users, eq(verifications.userId, users.id))
@@ -79,22 +83,18 @@ router.post('/verifications/:id/review', async (req: Request, res: Response): Pr
 
       // 2. Update verification record
       await tx.update(verifications).set({
-        status: status as 'VERIFIED' | 'SUSPENDED', // 'REJECTED' maps to 'UNVERIFIED' in users table or we can keep it as 'REJECTED' here and 'UNVERIFIED' in users
+        status: status as 'VERIFIED' | 'REJECTED' | 'SUSPENDED',
         rejectionReason: rejectionReason || null,
         reviewedBy: adminId,
         updatedAt: new Date(),
       }).where(eq(verifications.id, id));
 
       // 3. Update the user record
-      // If admin rejects, we set the user back to UNVERIFIED so they can resubmit
-      let userStatus: 'VERIFIED' | 'UNVERIFIED' | 'SUSPENDED' | 'PENDING' = status as any;
-      if (status === 'REJECTED') {
-        userStatus = 'UNVERIFIED';
-      }
+      const userStatus: 'VERIFIED' | 'UNVERIFIED' | 'SUSPENDED' | 'PENDING' | 'REJECTED' = status as any;
 
       await tx.update(users).set({
         verificationStatus: userStatus,
-        isVerified: userStatus === 'VERIFIED', // Maintain backwards compatibility
+        isVerified: userStatus === 'VERIFIED',
         updatedAt: new Date(),
       }).where(eq(users.id, verification.userId));
 

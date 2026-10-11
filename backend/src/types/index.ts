@@ -4,6 +4,11 @@ export interface UserProfile {
   fullName: string;
   role: string;
   createdAt: string;
+  isVerified?: boolean;
+  verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
+  companyName?: string | null;
+  tinNumber?: string | null;
+  tradeLicense?: string | null;
 }
 
 export interface LoadItem {

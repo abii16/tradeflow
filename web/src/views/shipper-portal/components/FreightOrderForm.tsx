@@ -2,10 +2,21 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Scale, Package, ChevronDown, Clock } from 'lucide-react';
+import { MapPin, Scale, Package, ChevronDown, Clock, Lock, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { postLoad, calculateSpotRate } from '@/lib/apiClient';
+import toast from 'react-hot-toast';
 
-export default function FreightOrderForm() {
+interface FreightOrderFormProps {
+  verificationStatus?: string;
+  isVerified?: boolean;
+  onRefreshVerification?: () => void;
+}
+
+export default function FreightOrderForm({
+  verificationStatus = 'PENDING',
+  isVerified = false,
+  onRefreshVerification
+}: FreightOrderFormProps) {
   const { t } = useTranslation();
   const [quoteGenerated, setQuoteGenerated] = useState(false);
   const [leadTime, setLeadTime] = useState('');
@@ -74,6 +85,11 @@ export default function FreightOrderForm() {
   };
 
   const handleConfirmBroadcast = async () => {
+    if (!isVerified) {
+      toast.error(`Posting Restricted: Your shipper account is in ${verificationStatus} status. Per SRS Section 3.1 (FR-01), admin approval is required before loads can be broadcast to the transporter marketplace.`);
+      return;
+    }
+
     try {
       setLoading(true);
       await postLoad({
@@ -87,7 +103,7 @@ export default function FreightOrderForm() {
         currency: 'ETB',
         expiryHours: leadTime === '12h' ? 12 : leadTime === '24h' ? 24 : 48
       });
-      alert('Order posted successfully!');
+      toast.success('Order posted successfully to the freight marketplace!');
       setQuoteGenerated(false);
       setQuoteDetails(null);
 
@@ -98,7 +114,8 @@ export default function FreightOrderForm() {
       window.dispatchEvent(new Event('popstate'));
     } catch (error: any) {
       console.error(error);
-      alert('Failed to post order: ' + (error.message || 'Unknown error'));
+      const msg = error.response?.data?.message || error.message || 'Unknown error';
+      toast.error('Failed to post order: ' + msg);
     } finally {
       setLoading(false);
     }
@@ -107,8 +124,13 @@ export default function FreightOrderForm() {
   return (
     <div className="space-y-5">
       <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl shadow-lg shadow-black/40 overflow-hidden">
-        <div className="bg-[#1C1C1C]/50 border-b border-[#2E2E2E] px-5 py-4">
+        <div className="bg-[#1C1C1C]/50 border-b border-[#2E2E2E] px-5 py-4 flex items-center justify-between flex-wrap gap-2">
           <h2 className="text-base font-bold text-[#EDEDED]">{t('post_new_freight_order')}</h2>
+          {!isVerified && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <Lock size={11} /> Broadcast Locked (Pending Admin Approval)
+            </span>
+          )}
         </div>
 
         <form id="quote-form" onSubmit={handleRequestQuote} className="p-5 space-y-6">
@@ -247,14 +269,39 @@ export default function FreightOrderForm() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleConfirmBroadcast}
-            disabled={loading}
-            className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50"
-          >
-            {loading ? 'Posting...' : t('confirm_post_load')}
-          </button>
+          {!isVerified ? (
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                disabled={true}
+                className="w-full bg-[#1C1C1C] text-[#8F8F8F] border border-amber-500/30 py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-not-allowed opacity-90 shadow-inner"
+              >
+                <Lock size={14} className="text-amber-400" />
+                <span>Broadcast Locked (Account Pending Admin Approval)</span>
+              </button>
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 flex items-center justify-between gap-2">
+                <span>SRS FR-01: Freight orders cannot be broadcast to transporters until an Administrator verifies your legal entity credentials in the Verification Queue.</span>
+                {onRefreshVerification && (
+                  <button
+                    type="button"
+                    onClick={onRefreshVerification}
+                    className="shrink-0 px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded font-semibold text-[10px] transition-colors"
+                  >
+                    Check Status
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleConfirmBroadcast}
+              disabled={loading}
+              className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50"
+            >
+              {loading ? 'Posting...' : t('confirm_post_load')}
+            </button>
+          )}
         </div>
       )}
     </div>

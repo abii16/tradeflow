@@ -8,6 +8,11 @@ export interface User {
   email: string;
   fullName: string;
   role: 'SHIPPER' | 'TRANSPORTER' | 'FORWARDER' | 'CUSTOMS_OFFICER' | 'ADMIN';
+  isVerified?: boolean;
+  verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
+  companyName?: string;
+  tinNumber?: string;
+  tradeLicense?: string;
   [key: string]: any;
 }
 
@@ -18,6 +23,7 @@ interface AuthContextType {
   login: (data: any) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   register: (data: any) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -28,11 +34,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const refreshUser = async () => {
+    try {
+      const res = await apiClient('/auth/me', { method: 'GET' });
+      if (res && res.user) {
+        setUser((prev) => ({ ...prev, ...res.user }));
+      }
+    } catch (err) {
+      // Ignore if unauthenticated
+    }
+  };
+
   useEffect(() => {
     // 1. Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user?.user_metadata as User || null);
+      if (session) {
+        refreshUser();
+      }
       setIsLoading(false);
     }).catch(err => {
       console.error('Failed to get session:', err);
@@ -43,6 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user?.user_metadata as User || null);
+      if (session) {
+        refreshUser();
+      }
       setIsLoading(false);
     });
 
@@ -65,6 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         access_token: result.access_token,
         refresh_token: result.refresh_token,
       });
+      if (result.user) {
+        setUser((prev) => ({ ...prev, ...result.user }));
+      }
+      await refreshUser();
     } else {
       throw new Error('Authentication failed: missing tokens');
     }
@@ -81,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (data: any) => {
-    await apiClient('/auth/register', {
+    return await apiClient('/auth/register', {
       method: 'POST',
       data: {
         email: data.email,
@@ -92,6 +119,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         companyName: data.companyName,
         tinNumber: data.tinNumber,
         tradeLicense: data.tradeLicense,
+        businessSector: data.businessSector,
+        businessAddress: data.businessAddress,
+        documentUrls: data.documentUrls,
         badgeId: data.badgeId,
         fleetName: data.fleetName,
         operatorLicense: data.operatorLicense,
@@ -108,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, loginWithGoogle, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, loginWithGoogle, register, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

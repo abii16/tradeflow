@@ -106,10 +106,10 @@ export default function VerificationQueue() {
                 <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
                   <tr>
                     <th className="px-6 py-3 rounded-tl-lg">{t('vq_col_app_id')}</th>
-                    <th className="px-6 py-3">{t('vq_col_entity')}</th>
-                    <th className="px-6 py-3">{t('vq_col_tin')}</th>
-                    <th className="px-6 py-3">{t('vq_col_fleet')}</th>
-                    <th className="px-6 py-3">{t('vq_col_insurance')}</th>
+                    <th className="px-6 py-3">{t('vq_col_entity', 'Entity & Trade Role')}</th>
+                    <th className="px-6 py-3">{t('vq_col_tin', 'TIN Number')}</th>
+                    <th className="px-6 py-3">{t('vq_col_trade_license', 'Trade License No.')}</th>
+                    <th className="px-6 py-3">{t('vq_col_status', 'Status')}</th>
                     <th className="px-6 py-3 text-right rounded-tr-lg">{t('vq_col_action')}</th>
                   </tr>
                 </thead>
@@ -137,10 +137,21 @@ export default function VerificationQueue() {
                 {filteredRequests.map((req) => (
                   <tr key={req.id} className={`transition-colors hover:bg-[#181818] border-l-4 ${selectedRequest?.id === req.id ? 'bg-indigo-50/50 border-indigo-600 font-medium' : 'border-transparent'}`}>
                     <td className="px-6 py-4 font-mono font-bold text-[#EDEDED]">{req.id.substring(0, 8)}</td>
-                    <td className="px-6 py-4 font-medium text-[#EDEDED]">{req.userFullName || 'N/A'}</td>
+                    <td className="px-6 py-4 font-sans">
+                      <div className="font-bold text-[#EDEDED] text-xs">
+                        {req.companyName || req.userFullName || 'N/A'}
+                      </div>
+                      <div className="text-[11px] text-[#8F8F8F] flex items-center gap-1.5 mt-0.5">
+                        <span>{req.userFullName}</span>
+                        <span>•</span>
+                        <span className="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-[#181818] border border-[#2E2E2E] text-[#3ECF8E]">
+                          {req.userRole || 'SHIPPER'}
+                        </span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 font-mono text-xs">{req.taxId || 'N/A'}</td>
-                    <td className="px-6 py-4">{req.tradeLicenseNumber || 'N/A'}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 font-mono text-xs">{req.tradeLicenseNumber || 'N/A'}</td>
+                    <td className="px-6 py-4 font-sans">
                       {req.status === 'PENDING' && (
                         <span className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[11px] font-semibold px-2.5 py-1 rounded-full">
                           <FileText size={12} className="text-amber-500" /> {t('vq_status_pending', 'Pending Review')}
@@ -207,47 +218,80 @@ export default function VerificationQueue() {
                 <h4 className="text-xs font-semibold text-[#EDEDED] uppercase tracking-wider mb-3">{t('vq_drawer_entity_details')}</h4>
                 <div className="bg-[#181818] border border-[#2E2E2E]/70 rounded-xl p-4 space-y-2.5 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#8F8F8F] font-medium">{t('vq_drawer_legal_name')}</span>
-                    <span className="text-[#EDEDED] font-semibold font-mono">{selectedRequest.userFullName}</span>
+                    <span className="text-[#8F8F8F] font-medium">Company Name:</span>
+                    <span className="text-[#EDEDED] font-bold">{selectedRequest.companyName || selectedRequest.userFullName}</span>
                   </div>
                   <div className="flex justify-between items-center">
+                    <span className="text-[#8F8F8F] font-medium">Contact Person:</span>
+                    <span className="text-[#EDEDED] font-medium">{selectedRequest.userFullName}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#8F8F8F] font-medium">Role:</span>
+                    <span className="text-[#3ECF8E] font-mono uppercase text-[10px] px-2 py-0.5 rounded bg-[#232323] border border-[#2E2E2E]">
+                      {selectedRequest.userRole || 'SHIPPER'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#8F8F8F] font-medium">Email Address:</span>
+                    <span className="text-[#EDEDED] font-mono text-[11px]">{selectedRequest.userEmail}</span>
+                  </div>
+                  {selectedRequest.userPhone && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#8F8F8F] font-medium">Phone:</span>
+                      <span className="text-[#EDEDED] font-mono text-[11px]">{selectedRequest.userPhone}</span>
+                    </div>
+                  )}
+                  {selectedRequest.metadata?.businessSector && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#8F8F8F] font-medium">Business Sector:</span>
+                      <span className="text-[#EDEDED] text-[11px]">{selectedRequest.metadata.businessSector}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-1 border-t border-[#2E2E2E]">
                     <span className="text-[#8F8F8F] font-medium">{t('vq_drawer_tin')}</span>
-                    <span className="text-[#EDEDED] font-semibold font-mono">{selectedRequest.taxId}</span>
+                    <span className="text-amber-400 font-bold font-mono">{selectedRequest.taxId || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-[#8F8F8F] font-medium">{t('vq_drawer_trade_license', 'Trade License')}</span>
-                    <span className="text-[#EDEDED] font-semibold font-mono">{selectedRequest.tradeLicenseNumber}</span>
+                    <span className="text-[#3ECF8E] font-bold font-mono">{selectedRequest.tradeLicenseNumber || 'N/A'}</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-[#EDEDED] uppercase tracking-wider mb-3">{t('vq_drawer_docs')}</h4>
+                <h4 className="text-xs font-semibold text-[#EDEDED] uppercase tracking-wider mb-3">Submitted Compliance Documents</h4>
                 <div className="space-y-3">
 
-                  <div className="border border-[#2E2E2E] rounded-lg p-3 flex items-center gap-3 hover:border-blue-400 transition-colors cursor-pointer group">
-                    <div className="w-10 h-10 bg-[#3ECF8E]/10 text-[#3ECF8E] rounded flex items-center justify-center group-hover:bg-blue-100">
+                  <div className="border border-[#2E2E2E] rounded-lg p-3 flex items-center gap-3 hover:border-[#3ECF8E]/60 transition-colors cursor-pointer group bg-[#181818]">
+                    <div className="w-10 h-10 bg-[#3ECF8E]/10 text-[#3ECF8E] rounded flex items-center justify-center group-hover:bg-[#3ECF8E]/20">
                       <FileSignature size={20} />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-semibold text-[#EDEDED]">{t('vq_drawer_trade_license')}</div>
-                      <div className="text-[10px] text-[#8F8F8F]">{t('vq_drawer_pdf_size')}</div>
+                      <div className="text-sm font-semibold text-[#EDEDED]">Trade License Certificate (MTI)</div>
+                      <div className="text-[10px] text-[#8F8F8F]">Validated Digital Stamp • PDF Format</div>
                     </div>
-                    <button className="opacity-0 group-hover:opacity-100 p-1.5 text-[#8F8F8F] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 rounded-md transition-all">
+                    <button 
+                      onClick={() => window.open(selectedRequest.documentUrls?.tradeLicense || '#', '_blank')}
+                      className="p-1.5 text-[#8F8F8F] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 rounded-md transition-all"
+                      title="Inspect Document"
+                    >
                       <Eye size={16} />
                     </button>
                   </div>
 
-                  <div className="border border-[#2E2E2E] rounded-lg p-3 flex items-center gap-3 hover:border-blue-400 transition-colors cursor-pointer group">
-                    <div className="w-10 h-10 bg-[#181818] text-[#8F8F8F] rounded flex items-center justify-center group-hover:bg-[#232323]">
-                      <ImageIcon size={20} />
+                  <div className="border border-[#2E2E2E] rounded-lg p-3 flex items-center gap-3 hover:border-[#3ECF8E]/60 transition-colors cursor-pointer group bg-[#181818]">
+                    <div className="w-10 h-10 bg-amber-500/10 text-amber-400 rounded flex items-center justify-center group-hover:bg-amber-500/20">
+                      <FileText size={20} />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-semibold text-[#EDEDED]">{t('vq_drawer_inspection_cert')}</div>
-                      <div className="text-[10px] text-[#8F8F8F]">{t('vq_drawer_scanned_size')}</div>
+                      <div className="text-sm font-semibold text-[#EDEDED]">TIN Registration Certificate</div>
+                      <div className="text-[10px] text-[#8F8F8F]">Ethiopian Revenue Authority (ERA)</div>
                     </div>
-                    <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] px-2 py-0.5 rounded-md font-semibold">{t('vq_drawer_check_expiry')}</span>
-                    <button className="opacity-0 group-hover:opacity-100 p-1.5 text-[#8F8F8F] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 rounded-md transition-all ml-1">
+                    <button 
+                      onClick={() => window.open(selectedRequest.documentUrls?.taxId || '#', '_blank')}
+                      className="p-1.5 text-[#8F8F8F] hover:text-[#3ECF8E] hover:bg-[#3ECF8E]/10 rounded-md transition-all"
+                      title="Inspect Document"
+                    >
                       <Eye size={16} />
                     </button>
                   </div>

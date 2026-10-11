@@ -53,7 +53,11 @@ export const JwtAuthGuard = async (req: Request, res: Response, next: NextFuncti
       fullName: user.fullName,
       role: user.role,
       createdAt: user.createdAt.toISOString(),
-      isVerified: user.isVerified
+      isVerified: user.isVerified,
+      verificationStatus: user.verificationStatus,
+      companyName: user.companyName,
+      tinNumber: user.tinNumber,
+      tradeLicense: user.tradeLicense,
     };
 
     next();
