@@ -59,5 +59,21 @@ export const LoginDto = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+export const GoogleAuthDto = z.object({
+  idToken: z.string().optional(),
+  accessToken: z.string().optional(),
+  email: z.string().email('Invalid email format').optional(),
+  fullName: z.string().optional(),
+  role: RoleEnum.optional().default('SHIPPER'),
+  companyName: z.string().optional(),
+  phone: z.string().optional(),
+});
+
+export const RefreshTokenDto = z.object({
+  refreshToken: z.string().min(1, 'Refresh token is required'),
+});
+
 export type RegisterRequestType = z.infer<typeof RegisterDto>;
 export type LoginRequestType = z.infer<typeof LoginDto>;
+export type GoogleAuthRequestType = z.infer<typeof GoogleAuthDto>;
+export type RefreshTokenRequestType = z.infer<typeof RefreshTokenDto>;

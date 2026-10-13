@@ -5,11 +5,21 @@ import { users } from '../src/db/schema/users';
 // Mock the Database
 jest.mock('../src/db', () => ({
   db: {
-    insert: jest.fn().mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        onConflictDoNothing: jest.fn().mockResolvedValue(true)
-      })
-    }),
+    insert: jest.fn().mockImplementation(() => ({
+      values: jest.fn().mockImplementation((vals: any) => ({
+        onConflictDoNothing: jest.fn().mockResolvedValue(true),
+        returning: jest.fn().mockResolvedValue([
+          {
+            id: vals?.id || 'mock-uuid',
+            email: vals?.email || 'google_user@example.com',
+            fullName: vals?.fullName || 'Google User',
+            role: vals?.role || 'SHIPPER',
+            isVerified: false,
+            verificationStatus: vals?.verificationStatus || 'PENDING'
+          }
+        ])
+      }))
+    })),
     update: jest.fn().mockReturnValue({
       set: jest.fn().mockReturnValue({
         where: jest.fn().mockResolvedValue(true)
@@ -176,4 +186,58 @@ describe('Authentication Flow Tests', () => {
     expect(result.access_token).toBeDefined();
     expect(result.user.email).toBe('test@example.com');
   });
+
+  it('Should successfully authenticate and link existing user via Google OAuth', async () => {
+    const payload = {
+      email: 'test@example.com',
+      fullName: 'Test User',
+      role: 'SHIPPER' as const,
+    };
+
+    const result = await authService.authWithGoogle(payload);
+    expect(result.access_token).toBeDefined();
+    expect(result.refresh_token).toBeDefined();
+    expect(result.user.email).toBe('test@example.com');
+  });
+
+  it('Should successfully auto-provision new user via Google OAuth', async () => {
+    // Mock db returning empty for existing user
+    (db.select as jest.Mock).mockReturnValueOnce({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([])
+      })
+    });
+
+    const payload = {
+      email: 'new_google_user@tradeflow.et',
+      fullName: 'Abebe Bikila',
+      role: 'TRANSPORTER' as const,
+      phone: '+251911223344',
+    };
+
+    const result = await authService.authWithGoogle(payload);
+    expect(result.access_token).toBeDefined();
+    expect(result.refresh_token).toBeDefined();
+    expect(result.user.email).toBe('new_google_user@tradeflow.et');
+    expect(result.user.role).toBe('TRANSPORTER');
+  });
+
+  it('Should successfully rotate refresh tokens via refresh endpoint', async () => {
+    const jwt = require('jsonwebtoken');
+    const validRefreshToken = jwt.sign(
+      { sub: 'mock-uuid', type: 'refresh' },
+      process.env.SUPABASE_JWT_SECRET || 'secret',
+      { expiresIn: '30d' }
+    );
+
+    const result = await authService.refresh({ refreshToken: validRefreshToken });
+    expect(result.access_token).toBeDefined();
+    expect(result.refresh_token).toBeDefined();
+    expect(result.user.id).toBe('mock-uuid');
+  });
+
+  it('Should reject token refresh with invalid refresh token', async () => {
+    await expect(authService.refresh({ refreshToken: 'invalid-garbage-token' })).rejects.toThrow('Invalid refresh token');
+  });
 });
+
