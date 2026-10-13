@@ -96,7 +96,12 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
         type="button" 
         onClick={async () => {
           try {
-            await loginWithGoogle();
+            let mappedRole = 'SHIPPER';
+            if (role === 'transporter') mappedRole = 'TRANSPORTER';
+            if (role === 'forwarder') mappedRole = 'FORWARDER';
+            if (role === 'customs_officer') mappedRole = 'CUSTOMS_OFFICER';
+            if (role === 'admin') mappedRole = 'ADMIN';
+            await loginWithGoogle(mappedRole);
           } catch(err: any) {
             setError(err.message || 'Google Sign Up failed');
           }

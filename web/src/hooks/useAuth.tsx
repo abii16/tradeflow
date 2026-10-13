@@ -21,7 +21,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (data: any) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: (role?: string) => Promise<void>;
   register: (data: any) => Promise<void>;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
@@ -33,6 +33,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const syncGoogleUserWithBackend = async (currentSession: Session) => {
+    try {
+      const pendingRole = localStorage.getItem('pending_oauth_role') || undefined;
+      const syncRes = await apiClient('/auth/google', {
+        method: 'POST',
+        data: {
+          email: currentSession.user.email,
+          fullName: currentSession.user.user_metadata?.full_name || currentSession.user.user_metadata?.name || currentSession.user.email?.split('@')[0],
+          role: currentSession.user.user_metadata?.role || pendingRole || 'SHIPPER',
+        }
+      });
+      if (syncRes?.user) {
+        setUser(syncRes.user);
+      }
+      if (pendingRole) {
+        localStorage.removeItem('pending_oauth_role');
+      }
+    } catch (err) {
+      // If sync fails, fall back to /auth/me or session metadata
+      await refreshUser();
+    }
+  };
 
   const refreshUser = async () => {
     try {
@@ -47,11 +70,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // 1. Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user?.user_metadata as User || null);
       if (session) {
-        refreshUser();
+        setUser(session.user?.user_metadata as User || null);
+        await syncGoogleUserWithBackend(session);
+      } else {
+        setUser(null);
       }
       setIsLoading(false);
     }).catch(err => {
@@ -59,12 +84,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     });
 
-    // 2. Listen for auth changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // 2. Listen for auth changes (login, logout, token refresh, OAuth redirect return)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
-      setUser(session?.user?.user_metadata as User || null);
       if (session) {
-        refreshUser();
+        setUser(session.user?.user_metadata as User || null);
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
+          await syncGoogleUserWithBackend(session);
+        } else {
+          await refreshUser();
+        }
+      } else {
+        setUser(null);
       }
       setIsLoading(false);
     });
@@ -97,14 +128,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (selectedRole?: string) => {
+    const roleToStore = selectedRole || 'SHIPPER';
+    localStorage.setItem('pending_oauth_role', roleToStore);
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: window.location.origin,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+          role: roleToStore,
+        },
       },
     });
-    if (error) throw error;
+    if (error) {
+      localStorage.removeItem('pending_oauth_role');
+      throw error;
+    }
   };
 
   const register = async (data: any) => {
@@ -131,6 +173,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    try {
+      await apiClient('/auth/logout', { method: 'POST' });
+    } catch (e) {
+      // quiet cleanup
+    }
     await supabase.auth.signOut();
     removeAuthToken(); // Cleanup any legacy token usage in apiClient
     setUser(null);
