@@ -17,3 +17,5 @@ export * from './pricing_policies';
 export * from './disputes';
 export * from './contracts';
 export * from './telemetry_logs';
+export * from './sessions';
+

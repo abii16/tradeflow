@@ -20,24 +20,60 @@ axiosInstance.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const refreshToken = localStorage.getItem('tradeflow_refresh_token');
+  if (refreshToken) {
+    config.headers['x-refresh-token'] = refreshToken;
+  }
   return config;
 }, (error) => Promise.reject(error));
 
-axiosInstance.interceptors.response.use((response) => {
-  return response;
-}, (error) => {
-  if (error.response?.status === 401) {
-    removeAuthToken();
-    window.dispatchEvent(new Event('auth:unauthorized'));
-  }
+axiosInstance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+    // INSA Requirement 3: Silent refresh rotation when short-lived access token expires
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const storedRefreshToken = session?.refresh_token || localStorage.getItem('tradeflow_refresh_token');
+        if (storedRefreshToken) {
+          const refreshRes = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+            refreshToken: storedRefreshToken,
+          });
+          if (refreshRes.data?.access_token) {
+            const newToken = refreshRes.data.access_token;
+            setAuthToken(newToken);
+            if (refreshRes.data.refresh_token) {
+              localStorage.setItem('tradeflow_refresh_token', refreshRes.data.refresh_token);
+            }
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return axiosInstance(originalRequest);
+          }
+        }
+      } catch (refreshErr) {
+        removeAuthToken();
+        localStorage.removeItem('tradeflow_refresh_token');
+        window.dispatchEvent(new Event('auth:unauthorized'));
+      }
+    }
 
-  let errorMessage = error.response?.data?.error || error.response?.statusText || error.message;
-  if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
-    const detailsText = error.response.data.details.map((d: any) => d.message).join(', ');
-    errorMessage = `${errorMessage}: ${detailsText}`;
+    if (error.response?.status === 401) {
+      removeAuthToken();
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
+
+    let errorMessage = error.response?.data?.error || error.response?.statusText || error.message;
+    if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
+      const detailsText = error.response.data.details.map((d: any) => d.message).join(', ');
+      errorMessage = `${errorMessage}: ${detailsText}`;
+    }
+    return Promise.reject(new Error(errorMessage));
   }
-  return Promise.reject(new Error(errorMessage));
-});
+);
+
 
 interface FetchOptions extends AxiosRequestConfig { }
 
@@ -273,5 +309,31 @@ export async function updateUserRole(id: string, role: string, reason?: string) 
 
 export async function getUserDossier(id: string) {
   return apiClient(`/admin/users/${id}`, { method: 'GET' });
+}
+
+export interface UserSession {
+  id: string;
+  device: string;
+  browser: string;
+  os: string;
+  ipAddress: string;
+  location: string;
+  isCurrent: boolean;
+  isSuspicious: boolean;
+  suspiciousReason: string | null;
+  lastActive: string;
+  createdAt: string;
+}
+
+export async function getUserSessions(): Promise<{ sessions: UserSession[] }> {
+  return apiClient('/auth/sessions', { method: 'GET' });
+}
+
+export async function revokeUserSession(sessionId: string): Promise<{ success: boolean; message: string }> {
+  return apiClient(`/auth/sessions/${sessionId}`, { method: 'DELETE' });
+}
+
+export async function revokeOtherUserSessions(): Promise<{ success: boolean; message: string }> {
+  return apiClient('/auth/sessions/other', { method: 'DELETE' });
 }
 

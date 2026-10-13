@@ -115,6 +115,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (result.access_token && result.refresh_token) {
+      localStorage.setItem('tradeflow_token', result.access_token);
+      localStorage.setItem('tradeflow_refresh_token', result.refresh_token);
       await supabase.auth.setSession({
         access_token: result.access_token,
         refresh_token: result.refresh_token,
@@ -123,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser((prev) => ({ ...prev, ...result.user }));
       }
       await refreshUser();
+      return result;
     } else {
       throw new Error('Authentication failed: missing tokens');
     }
@@ -174,12 +177,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await apiClient('/auth/logout', { method: 'POST' });
+      const storedRefreshToken = localStorage.getItem('tradeflow_refresh_token');
+      await apiClient('/auth/logout', { 
+        method: 'POST',
+        headers: storedRefreshToken ? { 'x-refresh-token': storedRefreshToken } : undefined
+      });
     } catch (e) {
       // quiet cleanup
     }
     await supabase.auth.signOut();
     removeAuthToken(); // Cleanup any legacy token usage in apiClient
+    localStorage.removeItem('tradeflow_refresh_token');
     setUser(null);
     setSession(null);
   };

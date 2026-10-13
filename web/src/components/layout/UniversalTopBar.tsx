@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bell, Globe, LogOut, User, Settings, ChevronDown, Shield } from 'lucide-react';
+import { Bell, Globe, LogOut, User, Settings, ChevronDown, Shield, ShieldCheck, Laptop } from 'lucide-react';
 import HeaderSearch from '@/components/common/HeaderSearch';
 import { useAuth } from '@/hooks/useAuth';
+import ActiveSessionsModal from '@/views/auth/ActiveSessionsModal';
 
 export default function UniversalTopBar() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSessionsModalOpen, setIsSessionsModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -125,6 +127,15 @@ export default function UniversalTopBar() {
                 <button className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors">
                   <User size={14} /> {t('my_profile')}
                 </button>
+                <button 
+                  onClick={() => {
+                    setIsSessionsModalOpen(true);
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors"
+                >
+                  <ShieldCheck size={14} className="text-[#3ECF8E]" /> Sessions & Security
+                </button>
                 <button className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors">
                   <Settings size={14} /> {t('account_settings')}
                 </button>
@@ -134,7 +145,7 @@ export default function UniversalTopBar() {
                 
                 <button 
                   onClick={logout}
-                  className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                  className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
                 >
                   <LogOut size={14} /> {t('sign_out')}
                 </button>
@@ -143,6 +154,10 @@ export default function UniversalTopBar() {
           </div>
         )}
       </div>
+
+      {isSessionsModalOpen && (
+        <ActiveSessionsModal onClose={() => setIsSessionsModalOpen(false)} />
+      )}
     </header>
   );
 }

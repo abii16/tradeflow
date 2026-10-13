@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 
@@ -9,6 +10,13 @@ import rateLimit from 'express-rate-limit';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+// INSA Security Standard: HTTP Security Headers
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false,
+}));
 
 // Strict CORS whitelist (allow localhost for dev, add prod domains later)
 const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173'];

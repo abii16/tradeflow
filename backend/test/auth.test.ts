@@ -239,5 +239,42 @@ describe('Authentication Flow Tests', () => {
   it('Should reject token refresh with invalid refresh token', async () => {
     await expect(authService.refresh({ refreshToken: 'invalid-garbage-token' })).rejects.toThrow('Invalid refresh token');
   });
+
+  it('INSA: Should reject weak or easily guessable passwords during registration', async () => {
+    const { RegisterDto } = require('../src/auth/dto/auth.dto');
+    
+    // Test trivial weak password
+    const weakPayload = {
+      email: 'test_user@tradeflow.et',
+      password: 'password123', // missing special char, uppercase, and on weak list
+      fullName: 'Test User',
+      phone: '+251911223344',
+      role: 'SHIPPER',
+      companyName: 'Test Corp',
+      tinNumber: '1234567890',
+      tradeLicense: 'MTI/12345'
+    };
+
+    const parseResult = RegisterDto.safeParse(weakPayload);
+    expect(parseResult.success).toBe(false);
+  });
+
+  it('INSA: Should prevent brute-force attacks by locking account after 5 consecutive failed attempts', async () => {
+    (global.fetch as jest.Mock).mockRejectedValue(new Error('Network offline'));
+    const targetEmail = 'bruteforce_target@tradeflow.et';
+
+    // Mock DB returns user with password
+    for (let i = 0; i < 4; i++) {
+      await expect(
+        authService.login({ email: targetEmail, password: 'WrongPassword' + i })
+      ).rejects.toThrow('Invalid email or password');
+    }
+
+    // 5th attempt should trigger account lockout
+    await expect(
+      authService.login({ email: targetEmail, password: 'WrongPassword5' })
+    ).rejects.toThrow(/temporarily locked/i);
+  });
 });
+
 

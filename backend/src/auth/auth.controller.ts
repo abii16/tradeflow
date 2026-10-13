@@ -37,13 +37,16 @@ router.post('/register', authLimiter, auditMiddleware('SECURITY_AUTH_REGISTER'),
 router.post('/login', authLimiter, auditMiddleware('SECURITY_AUTH_LOGIN'), async (req: Request, res: Response) => {
   try {
     const validatedData = LoginDto.parse(req.body);
-    const result = await authService.login(validatedData);
+    const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || req.ip;
+    const userAgent = req.headers['user-agent'];
+    const result = await authService.login(validatedData, clientIp, userAgent);
     res.status(200).json(result);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: 'Validation failed', details: error.errors });
     } else {
-      res.status(401).json({ error: error.message || 'Login failed' });
+      const isLocked = error.message && error.message.includes('locked');
+      res.status(isLocked ? 429 : 401).json({ error: error.message || 'Login failed' });
     }
   }
 });
@@ -54,7 +57,9 @@ router.post('/login', authLimiter, auditMiddleware('SECURITY_AUTH_LOGIN'), async
 router.post('/google', authLimiter, auditMiddleware('SECURITY_AUTH_GOOGLE'), async (req: Request, res: Response) => {
   try {
     const validatedData = GoogleAuthDto.parse(req.body);
-    const result = await authService.authWithGoogle(validatedData);
+    const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || req.ip;
+    const userAgent = req.headers['user-agent'];
+    const result = await authService.authWithGoogle(validatedData, clientIp, userAgent);
     res.status(200).json(result);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
@@ -68,7 +73,9 @@ router.post('/google', authLimiter, auditMiddleware('SECURITY_AUTH_GOOGLE'), asy
 router.post('/google/callback', authLimiter, auditMiddleware('SECURITY_AUTH_GOOGLE_CALLBACK'), async (req: Request, res: Response) => {
   try {
     const validatedData = GoogleAuthDto.parse(req.body);
-    const result = await authService.authWithGoogle(validatedData);
+    const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || req.ip;
+    const userAgent = req.headers['user-agent'];
+    const result = await authService.authWithGoogle(validatedData, clientIp, userAgent);
     res.status(200).json(result);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
@@ -78,6 +85,7 @@ router.post('/google/callback', authLimiter, auditMiddleware('SECURITY_AUTH_GOOG
     }
   }
 });
+
 
 /**
  * Refresh Token rotation per SRS 5.4 / Issue #47
@@ -115,16 +123,50 @@ router.post('/complete-profile', JwtAuthGuard, auditMiddleware('AUTH_COMPLETE_PR
 });
 
 /**
+ * INSA Requirement: View and manage active user sessions
+ */
+router.get('/sessions', JwtAuthGuard, async (req: Request, res: Response) => {
+  try {
+    const currentRefreshToken = (req.headers['x-refresh-token'] as string) || undefined;
+    const sessions = await authService.getUserSessions(req.user!.id, currentRefreshToken);
+    res.status(200).json({ sessions });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to fetch active sessions' });
+  }
+});
+
+router.delete('/sessions/other', JwtAuthGuard, auditMiddleware('AUTH_REVOKE_OTHER_SESSIONS'), async (req: Request, res: Response) => {
+  try {
+    const currentRefreshToken = (req.headers['x-refresh-token'] as string) || undefined;
+    const result = await authService.revokeOtherSessions(req.user!.id, currentRefreshToken);
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to terminate other sessions' });
+  }
+});
+
+router.delete('/sessions/:id', JwtAuthGuard, auditMiddleware('AUTH_REVOKE_SESSION'), async (req: Request, res: Response) => {
+  try {
+    const result = await authService.revokeSession(req.user!.id, req.params.id);
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to revoke session' });
+  }
+});
+
+/**
  * Session invalidation / logout per Issue #47
  */
 router.post('/logout', JwtAuthGuard, async (req: Request, res: Response) => {
   try {
-    const result = await authService.logout(req.user?.id);
+    const currentRefreshToken = (req.headers['x-refresh-token'] as string) || undefined;
+    const result = await authService.logout(req.user?.id, currentRefreshToken);
     res.status(200).json(result);
   } catch (error: any) {
     res.status(500).json({ error: 'Logout failed' });
   }
 });
+
 
 
 router.get('/me', JwtAuthGuard, (req: Request, res: Response) => {

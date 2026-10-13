@@ -9,6 +9,14 @@ export const RoleEnum = z.enum([
   'ADMIN',
 ]);
 
+const COMMON_WEAK_PASSWORDS = new Set([
+  'password', 'password1', 'password123', 'password1234', 'password!', 'p@ssword', 'p@ssword1',
+  '12345678', '123456789', '12345678a', '12345678aa', '1234567890',
+  'qwerty123', 'admin123', 'admin@123', 'administrator', 'tradeflow', 'tradeflow123',
+  'welcome123', 'welcome@123', 'iloveyou1', 'sunshine1', 'ethiopia123', 'ethiopia1',
+  'addisababa1', 'changeme1', 'letmein123', 'pass@123',
+]);
+
 export const RegisterDto = z.object({
   email: z.string().email('Invalid email address format'),
   password: z
@@ -17,8 +25,12 @@ export const RegisterDto = z.object({
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number')
-    .regex(/[\W_]/, 'Password must contain at least one special character'),
+    .regex(/[\W_]/, 'Password must contain at least one special character')
+    .refine((val) => !COMMON_WEAK_PASSWORDS.has(val.toLowerCase().trim()), {
+      message: 'Password is too common or easily guessable. Please choose a more complex and unique password.',
+    }),
   fullName: z.string().min(2, 'Full name is too short'),
+
   phone: z.string().min(9, 'Phone number is too short'),
   role: RoleEnum,
   

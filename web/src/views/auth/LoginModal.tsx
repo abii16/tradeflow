@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Loader2, LogIn, Eye, EyeOff } from 'lucide-react';
+import { X, Loader2, LogIn, Eye, EyeOff, ShieldAlert, Clock, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface LoginModalProps {
@@ -14,18 +14,27 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setIsLocked(false);
 
     try {
-      await login({ email, password });
+      const result: any = await login({ email, password });
+      if (result?.suspiciousLoginAlert) {
+        alert(`Security Notice: Suspicious login activity detected (${result.suspiciousLoginAlert}). Active session logged.`);
+      }
       if (onSuccess) onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password');
+      const msg = err.message || 'Invalid email or password';
+      setError(msg);
+      if (msg.toLowerCase().includes('locked')) {
+        setIsLocked(true);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +88,28 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {error && <div className="p-3 bg-red-500/10 text-red-400 text-sm rounded-lg border border-red-500/20 mb-4">{error}</div>}
+            {error && (
+              isLocked ? (
+                <div className="p-3.5 bg-red-500/15 border border-red-500/30 rounded-xl mb-4 text-xs text-red-300 flex items-start gap-2.5">
+                  <ShieldAlert size={18} className="text-red-400 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-bold text-red-200 mb-0.5 flex items-center gap-1.5">
+                      <span>INSA Brute-Force Defense Active</span>
+                      <span className="text-[9px] bg-red-500/20 text-red-300 px-1.5 py-0.2 rounded font-mono">LOCKED</span>
+                    </div>
+                    <p className="leading-relaxed">{error}</p>
+                    <div className="flex items-center gap-1 mt-2 text-[10px] text-red-400/80 font-mono">
+                      <Clock size={11} /> 15-minute security cooldown enforced
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-red-500/10 text-red-400 text-xs rounded-xl border border-red-500/20 mb-4 flex items-center gap-2">
+                  <AlertTriangle size={14} className="shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )
+            )}
 
             <div className="space-y-4">
               <div>

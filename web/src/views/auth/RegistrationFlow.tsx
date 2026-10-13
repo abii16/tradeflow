@@ -10,6 +10,14 @@ interface RegistrationFlowProps {
   onClose: () => void;
 }
 
+const COMMON_WEAK_PASSWORDS = new Set([
+  'password', 'password1', 'password123', 'password1234', 'password!', 'p@ssword', 'p@ssword1',
+  '12345678', '123456789', '12345678a', '12345678aa', '1234567890',
+  'qwerty123', 'admin123', 'admin@123', 'administrator', 'tradeflow', 'tradeflow123',
+  'welcome123', 'welcome@123', 'iloveyou1', 'sunshine1', 'ethiopia123', 'ethiopia1',
+  'addisababa1', 'changeme1', 'letmein123', 'pass@123',
+]);
+
 export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
   const { register, loginWithGoogle } = useAuth();
   const [step, setStep] = useState(1);
@@ -219,36 +227,152 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
             placeholder="+251 911 234 567" 
           />
         </div>
-        <div>
-          <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1.5">Password (SRS 5.4 Hardened) *</label>
-          <div className="relative">
-            <input 
-              type={showPassword ? 'text' : 'password'} 
-              name="password" 
-              value={formData.password} 
-              onChange={handleChange} 
-              className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-3 pr-10 text-xs focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" 
-              placeholder="Min 8 chars, 1 uppercase, 1 number, 1 symbol (!@#$)" 
-            />
-            <button 
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] hover:text-[#EDEDED] focus:outline-none transition-colors"
-            >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-        </div>
+        {(() => {
+          const pwd = formData.password;
+          const rules = {
+            minLength: pwd.length >= 8,
+            hasUpper: /[A-Z]/.test(pwd),
+            hasLower: /[a-z]/.test(pwd),
+            hasNumber: /[0-9]/.test(pwd),
+            hasSpecial: /[\W_]/.test(pwd),
+            notCommon: !COMMON_WEAK_PASSWORDS.has(pwd.toLowerCase().trim()),
+          };
+          const passedCount = [rules.minLength, rules.hasUpper, rules.hasLower, rules.hasNumber, rules.hasSpecial].filter(Boolean).length;
+          const isCommonWeak = pwd.length > 0 && !rules.notCommon;
+          const isPasswordValid = passedCount === 5 && rules.notCommon;
+
+          let strengthLabel = 'Too Short';
+          let strengthColor = 'bg-red-500';
+          let textColor = 'text-red-400';
+          if (passedCount >= 5 && rules.notCommon) {
+            strengthLabel = 'Strong (INSA Certified)';
+            strengthColor = 'bg-[#3ECF8E]';
+            textColor = 'text-[#3ECF8E]';
+          } else if (passedCount >= 4) {
+            strengthLabel = 'Good';
+            strengthColor = 'bg-blue-500';
+            textColor = 'text-blue-400';
+          } else if (passedCount >= 3) {
+            strengthLabel = 'Moderate';
+            strengthColor = 'bg-amber-500';
+            textColor = 'text-amber-400';
+          } else if (passedCount >= 1) {
+            strengthLabel = 'Weak';
+            strengthColor = 'bg-red-500';
+            textColor = 'text-red-400';
+          }
+
+          return (
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F]">
+                  Password (INSA Hardened) *
+                </label>
+                {pwd.length > 0 && (
+                  <span className={`text-[10px] font-mono font-bold ${textColor}`}>
+                    {strengthLabel}
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  name="password" 
+                  value={formData.password} 
+                  onChange={handleChange} 
+                  className={`w-full bg-[#1C1C1C] text-[#EDEDED] border rounded-xl p-3 pr-10 text-xs focus:ring-1 outline-none transition-all placeholder-[#8F8F8F]/50 ${
+                    isCommonWeak 
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
+                      : isPasswordValid 
+                      ? 'border-[#3ECF8E]/50 focus:border-[#3ECF8E] focus:ring-[#3ECF8E]/20' 
+                      : 'border-[#2E2E2E] focus:border-[#3ECF8E] focus:ring-[#3ECF8E]/20'
+                  }`}
+                  placeholder="Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 symbol" 
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] hover:text-[#EDEDED] focus:outline-none transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+
+              {/* Password Strength Meter Bar */}
+              {pwd.length > 0 && (
+                <div className="mt-2 space-y-1.5 animate-in fade-in duration-200">
+                  <div className="grid grid-cols-4 gap-1.5 h-1.5">
+                    <div className={`rounded-full h-full transition-all duration-300 ${passedCount >= 1 ? strengthColor : 'bg-[#2E2E2E]'}`}></div>
+                    <div className={`rounded-full h-full transition-all duration-300 ${passedCount >= 3 ? strengthColor : 'bg-[#2E2E2E]'}`}></div>
+                    <div className={`rounded-full h-full transition-all duration-300 ${passedCount >= 4 ? strengthColor : 'bg-[#2E2E2E]'}`}></div>
+                    <div className={`rounded-full h-full transition-all duration-300 ${passedCount >= 5 && rules.notCommon ? strengthColor : 'bg-[#2E2E2E]'}`}></div>
+                  </div>
+
+                  {isCommonWeak && (
+                    <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-[10px] text-red-400 flex items-center gap-1.5">
+                      <ShieldAlert size={12} className="shrink-0" />
+                      <span><strong>Rejected by INSA policy:</strong> This is a common dictionary password. Please choose a unique passphrase.</span>
+                    </div>
+                  )}
+
+                  {/* Checklist of rules */}
+                  <div className="grid grid-cols-2 gap-1 pt-1 text-[10px] font-mono">
+                    <div className={`flex items-center gap-1.5 ${rules.minLength ? 'text-[#3ECF8E]' : 'text-[#8F8F8F]'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${rules.minLength ? 'bg-[#3ECF8E]' : 'bg-[#3A3A3A]'}`} />
+                      8+ characters
+                    </div>
+                    <div className={`flex items-center gap-1.5 ${rules.hasUpper ? 'text-[#3ECF8E]' : 'text-[#8F8F8F]'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${rules.hasUpper ? 'bg-[#3ECF8E]' : 'bg-[#3A3A3A]'}`} />
+                      Uppercase letter (A-Z)
+                    </div>
+                    <div className={`flex items-center gap-1.5 ${rules.hasLower ? 'text-[#3ECF8E]' : 'text-[#8F8F8F]'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${rules.hasLower ? 'bg-[#3ECF8E]' : 'bg-[#3A3A3A]'}`} />
+                      Lowercase letter (a-z)
+                    </div>
+                    <div className={`flex items-center gap-1.5 ${rules.hasNumber ? 'text-[#3ECF8E]' : 'text-[#8F8F8F]'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${rules.hasNumber ? 'bg-[#3ECF8E]' : 'bg-[#3A3A3A]'}`} />
+                      Number (0-9)
+                    </div>
+                    <div className={`flex items-center gap-1.5 ${rules.hasSpecial ? 'text-[#3ECF8E]' : 'text-[#8F8F8F]'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${rules.hasSpecial ? 'bg-[#3ECF8E]' : 'bg-[#3A3A3A]'}`} />
+                      Symbol (!@#$...)
+                    </div>
+                    <div className={`flex items-center gap-1.5 ${rules.notCommon ? 'text-[#3ECF8E]' : 'text-red-400'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${rules.notCommon ? 'bg-[#3ECF8E]' : 'bg-red-500'}`} />
+                      Non-dictionary
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       <div className="pt-6 flex justify-end border-t border-[#2E2E2E]">
-        <button 
-          onClick={handleNext} 
-          disabled={!formData.fullName || !formData.email || !formData.phone || formData.password.length < 8}
-          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
-        >
-          Next: Choose Role <ChevronRight size={16} />
-        </button>
+        {(() => {
+          const pwd = formData.password;
+          const rules = {
+            minLength: pwd.length >= 8,
+            hasUpper: /[A-Z]/.test(pwd),
+            hasLower: /[a-z]/.test(pwd),
+            hasNumber: /[0-9]/.test(pwd),
+            hasSpecial: /[\W_]/.test(pwd),
+            notCommon: !COMMON_WEAK_PASSWORDS.has(pwd.toLowerCase().trim()),
+          };
+          const isPasswordValid = rules.minLength && rules.hasUpper && rules.hasLower && rules.hasNumber && rules.hasSpecial && rules.notCommon;
+          const isFormValid = formData.fullName && formData.email && formData.phone && isPasswordValid;
+
+          return (
+            <button 
+              onClick={handleNext} 
+              disabled={!isFormValid}
+              className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
+            >
+              Next: Choose Role <ChevronRight size={16} />
+            </button>
+          );
+        })()}
       </div>
     </div>
   );
