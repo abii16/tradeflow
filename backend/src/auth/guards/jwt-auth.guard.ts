@@ -40,18 +40,15 @@ export const JwtAuthGuard = async (req: Request, res: Response, next: NextFuncti
       // Supabase network unreachable, fall back to local token decode
     }
 
-    if (!authUserId) {
-      try {
-        const jwt = require('jsonwebtoken');
-        decodedPayload = jwt.decode(token) as any;
-        if (decodedPayload?.sub) {
-          authUserId = decodedPayload.sub;
-          authUserEmail = decodedPayload.email || null;
-          authUserMetadata = decodedPayload;
-        }
-      } catch (e) {
-        // invalid token
-      }
+    try {
+      const jwt = require('jsonwebtoken');
+      decodedPayload = jwt.decode(token) as any;
+    } catch (e) {}
+
+    if (!authUserId && decodedPayload?.sub) {
+      authUserId = decodedPayload.sub;
+      authUserEmail = decodedPayload.email || null;
+      authUserMetadata = decodedPayload;
     }
 
     if (!authUserId) {
@@ -104,6 +101,16 @@ export const JwtAuthGuard = async (req: Request, res: Response, next: NextFuncti
         user = demoShipper;
       } else {
         res.status(401).json({ error: 'Unauthorized: User not found' });
+        return;
+      }
+    }
+
+    // Check if user's sessions were revoked across all devices
+    const userMeta = typeof user.metadata === 'object' && user.metadata ? (user.metadata as any) : {};
+    if (userMeta.revokedAllSessionsAt && decodedPayload?.iat) {
+      const tokenIatMs = decodedPayload.iat * 1000;
+      if (tokenIatMs <= userMeta.revokedAllSessionsAt) {
+        res.status(401).json({ error: 'Unauthorized: Session has been revoked' });
         return;
       }
     }

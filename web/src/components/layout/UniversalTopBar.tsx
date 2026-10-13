@@ -140,14 +140,28 @@ export default function UniversalTopBar() {
                   <Settings size={14} /> {t('account_settings')}
                 </button>
                 
-                <div className="h-px bg-[#181818] my-1"></div>
+                <div className="h-px bg-[#2E2E2E] my-1"></div>
 
-                
                 <button 
-                  onClick={logout}
-                  className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    logout();
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
                 >
-                  <LogOut size={14} /> {t('sign_out')}
+                  <LogOut size={14} /> Sign Out (This Device)
+                </button>
+
+                <button 
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    if (window.confirm('Sign out from all devices & browsers? Active sessions on other computers and mobile devices will be immediately revoked.')) {
+                      logout({ allDevices: true });
+                    }
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs text-red-300 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
+                >
+                  <Shield size={14} className="text-red-400" /> Sign Out All Devices
                 </button>
               </div>
             )}

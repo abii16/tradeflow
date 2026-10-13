@@ -158,11 +158,13 @@ router.delete('/sessions/:id', JwtAuthGuard, auditMiddleware('AUTH_REVOKE_SESSIO
 
 /**
  * Session invalidation / logout per Issue #47
+ * Supports single device session revocation or all devices revocation
  */
 router.post('/logout', JwtAuthGuard, async (req: Request, res: Response) => {
   try {
-    const currentRefreshToken = (req.headers['x-refresh-token'] as string) || undefined;
-    const result = await authService.logout(req.user?.id, currentRefreshToken);
+    const currentRefreshToken = (req.headers['x-refresh-token'] as string) || req.body?.refreshToken || undefined;
+    const allDevices = req.body?.allDevices === true || req.query?.allDevices === 'true';
+    const result = await authService.logout(req.user?.id, currentRefreshToken, allDevices);
     res.status(200).json(result);
   } catch (error: any) {
     res.status(500).json({ error: 'Logout failed' });

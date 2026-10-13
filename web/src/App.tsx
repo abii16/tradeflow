@@ -6,6 +6,7 @@ import AdminPortal from './views/admin-console/AdminPortal';
 import ForwarderPortal from './views/forwarder-portal/ForwarderPortal';
 import CustomsPortal from './views/customs-portal/CustomsPortal';
 import CompleteProfileModal from './views/auth/CompleteProfileModal';
+import SessionIdleManager from './components/auth/SessionIdleManager';
 import { useAuth } from './hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
@@ -50,7 +51,9 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 
 function AppContent() {
   const [portal, setPortalState] = useState<PortalView>(getPortalFromPath);
-  const [dismissedCompliance, setDismissedCompliance] = useState(false);
+  const [dismissedCompliance, setDismissedCompliance] = useState(() => {
+    return sessionStorage.getItem('tradeflow_dismissed_compliance') === 'true';
+  });
   const { isLoading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
@@ -109,8 +112,10 @@ function AppContent() {
   const switchToShipper = () => navigateToPortal('shipper');
 
   const needsProfileCompletion = Boolean(
+    !isLoading &&
     isAuthenticated &&
     user &&
+    user.role &&
     user.role !== 'ADMIN' &&
     (!user.tinNumber || !user.tradeLicense || user.tinNumber.trim() === '' || user.tradeLicense.trim() === '')
   );
@@ -164,10 +169,17 @@ function AppContent() {
 
   return (
     <>
+      <SessionIdleManager />
       {needsProfileCompletion && !dismissedCompliance && (
         <CompleteProfileModal 
-          onClose={() => setDismissedCompliance(true)} 
-          onSuccess={() => setDismissedCompliance(true)} 
+          onClose={() => {
+            setDismissedCompliance(true);
+            sessionStorage.setItem('tradeflow_dismissed_compliance', 'true');
+          }} 
+          onSuccess={() => {
+            setDismissedCompliance(true);
+            sessionStorage.setItem('tradeflow_dismissed_compliance', 'true');
+          }} 
         />
       )}
       {renderPortal()}

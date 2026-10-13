@@ -437,9 +437,19 @@ export class AuthService {
         lastActive: new Date(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
-    } catch (sessionErr) {
-      // Graceful fallback for test mocks
-    }
+    } catch (sessionErr) {}
+
+    // Clear previous universal revocation marker on fresh login
+    try {
+      const currentMeta = typeof userObj.metadata === 'object' && userObj.metadata ? (userObj.metadata as any) : {};
+      if (currentMeta.revokedAllSessionsAt) {
+        const { revokedAllSessionsAt, ...cleanMeta } = currentMeta;
+        await db.update(users).set({
+          metadata: cleanMeta,
+          updatedAt: new Date(),
+        }).where(eq(users.id, userObj.id));
+      }
+    } catch (metaErr) {}
 
     return {
       access_token: token,
@@ -673,6 +683,19 @@ export class AuthService {
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) {
         throw new Error('User not found');
+      }
+
+      // Check if all sessions were revoked for this user prior to this refresh request
+      const userMeta = typeof user.metadata === 'object' && user.metadata ? (user.metadata as any) : {};
+      if (userMeta.revokedAllSessionsAt) {
+        let tokenIat = 0;
+        try {
+          const decoded = jwt.decode(data.refreshToken) as any;
+          tokenIat = decoded?.iat ? decoded.iat * 1000 : 0;
+        } catch (e) {}
+        if (tokenIat && tokenIat <= userMeta.revokedAllSessionsAt) {
+          throw new Error('Session has been revoked');
+        }
       }
 
       const newAccessToken = jwt.sign({
@@ -933,10 +956,26 @@ export class AuthService {
 
   /**
    * Secure session invalidation
+   * Supports single device session revocation or all devices revocation
    */
-  async logout(userId?: string, currentRefreshToken?: string) {
+  async logout(userId?: string, currentRefreshToken?: string, allDevices: boolean = false) {
     if (userId) {
-      if (currentRefreshToken) {
+      if (allDevices) {
+        try {
+          await db.delete(userSessions).where(eq(userSessions.userId, userId));
+          const [u] = await db.select().from(users).where(eq(users.id, userId));
+          if (u) {
+            const currentMeta = typeof u.metadata === 'object' && u.metadata ? u.metadata : {};
+            await db.update(users).set({
+              metadata: {
+                ...currentMeta,
+                revokedAllSessionsAt: Date.now(),
+              },
+              updatedAt: new Date(),
+            }).where(eq(users.id, userId));
+          }
+        } catch (e) {}
+      } else if (currentRefreshToken) {
         try {
           const currentHash = crypto.createHash('sha256').update(currentRefreshToken).digest('hex');
           await db
@@ -945,7 +984,7 @@ export class AuthService {
         } catch (e) {}
       }
     }
-    return { message: 'Session invalidated successfully' };
+    return { message: allDevices ? 'All sessions revoked successfully' : 'Session invalidated successfully' };
   }
 }
 
