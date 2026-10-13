@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
-import { removeAuthToken, getAuthToken, apiClient } from '../lib/apiClient';
+import { removeAuthToken, getAuthToken, setAuthStorage, getRefreshToken, apiClient } from '../lib/apiClient';
 
 export interface User {
   id: string;
@@ -130,8 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (result.access_token && result.refresh_token) {
-      localStorage.setItem('tradeflow_token', result.access_token);
-      localStorage.setItem('tradeflow_refresh_token', result.refresh_token);
+      const rememberMe = data.rememberMe ?? false;
+      setAuthStorage(result.access_token, result.refresh_token, rememberMe);
       await supabase.auth.setSession({
         access_token: result.access_token,
         refresh_token: result.refresh_token,
@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      const storedRefreshToken = localStorage.getItem('tradeflow_refresh_token');
+      const storedRefreshToken = getRefreshToken();
       await apiClient('/auth/logout', { 
         method: 'POST',
         headers: storedRefreshToken ? { 'x-refresh-token': storedRefreshToken } : undefined
@@ -200,9 +200,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       // quiet cleanup
     }
-    await supabase.auth.signOut();
-    removeAuthToken(); // Cleanup any legacy token usage in apiClient
-    localStorage.removeItem('tradeflow_refresh_token');
+    await supabase.auth.signOut().catch(() => {});
+    removeAuthToken();
     setUser(null);
     setSession(null);
   };

@@ -4,9 +4,53 @@ import axios, { AxiosRequestConfig } from 'axios';
 const API_BASE_URL = 'http://localhost:4001/api/v1';
 
 // Keep these for backward compatibility during transition if any other files use them
-export const getAuthToken = () => localStorage.getItem('tradeflow_token');
-export const setAuthToken = (token: string) => localStorage.setItem('tradeflow_token', token);
-export const removeAuthToken = () => localStorage.removeItem('tradeflow_token');
+export const isRememberMe = (): boolean => {
+  return localStorage.getItem('tradeflow_remember_me') === 'true';
+};
+
+export const getAuthToken = (): string | null => {
+  return sessionStorage.getItem('tradeflow_token') || localStorage.getItem('tradeflow_token');
+};
+
+export const getRefreshToken = (): string | null => {
+  return sessionStorage.getItem('tradeflow_refresh_token') || localStorage.getItem('tradeflow_refresh_token');
+};
+
+export const setAuthToken = (token: string, rememberMe?: boolean) => {
+  const shouldRemember = rememberMe !== undefined ? rememberMe : isRememberMe();
+  if (shouldRemember) {
+    localStorage.setItem('tradeflow_token', token);
+    sessionStorage.removeItem('tradeflow_token');
+  } else {
+    sessionStorage.setItem('tradeflow_token', token);
+    localStorage.removeItem('tradeflow_token');
+  }
+};
+
+export const setRefreshToken = (token: string, rememberMe?: boolean) => {
+  const shouldRemember = rememberMe !== undefined ? rememberMe : isRememberMe();
+  if (shouldRemember) {
+    localStorage.setItem('tradeflow_refresh_token', token);
+    sessionStorage.removeItem('tradeflow_refresh_token');
+  } else {
+    sessionStorage.setItem('tradeflow_refresh_token', token);
+    localStorage.removeItem('tradeflow_refresh_token');
+  }
+};
+
+export const setAuthStorage = (accessToken: string, refreshToken: string, rememberMe: boolean = false) => {
+  localStorage.setItem('tradeflow_remember_me', rememberMe ? 'true' : 'false');
+  setAuthToken(accessToken, rememberMe);
+  setRefreshToken(refreshToken, rememberMe);
+};
+
+export const removeAuthToken = () => {
+  localStorage.removeItem('tradeflow_token');
+  sessionStorage.removeItem('tradeflow_token');
+  localStorage.removeItem('tradeflow_refresh_token');
+  sessionStorage.removeItem('tradeflow_refresh_token');
+  localStorage.removeItem('tradeflow_remember_me');
+};
 
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -20,7 +64,7 @@ axiosInstance.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  const refreshToken = localStorage.getItem('tradeflow_refresh_token');
+  const refreshToken = getRefreshToken();
   if (refreshToken) {
     config.headers['x-refresh-token'] = refreshToken;
   }
@@ -38,7 +82,7 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const storedRefreshToken = session?.refresh_token || localStorage.getItem('tradeflow_refresh_token');
+        const storedRefreshToken = session?.refresh_token || getRefreshToken();
         if (storedRefreshToken) {
           const refreshRes = await axios.post(`${API_BASE_URL}/auth/refresh`, {
             refreshToken: storedRefreshToken,
@@ -47,7 +91,7 @@ axiosInstance.interceptors.response.use(
             const newToken = refreshRes.data.access_token;
             setAuthToken(newToken);
             if (refreshRes.data.refresh_token) {
-              localStorage.setItem('tradeflow_refresh_token', refreshRes.data.refresh_token);
+              setRefreshToken(refreshRes.data.refresh_token);
             }
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return axiosInstance(originalRequest);
@@ -55,7 +99,6 @@ axiosInstance.interceptors.response.use(
         }
       } catch (refreshErr) {
         removeAuthToken();
-        localStorage.removeItem('tradeflow_refresh_token');
         window.dispatchEvent(new Event('auth:unauthorized'));
       }
     }

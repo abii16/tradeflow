@@ -15,6 +15,7 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +24,7 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     setIsLocked(false);
 
     try {
-      const result: any = await login({ email, password });
+      const result: any = await login({ email, password, rememberMe });
       if (result?.suspiciousLoginAlert) {
         alert(`Security Notice: Suspicious login activity detected (${result.suspiciousLoginAlert}). Active session logged.`);
       }
@@ -148,7 +149,24 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
               </div>
             </div>
 
-            <div className="pt-8">
+            <div className="pt-4 flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input 
+                  type="checkbox" 
+                  checked={rememberMe} 
+                  onChange={(e) => setRememberMe(e.target.checked)} 
+                  className="w-4 h-4 rounded border-[#2E2E2E] bg-[#141414] text-[#3ECF8E] focus:ring-0 focus:ring-offset-0 accent-[#3ECF8E] cursor-pointer"
+                />
+                <span className="text-xs text-[#8F8F8F] group-hover:text-[#EDEDED] transition-colors select-none">
+                  Remember this device
+                </span>
+              </label>
+              <span className="text-[10px] text-[#8F8F8F]/60 font-mono">
+                {rememberMe ? 'Stay signed in' : 'Session only'}
+              </span>
+            </div>
+
+            <div className="pt-5">
               <button 
                 type="submit"
                 disabled={isSubmitting || !email || !password}
