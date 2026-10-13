@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
-import { removeAuthToken, apiClient } from '../lib/apiClient';
+import { removeAuthToken, getAuthToken, apiClient } from '../lib/apiClient';
 
 export interface User {
   id: string;
@@ -73,10 +73,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       if (session) {
-        setUser(session.user?.user_metadata as User || null);
-        await syncGoogleUserWithBackend(session);
+        try {
+          await syncGoogleUserWithBackend(session);
+        } catch {
+          await refreshUser();
+        }
       } else {
-        setUser(null);
+        const directToken = getAuthToken();
+        if (directToken) {
+          await refreshUser();
+        } else {
+          setUser(null);
+        }
       }
       setIsLoading(false);
     }).catch(err => {
@@ -88,13 +96,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       if (session) {
-        setUser(session.user?.user_metadata as User || null);
+        // Preserve current full user profile if already loaded so window focus does NOT flash partial metadata
+        setUser((prev) => {
+          if (prev && prev.email === session.user?.email && prev.role) {
+            return prev;
+          }
+          return (session.user?.user_metadata as User) || prev || null;
+        });
+
         if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
           await syncGoogleUserWithBackend(session);
         } else {
           await refreshUser();
         }
-      } else {
+      } else if (!getAuthToken()) {
         setUser(null);
       }
       setIsLoading(false);

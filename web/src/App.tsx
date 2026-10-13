@@ -50,7 +50,9 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 
 function AppContent() {
   const [portal, setPortalState] = useState<PortalView>(getPortalFromPath);
-  const [dismissedCompliance, setDismissedCompliance] = useState(false);
+  const [dismissedCompliance, setDismissedCompliance] = useState(() => {
+    return sessionStorage.getItem('tradeflow_dismissed_compliance') === 'true';
+  });
   const { isLoading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
@@ -111,6 +113,7 @@ function AppContent() {
   const needsProfileCompletion = Boolean(
     isAuthenticated &&
     user &&
+    user.role &&
     user.role !== 'ADMIN' &&
     (!user.tinNumber || !user.tradeLicense || user.tinNumber.trim() === '' || user.tradeLicense.trim() === '')
   );
@@ -166,8 +169,14 @@ function AppContent() {
     <>
       {needsProfileCompletion && !dismissedCompliance && (
         <CompleteProfileModal 
-          onClose={() => setDismissedCompliance(true)} 
-          onSuccess={() => setDismissedCompliance(true)} 
+          onClose={() => {
+            setDismissedCompliance(true);
+            sessionStorage.setItem('tradeflow_dismissed_compliance', 'true');
+          }} 
+          onSuccess={() => {
+            setDismissedCompliance(true);
+            sessionStorage.setItem('tradeflow_dismissed_compliance', 'true');
+          }} 
         />
       )}
       {renderPortal()}
