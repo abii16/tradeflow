@@ -675,6 +675,19 @@ export class AuthService {
         throw new Error('User not found');
       }
 
+      // Check if all sessions were revoked for this user prior to this refresh request
+      const userMeta = typeof user.metadata === 'object' && user.metadata ? (user.metadata as any) : {};
+      if (userMeta.revokedAllSessionsAt) {
+        let tokenIat = 0;
+        try {
+          const decoded = jwt.decode(data.refreshToken) as any;
+          tokenIat = decoded?.iat ? decoded.iat * 1000 : 0;
+        } catch (e) {}
+        if (tokenIat && tokenIat < userMeta.revokedAllSessionsAt) {
+          throw new Error('Session has been revoked');
+        }
+      }
+
       const newAccessToken = jwt.sign({
         sub: user.id,
         email: user.email,
@@ -933,10 +946,26 @@ export class AuthService {
 
   /**
    * Secure session invalidation
+   * Supports single device session revocation or all devices revocation
    */
-  async logout(userId?: string, currentRefreshToken?: string) {
+  async logout(userId?: string, currentRefreshToken?: string, allDevices: boolean = false) {
     if (userId) {
-      if (currentRefreshToken) {
+      if (allDevices) {
+        try {
+          await db.delete(userSessions).where(eq(userSessions.userId, userId));
+          const [u] = await db.select().from(users).where(eq(users.id, userId));
+          if (u) {
+            const currentMeta = typeof u.metadata === 'object' && u.metadata ? u.metadata : {};
+            await db.update(users).set({
+              metadata: {
+                ...currentMeta,
+                revokedAllSessionsAt: Date.now(),
+              },
+              updatedAt: new Date(),
+            }).where(eq(users.id, userId));
+          }
+        } catch (e) {}
+      } else if (currentRefreshToken) {
         try {
           const currentHash = crypto.createHash('sha256').update(currentRefreshToken).digest('hex');
           await db
@@ -945,7 +974,7 @@ export class AuthService {
         } catch (e) {}
       }
     }
-    return { message: 'Session invalidated successfully' };
+    return { message: allDevices ? 'All sessions revoked successfully' : 'Session invalidated successfully' };
   }
 }
 

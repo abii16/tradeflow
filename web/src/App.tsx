@@ -112,6 +112,7 @@ function AppContent() {
   const switchToShipper = () => navigateToPortal('shipper');
 
   const needsProfileCompletion = Boolean(
+    !isLoading &&
     isAuthenticated &&
     user &&
     user.role &&
