@@ -437,9 +437,19 @@ export class AuthService {
         lastActive: new Date(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
-    } catch (sessionErr) {
-      // Graceful fallback for test mocks
-    }
+    } catch (sessionErr) {}
+
+    // Clear previous universal revocation marker on fresh login
+    try {
+      const currentMeta = typeof userObj.metadata === 'object' && userObj.metadata ? (userObj.metadata as any) : {};
+      if (currentMeta.revokedAllSessionsAt) {
+        const { revokedAllSessionsAt, ...cleanMeta } = currentMeta;
+        await db.update(users).set({
+          metadata: cleanMeta,
+          updatedAt: new Date(),
+        }).where(eq(users.id, userObj.id));
+      }
+    } catch (metaErr) {}
 
     return {
       access_token: token,
@@ -683,7 +693,7 @@ export class AuthService {
           const decoded = jwt.decode(data.refreshToken) as any;
           tokenIat = decoded?.iat ? decoded.iat * 1000 : 0;
         } catch (e) {}
-        if (tokenIat && tokenIat < userMeta.revokedAllSessionsAt) {
+        if (tokenIat && tokenIat <= userMeta.revokedAllSessionsAt) {
           throw new Error('Session has been revoked');
         }
       }

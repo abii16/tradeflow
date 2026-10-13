@@ -109,7 +109,7 @@ export const JwtAuthGuard = async (req: Request, res: Response, next: NextFuncti
     const userMeta = typeof user.metadata === 'object' && user.metadata ? (user.metadata as any) : {};
     if (userMeta.revokedAllSessionsAt && decodedPayload?.iat) {
       const tokenIatMs = decodedPayload.iat * 1000;
-      if (tokenIatMs < userMeta.revokedAllSessionsAt) {
+      if (tokenIatMs <= userMeta.revokedAllSessionsAt) {
         res.status(401).json({ error: 'Unauthorized: Session has been revoked' });
         return;
       }
