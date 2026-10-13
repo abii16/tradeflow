@@ -6,6 +6,7 @@ import AdminPortal from './views/admin-console/AdminPortal';
 import ForwarderPortal from './views/forwarder-portal/ForwarderPortal';
 import CustomsPortal from './views/customs-portal/CustomsPortal';
 import CompleteProfileModal from './views/auth/CompleteProfileModal';
+import SessionIdleManager from './components/auth/SessionIdleManager';
 import { useAuth } from './hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
@@ -167,6 +168,7 @@ function AppContent() {
 
   return (
     <>
+      <SessionIdleManager />
       {needsProfileCompletion && !dismissedCompliance && (
         <CompleteProfileModal 
           onClose={() => {
