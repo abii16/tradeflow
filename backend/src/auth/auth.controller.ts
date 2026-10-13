@@ -128,7 +128,9 @@ router.post('/complete-profile', JwtAuthGuard, auditMiddleware('AUTH_COMPLETE_PR
 router.get('/sessions', JwtAuthGuard, async (req: Request, res: Response) => {
   try {
     const currentRefreshToken = (req.headers['x-refresh-token'] as string) || undefined;
-    const sessions = await authService.getUserSessions(req.user!.id, currentRefreshToken);
+    const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || req.ip;
+    const userAgent = req.headers['user-agent'];
+    const sessions = await authService.getUserSessions(req.user!.id, currentRefreshToken, clientIp, userAgent);
     res.status(200).json({ sessions });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch active sessions' });

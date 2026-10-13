@@ -134,7 +134,7 @@ export default function UniversalTopBar() {
                   }}
                   className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors"
                 >
-                  <ShieldCheck size={14} className="text-[#3ECF8E]" /> Sessions & Security
+                  <Laptop size={14} className="text-[#3ECF8E]" /> {user.role === 'ADMIN' ? 'Security & INSA Ledger' : 'Connected Devices'}
                 </button>
                 <button className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors">
                   <Settings size={14} /> {t('account_settings')}
