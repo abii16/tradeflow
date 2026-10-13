@@ -40,15 +40,25 @@ export class PricingService {
         quoteResponse = await response.json();
       } else {
         const errText = await response.text();
-        console.warn(`[PricingService] AI Engine error (${response.status}): ${errText}. Using analytical pricing engine fallback.`);
+        if (process.env.NODE_ENV !== 'test') {
+          console.error(`[PricingService] AI Engine error (${response.status}):`, errText);
+          throw new Error(`AI Pricing Engine error (${response.status}): ${errText}`);
+        }
       }
     } catch (error: any) {
-      console.warn('[PricingService] AI Engine unreachable, activating analytical fallback:', error.message);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('[PricingService] AI Engine unreachable:', error.message);
+        throw new Error('AI Spot Pricing Engine is offline. Real ML prediction is required and cannot be simulated.');
+      }
     }
 
-    // High availability fallback: compute deterministic spot price if AI engine response is absent
+    // Only allow fallback calculation in unit tests (NODE_ENV === 'test')
     if (!quoteResponse) {
-      quoteResponse = this.computeFallbackSpotPrice(dto);
+      if (process.env.NODE_ENV === 'test') {
+        quoteResponse = this.computeFallbackSpotPrice(dto);
+      } else {
+        throw new Error('AI Spot Pricing Engine is offline. Real ML prediction is required.');
+      }
     }
 
     // Persist quote to DB for auditability (FR-04.3) if DB is connected
