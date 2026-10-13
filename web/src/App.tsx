@@ -50,6 +50,7 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 
 function AppContent() {
   const [portal, setPortalState] = useState<PortalView>(getPortalFromPath);
+  const [dismissedCompliance, setDismissedCompliance] = useState(false);
   const { isLoading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
@@ -107,6 +108,13 @@ function AppContent() {
   const switchToFinance = () => navigateToPortal('finance');
   const switchToShipper = () => navigateToPortal('shipper');
 
+  const needsProfileCompletion = Boolean(
+    isAuthenticated &&
+    user &&
+    user.role !== 'ADMIN' &&
+    (!user.tinNumber || !user.tradeLicense || user.tinNumber.trim() === '' || user.tradeLicense.trim() === '')
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center text-white">
@@ -114,14 +122,6 @@ function AppContent() {
       </div>
     );
   }
-
-  const [dismissedCompliance, setDismissedCompliance] = useState(false);
-  const needsProfileCompletion = Boolean(
-    isAuthenticated &&
-    user &&
-    user.role !== 'ADMIN' &&
-    (!user.tinNumber || !user.tradeLicense || user.tinNumber.trim() === '' || user.tradeLicense.trim() === '')
-  );
 
   const renderPortal = () => {
     switch (portal) {
