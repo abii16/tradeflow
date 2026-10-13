@@ -92,7 +92,26 @@ export const RefreshTokenDto = z.object({
   refreshToken: z.string().min(1, 'Refresh token is required'),
 });
 
+export const CompleteProfileDto = z.object({
+  role: RoleEnum.optional(),
+  companyName: z.string().min(2, 'Company name is required'),
+  tinNumber: z.string().min(5, 'Valid TIN is required'),
+  tradeLicense: z.string().min(3, 'Trade license number is required'),
+  phone: z.string().min(8, 'Valid phone number is required'),
+  businessSector: z.string().optional(),
+  businessAddress: z.string().optional(),
+  vehicleType: z.string().optional(),
+  fleetSize: z.string().optional(),
+  vehicleCapacity: z.string().optional(),
+  insurancePolicy: z.string().optional(),
+  badgeId: z.string().optional(),
+  customsStation: z.string().optional(),
+  customsDivision: z.string().optional(),
+});
+
 export type RegisterRequestType = z.infer<typeof RegisterDto>;
 export type LoginRequestType = z.infer<typeof LoginDto>;
 export type GoogleAuthRequestType = z.infer<typeof GoogleAuthDto>;
 export type RefreshTokenRequestType = z.infer<typeof RefreshTokenDto>;
+export type CompleteProfileRequestType = z.infer<typeof CompleteProfileDto>;
+

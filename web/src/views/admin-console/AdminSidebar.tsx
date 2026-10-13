@@ -12,8 +12,10 @@ import {
   PanelLeftOpen,
   HelpCircle,
   Power,
-  Droplet
+  Droplet,
+  Users
 } from 'lucide-react';
+
 
 import { getAllVerifications } from '../../lib/apiClient';
 
@@ -47,6 +49,7 @@ export default function AdminSidebar({ activeSubTab, setActiveSubTab }: AdminSid
 
   const menuItems = [
     { id: 'radar', name: t('admin_nav_radar'), icon: Radar },
+    { id: 'actors', name: 'Corridor Actors', icon: Users },
     { id: 'verification', name: t('admin_nav_verification'), icon: ClipboardCheck, badge: pendingCount > 0 ? pendingCount.toString() : null },
     { id: 'pricing', name: t('admin_nav_pricing'), icon: TrendingUp },
     { id: 'fuel', name: 'Fuel Analytics', icon: Droplet },

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bell, Globe, LogOut, User, Settings, ChevronDown } from 'lucide-react';
+import { Bell, Globe, LogOut, User, Settings, ChevronDown, Shield } from 'lucide-react';
 import HeaderSearch from '@/components/common/HeaderSearch';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -69,6 +69,16 @@ export default function UniversalTopBar() {
           <Bell size={15} />
         </button>
 
+        {user?.role === 'ADMIN' && (
+          <button
+            onClick={() => window.location.href = '/admin'}
+            className="hidden sm:flex items-center gap-1.5 bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] border border-[#3ECF8E]/30 text-xs px-2.5 py-1 rounded-lg font-mono font-bold transition"
+            title="Switch to Operations Control Tower"
+          >
+            <Shield size={12} /> Control Tower
+          </button>
+        )}
+
         <div className="w-px h-4 bg-[#2E2E2E]"></div>
 
         {/* User Account with Dropdown */}
@@ -103,6 +113,15 @@ export default function UniversalTopBar() {
                   <p className="text-[10px] text-[#8F8F8F] truncate">{getRoleDisplayName(user.role)}</p>
                 </div>
                 
+                {user.role === 'ADMIN' && (
+                  <button 
+                    onClick={() => window.location.href = '/admin'}
+                    className="w-full text-left px-4 py-2 text-xs text-[#3ECF8E] hover:bg-[#1C1C1C] flex items-center gap-2 transition-colors font-bold"
+                  >
+                    <Shield size={14} /> Control Tower Portal
+                  </button>
+                )}
+
                 <button className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors">
                   <User size={14} /> {t('my_profile')}
                 </button>
@@ -111,6 +130,7 @@ export default function UniversalTopBar() {
                 </button>
                 
                 <div className="h-px bg-[#181818] my-1"></div>
+
                 
                 <button 
                   onClick={logout}

@@ -73,12 +73,15 @@ router.post('/submit', JwtAuthGuard, async (req: Request, res: Response): Promis
         }
       }
 
-      // 3. Update user status to PENDING
+      // 3. Update user status to PENDING and sync tradeLicense and tinNumber
       await tx.update(users).set({
+        tradeLicense: data.tradeLicenseNumber,
+        tinNumber: data.taxId,
         verificationStatus: 'PENDING',
         updatedAt: new Date(),
       }).where(eq(users.id, userId));
     });
+
 
     res.status(200).json({ message: 'Verification details submitted successfully' });
   } catch (error) {

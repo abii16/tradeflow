@@ -2,7 +2,8 @@ import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { users } from '../db/schema/users';
 import { verifications } from '../db/schema/verifications';
-import { eq, desc, and, or, gte } from 'drizzle-orm';
+import { vehicles } from '../db/schema/vehicles';
+import { eq, ne, desc, and, or, gte } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -22,6 +23,266 @@ const router = Router();
 
 // Middleware to ensure only ADMIN can access these routes
 router.use(JwtAuthGuard, RolesGuard(['ADMIN']));
+
+/**
+ * GET /admin/users
+ * Directory of all corridor actors (Shippers, Transporters, Forwarders, Customs, Admins)
+ * Per SRS Section 2.3 & FR-01.4
+ */
+router.get('/users', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { role, status, search } = req.query;
+
+    const allUsers = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        fullName: users.fullName,
+        phone: users.phone,
+        role: users.role,
+        companyName: users.companyName,
+        tinNumber: users.tinNumber,
+        tradeLicense: users.tradeLicense,
+        badgeId: users.badgeId,
+        fleetName: users.fleetName,
+        operatorLicense: users.operatorLicense,
+        vehicleCapacity: users.vehicleCapacity,
+        isVerified: users.isVerified,
+        verificationStatus: users.verificationStatus,
+        metadata: users.metadata,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .orderBy(desc(users.createdAt));
+
+    // Calculate aggregated corridor metrics
+    const metrics = {
+      total: allUsers.length,
+      verified: allUsers.filter((u) => u.verificationStatus === 'VERIFIED').length,
+      pending: allUsers.filter((u) => u.verificationStatus === 'PENDING').length,
+      unverified: allUsers.filter((u) => u.verificationStatus === 'UNVERIFIED').length,
+      suspended: allUsers.filter((u) => u.verificationStatus === 'SUSPENDED').length,
+      rejected: allUsers.filter((u) => u.verificationStatus === 'REJECTED').length,
+      roles: {
+        shippers: allUsers.filter((u) => u.role === 'SHIPPER').length,
+        transporters: allUsers.filter((u) => u.role === 'TRANSPORTER').length,
+        forwarders: allUsers.filter((u) => u.role === 'FORWARDER').length,
+        customs: allUsers.filter((u) => u.role === 'CUSTOMS_OFFICER').length,
+        admins: allUsers.filter((u) => u.role === 'ADMIN').length,
+      },
+    };
+
+    let filtered = allUsers;
+    if (role && role !== 'ALL') {
+      filtered = filtered.filter((u) => u.role === (role as string).toUpperCase());
+    }
+    if (status && status !== 'ALL') {
+      filtered = filtered.filter((u) => u.verificationStatus === (status as string).toUpperCase());
+    }
+    if (search && typeof search === 'string' && search.trim() !== '') {
+      const q = search.toLowerCase().trim();
+      filtered = filtered.filter(
+        (u) =>
+          u.fullName?.toLowerCase().includes(q) ||
+          u.email?.toLowerCase().includes(q) ||
+          u.companyName?.toLowerCase().includes(q) ||
+          u.tinNumber?.toLowerCase().includes(q) ||
+          u.tradeLicense?.toLowerCase().includes(q) ||
+          u.phone?.toLowerCase().includes(q)
+      );
+    }
+
+    res.status(200).json({ data: filtered, metrics });
+  } catch (error) {
+    console.error('Error fetching corridor users:', error);
+    res.status(500).json({ error: 'Failed to fetch corridor users' });
+  }
+});
+
+/**
+ * GET /admin/users/:id
+ * Retrieve comprehensive actor dossier
+ */
+router.get('/users/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const userVehicles = await db.select().from(vehicles).where(eq(vehicles.ownerId, id));
+    const userVerifications = await db.select().from(verifications).where(eq(verifications.userId, id));
+    const userLoads = await db.select().from(loads).where(eq(loads.shipperId, id));
+
+    const { passwordHash, ...safeUser } = user;
+    res.status(200).json({
+      data: {
+        ...safeUser,
+        vehicles: userVehicles,
+        verifications: userVerifications,
+        loadsCount: userLoads.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching user dossier:', error);
+    res.status(500).json({ error: 'Failed to fetch user dossier' });
+  }
+});
+
+/**
+ * PATCH /admin/users/:id/status
+ * Administrative action: Verify, Suspend, Reinstate actor per SRS Section 2.3 & FR-01.4
+ */
+router.patch('/users/:id/status', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status, reason } = req.body;
+    const adminId = req.user!.id;
+
+    if (!['VERIFIED', 'SUSPENDED', 'PENDING', 'REJECTED', 'UNVERIFIED'].includes(status)) {
+      res.status(400).json({ error: 'Invalid verification status' });
+      return;
+    }
+
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const isVerified = status === 'VERIFIED';
+    await db
+      .update(users)
+      .set({
+        verificationStatus: status,
+        isVerified,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id));
+
+    // Sync verifications table if exists
+    const existingVer = await db.select().from(verifications).where(eq(verifications.userId, id));
+    if (existingVer.length > 0) {
+      await db
+        .update(verifications)
+        .set({
+          status,
+          rejectionReason: reason || existingVer[0].rejectionReason,
+          reviewedBy: adminId,
+          updatedAt: new Date(),
+        })
+        .where(eq(verifications.userId, id));
+    }
+
+    // FR-01.4 Audit Logging
+    await db.insert(auditLogs).values({
+      userId: adminId,
+      userRole: 'ADMIN',
+      action:
+        status === 'SUSPENDED'
+          ? 'ACTOR_SUSPENDED'
+          : status === 'VERIFIED'
+          ? 'ACTOR_VERIFIED'
+          : 'ACTOR_STATUS_CHANGED',
+      method: 'PATCH',
+      endpoint: `/admin/users/${id}/status`,
+      statusCode: 200,
+      requestPayload: {
+        targetUserId: id,
+        previousStatus: user.verificationStatus,
+        newStatus: status,
+        reason,
+      },
+      ipAddress: req.ip || '0.0.0.0',
+    });
+
+    const [updated] = await db.select().from(users).where(eq(users.id, id));
+    const { passwordHash, ...safeUser } = updated;
+    res.status(200).json({
+      success: true,
+      message: `Actor status successfully updated to ${status}`,
+      user: safeUser,
+    });
+  } catch (error) {
+    console.error('Error updating actor status:', error);
+    res.status(500).json({ error: 'Failed to update actor status' });
+  }
+});
+
+/**
+ * PATCH /admin/users/:id/role
+ * Admin privilege governance: Promote to Admin or switch actor role
+ */
+router.patch('/users/:id/role', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { role, reason } = req.body;
+    const adminId = req.user!.id;
+
+    if (!['SHIPPER', 'TRANSPORTER', 'FORWARDER', 'CUSTOMS_OFFICER', 'ADMIN'].includes(role)) {
+      res.status(400).json({ error: 'Invalid user role' });
+      return;
+    }
+
+    const [targetUser] = await db.select().from(users).where(eq(users.id, id));
+    if (!targetUser) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Safety guard: Prevent demoting self if sole admin
+    if (targetUser.id === adminId && role !== 'ADMIN') {
+      const otherAdmins = await db
+        .select()
+        .from(users)
+        .where(and(eq(users.role, 'ADMIN'), ne(users.id, adminId)));
+      if (otherAdmins.length === 0) {
+        res.status(400).json({ error: 'Cannot demote the sole active administrator account' });
+        return;
+      }
+    }
+
+    await db
+      .update(users)
+      .set({
+        role,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id));
+
+    // Audit log
+    await db.insert(auditLogs).values({
+      userId: adminId,
+      userRole: 'ADMIN',
+      action: role === 'ADMIN' ? 'ACTOR_PROMOTED_ADMIN' : 'ACTOR_ROLE_CHANGED',
+      method: 'PATCH',
+      endpoint: `/admin/users/${id}/role`,
+      statusCode: 200,
+      requestPayload: {
+        targetUserId: id,
+        previousRole: targetUser.role,
+        newRole: role,
+        reason,
+      },
+      ipAddress: req.ip || '0.0.0.0',
+    });
+
+    const [updated] = await db.select().from(users).where(eq(users.id, id));
+    const { passwordHash, ...safeUser } = updated;
+    res.status(200).json({
+      success: true,
+      message: `Actor role successfully updated to ${role}`,
+      user: safeUser,
+    });
+  } catch (error) {
+    console.error('Error updating actor role:', error);
+    res.status(500).json({ error: 'Failed to update actor role' });
+  }
+});
+
 
 /**
  * GET /admin/verifications

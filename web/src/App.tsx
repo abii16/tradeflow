@@ -5,9 +5,11 @@ import FinancePortal from './views/financial-dashboard/FinancePortal';
 import AdminPortal from './views/admin-console/AdminPortal';
 import ForwarderPortal from './views/forwarder-portal/ForwarderPortal';
 import CustomsPortal from './views/customs-portal/CustomsPortal';
+import CompleteProfileModal from './views/auth/CompleteProfileModal';
 import { useAuth } from './hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
+
 
 
 
@@ -113,42 +115,65 @@ function AppContent() {
     );
   }
 
-  switch (portal) {
-    case 'shipper':
-      return (
-        <ProtectedRoute allowedRoles={['SHIPPER', 'ADMIN']}>
-          <ShipperPortal onSwitchPortal={switchToFinance} />
-        </ProtectedRoute>
-      );
-    case 'finance':
-      return (
-        <ProtectedRoute allowedRoles={['TRANSPORTER', 'ADMIN']}>
-          <FinancePortal onSwitchPortal={switchToShipper} />
-        </ProtectedRoute>
-      );
-    case 'admin':
-      return (
-        <ProtectedRoute allowedRoles={['ADMIN']}>
-          <AdminPortal onSwitchPortal={() => navigateToPortal('selector')} />
-        </ProtectedRoute>
-      );
-    case 'forwarder':
-      return (
-        <ProtectedRoute allowedRoles={['FORWARDER', 'ADMIN']}>
-          <ForwarderPortal onSwitchPortal={() => navigateToPortal('selector')} />
-        </ProtectedRoute>
-      );
-    case 'customs':
-      return (
-        <ProtectedRoute allowedRoles={['CUSTOMS_OFFICER', 'ADMIN']}>
-          <CustomsPortal onSwitchPortal={() => navigateToPortal('selector')} />
-        </ProtectedRoute>
-      );
-    default:
-      return (
-        <LandingPage onSelectPortal={handleSelectPortal} />
-      );
-  }
+  const [dismissedCompliance, setDismissedCompliance] = useState(false);
+  const needsProfileCompletion = Boolean(
+    isAuthenticated &&
+    user &&
+    user.role !== 'ADMIN' &&
+    (!user.tinNumber || !user.tradeLicense || user.tinNumber.trim() === '' || user.tradeLicense.trim() === '')
+  );
+
+  const renderPortal = () => {
+    switch (portal) {
+      case 'shipper':
+        return (
+          <ProtectedRoute allowedRoles={['SHIPPER', 'ADMIN']}>
+            <ShipperPortal onSwitchPortal={switchToFinance} />
+          </ProtectedRoute>
+        );
+      case 'finance':
+        return (
+          <ProtectedRoute allowedRoles={['TRANSPORTER', 'ADMIN']}>
+            <FinancePortal onSwitchPortal={switchToShipper} />
+          </ProtectedRoute>
+        );
+      case 'admin':
+        return (
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminPortal onSwitchPortal={() => navigateToPortal('selector')} />
+          </ProtectedRoute>
+        );
+      case 'forwarder':
+        return (
+          <ProtectedRoute allowedRoles={['FORWARDER', 'ADMIN']}>
+            <ForwarderPortal onSwitchPortal={() => navigateToPortal('selector')} />
+          </ProtectedRoute>
+        );
+      case 'customs':
+        return (
+          <ProtectedRoute allowedRoles={['CUSTOMS_OFFICER', 'ADMIN']}>
+            <CustomsPortal onSwitchPortal={() => navigateToPortal('selector')} />
+          </ProtectedRoute>
+        );
+      default:
+        return (
+          <LandingPage onSelectPortal={handleSelectPortal} />
+        );
+    }
+  };
+
+  return (
+    <>
+      {needsProfileCompletion && !dismissedCompliance && (
+        <CompleteProfileModal 
+          onClose={() => setDismissedCompliance(true)} 
+          onSuccess={() => setDismissedCompliance(true)} 
+        />
+      )}
+      {renderPortal()}
+    </>
+  );
+
 }
 
 export default function App() {

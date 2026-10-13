@@ -1,7 +1,8 @@
-import { RegisterRequestType, LoginRequestType, GoogleAuthRequestType, RefreshTokenRequestType } from './dto/auth.dto';
+import { RegisterRequestType, LoginRequestType, GoogleAuthRequestType, RefreshTokenRequestType, CompleteProfileRequestType } from './dto/auth.dto';
 import { db } from '../db';
 import { users } from '../db/schema/users';
 import { verifications } from '../db/schema/verifications';
+import { vehicles } from '../db/schema/vehicles';
 import { eq } from 'drizzle-orm';
 import * as argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
@@ -539,10 +540,115 @@ export class AuthService {
   }
 
   /**
+   * Complete regulatory compliance & legal license onboarding for social / Google OAuth users
+   */
+  async completeProfile(userId: string, data: CompleteProfileRequestType) {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const updatedRole = data.role && data.role !== 'ADMIN' ? data.role : user.role;
+    const isCommercial = ['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(updatedRole);
+
+    const updateData: any = {
+      role: updatedRole,
+      companyName: data.companyName,
+      tinNumber: data.tinNumber,
+      tradeLicense: data.tradeLicense,
+      phone: data.phone,
+      vehicleCapacity: data.vehicleCapacity || user.vehicleCapacity,
+      fleetName: updatedRole === 'TRANSPORTER' ? data.companyName : user.fleetName,
+      operatorLicense: updatedRole === 'TRANSPORTER' ? data.tradeLicense : user.operatorLicense,
+      badgeId: data.badgeId || user.badgeId,
+      verificationStatus: isCommercial ? 'PENDING' : user.verificationStatus,
+      isVerified: false,
+      metadata: {
+        ...(typeof user.metadata === 'object' && user.metadata ? (user.metadata as any) : {}),
+        businessSector: data.businessSector,
+        businessAddress: data.businessAddress,
+        fleetSize: data.fleetSize,
+        insurancePolicy: data.insurancePolicy,
+        customsStation: data.customsStation,
+        customsDivision: data.customsDivision,
+        profileCompletedAt: new Date().toISOString(),
+      },
+      updatedAt: new Date(),
+    };
+
+    let updatedUser: any;
+    try {
+      const res = await db.update(users).set(updateData).where(eq(users.id, userId)).returning();
+      updatedUser = res[0];
+    } catch (e) {
+      await db.update(users).set(updateData).where(eq(users.id, userId));
+      const [fetched] = await db.select().from(users).where(eq(users.id, userId));
+      updatedUser = fetched;
+    }
+
+    // Upsert into verifications queue
+    try {
+      const existingVer = await db.select().from(verifications).where(eq(verifications.userId, userId));
+      if (existingVer.length > 0) {
+        await db.update(verifications).set({
+          tradeLicenseNumber: data.tradeLicense,
+          taxId: data.tinNumber,
+          status: 'PENDING',
+          updatedAt: new Date(),
+        }).where(eq(verifications.userId, userId));
+      } else {
+        await db.insert(verifications).values({
+          userId,
+          tradeLicenseNumber: data.tradeLicense,
+          taxId: data.tinNumber,
+          documentUrls: {},
+          status: 'PENDING',
+        });
+      }
+    } catch (verErr) {
+      console.warn('Failed to upsert verification record:', verErr);
+    }
+
+    // If Transporter, upsert vehicles
+    if (updatedRole === 'TRANSPORTER' && (data.vehicleType || data.vehicleCapacity)) {
+      try {
+        const existingVehicle = await db.select().from(vehicles).where(eq(vehicles.ownerId, userId));
+        const capacityNum = parseFloat(data.vehicleCapacity?.replace(/[^0-9.]/g, '') || '40') || 40;
+        if (existingVehicle.length > 0) {
+          await db.update(vehicles).set({
+            vehicleType: data.vehicleType || existingVehicle[0].vehicleType,
+            capacityTons: capacityNum.toString(),
+            fuelType: 'Diesel',
+            isVerified: false,
+            updatedAt: new Date(),
+          }).where(eq(vehicles.ownerId, userId));
+        } else {
+          await db.insert(vehicles).values({
+            ownerId: userId,
+            vehicleType: data.vehicleType || 'Heavy Truck (Trailer)',
+            capacityTons: capacityNum.toString(),
+            fuelType: 'Diesel',
+            isVerified: false,
+          });
+        }
+      } catch (vehErr) {
+        console.warn('Failed to upsert transporter vehicle:', vehErr);
+      }
+    }
+
+    const { passwordHash, ...safeUser } = updatedUser || user;
+    return {
+      message: 'Profile and legal regulatory information submitted successfully',
+      user: safeUser,
+    };
+  }
+
+  /**
    * Secure session invalidation
    */
   async logout(userId?: string) {
     return { message: 'Session invalidated successfully' };
   }
 }
+
 

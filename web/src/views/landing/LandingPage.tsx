@@ -226,12 +226,29 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                   >
                     Logout
                   </button>
-                  <button
-                    onClick={() => onSelectPortal('shipper')}
-                    className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-4 py-2 rounded-xl transition"
-                  >
-                    Launch Platform
-                  </button>
+                  {user?.role === 'ADMIN' ? (
+                    <button
+                      onClick={() => onSelectPortal('admin')}
+                      className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-[#3ECF8E]/20"
+                    >
+                      <Shield size={14} /> Control Tower
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        const roleMap: Record<string, any> = {
+                          TRANSPORTER: 'finance',
+                          FORWARDER: 'forwarder',
+                          CUSTOMS_OFFICER: 'customs',
+                          SHIPPER: 'shipper',
+                        };
+                        onSelectPortal((user && roleMap[user.role]) || 'shipper');
+                      }}
+                      className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-4 py-2 rounded-xl transition"
+                    >
+                      Launch Platform
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -251,10 +268,30 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 w-full max-w-2xl mx-auto">
             <button
-              onClick={() => isAuthenticated ? onSelectPortal('shipper') : setShowRegistration(true)}
-              className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs md:text-sm px-6 py-3.5 rounded-xl shadow-[0_0_25px_rgba(62,207,142,0.3)] transition duration-200 transform hover:-translate-y-0.5 w-full sm:w-auto text-center"
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setShowRegistration(true);
+                } else if (user?.role === 'ADMIN') {
+                  onSelectPortal('admin');
+                } else {
+                  const roleMap: Record<string, any> = {
+                    TRANSPORTER: 'finance',
+                    FORWARDER: 'forwarder',
+                    CUSTOMS_OFFICER: 'customs',
+                    SHIPPER: 'shipper',
+                  };
+                  onSelectPortal((user && roleMap[user.role]) || 'shipper');
+                }
+              }}
+              className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs md:text-sm px-6 py-3.5 rounded-xl shadow-[0_0_25px_rgba(62,207,142,0.3)] transition duration-200 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
             >
-              GET STARTED
+              {isAuthenticated && user?.role === 'ADMIN' ? (
+                <>
+                  <Shield size={16} /> OPERATIONS CONTROL TOWER
+                </>
+              ) : (
+                'GET STARTED'
+              )}
             </button>
             <button
               onClick={() => onSelectPortal('finance')}
@@ -263,6 +300,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               CALCULATE RATE
             </button>
           </div>
+
 
 
         </div>
@@ -674,10 +712,12 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               <div>
                 <h4 className="text-sm font-bold text-[#EDEDED] mb-4">{t.footer.platform}</h4>
                 <ul className="space-y-3 text-sm text-[#8F8F8F]">
+                  <li><button onClick={() => onSelectPortal('admin')} className="hover:text-[#3ECF8E] transition-colors flex items-center gap-1.5 text-white font-medium"><Shield size={13} className="text-[#3ECF8E]" /> Operations Control Tower</button></li>
                   <li><button className="hover:text-[#EDEDED] transition-colors">Platform Specs</button></li>
                   <li><button onClick={(e) => handleSmoothScroll(e as any, 'corridor-telematics')} className="hover:text-[#EDEDED] transition-colors">Corridor Telematics</button></li>
                   <li><button onClick={() => setActiveComplianceModal({ title: 'Pricing Formulas', content: 'SRS FR-04: Dynamic Pricing Equation\n\nSpotRate = BaseLine + (DieselIndex_Delta × 0.4) + Equipment_Surcharge\n\nAll pricing bounds are algorithmically enforced strictly between -15% and +45% of the 30-day historical moving average for the respective corridor segment.' })} className="hover:text-[#EDEDED] transition-colors">Pricing Formulas</button></li>
                 </ul>
+
               </div>
               <div>
                 <h4 className="text-sm font-bold text-[#EDEDED] mb-4">{t.footer.compliance}</h4>

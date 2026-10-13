@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, GoogleAuthDto, RefreshTokenDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, GoogleAuthDto, RefreshTokenDto, CompleteProfileDto } from './dto/auth.dto';
 import rateLimit from 'express-rate-limit';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -97,6 +97,24 @@ router.post('/refresh', authLimiter, async (req: Request, res: Response) => {
 });
 
 /**
+ * Complete regulatory compliance & legal license onboarding (TIN, Trade License, Fleet)
+ * Available for authenticated social / Google OAuth users
+ */
+router.post('/complete-profile', JwtAuthGuard, auditMiddleware('AUTH_COMPLETE_PROFILE'), async (req: Request, res: Response) => {
+  try {
+    const validatedData = CompleteProfileDto.parse(req.body);
+    const result = await authService.completeProfile(req.user!.id, validatedData);
+    res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: 'Validation failed', details: error.errors });
+    } else {
+      res.status(400).json({ error: error.message || 'Failed to complete profile' });
+    }
+  }
+});
+
+/**
  * Session invalidation / logout per Issue #47
  */
 router.post('/logout', JwtAuthGuard, async (req: Request, res: Response) => {
@@ -107,6 +125,7 @@ router.post('/logout', JwtAuthGuard, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Logout failed' });
   }
 });
+
 
 router.get('/me', JwtAuthGuard, (req: Request, res: Response) => {
   // @CurrentUser() decorator equivalent in Express: using req.user

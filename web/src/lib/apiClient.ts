@@ -250,3 +250,28 @@ export async function updateCustomsStatus(id: string, status: string, rejectionR
   return apiClient('/customs/' + id + '/status', { method: 'PATCH', data: { status, rejectionReason } });
 }
 
+export async function completeUserProfile(data: any) {
+  return apiClient('/auth/complete-profile', { method: 'POST', data });
+}
+
+export async function getAllCorridorUsers(params?: { role?: string; status?: string; search?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.append('role', params.role);
+  if (params?.status) query.append('status', params.status);
+  if (params?.search) query.append('search', params.search);
+  const qStr = query.toString() ? `?${query.toString()}` : '';
+  return apiClient(`/admin/users${qStr}`, { method: 'GET' });
+}
+
+export async function updateUserStatus(id: string, status: string, reason?: string) {
+  return apiClient(`/admin/users/${id}/status`, { method: 'PATCH', data: { status, reason } });
+}
+
+export async function updateUserRole(id: string, role: string, reason?: string) {
+  return apiClient(`/admin/users/${id}/role`, { method: 'PATCH', data: { role, reason } });
+}
+
+export async function getUserDossier(id: string) {
+  return apiClient(`/admin/users/${id}`, { method: 'GET' });
+}
+

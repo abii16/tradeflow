@@ -8,8 +8,9 @@ import SecurityDetours from './SecurityDetours';
 import DisputeMediation from './DisputeMediation';
 import AuditLogs from './AuditLogs';
 import FuelAnalytics from './FuelAnalytics';
+import ActorManagement from './ActorManagement';
 
-type AdminSubTab = 'radar' | 'verification' | 'pricing' | 'fuel' | 'security' | 'disputes' | 'audit';
+type AdminSubTab = 'radar' | 'actors' | 'verification' | 'pricing' | 'fuel' | 'security' | 'disputes' | 'audit';
 
 interface AdminPortalProps {
   onSwitchPortal: () => void;
@@ -26,6 +27,8 @@ export default function AdminPortal({ onSwitchPortal }: AdminPortalProps) {
     switch (activeSubTab) {
       case 'radar':
         return <ControlTowerDashboard />;
+      case 'actors':
+        return <ActorManagement />;
       case 'verification':
         return <VerificationQueue />;
       case 'pricing':
@@ -38,6 +41,7 @@ export default function AdminPortal({ onSwitchPortal }: AdminPortalProps) {
         return <DisputeMediation />;
       case 'audit':
         return <AuditLogs />;
+
       default:
         return (
           <div className="flex items-center justify-center h-64">
