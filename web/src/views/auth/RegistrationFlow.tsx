@@ -245,7 +245,7 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
           let strengthColor = 'bg-red-500';
           let textColor = 'text-red-400';
           if (passedCount >= 5 && rules.notCommon) {
-            strengthLabel = 'Strong (INSA Certified)';
+            strengthLabel = 'Strong';
             strengthColor = 'bg-[#3ECF8E]';
             textColor = 'text-[#3ECF8E]';
           } else if (passedCount >= 4) {
@@ -266,7 +266,7 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F]">
-                  Password (INSA Hardened) *
+                  Password *
                 </label>
                 {pwd.length > 0 && (
                   <span className={`text-[10px] font-mono font-bold ${textColor}`}>
@@ -311,7 +311,7 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
                   {isCommonWeak && (
                     <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-[10px] text-red-400 flex items-center gap-1.5">
                       <ShieldAlert size={12} className="shrink-0" />
-                      <span><strong>Rejected by INSA policy:</strong> This is a common dictionary password. Please choose a unique passphrase.</span>
+                      <span><strong>Password rejected:</strong> This is a common dictionary password. Please choose a unique passphrase.</span>
                     </div>
                   )}
 

@@ -94,7 +94,7 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
                   <ShieldAlert size={18} className="text-red-400 shrink-0 mt-0.5" />
                   <div>
                     <div className="font-bold text-red-200 mb-0.5 flex items-center gap-1.5">
-                      <span>INSA Brute-Force Defense Active</span>
+                      <span>Account Security Lockout</span>
                       <span className="text-[9px] bg-red-500/20 text-red-300 px-1.5 py-0.2 rounded font-mono">LOCKED</span>
                     </div>
                     <p className="leading-relaxed">{error}</p>
