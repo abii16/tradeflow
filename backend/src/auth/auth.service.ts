@@ -118,6 +118,22 @@ export class AuthService {
       const initialVerificationStatus = isCommercialEntity ? 'PENDING' : 'UNVERIFIED';
 
       const [existingUser] = await db.select().from(users).where(eq(users.id, userObj.id));
+      const metadataPayload = {
+        businessSector: data.businessSector,
+        businessAddress: data.businessAddress,
+        vehicleType: data.vehicleType,
+        fleetSize: data.fleetSize,
+        insurancePolicy: data.insurancePolicy,
+        customsBrokerLicense: data.customsBrokerLicense,
+        customsStation: data.customsStation,
+        customsDivision: data.customsDivision,
+        passwordHash: hashedPassword,
+      };
+
+      const resolvedFleetName = data.fleetName || (data.role === 'TRANSPORTER' ? data.companyName : null);
+      const resolvedOperatorLicense = data.operatorLicense || (data.role === 'TRANSPORTER' ? data.tradeLicense : null);
+      const resolvedCapacity = data.vehicleCapacity || (data.fleetSize ? `${data.fleetSize} Heavy Trucks` : null);
+
       if (existingUser) {
         await db.update(users).set({
           fullName: data.fullName,
@@ -127,12 +143,14 @@ export class AuthService {
           companyName: data.companyName,
           tinNumber: data.tinNumber,
           tradeLicense: data.tradeLicense,
+          badgeId: data.badgeId || null,
+          fleetName: resolvedFleetName,
+          operatorLicense: resolvedOperatorLicense,
+          vehicleCapacity: resolvedCapacity,
           verificationStatus: initialVerificationStatus,
           metadata: {
             ...(typeof existingUser.metadata === 'object' && existingUser.metadata ? existingUser.metadata : {}),
-            businessSector: data.businessSector,
-            businessAddress: data.businessAddress,
-            passwordHash: hashedPassword,
+            ...metadataPayload,
           },
           updatedAt: new Date(),
         }).where(eq(users.id, userObj.id));
@@ -147,17 +165,13 @@ export class AuthService {
           companyName: data.companyName,
           tinNumber: data.tinNumber,
           tradeLicense: data.tradeLicense,
-          badgeId: data.badgeId,
-          fleetName: data.fleetName,
-          operatorLicense: data.operatorLicense,
-          vehicleCapacity: data.vehicleCapacity,
+          badgeId: data.badgeId || null,
+          fleetName: resolvedFleetName,
+          operatorLicense: resolvedOperatorLicense,
+          vehicleCapacity: resolvedCapacity,
           isVerified: false,
           verificationStatus: initialVerificationStatus,
-          metadata: {
-            businessSector: data.businessSector,
-            businessAddress: data.businessAddress,
-            passwordHash: hashedPassword,
-          },
+          metadata: metadataPayload,
         });
       }
 

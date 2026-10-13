@@ -22,7 +22,7 @@ export const RegisterDto = z.object({
   phone: z.string().min(9, 'Phone number is too short'),
   role: RoleEnum,
   
-  // Optional role-specific fields
+  // Role-specific fields
   companyName: z.string().optional(),
   tinNumber: z.string().optional(),
   tradeLicense: z.string().optional(),
@@ -30,28 +30,47 @@ export const RegisterDto = z.object({
   fleetName: z.string().optional(),
   operatorLicense: z.string().optional(),
   vehicleCapacity: z.string().optional(),
+  vehicleType: z.string().optional(),
+  fleetSize: z.string().optional(),
+  insurancePolicy: z.string().optional(),
+  customsBrokerLicense: z.string().optional(),
+  customsStation: z.string().optional(),
+  customsDivision: z.string().optional(),
   businessSector: z.string().optional(),
   businessAddress: z.string().optional(),
   documentUrls: z.record(z.string()).optional(),
+  adminSecret: z.string().optional(),
 }).refine((data) => {
-  // Add custom validations depending on the role
+  // Disallow public Admin self-registration unless verified internal adminSecret is provided
+  if (data.role === 'ADMIN') {
+    const internalSecret = process.env.ADMIN_REGISTRATION_SECRET || 'TF_INTERNAL_ADMIN_2026';
+    if (!data.adminSecret || data.adminSecret !== internalSecret) {
+      return false;
+    }
+  }
+
+  // Commercial marketplace actors require legal identity & tax registration per SRS FR-01.1
   if (['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(data.role)) {
     if (!data.companyName) return false;
     if (!data.tinNumber) return false;
     if (!data.tradeLicense) return false;
   }
+
+  // Transporter specific fleet declarations per SRS FR-01.2
   if (data.role === 'TRANSPORTER') {
-    if (!data.fleetName) return false;
-    if (!data.operatorLicense) return false;
-    if (!data.vehicleCapacity) return false;
+    if (!data.operatorLicense && !data.tradeLicense) return false;
+    if (!data.vehicleCapacity && !data.fleetSize) return false;
   }
+
+  // Customs Officer requires verified ECC Badge ID
   if (data.role === 'CUSTOMS_OFFICER' && !data.badgeId) {
     return false;
   }
+
   return true;
 }, {
-  message: "Missing mandatory fields for the selected role",
-  path: ["role"] // Attach error generally
+  message: "Missing mandatory fields for selected role, or unauthorized role registration",
+  path: ["role"]
 });
 
 export const LoginDto = z.object({
