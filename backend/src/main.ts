@@ -57,6 +57,7 @@ import { offlineSyncRoutes } from './routes/offline-sync.routes';
 import { telemetryRoutes } from './routes/telemetry.routes';
 import { riskZonesRoutes } from './routes/risk-zones.routes';
 import { publicRoutes } from './routes/public.routes';
+import { carrierRoutes } from './routes/carrier.routes';
 import { startTtlWorker } from './workers/ttl-expiry.worker';
 import { startPayoutWorker } from './workers/payout.worker';
 import { SocketGateway } from './gateways/socket.gateway';
@@ -70,6 +71,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 
 app.use('/api/v1/auth', AuthController);
 app.use('/api/v1/shipper', JwtAuthGuard, RolesGuard(['SHIPPER']), shipperRoutes);
+app.use('/api/v1/carrier', carrierRoutes);
 app.use('/api/v1/loads', JwtAuthGuard, RolesGuard(['SHIPPER', 'TRANSPORTER', 'ADMIN']), loadsRoutes);
 app.use('/api/v1/bids', JwtAuthGuard, RolesGuard(['TRANSPORTER', 'SHIPPER', 'ADMIN']), bidsRoutes);
 app.use('/api/v1/customs', JwtAuthGuard, RolesGuard(['CUSTOMS_OFFICER', 'FORWARDER', 'ADMIN', 'SHIPPER']), customsRoutes);

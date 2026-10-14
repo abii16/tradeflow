@@ -8,7 +8,7 @@ import LiveTelematicsMap from '@/components/LiveTelematicsMap';
 import { calculateSpotRate, apiClient } from '@/lib/apiClient';
 
 interface LandingPageProps {
-  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
+  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs' | 'carrier') => void;
 }
 
 export default function LandingPage({ onSelectPortal }: LandingPageProps) {
@@ -713,6 +713,7 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
                 <h4 className="text-sm font-bold text-[#EDEDED] mb-4">{t.footer.platform}</h4>
                 <ul className="space-y-3 text-sm text-[#8F8F8F]">
                   <li><button onClick={() => onSelectPortal('admin')} className="hover:text-[#3ECF8E] transition-colors flex items-center gap-1.5 text-white font-medium"><Shield size={13} className="text-[#3ECF8E]" /> Operations Control Tower</button></li>
+                  <li><button onClick={() => onSelectPortal('carrier')} className="hover:text-[#3ECF8E] transition-colors flex items-center gap-1.5 text-[#3ECF8E] font-medium"><Truck size={13} /> Carrier &amp; Fleet Hub</button></li>
                   <li><button className="hover:text-[#EDEDED] transition-colors">Platform Specs</button></li>
                   <li><button onClick={(e) => handleSmoothScroll(e as any, 'corridor-telematics')} className="hover:text-[#EDEDED] transition-colors">Corridor Telematics</button></li>
                   <li><button onClick={() => setActiveComplianceModal({ title: 'Pricing Formulas', content: 'SRS FR-04: Dynamic Pricing Equation\n\nSpotRate = BaseLine + (DieselIndex_Delta × 0.4) + Equipment_Surcharge\n\nAll pricing bounds are algorithmically enforced strictly between -15% and +45% of the 30-day historical moving average for the respective corridor segment.' })} className="hover:text-[#EDEDED] transition-colors">Pricing Formulas</button></li>

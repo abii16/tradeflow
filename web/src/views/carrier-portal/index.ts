@@ -1,0 +1,9 @@
+export { default as CarrierPortal } from './CarrierPortal';
+export { default as CarrierSidebar } from './CarrierSidebar';
+export { default as ActiveHaulsTab } from './tabs/ActiveHaulsTab';
+export { default as LoadBoardTab } from './tabs/LoadBoardTab';
+export { default as FleetManagementTab } from './tabs/FleetManagementTab';
+export { default as CorridorSafetyTab } from './tabs/CorridorSafetyTab';
+export { default as PerformanceTab } from './tabs/PerformanceTab';
+export { default as EarningsLedgerTab } from './tabs/EarningsLedgerTab';
+export { default as DriverConsoleTab } from './tabs/DriverConsoleTab';

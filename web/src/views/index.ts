@@ -6,3 +6,4 @@ export * from './admin-console';
 export * from './customs-portal';
 export * from './financial-dashboard';
 export * from './forwarder-portal';
+export * from './carrier-portal';
