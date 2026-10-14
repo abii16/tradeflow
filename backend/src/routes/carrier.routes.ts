@@ -709,4 +709,85 @@ router.get('/performance', async (req: Request, res: Response): Promise<void> =>
   }
 });
 
+/**
+ * GET /api/v1/carrier/payouts
+ * SRS FR-10: Mobile money TeleBirr payout history and settlement records
+ */
+router.get('/payouts', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    const payoutRecords = await db
+      .select({
+        id: payments.id,
+        shipmentId: payments.shipmentId,
+        amount: payments.amount,
+        amountInETB: payments.amountInETB,
+        platformCommissionRate: payments.platformCommissionRate,
+        platformCommissionAmount: payments.platformCommissionAmount,
+        netPayoutAmount: payments.netPayoutAmount,
+        currency: payments.currency,
+        paymentMethod: payments.paymentMethod,
+        telebirrTxnId: payments.telebirrTxnId,
+        outTradeNo: payments.outTradeNo,
+        status: payments.status,
+        payoutStatus: payments.payoutStatus,
+        payoutCompletedAt: payments.payoutCompletedAt,
+        createdAt: payments.createdAt,
+      })
+      .from(payments)
+      .where(eq(payments.payeeId, userId))
+      .orderBy(desc(payments.createdAt));
+
+    res.status(200).json({ payouts: payoutRecords });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error getting carrier payouts:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch carrier payouts' });
+  }
+});
+
+/**
+ * POST /api/v1/carrier/incidents
+ * Incident reporting along the corridor (FR-05.2)
+ */
+router.post('/incidents', auditMiddleware('CARRIER_REPORT_INCIDENT'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { shipmentId, incidentType, latitude, longitude, severity, notes } = req.body;
+
+    if (!incidentType || !latitude || !longitude) {
+      res.status(400).json({ error: 'incidentType, latitude, and longitude are required' });
+      return;
+    }
+
+    const [newIncident] = await db
+      .insert(incidents)
+      .values({
+        shipmentId: shipmentId || null,
+        reporterId: userId,
+        incidentType,
+        latitude: latitude.toString(),
+        longitude: longitude.toString(),
+        severity: severity || 'MEDIUM',
+        notes: notes || 'Driver reported corridor incident',
+        reportedAt: new Date(),
+      })
+      .returning();
+
+    // Broadcast safety warning if critical/high
+    const sg = (global as any).socketGateway;
+    if (sg && typeof sg.broadcast === 'function') {
+      sg.broadcast('corridor_safety_alert', {
+        incident: newIncident,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    res.status(201).json({ message: 'Incident reported successfully', incident: newIncident });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error reporting incident:', error);
+    res.status(500).json({ error: error.message || 'Failed to report incident' });
+  }
+});
+
 export const carrierRoutes = router;
