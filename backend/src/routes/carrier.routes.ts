@@ -321,4 +321,156 @@ router.post('/bids/:id/withdraw', auditMiddleware('TRANSPORTER_WITHDRAW_BID'), a
   }
 });
 
+/**
+ * GET /api/v1/carrier/hauls
+ * All shipments assigned to this transporter/driver
+ */
+router.get('/hauls', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    const myHauls = await db
+      .select({
+        id: shipments.id,
+        loadId: shipments.loadId,
+        transporterId: shipments.transporterId,
+        driverId: shipments.driverId,
+        currentLat: shipments.currentLat,
+        currentLng: shipments.currentLng,
+        status: shipments.status,
+        podPhotoUrl: shipments.podPhotoUrl,
+        podSignatureUrl: shipments.podSignatureUrl,
+        pickupTime: shipments.pickupTime,
+        deliveryTime: shipments.deliveryTime,
+        estimatedFuelLiters: shipments.estimatedFuelLiters,
+        actualFuelLiters: shipments.actualFuelLiters,
+        fuelRecommendations: shipments.fuelRecommendations,
+        createdAt: shipments.createdAt,
+        updatedAt: shipments.updatedAt,
+        loadTitle: loads.title,
+        loadDescription: loads.description,
+        origin: loads.origin,
+        destination: loads.destination,
+        weightKg: loads.weightKg,
+        cargoType: loads.cargoType,
+        budgetAmount: loads.budgetAmount,
+        currency: loads.currency,
+        driverName: users.fullName,
+        driverPhone: users.phone,
+      })
+      .from(shipments)
+      .leftJoin(loads, eq(shipments.loadId, loads.id))
+      .leftJoin(users, eq(shipments.driverId, users.id))
+      .where(or(eq(shipments.transporterId, userId), eq(shipments.driverId, userId)))
+      .orderBy(desc(shipments.createdAt));
+
+    res.status(200).json({ hauls: myHauls });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error getting hauls:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch carrier hauls' });
+  }
+});
+
+/**
+ * PATCH /api/v1/carrier/hauls/:id/status
+ * Update shipment status (e.g., PICKED_UP, IN_TRANSIT, DELIVERED)
+ */
+router.patch('/hauls/:id/status', auditMiddleware('CARRIER_UPDATE_HAUL_STATUS'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status, currentLat, currentLng } = req.body;
+    const userId = req.user!.id;
+
+    const [shipment] = await db.select().from(shipments).where(eq(shipments.id, id));
+    if (!shipment) {
+      res.status(404).json({ error: 'Shipment not found' });
+      return;
+    }
+
+    if (shipment.transporterId !== userId && shipment.driverId !== userId && req.user!.role !== 'ADMIN' && req.user!.role !== 'SYSTEM_ADMIN') {
+      res.status(403).json({ error: 'Forbidden: You are not assigned to this shipment' });
+      return;
+    }
+
+    const updateData: any = {
+      status,
+      updatedAt: new Date(),
+    };
+
+    if (status === 'PICKED_UP' && !shipment.pickupTime) {
+      updateData.pickupTime = new Date();
+    }
+    if (status === 'DELIVERED' && !shipment.deliveryTime) {
+      updateData.deliveryTime = new Date();
+    }
+    if (currentLat !== undefined) updateData.currentLat = currentLat;
+    if (currentLng !== undefined) updateData.currentLng = currentLng;
+
+    const [updated] = await db
+      .update(shipments)
+      .set(updateData)
+      .where(eq(shipments.id, id))
+      .returning();
+
+    // Broadcast socket event
+    const sg = (global as any).socketGateway;
+    if (sg && typeof sg.broadcastToRoom === 'function') {
+      sg.broadcastToRoom(shipment.loadId, 'shipment_status_changed', {
+        shipmentId: id,
+        status,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    res.status(200).json({ message: 'Haul status updated successfully', haul: updated });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error updating haul status:', error);
+    res.status(500).json({ error: error.message || 'Failed to update haul status' });
+  }
+});
+
+/**
+ * POST /api/v1/carrier/hauls/:id/checkin
+ * Waypoint checkin & GPS ingestion
+ */
+router.post('/hauls/:id/checkin', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { lat, lng, speed, waypointName, notes } = req.body;
+
+    if (!lat || !lng) {
+      res.status(400).json({ error: 'Latitude and Longitude are required' });
+      return;
+    }
+
+    // 1. Update current location on shipment
+    await db
+      .update(shipments)
+      .set({
+        currentLat: lat,
+        currentLng: lng,
+        updatedAt: new Date(),
+      })
+      .where(eq(shipments.id, id));
+
+    // 2. Insert into telemetryLogs
+    const [log] = await db
+      .insert(telemetryLogs)
+      .values({
+        shipmentId: id,
+        lat,
+        lng,
+        speed: speed || 60,
+        status: 'SAFE',
+        eta: waypointName || 'En route',
+      })
+      .returning();
+
+    res.status(200).json({ message: 'Waypoint check-in recorded', log });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error recording checkin:', error);
+    res.status(500).json({ error: error.message || 'Failed to record checkin' });
+  }
+});
+
 export const carrierRoutes = router;
