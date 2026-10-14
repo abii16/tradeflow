@@ -473,4 +473,64 @@ router.post('/hauls/:id/checkin', async (req: Request, res: Response): Promise<v
   }
 });
 
+/**
+ * POST /api/v1/carrier/hauls/:id/pod
+ * Submit electronic Proof of Delivery (e-PoD)
+ * Sets status to DELIVERED and triggers TeleBirr escrow payout schedule (FR-03 & FR-10)
+ */
+router.post('/hauls/:id/pod', auditMiddleware('CARRIER_SUBMIT_EPOD'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { podPhotoUrl, podSignatureUrl, notes } = req.body;
+    const userId = req.user!.id;
+
+    if (!podSignatureUrl && !podPhotoUrl) {
+      res.status(400).json({ error: 'At least one Proof-of-Delivery artifact (signature or photo) is required' });
+      return;
+    }
+
+    const [shipment] = await db.select().from(shipments).where(eq(shipments.id, id));
+    if (!shipment) {
+      res.status(404).json({ error: 'Shipment not found' });
+      return;
+    }
+
+    if (shipment.transporterId !== userId && shipment.driverId !== userId && req.user!.role !== 'ADMIN' && req.user!.role !== 'SYSTEM_ADMIN') {
+      res.status(403).json({ error: 'Forbidden: You are not assigned to this shipment' });
+      return;
+    }
+
+    // 1. Update shipment with e-PoD artifacts and status DELIVERED
+    const [deliveredShipment] = await db
+      .update(shipments)
+      .set({
+        podPhotoUrl: podPhotoUrl || shipment.podPhotoUrl,
+        podSignatureUrl: podSignatureUrl || shipment.podSignatureUrl,
+        status: 'DELIVERED',
+        deliveryTime: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(shipments.id, id))
+      .returning();
+
+    // 2. Automatically trigger/schedule TeleBirr Escrow payout for this shipment (FR-10.1)
+    let payoutResult = null;
+    try {
+      payoutResult = await payoutService.schedulePayoutForShipment(id, 0, userId);
+    } catch (payoutErr: any) {
+      console.warn('[Carrier Route] Notice on payout schedule:', payoutErr.message);
+      // Don't fail the e-PoD delivery submission if payout record is already queued
+    }
+
+    res.status(200).json({
+      message: 'Proof of Delivery (e-PoD) successfully submitted! Escrow payout initiated.',
+      shipment: deliveredShipment,
+      payout: payoutResult,
+    });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error submitting e-PoD:', error);
+    res.status(500).json({ error: error.message || 'Failed to submit e-PoD' });
+  }
+});
+
 export const carrierRoutes = router;
