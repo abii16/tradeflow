@@ -3,7 +3,7 @@ import { Bell, Settings } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
 
 interface PortalSelectorProps {
-  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => void;
+  onSelectPortal: (portal: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs' | 'carrier') => void;
 }
 
 export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) {
@@ -112,6 +112,12 @@ export default function PortalSelector({ onSelectPortal }: PortalSelectorProps) 
               className="bg-white text-slate-900 px-5 py-2.5 text-sm font-bold hover:bg-slate-100 transition-colors rounded-sm shadow-lg"
             >
               Launch Freight Marketplace
+            </button>
+            <button 
+              onClick={() => onSelectPortal('carrier')}
+              className="bg-[#3ECF8E] text-black px-5 py-2.5 text-sm font-bold hover:bg-[#34b27b] transition-colors rounded-sm shadow-lg flex items-center gap-1.5"
+            >
+              Carrier &amp; Fleet Hub
             </button>
             <button 
               onClick={() => onSelectPortal('forwarder')}

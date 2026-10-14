@@ -5,6 +5,7 @@ import FinancePortal from './views/financial-dashboard/FinancePortal';
 import AdminPortal from './views/admin-console/AdminPortal';
 import ForwarderPortal from './views/forwarder-portal/ForwarderPortal';
 import CustomsPortal from './views/customs-portal/CustomsPortal';
+import CarrierPortal from './views/carrier-portal/CarrierPortal';
 import CompleteProfileModal from './views/auth/CompleteProfileModal';
 import SessionIdleManager from './components/auth/SessionIdleManager';
 import { useAuth } from './hooks/useAuth';
@@ -14,10 +15,11 @@ import { ProtectedRoute } from './components/common/ProtectedRoute';
 
 
 
-type PortalView = 'selector' | 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs';
+type PortalView = 'selector' | 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs' | 'carrier';
 
 function getPortalFromPath(): PortalView {
   const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+  if (path.startsWith('/carrier')) return 'carrier';
   if (path.startsWith('/shipper')) return 'shipper';
   if (path.startsWith('/finance')) return 'finance';
   if (path.startsWith('/admin')) return 'admin';
@@ -60,7 +62,8 @@ function AppContent() {
     if (isAuthenticated && user && portal === 'selector') {
       const targetMap: Record<string, PortalView> = {
         'SHIPPER': 'shipper',
-        'TRANSPORTER': 'finance',
+        'TRANSPORTER': 'carrier',
+        'DRIVER': 'carrier',
         'FORWARDER': 'forwarder',
         'CUSTOMS_OFFICER': 'customs',
         'ADMIN': 'admin'
@@ -71,6 +74,7 @@ function AppContent() {
         const paths: Record<PortalView, string> = {
           selector: '/',
           shipper: '/shipper',
+          carrier: '/carrier',
           finance: '/finance',
           admin: '/admin',
           forwarder: '/forwarder',
@@ -94,6 +98,7 @@ function AppContent() {
     const paths: Record<PortalView, string> = {
       selector: '/',
       shipper: '/shipper',
+      carrier: '/carrier',
       finance: '/finance',
       admin: '/admin',
       forwarder: '/forwarder',
@@ -104,12 +109,13 @@ function AppContent() {
     }
   };
 
-  const handleSelectPortal = (p: 'shipper' | 'finance' | 'admin' | 'forwarder' | 'customs') => {
+  const handleSelectPortal = (p: PortalView) => {
     navigateToPortal(p);
   };
 
   const switchToFinance = () => navigateToPortal('finance');
   const switchToShipper = () => navigateToPortal('shipper');
+  const switchToCarrier = () => navigateToPortal('carrier');
 
   const needsProfileCompletion = Boolean(
     !isLoading &&
@@ -130,6 +136,12 @@ function AppContent() {
 
   const renderPortal = () => {
     switch (portal) {
+      case 'carrier':
+        return (
+          <ProtectedRoute allowedRoles={['TRANSPORTER', 'ADMIN']}>
+            <CarrierPortal onSwitchPortal={switchToFinance} />
+          </ProtectedRoute>
+        );
       case 'shipper':
         return (
           <ProtectedRoute allowedRoles={['SHIPPER', 'ADMIN']}>
@@ -139,7 +151,7 @@ function AppContent() {
       case 'finance':
         return (
           <ProtectedRoute allowedRoles={['TRANSPORTER', 'ADMIN']}>
-            <FinancePortal onSwitchPortal={switchToShipper} />
+            <FinancePortal onSwitchPortal={switchToCarrier} />
           </ProtectedRoute>
         );
       case 'admin':
@@ -162,7 +174,7 @@ function AppContent() {
         );
       default:
         return (
-          <LandingPage onSelectPortal={handleSelectPortal} />
+          <LandingPage onSelectPortal={handleSelectPortal as any} />
         );
     }
   };
