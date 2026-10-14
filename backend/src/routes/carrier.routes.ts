@@ -188,4 +188,137 @@ router.get('/available-loads', async (req: Request, res: Response): Promise<void
   }
 });
 
+/**
+ * GET /api/v1/carrier/my-bids
+ * Transporter's own bids with load info
+ */
+router.get('/my-bids', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    const myBids = await db
+      .select({
+        id: bids.id,
+        loadId: bids.loadId,
+        bidAmount: bids.bidAmount,
+        currency: bids.currency,
+        deliveryEta: bids.deliveryEta,
+        status: bids.status,
+        notes: bids.notes,
+        createdAt: bids.createdAt,
+        loadTitle: loads.title,
+        origin: loads.origin,
+        destination: loads.destination,
+        cargoType: loads.cargoType,
+        weightKg: loads.weightKg,
+        budgetAmount: loads.budgetAmount,
+        loadStatus: loads.status,
+      })
+      .from(bids)
+      .leftJoin(loads, eq(bids.loadId, loads.id))
+      .where(eq(bids.transporterId, userId))
+      .orderBy(desc(bids.createdAt));
+
+    res.status(200).json({ bids: myBids });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error getting my bids:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch transporter bids' });
+  }
+});
+
+/**
+ * POST /api/v1/carrier/bids
+ * Submit a bid on a load
+ */
+router.post('/bids', auditMiddleware('TRANSPORTER_CREATE_BID'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { loadId, bidAmount, deliveryEta, notes } = req.body;
+
+    if (!loadId || !bidAmount) {
+      res.status(400).json({ error: 'loadId and bidAmount are required' });
+      return;
+    }
+
+    // Check load existence
+    const [load] = await db.select().from(loads).where(eq(loads.id, loadId));
+    if (!load) {
+      res.status(404).json({ error: 'Load not found' });
+      return;
+    }
+
+    if (load.status !== 'POSTED') {
+      res.status(400).json({ error: `Cannot bid on load with status '${load.status}'` });
+      return;
+    }
+
+    // Check if duplicate bid already exists
+    const [existing] = await db
+      .select()
+      .from(bids)
+      .where(and(eq(bids.loadId, loadId), eq(bids.transporterId, userId)));
+
+    if (existing && existing.status === 'PENDING') {
+      res.status(400).json({ error: 'You already have an active pending bid on this load' });
+      return;
+    }
+
+    const [newBid] = await db
+      .insert(bids)
+      .values({
+        loadId,
+        transporterId: userId,
+        bidAmount: bidAmount.toString(),
+        currency: load.currency || 'ETB',
+        deliveryEta: deliveryEta ? new Date(deliveryEta) : undefined,
+        notes: notes || 'Verified Carrier Fleet Bidding',
+        status: 'PENDING',
+      })
+      .returning();
+
+    res.status(201).json({ message: 'Bid submitted successfully', bid: newBid });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error submitting bid:', error);
+    res.status(500).json({ error: error.message || 'Failed to submit bid' });
+  }
+});
+
+/**
+ * POST /api/v1/carrier/bids/:id/withdraw
+ * Withdraw a pending bid
+ */
+router.post('/bids/:id/withdraw', auditMiddleware('TRANSPORTER_WITHDRAW_BID'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+
+    const [bid] = await db.select().from(bids).where(eq(bids.id, id));
+    if (!bid) {
+      res.status(404).json({ error: 'Bid not found' });
+      return;
+    }
+
+    if (bid.transporterId !== userId && req.user!.role !== 'ADMIN' && req.user!.role !== 'SYSTEM_ADMIN') {
+      res.status(403).json({ error: 'Forbidden: You do not own this bid' });
+      return;
+    }
+
+    if (bid.status !== 'PENDING') {
+      res.status(400).json({ error: `Cannot withdraw bid with status '${bid.status}'` });
+      return;
+    }
+
+    const [updated] = await db
+      .update(bids)
+      .set({ status: 'WITHDRAWN', updatedAt: new Date() })
+      .where(eq(bids.id, id))
+      .returning();
+
+    res.status(200).json({ message: 'Bid withdrawn successfully', bid: updated });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error withdrawing bid:', error);
+    res.status(500).json({ error: error.message || 'Failed to withdraw bid' });
+  }
+});
+
 export const carrierRoutes = router;
