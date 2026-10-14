@@ -380,3 +380,75 @@ export async function revokeOtherUserSessions(): Promise<{ success: boolean; mes
   return apiClient('/auth/sessions/other', { method: 'DELETE' });
 }
 
+// ==========================================
+// CARRIER / TRANSPORTER PORTAL APIS (SRS COMPLIANT)
+// ==========================================
+
+export async function getCarrierOverview() {
+  return apiClient('/carrier/overview', { method: 'GET' });
+}
+
+export async function getCarrierLoads() {
+  return apiClient('/carrier/available-loads', { method: 'GET' });
+}
+
+export async function getCarrierMyBids() {
+  return apiClient('/carrier/my-bids', { method: 'GET' });
+}
+
+export async function submitCarrierBid(data: { loadId: string; bidAmount: number; deliveryEta?: string; notes?: string }) {
+  return apiClient('/carrier/bids', { method: 'POST', data });
+}
+
+export async function withdrawCarrierBid(bidId: string) {
+  return apiClient(`/carrier/bids/${bidId}/withdraw`, { method: 'POST' });
+}
+
+export async function getCarrierHauls() {
+  return apiClient('/carrier/hauls', { method: 'GET' });
+}
+
+export async function updateHaulStatus(haulId: string, status: string, currentLat?: number, currentLng?: number) {
+  return apiClient(`/carrier/hauls/${haulId}/status`, { method: 'PATCH', data: { status, currentLat, currentLng } });
+}
+
+export async function submitHaulCheckin(haulId: string, data: { lat: number; lng: number; speed?: number; waypointName?: string; notes?: string }) {
+  return apiClient(`/carrier/hauls/${haulId}/checkin`, { method: 'POST', data });
+}
+
+export async function submitProofOfDelivery(haulId: string, data: { podPhotoUrl?: string; podSignatureUrl?: string; notes?: string }) {
+  return apiClient(`/carrier/hauls/${haulId}/pod`, { method: 'POST', data });
+}
+
+export async function getCarrierVehicles() {
+  return apiClient('/carrier/vehicles', { method: 'GET' });
+}
+
+export async function addCarrierVehicle(data: { vehicleType: string; capacityTons: number | string; fuelType?: string; insuranceDocUrl?: string; roadworthinessDocUrl?: string }) {
+  return apiClient('/carrier/vehicles', { method: 'POST', data });
+}
+
+export async function deleteCarrierVehicle(vehicleId: string) {
+  return apiClient(`/carrier/vehicles/${vehicleId}`, { method: 'DELETE' });
+}
+
+export async function getCarrierDrivers() {
+  return apiClient('/carrier/drivers', { method: 'GET' });
+}
+
+export async function getCarrierPerformance() {
+  return apiClient('/carrier/performance', { method: 'GET' });
+}
+
+export async function getCarrierPayouts() {
+  return apiClient('/carrier/payouts', { method: 'GET' });
+}
+
+export async function reportCarrierIncident(data: { shipmentId?: string; incidentType: string; latitude: number; longitude: number; severity?: string; notes?: string }) {
+  return apiClient('/carrier/incidents', { method: 'POST', data });
+}
+
+export async function getRiskZones() {
+  return apiClient('/risk-zones', { method: 'GET' });
+}
+
