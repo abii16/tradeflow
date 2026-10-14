@@ -474,7 +474,7 @@ export class AuthService {
    * Authenticates a user via Google OAuth 2.0 per SRS 5.4 / Issue #48.
    * Auto-provisions new profiles with role selection or securely links existing accounts.
    */
-  async authWithGoogle(data: GoogleAuthRequestType) {
+  async authWithGoogle(data: GoogleAuthRequestType, userAgent?: string, clientIp?: string) {
     let googleEmail = data.email;
     let googleName = data.fullName;
     let googleSub = '';
