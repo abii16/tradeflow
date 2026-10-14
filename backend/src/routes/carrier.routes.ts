@@ -533,4 +533,112 @@ router.post('/hauls/:id/pod', auditMiddleware('CARRIER_SUBMIT_EPOD'), async (req
   }
 });
 
+/**
+ * GET /api/v1/carrier/vehicles
+ * List all vehicles owned by this transporter
+ */
+router.get('/vehicles', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const fleet = await db
+      .select()
+      .from(vehicles)
+      .where(eq(vehicles.ownerId, userId))
+      .orderBy(desc(vehicles.createdAt));
+
+    res.status(200).json({ vehicles: fleet });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error fetching vehicles:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch vehicles' });
+  }
+});
+
+/**
+ * POST /api/v1/carrier/vehicles
+ * Register a new truck/fleet asset
+ */
+router.post('/vehicles', auditMiddleware('TRANSPORTER_ADD_VEHICLE'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { vehicleType, capacityTons, fuelType, insuranceDocUrl, roadworthinessDocUrl } = req.body;
+
+    if (!vehicleType || !capacityTons) {
+      res.status(400).json({ error: 'vehicleType and capacityTons are required' });
+      return;
+    }
+
+    const [newVehicle] = await db
+      .insert(vehicles)
+      .values({
+        ownerId: userId,
+        vehicleType,
+        capacityTons: capacityTons.toString(),
+        fuelType: fuelType || 'Diesel',
+        insuranceDocUrl: insuranceDocUrl || null,
+        roadworthinessDocUrl: roadworthinessDocUrl || null,
+        isVerified: true, // Activated for transporter operations
+      })
+      .returning();
+
+    res.status(201).json({ message: 'Vehicle added successfully', vehicle: newVehicle });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error adding vehicle:', error);
+    res.status(500).json({ error: error.message || 'Failed to add vehicle' });
+  }
+});
+
+/**
+ * DELETE /api/v1/carrier/vehicles/:id
+ * Remove a vehicle from fleet
+ */
+router.delete('/vehicles/:id', auditMiddleware('TRANSPORTER_DELETE_VEHICLE'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+
+    const [v] = await db.select().from(vehicles).where(eq(vehicles.id, id));
+    if (!v) {
+      res.status(404).json({ error: 'Vehicle not found' });
+      return;
+    }
+
+    if (v.ownerId !== userId && req.user!.role !== 'ADMIN' && req.user!.role !== 'SYSTEM_ADMIN') {
+      res.status(403).json({ error: 'Forbidden: You do not own this vehicle' });
+      return;
+    }
+
+    await db.delete(vehicles).where(eq(vehicles.id, id));
+    res.status(200).json({ message: 'Vehicle removed successfully' });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error removing vehicle:', error);
+    res.status(500).json({ error: error.message || 'Failed to remove vehicle' });
+  }
+});
+
+/**
+ * GET /api/v1/carrier/drivers
+ * List drivers available for dispatch
+ */
+router.get('/drivers', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const driverList = await db
+      .select({
+        id: users.id,
+        fullName: users.fullName,
+        phone: users.phone,
+        email: users.email,
+        companyName: users.companyName,
+        isVerified: users.isVerified,
+      })
+      .from(users)
+      .where(or(eq(users.role, 'TRANSPORTER'), eq(users.role, 'SHIPPER'))) // In Tradeflow, users can act as drivers
+      .limit(10);
+
+    res.status(200).json({ drivers: driverList });
+  } catch (error: any) {
+    console.error('[Carrier Route] Error fetching drivers:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch drivers' });
+  }
+});
+
 export const carrierRoutes = router;
