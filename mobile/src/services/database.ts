@@ -1,6 +1,7 @@
 // TradeFlow Mobile — SQLite Database Service
 import * as SQLite from 'expo-sqlite';
 import { CargoLoad, CargoStatus, OfflineAction, ActionType, QueueStatus } from '../types/cargo';
+import { AuthUser } from '../types/auth';
 
 const DB_NAME = 'tradeflow_mobile.db';
 
@@ -140,6 +141,21 @@ export async function initDatabase(): Promise<void> {
     );
   `);
 
+  await database.execAsync(`
+    CREATE TABLE IF NOT EXISTS user_session (
+      id TEXT PRIMARY KEY NOT NULL,
+      email TEXT NOT NULL,
+      fullName TEXT NOT NULL,
+      role TEXT NOT NULL,
+      phone TEXT,
+      companyName TEXT,
+      tinNumber TEXT,
+      licensePlate TEXT,
+      driverLicense TEXT,
+      token TEXT
+    );
+  `);
+
   // Seed if empty
   const countResult = await database.getFirstAsync<{ cnt: number }>(
     'SELECT COUNT(*) as cnt FROM cached_cargo'
@@ -259,4 +275,38 @@ export async function getPendingCount(): Promise<number> {
     "SELECT COUNT(*) as cnt FROM offline_action_queue WHERE status = 'pending'"
   );
   return result?.cnt ?? 0;
+}
+
+// ── User Session (Local SQLite Persistence) ──
+
+export async function saveUserSession(user: AuthUser): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM user_session');
+  await database.runAsync(
+    `INSERT INTO user_session (id, email, fullName, role, phone, companyName, tinNumber, licensePlate, driverLicense, token)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    user.id,
+    user.email,
+    user.fullName,
+    user.role,
+    user.phone || '',
+    user.companyName || '',
+    user.tinNumber || '',
+    user.licensePlate || '',
+    user.driverLicense || '',
+    user.token || ''
+  );
+}
+
+export async function getCurrentUserSession(): Promise<AuthUser | null> {
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<AuthUser>(
+    'SELECT * FROM user_session LIMIT 1'
+  );
+  return row || null;
+}
+
+export async function clearUserSession(): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM user_session');
 }

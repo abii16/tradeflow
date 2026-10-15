@@ -4,11 +4,15 @@ import { View, Text, Switch, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { THEME } from '../styles/theme';
 
+import { AuthUser } from '../types/auth';
+
 interface Props {
   isOnline: boolean;
   pendingCount: number;
   onToggleNetwork: () => void;
   onOpenQueue: () => void;
+  currentUser?: AuthUser | null;
+  onSignOut?: () => void;
 }
 
 export default function ConnectivityHeader({
@@ -16,17 +20,42 @@ export default function ConnectivityHeader({
   pendingCount,
   onToggleNetwork,
   onOpenQueue,
+  currentUser,
+  onSignOut,
 }: Props) {
   return (
     <View style={styles.header}>
       {/* Brand title */}
       <View style={styles.brandGroup}>
-        <Text style={styles.brandName}>TradeFlow</Text>
-        <Text style={styles.brandSub}>Transporter</Text>
+        <View>
+          <View style={styles.nameRow}>
+            <Text style={styles.brandName}>TradeFlow</Text>
+            {Boolean(currentUser) && (
+              <View style={styles.userBadge}>
+                <Text style={styles.userBadgeText}>
+                  {currentUser?.role === 'TRANSPORTER' ? 'CARRIER' : 'DRIVER'}
+                </Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.brandSub} numberOfLines={1}>
+            {currentUser?.companyName || currentUser?.fullName || (currentUser?.role === 'DRIVER' ? `Truck ${currentUser.licensePlate || '3-AA-98214'}` : 'Transporter')}
+          </Text>
+        </View>
       </View>
 
-      {/* Network toggle & Pending actions */}
+      {/* Network toggle, Pending actions & Sign out */}
       <View style={styles.controlsGroup}>
+        {Boolean(onSignOut) && (
+          <TouchableOpacity
+            style={styles.signOutBtn}
+            onPress={onSignOut}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather name="log-out" size={13} color={THEME.colors.textMuted} />
+          </TouchableOpacity>
+        )}
         {pendingCount > 0 ? (
           <TouchableOpacity
             style={styles.pendingBadge}
@@ -98,6 +127,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  userBadge: {
+    backgroundColor: THEME.colors.primarySubtle,
+    borderWidth: 1,
+    borderColor: THEME.colors.primaryBorder,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  userBadgeText: {
+    color: THEME.colors.primary,
+    fontSize: 9,
+    fontWeight: '700',
+    fontFamily: THEME.typography.mono,
+  },
+  signOutBtn: {
+    padding: 6,
+    borderRadius: 6,
+    backgroundColor: THEME.colors.surface,
+    borderWidth: 1,
+    borderColor: THEME.colors.cardBorder,
   },
   queueButton: {
     padding: 6,

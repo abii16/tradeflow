@@ -30,11 +30,17 @@ import ConnectivityHeader from '../components/ConnectivityHeader';
 import CargoCard from '../components/CargoCard';
 import BidModal from '../components/BidModal';
 import OfflineQueueModal from '../components/OfflineQueueModal';
+import { AuthUser } from '../types/auth';
 import { THEME } from '../styles/theme';
 
 const ROUTE_FILTERS = ['All', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
 
-export default function CargoFeedScreen() {
+interface Props {
+  currentUser?: AuthUser | null;
+  onSignOut?: () => void;
+}
+
+export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
   const [cargo, setCargo] = useState<CargoLoad[]>([]);
   const [activeTab, setActiveTab] = useState<'available' | 'my_bids'>('available');
   const [search, setSearch] = useState('');
@@ -167,6 +173,8 @@ export default function CargoFeedScreen() {
         pendingCount={pendingCount}
         onToggleNetwork={handleToggleNetwork}
         onOpenQueue={handleOpenQueue}
+        currentUser={currentUser}
+        onSignOut={onSignOut}
       />
 
       {/* Segmented Tab Bar */}

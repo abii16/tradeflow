@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Waypoint, IncidentReportPayload, PodPayload, OfflineAction } from '../types/cargo';
+import { AuthUser } from '../types/auth';
 import {
   enqueueOfflineAction,
   updateLocalCargoStatus,
@@ -85,7 +86,12 @@ const INCIDENT_TYPES = [
   { key: 'CUSTOMS_HOLD', label: 'Customs Hold', icon: 'file-text' as const },
 ];
 
-export default function DriverScreen() {
+interface Props {
+  currentUser?: AuthUser | null;
+  onSignOut?: () => void;
+}
+
+export default function DriverScreen({ currentUser, onSignOut }: Props) {
   const [waypoints, setWaypoints] = useState<Waypoint[]>(INITIAL_WAYPOINTS);
   const [tripCompleted, setTripCompleted] = useState(false);
   const [isOnline, setIsOnline] = useState(getNetworkStatus());
@@ -253,6 +259,8 @@ export default function DriverScreen() {
         pendingCount={pendingCount}
         onToggleNetwork={handleToggleNetwork}
         onOpenQueue={handleOpenQueue}
+        currentUser={currentUser}
+        onSignOut={onSignOut}
       />
 
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -264,12 +272,14 @@ export default function DriverScreen() {
                 {tripCompleted ? 'HAUL COMPLETED' : 'ACTIVE ASSIGNMENT'}
               </Text>
             </View>
-            <Text style={styles.truckPlate}>Truck: 3-AA-98214</Text>
+            <Text style={styles.truckPlate}>
+              Truck: {currentUser?.licensePlate || '3-AA-98214'}
+            </Text>
           </View>
 
           <Text style={styles.tripTitle}>40T Structural Steel Consignment</Text>
           <Text style={styles.tripSubtitle}>
-            TF-LOAD-8805 • Driver: Abebe Kebede
+            TF-LOAD-8805 • Driver: {currentUser?.fullName || 'Abebe Kebede'}
           </Text>
 
           {/* Progress Strip */}
