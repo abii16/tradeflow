@@ -12,7 +12,7 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
-import { getCarrierPayouts } from '@/lib/apiClient';
+import { getCarrierPayouts, disputePayment as apiDisputePayment } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
 interface PayoutRecord {
@@ -74,12 +74,12 @@ export default function EarningsLedgerTab() {
 
     setSubmittingDispute(true);
     try {
-      // In Tradeflow backend, disputes are submitted via /payments/:id/dispute
+      await apiDisputePayment(disputePayment.id, disputeReason);
       toast.success('Dispute ticket raised! Payout frozen pending platform admin review.');
       setShowDisputeModal(false);
       await fetchPayouts(true);
     } catch (err: any) {
-      toast.error('Failed to raise payment dispute');
+      toast.error(err.response?.data?.error || 'Failed to raise payment dispute');
     } finally {
       setSubmittingDispute(false);
     }
