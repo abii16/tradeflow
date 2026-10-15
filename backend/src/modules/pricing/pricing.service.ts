@@ -115,14 +115,18 @@ export class PricingService {
 
       if (response.ok) {
         return await response.json();
+      } else {
+        const errText = await response.text();
+        throw new Error(`AI Pricing Engine error (${response.status}): ${errText}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       if (process.env.NODE_ENV !== 'test') {
-        console.warn('[PricingService] AI Engine evaluation failed. Using fallback:', err);
+        console.error('[PricingService] AI Engine evaluation failed:', err.message);
+        throw new Error(`AI Pricing Engine is unreachable: ${err.message}. Real ML evaluation is required.`);
       }
     }
 
-    // Local Fallback Evaluation
+    // Only allow fallback calculation in unit tests (NODE_ENV === 'test')
     const spot = this.computeFallbackSpotPrice({
       origin: dto.origin,
       destination: dto.destination,
@@ -148,7 +152,7 @@ export class PricingService {
       is_renegotiation_recommended: isRenegotiation,
       severity: Math.abs(divergencePercent) < 5 ? 'ALIGNED' : isRenegotiation ? 'CRITICAL_RENEGOTIATION_REQUIRED' : 'MODERATE_DIVERGENCE',
       message: isRenegotiation ? `Contract rate diverges by ${divergencePercent}% from spot market. Renegotiation recommended.` : 'Contract rate aligned with market.',
-      evaluation_id: `REV-FALLBACK-${Date.now()}`,
+      evaluation_id: `REV-TEST-${Date.now()}`,
       timestamp: new Date().toISOString(),
       spot_quote_summary: spot,
     };
@@ -162,21 +166,21 @@ export class PricingService {
       const response = await fetch(`${this.aiEngineUrl}/api/v1/pricing/corridors`);
       if (response.ok) {
         return await response.json();
+      } else {
+        const errText = await response.text();
+        throw new Error(`AI Engine corridor fetch failed (${response.status}): ${errText}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       if (process.env.NODE_ENV !== 'test') {
-        console.warn('[PricingService] Failed to fetch corridors from AI engine:', err);
+        console.error('[PricingService] Failed to fetch corridors from AI engine:', err.message);
+        throw new Error(`AI Pricing Engine is unreachable: ${err.message}. Real corridor telemetry is required.`);
       }
     }
 
+    // Only used in test environment
     return [
       { id: 'DJIBOUTI_MODJO', name: 'Djibouti Port -> Modjo Dry Port', distance_km: 810, base_rate_etb: 90000, current_diesel_etb_per_liter: 95.50 },
       { id: 'GALAFI_ADDIS', name: 'Galafi Border Terminal -> Addis Ababa', distance_km: 680, base_rate_etb: 82000, current_diesel_etb_per_liter: 95.50 },
-      { id: 'SEMERA_ADDIS', name: 'Semera Freight Hub -> Addis Ababa', distance_km: 580, base_rate_etb: 70000, current_diesel_etb_per_liter: 95.50 },
-      { id: 'MODJO_ADDIS', name: 'Modjo Dry Port -> Addis Ababa Hub', distance_km: 75, base_rate_etb: 16500, current_diesel_etb_per_liter: 95.50 },
-      { id: 'DJIBOUTI_DIREDAWA', name: 'Djibouti Port -> Dire Dawa', distance_km: 360, base_rate_etb: 48000, current_diesel_etb_per_liter: 95.50 },
-      { id: 'ADDIS_HAWASSA', name: 'Addis Ababa -> Hawassa Industrial Park', distance_km: 275, base_rate_etb: 35000, current_diesel_etb_per_liter: 95.50 },
-      { id: 'DJIBOUTI_MEKELLE', name: 'Djibouti Port -> Mekelle', distance_km: 780, base_rate_etb: 105000, current_diesel_etb_per_liter: 98.00 },
     ];
   }
 
