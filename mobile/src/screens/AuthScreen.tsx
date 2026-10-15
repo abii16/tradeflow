@@ -28,13 +28,15 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
   // Input states
   const [phoneOrEmail, setPhoneOrEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Registration specific fields
   const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [tinNumber, setTinNumber] = useState('');
-  const [fleetSize, setFleetSize] = useState('5-15 Trucks');
+  const [fleetSize, setFleetSize] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
   const [driverLicense, setDriverLicense] = useState('');
 
@@ -70,11 +72,18 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
     onLoginSuccess(demoUser);
   };
 
-  // ── Handle Submit ──
+  // ── Handle Submit with Strict Required Field Validation ──
   const handleSubmit = async () => {
     if (mode === 'LOGIN') {
-      if (!phoneOrEmail.trim() || !password.trim()) {
-        Alert.alert('Required Information', 'Please provide your registered phone/email and password.');
+      // 1. Phone / Email required
+      if (!phoneOrEmail.trim()) {
+        Alert.alert('Required Field', 'Please enter your registered phone number or corporate email.');
+        return;
+      }
+
+      // 2. Password required
+      if (!password.trim()) {
+        Alert.alert('Required Field', 'Please enter your password.');
         return;
       }
 
@@ -99,19 +108,68 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
       await saveUserSession(user);
       onLoginSuccess(user);
     } else {
-      // Registration validation
-      if (!fullName.trim() || !phoneOrEmail.trim() || !password.trim()) {
-        Alert.alert('Incomplete Form', 'Please complete your contact details and password.');
+      // Registration: Check every single field
+
+      // 1. Full legal name required
+      if (!fullName.trim()) {
+        Alert.alert('Required Field', 'Full legal name is required.');
         return;
       }
 
-      if (role === 'TRANSPORTER' && (!companyName.trim() || !tinNumber.trim())) {
-        Alert.alert('Carrier Information Required', 'Please enter your transport company name and Tax ID (TIN).');
+      // 2. Transporter specific required fields
+      if (role === 'TRANSPORTER') {
+        if (!companyName.trim()) {
+          Alert.alert('Required Field', 'Transport enterprise / company name is required.');
+          return;
+        }
+        if (!tinNumber.trim()) {
+          Alert.alert('Required Field', '10-digit Tax Identification Number (TIN) is required per FR-01.');
+          return;
+        }
+        if (!fleetSize.trim()) {
+          Alert.alert('Required Field', 'Operating fleet size is required (e.g. 12 Trucks).');
+          return;
+        }
+      }
+
+      // 3. Driver specific required fields
+      if (role === 'DRIVER') {
+        if (!licensePlate.trim()) {
+          Alert.alert('Required Field', 'Commercial truck license plate is required (e.g. 3-AA-98214).');
+          return;
+        }
+        if (!driverLicense.trim()) {
+          Alert.alert('Required Field', 'Commercial driver license number is required (e.g. ETH-CDL-782190).');
+          return;
+        }
+      }
+
+      // 4. Phone number / Email required
+      if (!phoneOrEmail.trim()) {
+        Alert.alert('Required Field', 'Mobile phone number is required.');
         return;
       }
 
-      if (role === 'DRIVER' && (!licensePlate.trim() || !driverLicense.trim())) {
-        Alert.alert('Driver Credentials Required', 'Please provide your truck license plate and commercial driver license number.');
+      // 5. Password required & min length
+      if (!password.trim()) {
+        Alert.alert('Required Field', 'Password is required.');
+        return;
+      }
+      if (password.length < 6) {
+        Alert.alert('Password Too Short', 'Password must be at least 6 characters long.');
+        return;
+      }
+
+      // 6. Confirm Password required & must match
+      if (!confirmPassword.trim()) {
+        Alert.alert('Required Field', 'Please confirm your password.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        Alert.alert(
+          'Passwords Do Not Match',
+          'Your password and confirm password do not match. Please verify and re-type them.'
+        );
         return;
       }
 
@@ -129,7 +187,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         role,
         companyName: role === 'TRANSPORTER' ? companyName.trim() : undefined,
         tinNumber: role === 'TRANSPORTER' ? tinNumber.trim() : undefined,
-        fleetSize: role === 'TRANSPORTER' ? fleetSize : undefined,
+        fleetSize: role === 'TRANSPORTER' ? fleetSize.trim() : undefined,
         licensePlate: role === 'DRIVER' ? licensePlate.trim().toUpperCase() : undefined,
         driverLicense: role === 'DRIVER' ? driverLicense.trim().toUpperCase() : undefined,
         token: `jwt-token-${Date.now()}`,
@@ -137,10 +195,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
       await saveUserSession(newUser);
       Alert.alert(
-        'Account Registered',
+        'Registration Successful',
         role === 'TRANSPORTER'
-          ? `Welcome to TradeFlow, ${fullName}! Your carrier account is active.`
-          : `Welcome, Driver ${fullName}! Truck ${licensePlate.toUpperCase()} assigned.`
+          ? `Welcome to TradeFlow, ${fullName.trim()}! Your carrier account has been created.`
+          : `Welcome, Driver ${fullName.trim()}! Truck ${licensePlate.trim().toUpperCase()} registered.`
       );
       onLoginSuccess(newUser);
     }
@@ -296,10 +354,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
         {/* Input Card Container */}
         <View style={styles.card}>
-          {/* Registration: Full Name */}
+          {/* Registration: Full Name (Required) */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>FULL LEGAL NAME</Text>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>FULL LEGAL NAME *</Text>
+                <Text style={styles.reqBadge}>REQUIRED</Text>
+              </View>
               <View style={styles.inputBox}>
                 <Feather name="user" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
                 <TextInput
@@ -313,11 +374,14 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             </View>
           )}
 
-          {/* Registration (Carrier): Enterprise & TIN */}
+          {/* Registration (Carrier): Enterprise, TIN, Fleet Size (All Required) */}
           {mode === 'REGISTER' && role === 'TRANSPORTER' && (
             <>
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>ENTERPRISE / COMPANY NAME</Text>
+                <View style={styles.labelRow}>
+                  <Text style={styles.label}>ENTERPRISE / COMPANY NAME *</Text>
+                  <Text style={styles.reqBadge}>REQUIRED</Text>
+                </View>
                 <View style={styles.inputBox}>
                   <Feather name="briefcase" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
                   <TextInput
@@ -332,7 +396,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>TAX IDENTIFICATION NUMBER (TIN)</Text>
+                  <Text style={styles.label}>TAX IDENTIFICATION NUMBER (TIN) *</Text>
                   <Text style={styles.reqBadge}>FR-01 REQUIREMENT</Text>
                 </View>
                 <View style={styles.inputBox}>
@@ -347,14 +411,34 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   />
                 </View>
               </View>
+
+              <View style={styles.inputGroup}>
+                <View style={styles.labelRow}>
+                  <Text style={styles.label}>OPERATING FLEET SIZE *</Text>
+                  <Text style={styles.reqBadge}>REQUIRED</Text>
+                </View>
+                <View style={styles.inputBox}>
+                  <Feather name="truck" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.textInput}
+                    value={fleetSize}
+                    onChangeText={setFleetSize}
+                    placeholder="e.g. 16 Trucks or 5-15 Trucks"
+                    placeholderTextColor={THEME.colors.textDim}
+                  />
+                </View>
+              </View>
             </>
           )}
 
-          {/* Registration (Driver): Truck Plate & CDL */}
+          {/* Registration (Driver): Truck Plate & CDL (All Required) */}
           {mode === 'REGISTER' && role === 'DRIVER' && (
             <>
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>COMMERCIAL TRUCK LICENSE PLATE</Text>
+                <View style={styles.labelRow}>
+                  <Text style={styles.label}>COMMERCIAL TRUCK LICENSE PLATE *</Text>
+                  <Text style={styles.reqBadge}>REQUIRED</Text>
+                </View>
                 <View style={styles.inputBox}>
                   <Feather name="truck" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
                   <TextInput
@@ -369,7 +453,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>COMMERCIAL DRIVER LICENSE NO.</Text>
+                <View style={styles.labelRow}>
+                  <Text style={styles.label}>COMMERCIAL DRIVER LICENSE NO. *</Text>
+                  <Text style={styles.reqBadge}>REQUIRED</Text>
+                </View>
                 <View style={styles.inputBox}>
                   <Feather name="shield" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
                   <TextInput
@@ -385,11 +472,14 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             </>
           )}
 
-          {/* Phone Number / Email Input (with Country Prefix) */}
+          {/* Phone Number / Email Input (Required) */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              {role === 'DRIVER' ? 'MOBILE PHONE NUMBER' : 'PHONE NUMBER OR CORPORATE EMAIL'}
-            </Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>
+                {role === 'DRIVER' ? 'MOBILE PHONE NUMBER *' : 'PHONE NUMBER OR CORPORATE EMAIL *'}
+              </Text>
+              <Text style={styles.reqBadge}>REQUIRED</Text>
+            </View>
             <View style={styles.inputBox}>
               <View style={styles.countryCodePill}>
                 <Text style={styles.flagEmoji}>🇪🇹</Text>
@@ -408,11 +498,11 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             </View>
           </View>
 
-          {/* Password Input */}
+          {/* Password Input (Required) */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>PASSWORD</Text>
-              {mode === 'LOGIN' && (
+              <Text style={styles.label}>PASSWORD *</Text>
+              {mode === 'LOGIN' ? (
                 <TouchableOpacity
                   onPress={() =>
                     Alert.alert(
@@ -423,6 +513,8 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 >
                   <Text style={styles.forgotText}>Forgot password?</Text>
                 </TouchableOpacity>
+              ) : (
+                <Text style={styles.reqBadge}>MIN 6 CHARS</Text>
               )}
             </View>
             <View style={styles.inputBox}>
@@ -431,7 +523,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 style={styles.textInput}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Enter account password"
+                placeholder={mode === 'LOGIN' ? 'Enter your account password' : 'Create a secure password (min 6 characters)'}
                 placeholderTextColor={THEME.colors.textDim}
                 secureTextEntry={!showPassword}
               />
@@ -448,6 +540,38 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Confirm Password Input (Registration only - Required) */}
+          {mode === 'REGISTER' && (
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>CONFIRM PASSWORD *</Text>
+                <Text style={styles.reqBadge}>REQUIRED</Text>
+              </View>
+              <View style={styles.inputBox}>
+                <Feather name="check-circle" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.textInput}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="Re-enter password to confirm"
+                  placeholderTextColor={THEME.colors.textDim}
+                  secureTextEntry={!showConfirmPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeBtn}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Feather
+                    name={showConfirmPassword ? 'eye-off' : 'eye'}
+                    size={15}
+                    color={THEME.colors.textMuted}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
           {/* Primary Action Button */}
           <TouchableOpacity
@@ -733,7 +857,6 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     fontWeight: '700',
     letterSpacing: 0.5,
-    marginBottom: 6,
     fontFamily: THEME.typography.mono,
   },
   reqBadge: {
