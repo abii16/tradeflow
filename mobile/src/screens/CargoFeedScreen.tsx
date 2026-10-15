@@ -1,4 +1,4 @@
-// TradeFlow Mobile — Cargo Feed Screen
+// TradeFlow Mobile — Cargo Feed Screen (Web CarrierPortal / LoadBoard Look)
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -9,7 +9,9 @@ import {
   StyleSheet,
   RefreshControl,
   Alert,
+  ScrollView,
 } from 'react-native';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { CargoLoad, OfflineAction } from '../types/cargo';
 import {
   initDatabase,
@@ -28,13 +30,15 @@ import ConnectivityHeader from '../components/ConnectivityHeader';
 import CargoCard from '../components/CargoCard';
 import BidModal from '../components/BidModal';
 import OfflineQueueModal from '../components/OfflineQueueModal';
+import { THEME } from '../styles/theme';
 
-const ROUTE_FILTERS = ['All', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
+const ROUTE_FILTERS = ['All Routes', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
 
 export default function CargoFeedScreen() {
   const [cargo, setCargo] = useState<CargoLoad[]>([]);
+  const [activeTab, setActiveTab] = useState<'available' | 'my_bids'>('available');
   const [search, setSearch] = useState('');
-  const [activeRoute, setActiveRoute] = useState('All');
+  const [activeRoute, setActiveRoute] = useState('All Routes');
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(getNetworkStatus());
   const [pendingCount, setPendingCount] = useState(0);
@@ -47,7 +51,7 @@ export default function CargoFeedScreen() {
   const [queueItems, setQueueItems] = useState<OfflineAction[]>([]);
   const [syncing, setSyncing] = useState(false);
 
-  // ── Init DB ──
+  // ── Init SQLite DB ──
   useEffect(() => {
     (async () => {
       await initDatabase();
@@ -55,10 +59,11 @@ export default function CargoFeedScreen() {
     })();
   }, []);
 
-  // ── Load cargo from SQLite ──
+  // ── Load Cargo from Local SQLite ──
   const loadCargo = useCallback(async () => {
     if (!dbReady) return;
-    const items = await getCachedCargo(search, activeRoute);
+    const filterArg = activeRoute === 'All Routes' ? undefined : activeRoute;
+    const items = await getCachedCargo(search, filterArg);
     setCargo(items);
     const count = await getPendingCount();
     setPendingCount(count);
@@ -78,19 +83,18 @@ export default function CargoFeedScreen() {
     setRefreshing(false);
   }, [isOnline, loadCargo]);
 
-  // ── Network toggle ──
+  // ── Toggle Network Simulation ──
   const handleToggleNetwork = () => {
     const newStatus = toggleNetworkStatus();
     setIsOnline(newStatus);
   };
 
-  // ── Open bid modal ──
+  // ── Bid Flow ──
   const handleOpenBid = (item: CargoLoad) => {
     setSelectedCargo(item);
     setBidModalVisible(true);
   };
 
-  // ── Submit bid ──
   const handleSubmitBid = async (
     cargoId: string,
     amountETB: number,
@@ -99,13 +103,13 @@ export default function CargoFeedScreen() {
   ) => {
     const payload = { cargoId, amountETB, licensePlate, estimatedArrival };
 
-    // Always enqueue to SQLite first (offline-first)
+    // Always enqueue to SQLite first (offline-first architecture)
     await enqueueOfflineAction('SUBMIT_BID', payload);
 
-    // Optimistically update local state
+    // Optimistically update local cargo state
     await updateLocalCargoStatus(cargoId, 'bid_placed');
 
-    // If online, try to sync immediately
+    // If online, immediately synchronize with remote
     if (isOnline) {
       await processQueue();
     }
@@ -113,72 +117,59 @@ export default function CargoFeedScreen() {
     await loadCargo();
 
     Alert.alert(
-      isOnline ? 'Bid Submitted' : 'Bid Queued',
+      isOnline ? 'Tender Transmitted' : 'Bid Saved in Offline Queue',
       isOnline
-        ? `Your bid of ${amountETB.toLocaleString()} ETB has been submitted.`
-        : `You are offline. Your bid has been saved locally and will sync when connected.`
+        ? `Your carrier bid of ${amountETB.toLocaleString()} ETB for truck ${licensePlate} was transmitted to TradeFlow dispatch.`
+        : `Cellular connection is offline. Your tender has been locked in local SQLite storage and will automatically dispatch upon corridor reconnection.`
     );
   };
 
-  // ── Open queue modal ──
+  // ── Queue Management ──
   const handleOpenQueue = async () => {
     const items = await getAllQueueItems();
     setQueueItems(items);
     setQueueModalVisible(true);
   };
 
-  // ── Sync now ──
   const handleSyncNow = async () => {
     if (!isOnline) {
-      Alert.alert('Offline', 'Connect to the network before syncing.');
+      Alert.alert(
+        'Corridor Disconnected',
+        'Toggle network online to dispatch buffered transmissions.'
+      );
       return;
     }
     setSyncing(true);
     const result = await processQueue();
     setSyncing(false);
 
-    // Refresh queue items and cargo
     const items = await getAllQueueItems();
     setQueueItems(items);
     await loadCargo();
 
     Alert.alert(
-      'Sync Complete',
-      `Processed: ${result.processed}, Succeeded: ${result.succeeded}, Failed: ${result.failed}`
+      'Ledger Synchronization',
+      `Processed: ${result.processed} items\nConfirmed: ${result.succeeded}\nPending/Failed: ${result.failed}`
     );
   };
 
-  // ── Route filter chips ──
-  const renderFilterChip = (route: string) => {
-    const active = activeRoute === route;
-    return (
-      <TouchableOpacity
-        key={route}
-        style={[styles.chip, active && styles.chipActive]}
-        onPress={() => setActiveRoute(route)}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.chipText, active && styles.chipTextActive]}>
-          {route}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
+  // Filter list based on Sub-Tab
+  const displayedCargo = cargo.filter((item) => {
+    if (activeTab === 'my_bids') {
+      return item.status === 'bid_placed' || item.status === 'in_transit';
+    }
+    return true;
+  });
 
-  // ── Empty state ──
-  const renderEmpty = () => (
-    <View style={styles.emptyState}>
-      <Text style={styles.emptyTitle}>No loads found</Text>
-      <Text style={styles.emptySubtitle}>
-        {search ? 'Try a different search term' : 'Pull down to refresh'}
-      </Text>
-    </View>
-  );
+  const myBidsCount = cargo.filter(
+    (c) => c.status === 'bid_placed' || c.status === 'in_transit'
+  ).length;
 
   if (!dbReady) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Initializing database...</Text>
+        <Feather name="loader" size={24} color={THEME.colors.emerald} />
+        <Text style={styles.loadingText}>Loading TradeFlow Corridor Ledger...</Text>
       </View>
     );
   }
@@ -192,44 +183,189 @@ export default function CargoFeedScreen() {
         onOpenQueue={handleOpenQueue}
       />
 
-      {/* Title bar */}
-      <View style={styles.titleBar}>
-        <Text style={styles.pageTitle}>Cargo Feed</Text>
-        <Text style={styles.loadCount}>{cargo.length} loads</Text>
+      {/* Corridor Quick Metrics Strip (Web style) */}
+      <View style={styles.metricsStrip}>
+        <View style={styles.metricsItem}>
+          <Text style={styles.metricsLabel}>CORRIDOR SPOT</Text>
+          <Text style={styles.metricsVal}>340K ETB</Text>
+        </View>
+        <View style={styles.metricsDivider} />
+        <View style={styles.metricsItem}>
+          <Text style={styles.metricsLabel}>ACTIVE ROUTE</Text>
+          <Text style={styles.metricsVal}>Djibouti ⇄ Modjo</Text>
+        </View>
+        <View style={styles.metricsDivider} />
+        <View style={styles.metricsItem}>
+          <Text style={styles.metricsLabel}>SECURITY RADAR</Text>
+          <View style={styles.radarStatus}>
+            <View style={styles.radarDot} />
+            <Text style={styles.radarText}>Low Risk</Text>
+          </View>
+        </View>
       </View>
 
-      {/* Search */}
-      <View style={styles.searchRow}>
-        <TextInput
-          style={styles.searchInput}
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search loads..."
-          placeholderTextColor="#64748b"
-        />
+      {/* Sub Tabs: Available Consignments vs My Active Bids */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'available' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('available')}
+          activeOpacity={0.8}
+        >
+          <Text
+            style={[
+              styles.tabButtonText,
+              activeTab === 'available' && styles.tabButtonTextActive,
+            ]}
+          >
+            Available Loads
+          </Text>
+          <View
+            style={[
+              styles.tabBadge,
+              activeTab === 'available' && styles.tabBadgeActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabBadgeText,
+                activeTab === 'available' && styles.tabBadgeTextActive,
+              ]}
+            >
+              {cargo.length}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'my_bids' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('my_bids')}
+          activeOpacity={0.8}
+        >
+          <Text
+            style={[
+              styles.tabButtonText,
+              activeTab === 'my_bids' && styles.tabButtonTextActive,
+            ]}
+          >
+            My Bids
+          </Text>
+          <View
+            style={[
+              styles.tabBadge,
+              activeTab === 'my_bids' && styles.tabBadgeActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabBadgeText,
+                activeTab === 'my_bids' && styles.tabBadgeTextActive,
+              ]}
+            >
+              {myBidsCount}
+            </Text>
+          </View>
+        </TouchableOpacity>
       </View>
 
-      {/* Route filter chips */}
-      <View style={styles.chipRow}>
-        {ROUTE_FILTERS.map(renderFilterChip)}
+      {/* Search Bar */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchBar}>
+          <Feather
+            name="search"
+            size={14}
+            color={THEME.colors.textMuted}
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search commodity, city, or ID..."
+            placeholderTextColor={THEME.colors.textDim}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch('')} activeOpacity={0.7}>
+              <Feather name="x" size={14} color={THEME.colors.textMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      {/* Cargo list */}
+      {/* Corridor Filter Chips */}
+      <View style={styles.chipsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsScroll}
+        >
+          {ROUTE_FILTERS.map((route) => {
+            const active = activeRoute === route;
+            return (
+              <TouchableOpacity
+                key={route}
+                style={[styles.filterChip, active && styles.filterChipActive]}
+                onPress={() => setActiveRoute(route)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    active && styles.filterChipTextActive,
+                  ]}
+                >
+                  {route}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Cargo Cards Feed */}
       <FlatList
-        data={cargo}
+        data={displayedCargo}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <CargoCard item={item} onBid={handleOpenBid} />
         )}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={renderEmpty}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#94a3b8"
-            colors={['#94a3b8']}
+            tintColor={THEME.colors.emerald}
+            colors={[THEME.colors.emerald]}
           />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyCard}>
+            <Ionicons
+              name="cube-outline"
+              size={36}
+              color={THEME.colors.textDim}
+              style={{ marginBottom: 10 }}
+            />
+            <Text style={styles.emptyTitle}>
+              {activeTab === 'my_bids'
+                ? 'No Active Carrier Bids'
+                : 'No Matching Consignments'}
+            </Text>
+            <Text style={styles.emptyDesc}>
+              {activeTab === 'my_bids'
+                ? 'Select any open consignment from the Available Loads tab to submit your competitive haul tender.'
+                : 'Adjust your search query or route filters to inspect other corridor legs.'}
+            </Text>
+            {search.length > 0 && (
+              <TouchableOpacity
+                style={styles.clearSearchBtn}
+                onPress={() => setSearch('')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.clearSearchText}>Reset Filters</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         }
       />
 
@@ -244,8 +380,9 @@ export default function CargoFeedScreen() {
       <OfflineQueueModal
         visible={queueModalVisible}
         items={queueItems}
+        isOnline={isOnline}
         syncing={syncing}
-        onSync={handleSyncNow}
+        onSyncNow={handleSyncNow}
         onClose={() => setQueueModalVisible(false)}
       />
     </View>
@@ -255,91 +392,203 @@ export default function CargoFeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: THEME.colors.background,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: THEME.colors.background,
+    gap: 12,
   },
   loadingText: {
-    color: '#94a3b8',
-    fontSize: 14,
-  },
-  titleBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 8,
-  },
-  pageTitle: {
-    fontSize: 18,
+    color: THEME.colors.textSecondary,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#f1f5f9',
   },
-  loadCount: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  searchRow: {
+  metricsStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#181818',
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.colors.borderMuted,
+    paddingVertical: 7,
     paddingHorizontal: 16,
+  },
+  metricsItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  metricsLabel: {
+    color: THEME.colors.textDim,
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    fontFamily: THEME.typography.fontMono,
+    marginBottom: 2,
+  },
+  metricsVal: {
+    color: THEME.colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+    fontFamily: THEME.typography.fontMono,
+  },
+  metricsDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: THEME.colors.borderMuted,
+  },
+  radarStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  radarDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: THEME.colors.emerald,
+  },
+  radarText: {
+    color: THEME.colors.emerald,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: THEME.colors.backgroundSurface,
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.colors.border,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  tabButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    marginRight: 20,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabButtonActive: {
+    borderBottomColor: THEME.colors.emerald,
+  },
+  tabButtonText: {
+    color: THEME.colors.textMuted,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  tabButtonTextActive: {
+    color: THEME.colors.textPrimary,
+    fontWeight: '800',
+  },
+  tabBadge: {
+    backgroundColor: '#262626',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+  },
+  tabBadgeActive: {
+    backgroundColor: THEME.colors.emeraldGlow,
+  },
+  tabBadgeText: {
+    color: THEME.colors.textMuted,
+    fontSize: 10,
+    fontWeight: '700',
+    fontFamily: THEME.typography.fontMono,
+  },
+  tabBadgeTextActive: {
+    color: THEME.colors.emerald,
+  },
+  searchSection: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 8,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: THEME.colors.card,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
   },
   searchInput: {
-    backgroundColor: '#1e293b',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 6,
-    paddingHorizontal: 12,
+    flex: 1,
+    color: THEME.colors.textPrimary,
+    fontSize: 13,
     paddingVertical: 9,
-    color: '#f1f5f9',
-    fontSize: 14,
   },
-  chipRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
+  chipsWrapper: {
     paddingBottom: 10,
-    gap: 6,
   },
-  chip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#334155',
-    backgroundColor: '#1e293b',
-  },
-  chipActive: {
-    backgroundColor: '#334155',
-    borderColor: '#475569',
-  },
-  chipText: {
-    fontSize: 12,
-    color: '#94a3b8',
-  },
-  chipTextActive: {
-    color: '#f1f5f9',
-    fontWeight: '500',
-  },
-  listContent: {
+  chipsScroll: {
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    gap: 8,
   },
-  emptyState: {
-    paddingTop: 60,
+  filterChip: {
+    backgroundColor: '#1C1C1C',
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  filterChipActive: {
+    backgroundColor: THEME.colors.emeraldGlow,
+    borderColor: 'rgba(62, 207, 142, 0.45)',
+  },
+  filterChipText: {
+    color: THEME.colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  filterChipTextActive: {
+    color: THEME.colors.emerald,
+    fontWeight: '700',
+  },
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  emptyCard: {
+    backgroundColor: THEME.colors.card,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    borderRadius: 16,
+    padding: 28,
     alignItems: 'center',
+    marginTop: 20,
   },
   emptyTitle: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#94a3b8',
-    marginBottom: 4,
+    color: THEME.colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 6,
   },
-  emptySubtitle: {
-    fontSize: 13,
-    color: '#64748b',
+  emptyDesc: {
+    color: THEME.colors.textMuted,
+    fontSize: 11.5,
+    textAlign: 'center',
+    lineHeight: 17,
+    marginBottom: 14,
+  },
+  clearSearchBtn: {
+    backgroundColor: '#262626',
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+  },
+  clearSearchText: {
+    color: THEME.colors.emerald,
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

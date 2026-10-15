@@ -1,54 +1,59 @@
-// TradeFlow Mobile — Offline Queue Modal
+// TradeFlow Mobile — Offline Queue Modal (Web Queue Inspector Look)
 import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   Modal,
   FlatList,
+  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { OfflineAction } from '../types/cargo';
+import { THEME } from '../styles/theme';
 
 interface Props {
   visible: boolean;
   items: OfflineAction[];
+  isOnline: boolean;
   syncing: boolean;
-  onSync: () => void;
+  onSyncNow: () => void;
   onClose: () => void;
 }
 
-const ACTION_LABELS: Record<string, string> = {
-  SUBMIT_BID: 'Bid Submission',
-  ACCEPT_LOAD: 'Load Acceptance',
-  WAYPOINT_CHECKIN: 'Waypoint Check-in',
-};
-
-const STATUS_STYLES: Record<string, { color: string; label: string }> = {
-  pending: { color: '#fbbf24', label: 'Pending' },
-  synced: { color: '#4ade80', label: 'Synced' },
-  failed: { color: '#f87171', label: 'Failed' },
+const ACTION_LABELS: Record<string, { label: string; icon: keyof typeof Feather.glyphMap }> = {
+  SUBMIT_BID: { label: 'Submit Carrier Tender', icon: 'send' },
+  ACCEPT_LOAD: { label: 'Accept Haul Assignment', icon: 'check-circle' },
+  WAYPOINT_CHECKIN: { label: 'Corridor Waypoint Check-in', icon: 'map-pin' },
 };
 
 function formatTime(isoStr: string): string {
-  const d = new Date(isoStr);
-  const h = d.getHours().toString().padStart(2, '0');
-  const m = d.getMinutes().toString().padStart(2, '0');
-  return `${h}:${m}`;
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  } catch {
+    return isoStr;
+  }
 }
 
 export default function OfflineQueueModal({
   visible,
   items,
+  isOnline,
   syncing,
-  onSync,
+  onSyncNow,
   onClose,
 }: Props) {
   const pendingCount = items.filter((i) => i.status === 'pending').length;
 
   const renderItem = ({ item }: { item: OfflineAction }) => {
-    const statusStyle = STATUS_STYLES[item.status] ?? STATUS_STYLES.pending;
+    const actionMeta = ACTION_LABELS[item.actionType] ?? {
+      label: item.actionType,
+      icon: 'layers',
+    };
+
     let payload: Record<string, unknown> = {};
     try {
       payload = JSON.parse(item.payload);
@@ -56,25 +61,74 @@ export default function OfflineQueueModal({
       // ignore
     }
 
+    const isPending = item.status === 'pending';
+    const isSynced = item.status === 'synced';
+    const isFailed = item.status === 'failed';
+
     return (
       <View style={styles.queueItem}>
-        <View style={styles.queueItemLeft}>
-          <Text style={styles.queueAction}>
-            {ACTION_LABELS[item.actionType] ?? item.actionType}
-          </Text>
-          {Boolean(payload.cargoId) && (
-            <Text style={styles.queueDetail}>{String(payload.cargoId)}</Text>
-          )}
-          <Text style={styles.queueTime}>{formatTime(item.createdAt)}</Text>
+        <View style={styles.itemHeader}>
+          <View style={styles.itemTypeRow}>
+            <View style={styles.actionIconBox}>
+              <Feather
+                name={actionMeta.icon}
+                size={13}
+                color={THEME.colors.emerald}
+              />
+            </View>
+            <View>
+              <Text style={styles.queueAction}>{actionMeta.label}</Text>
+              <Text style={styles.queueTime}>{formatTime(item.createdAt)}</Text>
+            </View>
+          </View>
+
+          {/* Status Badge */}
+          <View
+            style={[
+              styles.statusChip,
+              isPending && styles.statusChipPending,
+              isSynced && styles.statusChipSynced,
+              isFailed && styles.statusChipFailed,
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusChipText,
+                isPending && styles.statusTextPending,
+                isSynced && styles.statusTextSynced,
+                isFailed && styles.statusTextFailed,
+              ]}
+            >
+              {isPending && 'PENDING'}
+              {isSynced && 'SYNCED ✓'}
+              {isFailed && `RETRY (${item.retryCount})`}
+            </Text>
+          </View>
         </View>
-        <View style={styles.queueItemRight}>
-          <Text style={[styles.queueStatus, { color: statusStyle.color }]}>
-            {statusStyle.label}
-          </Text>
-          {item.retryCount > 0 && (
-            <Text style={styles.retryCount}>×{item.retryCount}</Text>
-          )}
-        </View>
+
+        {/* Payload details preview */}
+        {Boolean(payload.cargoId) && (
+          <View style={styles.payloadBox}>
+            <Text style={styles.payloadLabel}>CARGO REF:</Text>
+            <Text style={styles.payloadValue}>{String(payload.cargoId)}</Text>
+            {Boolean(payload.amountETB) && (
+              <>
+                <Text style={styles.payloadDivider}>•</Text>
+                <Text style={styles.payloadRate}>
+                  {Number(payload.amountETB).toLocaleString()} ETB
+                </Text>
+              </>
+            )}
+            {Boolean(payload.licensePlate) && (
+              <>
+                <Text style={styles.payloadDivider}>•</Text>
+                <Text style={styles.payloadPlate}>
+                  {String(payload.licensePlate)}
+                </Text>
+              </>
+            )}
+          </View>
+        )}
       </View>
     );
   };
@@ -83,49 +137,125 @@ export default function OfflineQueueModal({
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          {/* Header */}
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+
+        <View style={styles.container}>
+          <View style={styles.handleBar} />
+
+          {/* Modal Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Offline Queue</Text>
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
-              <Text style={styles.closeBtn}>✕</Text>
+            <View>
+              <View style={styles.titleRow}>
+                <Text style={styles.title}>Offline Queue Ledger</Text>
+                <View style={styles.countBadge}>
+                  <Text style={styles.countBadgeText}>{items.length} records</Text>
+                </View>
+              </View>
+              <Text style={styles.subtitle}>
+                SQLite local buffer for Djibouti-Ethiopia corridor dead zones
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={onClose}
+              style={styles.closeBtn}
+              activeOpacity={0.7}
+            >
+              <Feather name="x" size={18} color={THEME.colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
-          {/* Queue list */}
+          {/* Network Status Strip */}
+          <View
+            style={[
+              styles.networkStrip,
+              isOnline ? styles.networkOnline : styles.networkOffline,
+            ]}
+          >
+            <Ionicons
+              name={isOnline ? 'wifi' : 'cloud-offline'}
+              size={14}
+              color={isOnline ? THEME.colors.emerald : THEME.colors.amber}
+            />
+            <Text style={styles.networkStripText}>
+              {isOnline
+                ? 'Network active — ready to dispatch buffered actions.'
+                : 'Offline mode active — actions will remain safely in SQLite.'}
+            </Text>
+          </View>
+
+          {/* Queue List */}
           {items.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No queued actions</Text>
+            <View style={styles.emptyContainer}>
+              <Feather
+                name="check-circle"
+                size={36}
+                color={THEME.colors.emerald}
+                style={styles.emptyIcon}
+              />
+              <Text style={styles.emptyTitle}>All Transmissions Synchronized</Text>
+              <Text style={styles.emptySub}>
+                Every action taken while offline has successfully synchronized with
+                the TradeFlow central server.
+              </Text>
             </View>
           ) : (
             <FlatList
               data={items}
               keyExtractor={(item) => String(item.id)}
               renderItem={renderItem}
-              style={styles.list}
-              ItemSeparatorComponent={() => <View style={styles.separator} />}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
             />
           )}
 
-          {/* Footer actions */}
+          {/* Bottom Action Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerCount}>
-              {pendingCount} pending action{pendingCount !== 1 ? 's' : ''}
-            </Text>
             <TouchableOpacity
-              style={[styles.syncBtn, (syncing || pendingCount === 0) && styles.syncBtnDisabled]}
-              onPress={onSync}
+              style={styles.closeFooterBtn}
+              onPress={onClose}
               activeOpacity={0.7}
-              disabled={syncing || pendingCount === 0}
+            >
+              <Text style={styles.closeFooterBtnText}>Close</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.syncBtn,
+                (!isOnline || syncing || pendingCount === 0) &&
+                  styles.syncBtnDisabled,
+              ]}
+              onPress={onSyncNow}
+              disabled={!isOnline || syncing || pendingCount === 0}
+              activeOpacity={0.8}
             >
               {syncing ? (
-                <ActivityIndicator size="small" color="#f1f5f9" />
+                <>
+                  <ActivityIndicator
+                    size="small"
+                    color={THEME.colors.emeraldText}
+                  />
+                  <Text style={styles.syncBtnText}>Syncing Ledger...</Text>
+                </>
               ) : (
-                <Text style={styles.syncText}>Sync Now</Text>
+                <>
+                  <Feather
+                    name="refresh-cw"
+                    size={14}
+                    color={THEME.colors.emeraldText}
+                  />
+                  <Text style={styles.syncBtnText}>
+                    Sync {pendingCount} Pending
+                  </Text>
+                </>
               )}
             </TouchableOpacity>
           </View>
@@ -138,121 +268,275 @@ export default function OfflineQueueModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    justifyContent: 'flex-end',
   },
-  modal: {
-    backgroundColor: '#1e293b',
-    borderRadius: 8,
-    width: '100%',
-    maxWidth: 400,
-    maxHeight: '70%',
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  },
+  container: {
+    backgroundColor: THEME.colors.backgroundSurface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: THEME.colors.border,
+    maxHeight: '85%',
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
+  },
+  handleBar: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: THEME.colors.borderLight,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 14,
   },
   header: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    marginBottom: 14,
   },
-  headerTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#f1f5f9',
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  title: {
+    color: THEME.colors.textPrimary,
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  countBadge: {
+    backgroundColor: '#262626',
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    paddingHorizontal: 7,
+    paddingVertical: 1.5,
+    borderRadius: 5,
+  },
+  countBadgeText: {
+    color: THEME.colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '700',
+    fontFamily: THEME.typography.fontMono,
+  },
+  subtitle: {
+    color: THEME.colors.textMuted,
+    fontSize: 10.5,
+    marginTop: 2,
   },
   closeBtn: {
-    fontSize: 16,
-    color: '#94a3b8',
-    paddingHorizontal: 4,
-  },
-  list: {
-    maxHeight: 300,
-  },
-  queueItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#262626',
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    justifyContent: 'center',
   },
-  queueItemLeft: {
+  networkStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 14,
+    borderWidth: 1,
+  },
+  networkOnline: {
+    backgroundColor: '#16221A',
+    borderColor: 'rgba(62, 207, 142, 0.25)',
+  },
+  networkOffline: {
+    backgroundColor: '#221D16',
+    borderColor: 'rgba(245, 158, 11, 0.25)',
+  },
+  networkStripText: {
+    color: THEME.colors.textSecondary,
+    fontSize: 11,
     flex: 1,
   },
-  queueAction: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#e2e8f0',
+  listContent: {
+    paddingBottom: 16,
   },
-  queueDetail: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 1,
+  queueItem: {
+    backgroundColor: '#1E1E1E',
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  itemTypeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  actionIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: THEME.colors.emeraldGlow,
+    borderWidth: 1,
+    borderColor: 'rgba(62, 207, 142, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  queueAction: {
+    color: THEME.colors.textPrimary,
+    fontSize: 12.5,
+    fontWeight: '700',
   },
   queueTime: {
-    fontSize: 11,
-    color: '#475569',
-    marginTop: 2,
+    color: THEME.colors.textDim,
+    fontSize: 9.5,
+    fontFamily: THEME.typography.fontMono,
   },
-  queueItemRight: {
-    alignItems: 'flex-end',
+  statusChip: {
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 5,
+    borderWidth: 1,
   },
-  queueStatus: {
-    fontSize: 12,
-    fontWeight: '600',
+  statusChipPending: {
+    backgroundColor: THEME.colors.amberGlow,
+    borderColor: 'rgba(245, 158, 11, 0.35)',
   },
-  retryCount: {
-    fontSize: 10,
-    color: '#64748b',
-    marginTop: 2,
+  statusChipSynced: {
+    backgroundColor: THEME.colors.emeraldGlow,
+    borderColor: 'rgba(62, 207, 142, 0.35)',
   },
-  separator: {
-    height: 1,
-    backgroundColor: '#334155',
-    marginHorizontal: 16,
+  statusChipFailed: {
+    backgroundColor: THEME.colors.redGlow,
+    borderColor: 'rgba(239, 68, 68, 0.35)',
   },
-  emptyState: {
-    paddingVertical: 32,
+  statusChipText: {
+    fontSize: 9,
+    fontWeight: '800',
+    fontFamily: THEME.typography.fontMono,
+  },
+  statusTextPending: {
+    color: THEME.colors.amber,
+  },
+  statusTextSynced: {
+    color: THEME.colors.emerald,
+  },
+  statusTextFailed: {
+    color: THEME.colors.red,
+  },
+  payloadBox: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#181818',
+    borderWidth: 1,
+    borderColor: THEME.colors.borderMuted,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
   },
-  emptyText: {
-    fontSize: 13,
-    color: '#64748b',
+  payloadLabel: {
+    color: THEME.colors.textDim,
+    fontSize: 9,
+    fontWeight: '700',
+    fontFamily: THEME.typography.fontMono,
+  },
+  payloadValue: {
+    color: THEME.colors.blue,
+    fontSize: 10,
+    fontWeight: '700',
+    fontFamily: THEME.typography.fontMono,
+  },
+  payloadDivider: {
+    color: THEME.colors.textDim,
+    fontSize: 10,
+  },
+  payloadRate: {
+    color: THEME.colors.emerald,
+    fontSize: 10,
+    fontWeight: '700',
+    fontFamily: THEME.typography.fontMono,
+  },
+  payloadPlate: {
+    color: THEME.colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: THEME.typography.fontMono,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+  },
+  emptyIcon: {
+    marginBottom: 10,
+  },
+  emptyTitle: {
+    color: THEME.colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  emptySub: {
+    color: THEME.colors.textMuted,
+    fontSize: 11,
+    textAlign: 'center',
+    lineHeight: 16,
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    gap: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
+    borderTopColor: THEME.colors.border,
   },
-  footerCount: {
-    fontSize: 12,
-    color: '#94a3b8',
+  closeFooterBtn: {
+    flex: 1,
+    backgroundColor: '#242424',
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  closeFooterBtnText: {
+    color: THEME.colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
   },
   syncBtn: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#475569',
-    minWidth: 90,
+    flex: 2,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: THEME.colors.emerald,
+    paddingVertical: 12,
+    borderRadius: 10,
   },
   syncBtnDisabled: {
     opacity: 0.4,
   },
-  syncText: {
-    color: '#f1f5f9',
+  syncBtnText: {
+    color: THEME.colors.emeraldText,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '800',
   },
 });

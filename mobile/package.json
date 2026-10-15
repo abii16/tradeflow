@@ -10,14 +10,17 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
     "expo": "~57.0.30",
     "expo-background-fetch": "~57.0.21",
     "expo-camera": "~57.0.6",
+    "expo-font": "~57.0.4",
     "expo-location": "~57.0.21",
     "expo-sqlite": "~57.0.4",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
-    "react-native": "^0.86.3"
+    "react-native": "^0.86.3",
+    "react-native-safe-area-context": "~5.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
