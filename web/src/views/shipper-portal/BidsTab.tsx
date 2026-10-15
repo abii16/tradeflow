@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Star, ChevronDown, Sparkles, MapPin, ArrowRight, ShieldCheck, Activity, PackageOpen, Zap, Clock } from 'lucide-react';
+import { Star, ChevronDown, Sparkles, MapPin, ArrowRight, ShieldCheck, Activity, PackageOpen, Zap, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 
 type FilterStatus = 'all' | 'open' | 'transit' | 'completed';
 
-import { getShipperLoads, acceptBidEscrow } from '@/lib/apiClient';
+import { getShipperLoads, acceptBidEscrow, triggerAiMatching } from '@/lib/apiClient';
 
 const FILTER_OPTIONS: { value: FilterStatus; label: string; icon: React.ReactNode }[] = [
   { value: 'all', label: 'All Loads', icon: <PackageOpen size={14} /> },
@@ -20,13 +20,19 @@ export default function BidsTab() {
   const [expandedLoad, setExpandedLoad] = useState<string | null>(null);
   const [loads, setLoads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [matchingLoadId, setMatchingLoadId] = useState<string | null>(null);
+  const [aiErrorMessage, setAiErrorMessage] = useState<string | null>(null);
 
   const fetchLoads = async () => {
     try {
+      setAiErrorMessage(null);
       const data = await getShipperLoads();
       setLoads(data.loads || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      if (error?.message && error.message.includes('AI Freight Matching')) {
+        setAiErrorMessage(error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -39,22 +45,19 @@ export default function BidsTab() {
     return () => window.removeEventListener('shipper:load_posted', handleRefresh);
   }, []);
 
-  // Simulate live data feed
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLoads(prevLoads => prevLoads.map(load => {
-        if (!load.bids || load.bids.length === 0) return load;
-        return {
-          ...load,
-          bids: load.bids.map((bid: any) => ({
-            ...bid,
-            amount: Math.max(0, Number(bid.amount || bid.bidAmount) + Math.floor(Math.random() * 300) - 150)
-          }))
-        };
-      }));
-    }, 3500);
-    return () => clearInterval(interval);
-  }, []);
+  const handleTriggerMatch = async (loadId: string) => {
+    setMatchingLoadId(loadId);
+    setAiErrorMessage(null);
+    try {
+      await triggerAiMatching(loadId);
+      await fetchLoads();
+    } catch (err: any) {
+      console.error('Failed to trigger AI matches:', err);
+      setAiErrorMessage(err.message || 'AI Freight Matching Engine is offline on port 8000.');
+    } finally {
+      setMatchingLoadId(null);
+    }
+  };
 
   const handleAcceptBid = async (bidId: string) => {
     try {
@@ -127,6 +130,22 @@ export default function BidsTab() {
           })}
         </div>
       </div>
+
+      {/* AI Engine Status Alert */}
+      {aiErrorMessage && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center justify-between text-red-400 text-xs">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} />
+            <span>{aiErrorMessage}</span>
+          </div>
+          <button
+            onClick={() => fetchLoads()}
+            className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 rounded-md text-[11px] font-bold flex items-center gap-1 transition-all"
+          >
+            <RefreshCw size={12} /> Retry
+          </button>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="space-y-4 relative">
@@ -240,9 +259,20 @@ export default function BidsTab() {
                           <Sparkles size={12} /> AI Smart Match
                         </div>
                         <span className="text-xs font-medium text-[#8F8F8F] flex items-center gap-1">
-                          <Clock size={12} /> Ranked real-time by price & rating
+                          <Clock size={12} /> Ranked real-time by price, proximity & reliability (FR-02)
                         </span>
                       </div>
+                      {(load.status === 'POSTED' || load.status === 'OPEN_FOR_BIDDING') && (
+                        <button
+                          type="button"
+                          onClick={() => handleTriggerMatch(load.id)}
+                          disabled={matchingLoadId === load.id}
+                          className="text-xs font-bold text-[#3ECF8E] hover:text-[#3ECF8E]/80 bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/20 border border-[#3ECF8E]/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all disabled:opacity-50"
+                        >
+                          <RefreshCw size={12} className={matchingLoadId === load.id ? 'animate-spin' : ''} />
+                          {matchingLoadId === load.id ? 'Evaluating Network...' : 'Re-scan AI Matches'}
+                        </button>
+                      )}
                     </div>
                     
                     <div className="border border-[#2E2E2E]/70 rounded-xl overflow-hidden shadow-sm bg-[#232323]">
@@ -259,10 +289,20 @@ export default function BidsTab() {
                         <TableBody>
                           {(!load.bids || load.bids.length === 0) ? (
                             <TableRow>
-                              <TableCell colSpan={5} className="h-32 text-center">
-                                <div className="flex flex-col items-center justify-center text-[#8F8F8F]">
-                                  <Activity size={20} className="mb-2 animate-pulse" />
-                                  <p className="text-sm font-medium">Scanning network for optimal carrier bids...</p>
+                              <TableCell colSpan={5} className="h-36 text-center">
+                                <div className="flex flex-col items-center justify-center text-[#8F8F8F] py-4">
+                                  <Activity size={24} className="mb-2 animate-pulse text-[#3ECF8E]" />
+                                  <p className="text-sm font-medium text-[#EDEDED]">Scanning network for optimal carrier bids...</p>
+                                  <p className="text-xs text-[#8F8F8F] mt-1">AI Freight Matching Engine is evaluating verified carriers.</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleTriggerMatch(load.id)}
+                                    disabled={matchingLoadId === load.id}
+                                    className="mt-3.5 text-xs bg-[#3ECF8E]/15 hover:bg-[#3ECF8E]/25 text-[#3ECF8E] border border-[#3ECF8E]/40 px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
+                                  >
+                                    <Sparkles size={14} className={matchingLoadId === load.id ? 'animate-spin' : ''} />
+                                    {matchingLoadId === load.id ? 'Evaluating Machine Learning Match...' : 'Trigger AI Smart Match Now'}
+                                  </button>
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -280,9 +320,14 @@ export default function BidsTab() {
                                         {i === 0 && (
                                           <span className="bg-amber-100 text-amber-700 text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider">Top Pick</span>
                                         )}
+                                        {bid.aiMatchScore && (
+                                          <span className="bg-[#3ECF8E]/15 text-[#3ECF8E] border border-[#3ECF8E]/30 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                            {bid.aiMatchScore}% Match
+                                          </span>
+                                        )}
                                       </div>
                                       <span className="text-[10px] text-[#8F8F8F] font-mono flex items-center gap-1 mt-0.5">
-                                        <ShieldCheck size={10} className="text-green-500" /> Verified Carrier
+                                        <ShieldCheck size={10} className="text-green-500" /> {bid.transporterCompany ? `${bid.transporterCompany} · ` : ''}Verified Carrier
                                       </span>
                                     </div>
                                   </div>

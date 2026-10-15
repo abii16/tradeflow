@@ -10,6 +10,7 @@ import { eq, desc, and, or } from 'drizzle-orm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { auditMiddleware } from '../middleware/audit.middleware';
+import { aiMatchingService } from '../services/ai-matching.service';
 
 const router = Router();
 
@@ -52,7 +53,7 @@ router.get('/loads', async (req: Request, res: Response): Promise<void> => {
 
     // For each load, fetch active incoming bids with transporter info
     const loadsWithBids = await Promise.all(allLoads.map(async (load) => {
-      const rawBids = await db.select({
+      let rawBids = await db.select({
         id: bids.id,
         amount: bids.bidAmount,
         currency: bids.currency,
@@ -60,16 +61,51 @@ router.get('/loads', async (req: Request, res: Response): Promise<void> => {
         createdAt: bids.createdAt,
         transporterId: users.id,
         transporterName: users.fullName,
+        transporterCompany: users.companyName,
+        notes: bids.notes,
       })
       .from(bids)
       .leftJoin(users, eq(bids.transporterId, users.id))
       .where(eq(bids.loadId, load.id));
 
-      const formattedBids = rawBids.map(b => ({
-        ...b,
-        transporterRating: '4.8',
-        proximity: '2h away'
-      }));
+      // Auto-evaluate AI smart match shortlist if no bids exist yet (SRS FR-02.3)
+      if (rawBids.length === 0 && load.status === 'POSTED') {
+        try {
+          await aiMatchingService.generateAiMatchesForLoad(load.id);
+          rawBids = await db.select({
+            id: bids.id,
+            amount: bids.bidAmount,
+            currency: bids.currency,
+            status: bids.status,
+            createdAt: bids.createdAt,
+            transporterId: users.id,
+            transporterName: users.fullName,
+            transporterCompany: users.companyName,
+            notes: bids.notes,
+          })
+          .from(bids)
+          .leftJoin(users, eq(bids.transporterId, users.id))
+          .where(eq(bids.loadId, load.id));
+        } catch (aiErr: any) {
+          console.warn(`[Shipper Routes] AI Auto-matching notice for load ${load.id}:`, aiErr.message);
+        }
+      }
+
+      const formattedBids = rawBids.map(b => {
+        let aiMatchScore: number | undefined;
+        if (b.notes && b.notes.includes('AI Match:')) {
+          const match = b.notes.match(/AI Match:\s*([\d.]+)%/);
+          if (match && match[1]) {
+            aiMatchScore = parseFloat(match[1]);
+          }
+        }
+        return {
+          ...b,
+          transporterRating: '4.8',
+          proximity: '< 15 km',
+          aiMatchScore,
+        };
+      });
 
       return { ...load, bids: formattedBids };
     }));
@@ -78,6 +114,17 @@ router.get('/loads', async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     console.error('Error fetching shipper loads:', error);
     res.status(500).json({ error: 'Failed to fetch loads' });
+  }
+});
+
+router.post('/loads/:loadId/match', auditMiddleware('SHIPPER_TRIGGER_AI_MATCH'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { loadId } = req.params;
+    const matches = await aiMatchingService.generateAiMatchesForLoad(loadId, true);
+    res.status(200).json({ success: true, count: matches.length, matches });
+  } catch (error: any) {
+    console.error('Error triggering AI matches:', error);
+    res.status(503).json({ error: error.message || 'AI Matching Engine offline' });
   }
 });
 

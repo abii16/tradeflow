@@ -282,6 +282,10 @@ export async function acceptBidEscrow(bidId: string) {
   return apiClient(`/shipper/bids/${bidId}/accept-escrow`, { method: 'POST' });
 }
 
+export async function triggerAiMatching(loadId: string) {
+  return apiClient(`/shipper/loads/${loadId}/match`, { method: 'POST' });
+}
+
 export async function getContractRates() {
   return apiClient('/shipper/contract-rates', { method: 'GET' });
 }
@@ -418,6 +422,10 @@ export async function submitHaulCheckin(haulId: string, data: { lat: number; lng
 
 export async function submitProofOfDelivery(haulId: string, data: { podPhotoUrl?: string; podSignatureUrl?: string; notes?: string }) {
   return apiClient(`/carrier/hauls/${haulId}/pod`, { method: 'POST', data });
+}
+
+export async function getHaulEta(haulId: string) {
+  return apiClient(`/carrier/hauls/${haulId}/eta`, { method: 'GET' });
 }
 
 export async function getCarrierVehicles() {

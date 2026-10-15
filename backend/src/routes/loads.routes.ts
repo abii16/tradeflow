@@ -7,6 +7,7 @@ import { eq, and, gte, lte, desc } from 'drizzle-orm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateLoadSchema, QueryLoadSchema, UpdateLoadStatusSchema } from '../dto/loads.dto';
+import { aiMatchingService } from '../services/ai-matching.service';
 
 const router = Router();
 
@@ -53,7 +54,12 @@ router.post('/', JwtAuthGuard, RolesGuard(['SHIPPER', 'SYSTEM_ADMIN']), async (r
       status: 'POSTED',
     }).returning();
 
-
+    // SRS FR-02.3: Automatically evaluate & generate ranked AI match shortlist within 5s
+    try {
+      await aiMatchingService.generateAiMatchesForLoad(newLoad.id);
+    } catch (aiErr: any) {
+      console.warn(`[Loads Route] AI matching warning for load ${newLoad.id}:`, aiErr.message);
+    }
 
     res.status(201).json({ message: 'Load created successfully', load: newLoad });
   } catch (error) {
