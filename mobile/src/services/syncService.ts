@@ -81,6 +81,15 @@ export async function processQueue(): Promise<SyncResult> {
         } catch {
           // skip
         }
+      } else if (action.actionType === 'PROOF_OF_DELIVERY') {
+        try {
+          const parsed = JSON.parse(action.payload);
+          if (parsed.tripId) {
+            await updateLocalCargoStatus(parsed.tripId, 'delivered');
+          }
+        } catch {
+          // skip
+        }
       }
     } else {
       await markActionFailed(action.id);
