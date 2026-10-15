@@ -164,27 +164,74 @@ router.get('/available-loads', async (req: Request, res: Response): Promise<void
       bidMap.set(b.loadId, b);
     }
 
-    // Enhance loads with user bid status and AI Match Score
-    const enhanced = postedLoads.map((l, index) => {
+    // Transporter fleet capacity for AI matching
+    const userFleet = await db
+      .select()
+      .from(vehicles)
+      .where(eq(vehicles.ownerId, userId));
+    const transporterCapacityTons = userFleet.length > 0 ? Number(userFleet[0].capacityTons) : 35.0;
+
+    // Enhance loads with user bid status and REAL AI Freight Match Score (FR-02)
+    const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
+    const enhancedPromises = postedLoads.map(async (l) => {
       const existingBid = bidMap.get(l.id);
-      // AI match score algorithm (FR-02): weighted score between 88% and 99%
-      const baseMatch = 94.5 - (index * 2.1) + ((Number(l.weightKg) % 5) * 0.8);
-      const matchScore = Math.min(99.2, Math.max(85.0, Number(baseMatch.toFixed(1))));
+      const reqWeightTons = Math.max(1, Number(l.weightKg || 25000) / 1000);
+      const proposedCost = Number(l.budgetAmount || 85000);
+
+      // Call Python AI Microservice /predict-match
+      let matchScore = 85.0;
+      let matchAccepted = true;
+      try {
+        const aiResponse = await axios.post(
+          `${aiEngineUrl}/predict-match`,
+          {
+            required_weight_tons: reqWeightTons,
+            transporter_capacity_tons: transporterCapacityTons,
+            trip_distance_km: 810,
+            proximity_distance_km: 15,
+            proposed_cost_etb: proposedCost,
+            historical_reliability_score: 95,
+            fuel_efficiency_score: 88,
+          },
+          {
+            headers: {
+              'X-API-Key': process.env.AI_API_KEY || 'tradeflow-default-key',
+              'Content-Type': 'application/json',
+            },
+            timeout: 3000,
+          }
+        );
+
+        if (aiResponse.status === 200 && aiResponse.data) {
+          const confidence = Number(aiResponse.data.confidence_score) || 0.85;
+          matchScore = Number((confidence * 100).toFixed(1));
+          matchAccepted = !!aiResponse.data.match_accepted;
+        } else {
+          throw new Error(`AI Engine returned status ${aiResponse.status}`);
+        }
+      } catch (aiErr: any) {
+        console.error('[Carrier Route] AI Engine Freight Matching error:', aiErr.message);
+        throw new Error(`AI Freight Matching Engine is offline or unreachable: ${aiErr.message}. Real ML matching is required.`);
+      }
 
       return {
         ...l,
         hasBid: !!existingBid,
         myBid: existingBid || null,
         aiMatchScore: matchScore,
-        corridorLeg: `${(l.origin as any)?.city || 'Djibouti'} → ${(l.destination as any)?.city || 'Modjo'}`,
+        aiMatchAccepted: matchAccepted,
+        corridorLeg: `${(l.origin as any)?.city || (l.origin as any)?.address || 'Djibouti Port'} → ${(l.destination as any)?.city || (l.destination as any)?.address || 'Modjo Dry Port'}`,
         distanceKm: 810,
       };
     });
 
+    const enhanced = await Promise.all(enhancedPromises);
+
     res.status(200).json({ loads: enhanced });
   } catch (error: any) {
     console.error('[Carrier Route] Error getting available loads:', error);
-    res.status(500).json({ error: error.message || 'Failed to fetch available loads' });
+    const status = error.message && error.message.includes('AI Freight Matching') ? 503 : 500;
+    res.status(status).json({ error: error.message || 'Failed to fetch available loads' });
   }
 });
 
@@ -234,6 +281,17 @@ router.post('/bids', auditMiddleware('TRANSPORTER_CREATE_BID'), async (req: Requ
   try {
     const userId = req.user!.id;
     const { loadId, bidAmount, deliveryEta, notes } = req.body;
+
+    // SRS FR-01: An unverified transporter cannot accept bookings / submit bids
+    const isVerified = req.user!.isVerified && req.user!.verificationStatus === 'VERIFIED';
+    if (!isVerified && req.user!.role !== 'ADMIN' && req.user!.role !== 'SYSTEM_ADMIN') {
+      res.status(403).json({
+        error: 'Forbidden: Transporter verification required',
+        message: `Your transporter account is currently in ${req.user!.verificationStatus || 'PENDING'} status. Per SRS Section 3.1 (FR-01), submitting bids and accepting loads is blocked until your Trade License and Fleet Roadworthiness credentials are verified by Platform Administration.`,
+        verificationStatus: req.user!.verificationStatus || 'PENDING'
+      });
+      return;
+    }
 
     if (!loadId || !bidAmount) {
       res.status(400).json({ error: 'loadId and bidAmount are required' });
@@ -787,6 +845,45 @@ router.post('/incidents', auditMiddleware('CARRIER_REPORT_INCIDENT'), async (req
   } catch (error: any) {
     console.error('[Carrier Route] Error reporting incident:', error);
     res.status(500).json({ error: error.message || 'Failed to report incident' });
+  }
+});
+
+/**
+ * POST /api/v1/carrier/optimize-route
+ * Real-time AI Route Optimization (SRS FR-05) via AI Engine
+ */
+router.post('/optimize-route', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { currentLat, currentLng, destinationLat, destinationLng, vehicleWeight, fuelLevel } = req.body;
+    const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
+
+    const aiRes = await axios.post(
+      `${aiEngineUrl}/api/v1/route/optimize`,
+      {
+        current_lat: Number(currentLat) || 11.58,
+        current_lng: Number(currentLng) || 43.14,
+        destination_lat: Number(destinationLat) || 8.59,
+        destination_lng: Number(destinationLng) || 39.12,
+        vehicle_weight: Number(vehicleWeight) || 30.0,
+        fuel_level: Number(fuelLevel) || 75.0,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.AI_API_KEY || 'tradeflow-default-key',
+        },
+        timeout: 4000,
+      }
+    );
+
+    if (aiRes.status === 200 && aiRes.data) {
+      res.status(200).json(aiRes.data);
+    } else {
+      res.status(503).json({ error: `AI Route Optimizer returned status ${aiRes.status}` });
+    }
+  } catch (error: any) {
+    console.error('[Carrier Route] Error in route optimization:', error.message);
+    res.status(503).json({ error: `AI Route Optimization Engine is offline: ${error.message}. Real ML route planning is required.` });
   }
 });
 
