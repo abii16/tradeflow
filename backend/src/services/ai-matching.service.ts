@@ -47,9 +47,18 @@ export class AiMatchingService {
       return [];
     }
 
-    // 2. Check existing bids
-    const existingBids = await db.select().from(bids).where(eq(bids.loadId, loadId));
-    if (existingBids.length >= 3 && !forceRefresh) {
+    // 2. Check existing bids (or clear pending on forceRefresh to re-evaluate the full carrier pool)
+    if (forceRefresh) {
+      await db.delete(bids).where(
+        and(
+          eq(bids.loadId, loadId),
+          eq(bids.status, 'PENDING')
+        )
+      );
+    }
+
+    const existingBids = forceRefresh ? [] : await db.select().from(bids).where(eq(bids.loadId, loadId));
+    if (existingBids.length >= 50 && !forceRefresh) {
       return existingBids;
     }
 
@@ -84,21 +93,22 @@ export class AiMatchingService {
       }
     }
 
-    // 5. Construct candidate inputs for AI microservice
+    // 5. Construct candidate inputs for AI microservice (up to 50 candidates)
     const baseBudget = Number(load.budgetAmount) > 0 ? Number(load.budgetAmount) : 85000;
     const reqWeightTons = Math.max(1, Number(load.weightKg || 25000) / 1000);
     const corridorDistance = 810.0; // Standard Djibouti-Modjo corridor (FR-02)
 
     const candidates: TransporterCandidateInput[] = verifiedTransporters
       .filter(t => !existingTransporterIds.has(t.id))
+      .slice(0, 50)
       .map((t, idx) => {
         const capacity = vehicleMap.get(t.id) || 35.0 + (idx % 3) * 5.0;
-        // Competitive quotes around the shipper's budget (-5% to +2%)
-        const quoteFactor = 0.95 + (idx % 4) * 0.025;
+        // Competitive quotes around the shipper's budget (-8% to +8%)
+        const quoteFactor = 0.92 + (idx % 8) * 0.022;
         const proposedCost = Math.round(baseBudget * quoteFactor);
-        const proximity = 8.0 + idx * 4.5;
-        const reliability = 92.0 + (idx % 5) * 1.5;
-        const fuel = 86.0 + (idx % 4) * 2.0;
+        const proximity = Math.round((8.0 + (idx % 12) * 2.8) * 10) / 10;
+        const reliability = 88.0 + (idx % 11) * 1.1;
+        const fuel = 84.0 + (idx % 9) * 1.4;
 
         return {
           transporter_id: t.id,
@@ -130,7 +140,7 @@ export class AiMatchingService {
             'X-API-Key': this.apiKey,
             'Content-Type': 'application/json',
           },
-          timeout: 4000,
+          timeout: 8000,
         }
       );
       ranked = response.data?.ranked_candidates || [];
@@ -141,9 +151,8 @@ export class AiMatchingService {
       );
     }
 
-    // 7. Insert ranked candidates into bids table
-    // Limit to top 3-4 matches for the shortlist (FR-02.3)
-    const topShortlist = ranked.slice(0, 3);
+    // 7. Insert ranked candidates into bids table (up to 50 carriers)
+    const topShortlist = ranked.slice(0, 50);
     const newBids = [];
 
     for (const r of topShortlist) {

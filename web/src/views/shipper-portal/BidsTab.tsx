@@ -307,7 +307,16 @@ export default function BidsTab() {
                               </TableCell>
                             </TableRow>
                           ) : (
-                            [...(load.bids)].sort((a: any, b: any) => Number(a.amount) - Number(b.amount)).map((bid: any, i: number) => (
+                            [...(load.bids)]
+                              .sort((a: any, b: any) => {
+                                const scoreA = typeof a.aiMatchScore === 'number' ? a.aiMatchScore : 0;
+                                const scoreB = typeof b.aiMatchScore === 'number' ? b.aiMatchScore : 0;
+                                if (scoreB !== scoreA) {
+                                  return scoreB - scoreA; // Highest percentage first!
+                                }
+                                return Number(a.amount || a.bidAmount) - Number(b.amount || b.bidAmount);
+                              })
+                              .map((bid: any, i: number, sortedArr: any[]) => (
                               <TableRow key={bid.id || i} className={`border-[#2E2E2E] transition-colors ${i === 0 ? 'bg-[#3ECF8E]/10/30 hover:bg-[#3ECF8E]/10/50' : 'bg-[#232323] hover:bg-[#1C1C1C]'}`}>
                                 <TableCell className="font-medium">
                                   <div className="flex items-center gap-3">
@@ -349,9 +358,10 @@ export default function BidsTab() {
                                     <span className={`text-sm font-black font-mono tracking-tight ${i === 0 ? 'text-green-600' : 'text-[#EDEDED]'}`}>
                                       {Number(bid.amount || bid.bidAmount).toLocaleString()} <span className="text-[10px] font-bold text-[#8F8F8F]">{bid.currency || 'ETB'}</span>
                                     </span>
-                                    {i > 0 && load.bids[0] && (
-                                      <span className="text-[10px] text-red-500 font-medium">
-                                        +{(Number(bid.amount) - Number(load.bids[0].amount)).toLocaleString()} diff
+                                    {i > 0 && sortedArr[0] && (
+                                      <span className="text-[10px] text-zinc-400 font-mono">
+                                        {Number(bid.amount) >= Number(sortedArr[0].amount) ? '+' : ''}
+                                        {(Number(bid.amount) - Number(sortedArr[0].amount)).toLocaleString()} diff
                                       </span>
                                     )}
                                   </div>
