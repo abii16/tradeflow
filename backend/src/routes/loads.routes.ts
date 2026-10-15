@@ -53,27 +53,7 @@ router.post('/', JwtAuthGuard, RolesGuard(['SHIPPER', 'SYSTEM_ADMIN']), async (r
       status: 'POSTED',
     }).returning();
 
-    // --- MOCK BIDS GENERATION FOR DEMO PURPOSES ---
-    const transporters = await db.select().from(users).where(eq(users.role, 'TRANSPORTER')).limit(3);
-    
-    if (transporters.length > 0) {
-       const mockBids = transporters.map((t, index) => {
-         // Vary the bid amount around the budget
-         const variance = 1 - (index * 0.05); // e.g. 1.0, 0.95, 0.90 of budget
-         const bidAmount = (Number(data.budgetAmount) * variance).toString();
-         
-         return {
-           loadId: newLoad.id,
-           transporterId: t.id,
-           bidAmount,
-           currency: data.currency,
-           status: 'PENDING' as const,
-         };
-       });
-       
-       await db.insert(bids).values(mockBids);
-    }
-    // ----------------------------------------------
+
 
     res.status(201).json({ message: 'Load created successfully', load: newLoad });
   } catch (error) {
