@@ -420,6 +420,10 @@ export async function submitProofOfDelivery(haulId: string, data: { podPhotoUrl?
   return apiClient(`/carrier/hauls/${haulId}/pod`, { method: 'POST', data });
 }
 
+export async function getHaulEta(haulId: string) {
+  return apiClient(`/carrier/hauls/${haulId}/eta`, { method: 'GET' });
+}
+
 export async function getCarrierVehicles() {
   return apiClient('/carrier/vehicles', { method: 'GET' });
 }

@@ -430,6 +430,113 @@ router.get('/hauls', async (req: Request, res: Response): Promise<void> => {
 });
 
 /**
+ * GET /api/v1/carrier/hauls/:id/eta
+ * (SRS FR-03.2 Shipment Tracking & ETA Prediction)
+ * Invokes PyTorch ETADeepModel on AI Engine.
+ * If AI Engine is offline, responds with 503 error - ZERO mock data per SRS.
+ */
+router.get('/hauls/:id/eta', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const [haul] = await db
+      .select({
+        id: shipments.id,
+        currentLat: shipments.currentLat,
+        currentLng: shipments.currentLng,
+        status: shipments.status,
+        weightKg: loads.weightKg,
+        origin: loads.origin,
+        destination: loads.destination,
+      })
+      .from(shipments)
+      .leftJoin(loads, eq(shipments.loadId, loads.id))
+      .where(eq(shipments.id, id))
+      .limit(1);
+
+    if (!haul) {
+      res.status(404).json({ error: 'Haul shipment not found' });
+      return;
+    }
+
+    const originData = typeof haul.origin === 'object' && haul.origin !== null ? (haul.origin as any) : {};
+    const destData = typeof haul.destination === 'object' && haul.destination !== null ? (haul.destination as any) : {};
+
+    const curLat = Number(haul.currentLat) || Number(originData.lat) || 11.588;
+    const curLng = Number(haul.currentLng) || Number(originData.lng) || 43.145;
+    const destLat = Number(destData.lat) || 8.591;
+    const destLng = Number(destData.lng) || 39.124;
+
+    // Calculate Haversine distance
+    const R = 6371;
+    const dLat = (destLat - curLat) * (Math.PI / 180);
+    const dLon = (destLng - curLng) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(curLat * (Math.PI / 180)) * Math.cos(destLat * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const remainingDistanceKm = Math.max(5, Math.round(R * c));
+
+    const cargoWeightTons = Math.max(5, Math.min(50, Number(haul.weightKg || 30000) / 1000));
+    const now = new Date();
+    const departureHour = (now.getUTCHours() + 3) % 24;
+    const dayOfWeek = (now.getUTCDay() + 6) % 7;
+
+    const AI_ENGINE_URL = process.env.AI_ENGINE_URL || 'http://localhost:8000';
+
+    try {
+      const aiResponse = await axios.post(
+        `${AI_ENGINE_URL}/api/v1/predict-eta/`,
+        {
+          origin_latitude: curLat,
+          origin_longitude: curLng,
+          destination_latitude: destLat,
+          destination_longitude: destLng,
+          distance_km: remainingDistanceKm,
+          corridor_leg: 0,
+          cargo_weight_tons: cargoWeightTons,
+          departure_hour: departureHour,
+          day_of_week: dayOfWeek,
+          weather_condition: 0,
+          has_security_flag: 0,
+        },
+        { timeout: 3500 }
+      );
+
+      const data = aiResponse.data;
+      const predictedHours = Number(data.predicted_travel_hours) || 0;
+      const arrivalDate = new Date(now.getTime() + predictedHours * 3600 * 1000);
+      const eatArrival = arrivalDate.toLocaleTimeString('en-GB', {
+        timeZone: 'Africa/Addis_Ababa',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }) + ' EAT';
+
+      res.status(200).json({
+        success: true,
+        predictedHours: Number(predictedHours.toFixed(1)),
+        predictedEtaMinutes: Number(data.predicted_eta_minutes || predictedHours * 60),
+        estimatedArrival: eatArrival,
+        remainingDistanceKm,
+        model: 'PyTorch ETADeepModel (11f)',
+        aiOffline: false,
+      });
+    } catch (aiErr: any) {
+      console.warn(`[Carrier ETA] AI Engine at ${AI_ENGINE_URL} unreachable:`, aiErr.message);
+      res.status(503).json({
+        error: `AI Prediction Engine unreachable at ${AI_ENGINE_URL}. Live ETA computation failed.`,
+        aiOffline: true,
+        details: aiErr.message,
+      });
+    }
+  } catch (error: any) {
+    console.error('[Carrier Route] Error computing haul ETA:', error);
+    res.status(500).json({ error: error.message || 'Failed to compute ETA' });
+  }
+});
+
+/**
  * PATCH /api/v1/carrier/hauls/:id/status
  * Update shipment status (e.g., PICKED_UP, IN_TRANSIT, DELIVERED)
  */
