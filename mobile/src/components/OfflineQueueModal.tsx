@@ -62,7 +62,7 @@ export default function OfflineQueueModal({
           <Text style={styles.queueAction}>
             {ACTION_LABELS[item.actionType] ?? item.actionType}
           </Text>
-          {payload.cargoId && (
+          {Boolean(payload.cargoId) && (
             <Text style={styles.queueDetail}>{String(payload.cargoId)}</Text>
           )}
           <Text style={styles.queueTime}>{formatTime(item.createdAt)}</Text>
