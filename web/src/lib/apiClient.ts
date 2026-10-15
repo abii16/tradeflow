@@ -282,6 +282,10 @@ export async function acceptBidEscrow(bidId: string) {
   return apiClient(`/shipper/bids/${bidId}/accept-escrow`, { method: 'POST' });
 }
 
+export async function triggerAiMatching(loadId: string) {
+  return apiClient(`/shipper/loads/${loadId}/match`, { method: 'POST' });
+}
+
 export async function getContractRates() {
   return apiClient('/shipper/contract-rates', { method: 'GET' });
 }
