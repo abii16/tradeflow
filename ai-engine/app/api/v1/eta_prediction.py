@@ -76,7 +76,7 @@ async def predict_eta(request: ETARequest):
         )
 
         print(
-            f"🧠 [PyTorch ETADeepModel] Inferred ETA: Dist={request.distance_km}km, Weight={request.cargo_weight_tons}t -> Predicted={predicted_hours:.2f} hrs"
+            f"[PyTorch ETADeepModel] Inferred ETA: Dist={request.distance_km}km, Weight={request.cargo_weight_tons}t -> Predicted={predicted_hours:.2f} hrs"
         )
 
         return ETAResponse(

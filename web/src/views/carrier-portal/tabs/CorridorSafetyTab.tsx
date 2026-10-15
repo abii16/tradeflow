@@ -15,7 +15,7 @@ import {
   RefreshCw,
   ExternalLink
 } from 'lucide-react';
-import { getRiskZones, reportCarrierIncident } from '@/lib/apiClient';
+import { getRiskZones, reportCarrierIncident, optimizeCarrierRoute } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
 interface RiskZoneItem {
@@ -54,6 +54,12 @@ export default function CorridorSafetyTab() {
   // Reroute Proposal Confirmation State (SRS FR-05.3)
   const [showReroutePrompt, setShowReroutePrompt] = useState<boolean>(true);
   const [rerouteAccepted, setRerouteAccepted] = useState<boolean>(false);
+  const [optimizingRoute, setOptimizingRoute] = useState<boolean>(false);
+  const [aiRouteResult, setAiRouteResult] = useState<{
+    better_route_found: boolean;
+    cost_savings_percentage: number;
+    recommended_path: string[];
+  } | null>(null);
 
   const fetchZones = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -73,6 +79,35 @@ export default function CorridorSafetyTab() {
   useEffect(() => {
     fetchZones();
   }, []);
+
+  const handleRunAiOptimizer = async () => {
+    setOptimizingRoute(true);
+    toast.loading('Querying TradeFlow AI Route Optimization Engine (FR-05)...', { id: 'route-opt' });
+    try {
+      const res = await optimizeCarrierRoute({
+        currentLat: 11.58,
+        currentLng: 43.14,
+        destinationLat: 8.59,
+        destinationLng: 39.12,
+        vehicleWeight: 30.0,
+        fuelLevel: 75.0,
+      });
+
+      if (res?.better_route_found) {
+        setAiRouteResult(res);
+        setShowReroutePrompt(true);
+        setRerouteAccepted(false);
+        toast.success(`Optimal route identified! ${res.cost_savings_percentage}% cost & fuel savings.`, { id: 'route-opt' });
+      } else {
+        toast.success('Current corridor trajectory is already cost and security optimal.', { id: 'route-opt' });
+      }
+    } catch (err: any) {
+      console.error('Route optimization failed:', err);
+      toast.error(err.response?.data?.error || 'AI Route Optimization Engine is offline: Real ML route planning is required.', { id: 'route-opt' });
+    } finally {
+      setOptimizingRoute(false);
+    }
+  };
 
   const handleReportIncident = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +135,7 @@ export default function CorridorSafetyTab() {
   const handleAcceptReroute = () => {
     setRerouteAccepted(true);
     setShowReroutePrompt(false);
-    toast.success('Detour accepted! Active navigation synced to bypass Mille delay (saves 42 mins).');
+    toast.success('Detour accepted! Active navigation synced to bypass corridor delay.');
   };
 
   if (loading) {
@@ -127,6 +162,14 @@ export default function CorridorSafetyTab() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleRunAiOptimizer}
+            disabled={optimizingRoute}
+            className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5 disabled:opacity-50"
+          >
+            {optimizingRoute ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
+            Run AI Route Optimizer
+          </button>
           <button
             onClick={() => setShowIncidentModal(true)}
             className="bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5"
@@ -156,12 +199,20 @@ export default function CorridorSafetyTab() {
                   SRS FR-05.3 AI Mid-Trip Rerouting Recommendation
                 </span>
                 <span className="text-[9px] font-mono bg-amber-500/20 text-amber-400 px-1.5 py-0.2 rounded font-bold">
-                  SAVES 42 MINS
+                  SAVES {aiRouteResult?.cost_savings_percentage ? `${aiRouteResult.cost_savings_percentage}% COST` : '42 MINS'}
                 </span>
               </div>
               <p className="text-xs text-[#EDEDED] mt-0.5">
-                Heavy customs backlog detected at <strong>Mille Checkpoint (A1)</strong>. 
-                Neural routing proposes detour via <strong>B51 Arterial Bypass</strong>: +14 km distance, but saves 42 minutes dwell and 11 liters diesel.
+                {aiRouteResult ? (
+                  <>
+                    AI Engine Metaheuristic optimizer recommends detour via <strong>{aiRouteResult.recommended_path.join(' → ')}</strong> to circumvent checkpoint congestion with <strong>{aiRouteResult.cost_savings_percentage}% fuel and operational savings</strong>.
+                  </>
+                ) : (
+                  <>
+                    Heavy customs backlog detected at <strong>Mille Checkpoint (A1)</strong>. 
+                    Neural routing proposes detour via <strong>B51 Arterial Bypass</strong>: +14 km distance, but saves 42 minutes dwell and 11 liters diesel.
+                  </>
+                )}
               </p>
             </div>
           </div>

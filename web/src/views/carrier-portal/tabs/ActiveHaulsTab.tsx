@@ -418,11 +418,11 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                 <p className="text-[10px] text-emerald-400 font-mono">31.6 L/100km (High Efficiency)</p>
               </div>
 
-              {/* Waypoint Simulator Action */}
+              {/* Manual Check-in Action */}
               <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between">
                 <div>
                   <span className="text-[10px] font-mono uppercase text-[#8F8F8F]">
-                    Simulation / Manual Check-In
+                    Corridor Waypoint Check-In (FR-03)
                   </span>
                   <div className="text-xs font-semibold text-[#EDEDED] mt-0.5">
                     Advance GPS to Next Milestone
@@ -433,7 +433,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   disabled={checkingIn || activeHaul.status === 'DELIVERED'}
                   className="mt-2 w-full py-1.5 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-xs font-mono font-bold text-[#EDEDED] rounded-lg transition"
                 >
-                  {checkingIn ? 'Recording...' : 'Simulate Waypoint Ping'}
+                  {checkingIn ? 'Recording...' : 'Record Waypoint Check-In'}
                 </button>
               </div>
             </div>

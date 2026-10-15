@@ -16,7 +16,7 @@ export default function ForwarderPortal({ onSwitchPortal }: ForwarderPortalProps
   const renderSubTab = () => {
     switch (activeSubTab) {
       case 'workspace':
-        return <MultiShipperWorkspace />;
+        return <MultiShipperWorkspace onGoToBidding={() => setActiveSubTab('bidding')} />;
       case 'manifests':
         return <ManifestsVault />;
       case 'bidding':

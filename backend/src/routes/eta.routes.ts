@@ -182,28 +182,16 @@ router.get('/projections', async (req: Request, res: Response) => {
             confidence: '98.8%',
             source: 'PyTorch ETADeepModel (11f)',
           };
+        } else {
+          const errText = await aiResponse.text();
+          throw new Error(`AI Engine ETA inference failed (${aiResponse.status}): ${errText}`);
         }
-      } catch (err) {
-        console.warn(`[ETA Route] AI Engine call failed for ${truck.truckId}:`, err);
+      } catch (err: any) {
+        console.error(`[ETA Route] AI Engine call failed for ${truck.truckId}:`, err.message);
+        throw new Error(`AI Engine unreachable for ${truck.truckId}: ${err.message}. Live PyTorch inference is required.`);
       }
 
-      // Graceful fallback based on distance
-      const fallbackHours = Number((remainingDistanceKm / 45).toFixed(1));
-      return {
-        truckId: truck.truckId,
-        driver: truck.driver,
-        cargo: truck.cargo,
-        destination: truck.destName,
-        currentLat: truck.currentLat,
-        currentLng: truck.currentLng,
-        estimatedArrival: formatEatTime(fallbackHours),
-        remainingHours: fallbackHours,
-        remainingDistanceKm,
-        totalDistanceKm,
-        progressPercent,
-        confidence: '94.5%',
-        source: 'Fallback Cache',
-      };
+      throw new Error(`AI Engine ETA prediction did not return a valid result for ${truck.truckId}.`);
     });
 
     const projections = await Promise.all(projectionPromises);
