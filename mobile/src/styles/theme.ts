@@ -1,72 +1,60 @@
-// TradeFlow Mobile — Design System Tokens (Aligned with Web UI)
+// TradeFlow Mobile — Production Theme Tokens (Clean, Professional Logistics)
 import { Platform } from 'react-native';
 
 export const THEME = {
   colors: {
-    // Backgrounds
     background: '#121212',
-    backgroundSurface: '#181818',
-    card: '#202020',
-    cardElevated: '#262626',
-    cardHighlight: '#2A2A2A',
+    surface: '#1A1A1A',
+    surfaceElevated: '#222222',
+    card: '#1C1C1C',
+    cardBorder: '#282828',
+    cardBorderHover: '#383838',
 
-    // Borders
-    border: '#2E2E2E',
-    borderMuted: '#242424',
-    borderLight: '#3A3A3A',
-    borderFocus: '#3ECF8E',
+    // Primary Brand Emerald (used purposefully, not excessively)
+    primary: '#3ECF8E',
+    primaryDark: '#2DA870',
+    primaryText: '#121212',
+    primarySubtle: 'rgba(62, 207, 142, 0.1)',
+    primaryBorder: 'rgba(62, 207, 142, 0.25)',
 
-    // Primary Emerald (TradeFlow Signature)
-    emerald: '#3ECF8E',
-    emeraldGlow: 'rgba(62, 207, 142, 0.12)',
-    emeraldGlowStrong: 'rgba(62, 207, 142, 0.25)',
-    emeraldDark: '#2DA870',
-    emeraldText: '#121212',
-
-    // Accents
-    blue: '#38BDF8',
-    blueGlow: 'rgba(56, 189, 248, 0.12)',
+    // Functional Accents
+    blue: '#3B82F6',
     amber: '#F59E0B',
-    amberGlow: 'rgba(245, 158, 11, 0.12)',
+    amberSubtle: 'rgba(245, 158, 11, 0.12)',
     red: '#EF4444',
-    redGlow: 'rgba(239, 68, 68, 0.12)',
-    purple: '#A855F7',
+    redSubtle: 'rgba(239, 68, 68, 0.12)',
 
-    // Typography
-    textPrimary: '#EDEDED',
+    // Text Hierarchy
+    textPrimary: '#FFFFFF',
     textSecondary: '#A0A0A0',
-    textMuted: '#707070',
-    textDim: '#4A4A4A',
+    textMuted: '#6B6B6B',
+    textDim: '#444444',
 
-    // Status Badges
+    // Status Colors
     status: {
       open: {
-        bg: 'rgba(62, 207, 142, 0.12)',
-        border: 'rgba(62, 207, 142, 0.35)',
+        bg: 'rgba(62, 207, 142, 0.1)',
         text: '#3ECF8E',
-        label: 'OPEN FOR BIDDING',
+        label: 'Open',
       },
       bid_placed: {
-        bg: 'rgba(245, 158, 11, 0.12)',
-        border: 'rgba(245, 158, 11, 0.35)',
+        bg: 'rgba(245, 158, 11, 0.1)',
         text: '#F59E0B',
-        label: 'BID PLACED',
+        label: 'Bid Placed',
       },
       in_transit: {
-        bg: 'rgba(56, 189, 248, 0.12)',
-        border: 'rgba(56, 189, 248, 0.35)',
-        text: '#38BDF8',
-        label: 'IN TRANSIT',
+        bg: 'rgba(59, 130, 246, 0.1)',
+        text: '#60A5FA',
+        label: 'In Transit',
       },
       delivered: {
-        bg: 'rgba(160, 160, 160, 0.12)',
-        border: 'rgba(160, 160, 160, 0.35)',
-        text: '#A0A0A0',
-        label: 'DELIVERED',
+        bg: 'rgba(150, 150, 150, 0.1)',
+        text: '#9E9E9E',
+        label: 'Delivered',
       },
     },
   },
   typography: {
-    fontMono: Platform.select({ ios: 'Menlo', android: 'monospace' }),
+    mono: Platform.select({ ios: 'Menlo', android: 'monospace' }),
   },
 };

@@ -1,7 +1,7 @@
-// TradeFlow Mobile — Cargo Card (Web LoadBoard Look)
+// TradeFlow Mobile — Freight Load Card (Real Production Logistics Design)
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { CargoLoad } from '../types/cargo';
 import { THEME } from '../styles/theme';
 
@@ -24,142 +24,101 @@ function timeAgo(isoStr: string): string {
   return `${days}d ago`;
 }
 
-// Generate realistic AI Match score like web LoadBoard
-function getAiMatchScore(id: string): number {
-  const num = parseInt(id.replace(/\D/g, ''), 10) || 88;
-  return 92 + (num % 7);
-}
-
 export default function CargoCard({ item, onBid }: Props) {
-  const statusConfig = THEME.colors.status[item.status] ?? THEME.colors.status.open;
-  const canBid = item.status === 'open';
-  const matchScore = getAiMatchScore(item.id);
+  const isBidPlaced = item.status === 'bid_placed';
+  const isUrgent = item.urgency === 'urgent';
 
   return (
     <View style={styles.card}>
-      {/* Top Row: AI Match Pill + Commodity Badge */}
-      <View style={styles.headerRow}>
-        <View style={styles.matchPill}>
-          <Ionicons name="sparkles" size={11} color={THEME.colors.emerald} />
-          <Text style={styles.matchText}>{matchScore}% AI Match</Text>
+      {/* Top header row: Commodity and Rate */}
+      <View style={styles.topRow}>
+        <View style={styles.cargoInfo}>
+          <Text style={styles.commodity}>{item.cargoType}</Text>
+          <Text style={styles.loadId}>{item.id} • {timeAgo(item.postedAt)}</Text>
         </View>
 
-        <View style={styles.commodityBadge}>
-          <Text style={styles.commodityText} numberOfLines={1}>
-            {item.cargoType.toUpperCase()}
+        <View style={styles.rateBlock}>
+          <Text style={styles.rateAmount}>{formatETB(item.rateETB)}</Text>
+          <Text style={styles.rateCurrency}>ETB</Text>
+        </View>
+      </View>
+
+      {/* Route Section */}
+      <View style={styles.routeContainer}>
+        <View style={styles.timeline}>
+          <View style={styles.timelineDotStart} />
+          <View style={styles.timelineLine} />
+          <View style={styles.timelineDotEnd} />
+        </View>
+
+        <View style={styles.routeDetails}>
+          <View style={styles.locationStop}>
+            <Text style={styles.cityText}>{item.origin}</Text>
+            <Text style={styles.windowText}>Pickup: {item.pickupWindow}</Text>
+          </View>
+
+          <View style={styles.locationStop}>
+            <Text style={styles.cityText}>{item.destination}</Text>
+            <Text style={styles.distanceText}>{item.distanceKm} km</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Load Specs strip */}
+      <View style={styles.specsRow}>
+        <View style={styles.specItem}>
+          <Text style={styles.specLabel}>Weight</Text>
+          <Text style={styles.specValue}>{item.weightTons} tons</Text>
+        </View>
+
+        <View style={styles.specDivider} />
+
+        <View style={styles.specItem}>
+          <Text style={styles.specLabel}>Corridor Leg</Text>
+          <Text style={styles.specValue}>
+            {item.distanceKm > 500 ? 'Long Haul' : 'Regional'}
+          </Text>
+        </View>
+
+        <View style={styles.specDivider} />
+
+        <View style={styles.specItem}>
+          <Text style={styles.specLabel}>Status</Text>
+          <Text
+            style={[
+              styles.specValue,
+              isBidPlaced ? styles.statusBidPlaced : styles.statusOpen,
+            ]}
+          >
+            {isBidPlaced ? 'Bid Placed' : 'Available'}
           </Text>
         </View>
       </View>
 
-      {/* Consignment Title & ID */}
-      <View style={styles.titleSection}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.cargoId}>{item.id}</Text>
-      </View>
-
-      {/* Corridor Route Visualizer (Djibouti -> Modjo) */}
-      <View style={styles.corridorContainer}>
-        <View style={styles.routePoint}>
-          <View style={styles.originDot} />
-          <View style={styles.routeTextGroup}>
-            <Text style={styles.routeCity}>{item.origin}</Text>
-            <Text style={styles.routeRole}>Origin Hub</Text>
+      {/* Footer / Action */}
+      <View style={styles.footer}>
+        {isUrgent ? (
+          <View style={styles.urgentBadge}>
+            <Text style={styles.urgentText}>Urgent Dispatch</Text>
           </View>
-        </View>
+        ) : (
+          <Text style={styles.titleText} numberOfLines={1}>
+            {item.title}
+          </Text>
+        )}
 
-        <View style={styles.corridorDivider}>
-          <View style={styles.dottedLine} />
-          <View style={styles.distanceBadge}>
-            <Feather name="navigation" size={9} color={THEME.colors.blue} />
-            <Text style={styles.distanceText}>{item.distanceKm} km</Text>
-          </View>
-          <View style={styles.dottedLine} />
-        </View>
-
-        <View style={styles.routePoint}>
-          <View style={styles.destDot} />
-          <View style={styles.routeTextGroup}>
-            <Text style={styles.routeCity}>{item.destination}</Text>
-            <Text style={styles.routeRole}>Destination Hub</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Cargo Metrics Grid (Weight, Pickup, Listed Rate) */}
-      <View style={styles.metricsGrid}>
-        <View style={styles.metricItem}>
-          <Text style={styles.metricLabel}>PAYLOAD</Text>
-          <View style={styles.metricValRow}>
-            <MaterialCommunityIcons
-              name="weight"
-              size={14}
-              color={THEME.colors.textSecondary}
-            />
-            <Text style={styles.metricValue}>{item.weightTons} T</Text>
-          </View>
-        </View>
-
-        <View style={styles.metricSeparator} />
-
-        <View style={styles.metricItem}>
-          <Text style={styles.metricLabel}>PICKUP WINDOW</Text>
-          <View style={styles.metricValRow}>
-            <Feather name="clock" size={13} color={THEME.colors.textSecondary} />
-            <Text style={styles.metricValueSmall} numberOfLines={1}>
-              {item.pickupWindow.split(' ')[0]}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.metricSeparator} />
-
-        <View style={styles.metricItem}>
-          <Text style={styles.metricLabel}>TARGET RATE</Text>
-          <Text style={styles.rateValue}>{formatETB(item.rateETB)}</Text>
-          <Text style={styles.currencyCode}>ETB</Text>
-        </View>
-      </View>
-
-      {/* Bottom Footer: Status / Urgency & Actions */}
-      <View style={styles.footerRow}>
-        <View style={styles.footerLeft}>
-          <View
-            style={[
-              styles.statusBadge,
-              {
-                backgroundColor: statusConfig.bg,
-                borderColor: statusConfig.border,
-              },
-            ]}
-          >
-            <Text style={[styles.statusText, { color: statusConfig.text }]}>
-              {statusConfig.label}
-            </Text>
-          </View>
-
-          {item.urgency === 'urgent' && (
-            <View style={styles.urgentBadge}>
-              <Ionicons name="flash" size={10} color={THEME.colors.red} />
-              <Text style={styles.urgentText}>PRIORITY</Text>
-            </View>
-          )}
-
-          <Text style={styles.timeAgoText}>{timeAgo(item.postedAt)}</Text>
-        </View>
-
-        {canBid ? (
+        {item.status === 'open' ? (
           <TouchableOpacity
             style={styles.bidButton}
             onPress={() => onBid(item)}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <Text style={styles.bidButtonText}>Place Bid</Text>
-            <Feather name="arrow-right" size={13} color={THEME.colors.emeraldText} />
           </TouchableOpacity>
         ) : (
-          <View style={styles.placedBadge}>
-            <Feather name="check-circle" size={12} color={THEME.colors.amber} />
-            <Text style={styles.placedText}>Bid Active</Text>
+          <View style={styles.bidPlacedBadge}>
+            <Feather name="check" size={13} color={THEME.colors.amber} />
+            <Text style={styles.bidPlacedText}>Bid Submitted</Text>
           </View>
         )}
       </View>
@@ -170,277 +129,188 @@ export default function CargoCard({ item, onBid }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: THEME.colors.card,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: THEME.colors.border,
+    borderColor: THEME.colors.cardBorder,
     padding: 16,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  matchPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: THEME.colors.emeraldGlow,
-    borderWidth: 1,
-    borderColor: 'rgba(62, 207, 142, 0.35)',
-    paddingHorizontal: 9,
-    paddingVertical: 3.5,
-    borderRadius: 20,
-  },
-  matchText: {
-    color: THEME.colors.emerald,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  commodityBadge: {
-    backgroundColor: '#181818',
-    borderWidth: 1,
-    borderColor: THEME.colors.borderMuted,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    maxWidth: '50%',
-  },
-  commodityText: {
-    color: THEME.colors.textMuted,
-    fontSize: 9.5,
-    fontWeight: '700',
-    fontFamily: THEME.typography.fontMono,
-    letterSpacing: 0.5,
-  },
-  titleSection: {
     marginBottom: 12,
   },
-  title: {
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  cargoInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  commodity: {
     color: THEME.colors.textPrimary,
     fontSize: 15,
     fontWeight: '700',
-    lineHeight: 20,
     marginBottom: 2,
   },
-  cargoId: {
-    color: THEME.colors.textDim,
-    fontSize: 10,
-    fontFamily: THEME.typography.fontMono,
-    letterSpacing: 0.5,
+  loadId: {
+    color: THEME.colors.textMuted,
+    fontSize: 12,
+    fontFamily: THEME.typography.mono,
   },
-  corridorContainer: {
-    backgroundColor: '#181818',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: THEME.colors.borderMuted,
+  rateBlock: {
+    alignItems: 'flex-end',
+  },
+  rateAmount: {
+    color: THEME.colors.textPrimary,
+    fontSize: 18,
+    fontWeight: '800',
+    fontFamily: THEME.typography.mono,
+    letterSpacing: -0.5,
+  },
+  rateCurrency: {
+    color: THEME.colors.textMuted,
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: -2,
+  },
+  routeContainer: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    backgroundColor: THEME.colors.surface,
+    borderRadius: 8,
     padding: 12,
     marginBottom: 12,
   },
-  routePoint: {
-    flexDirection: 'row',
+  timeline: {
+    width: 14,
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+    marginRight: 10,
   },
-  originDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
-    backgroundColor: THEME.colors.emerald,
-    borderWidth: 2,
-    borderColor: 'rgba(62, 207, 142, 0.4)',
+  timelineDotStart: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: THEME.colors.primary,
   },
-  destDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
+  timelineLine: {
+    width: 2,
+    flex: 1,
+    backgroundColor: THEME.colors.cardBorder,
+    marginVertical: 4,
+  },
+  timelineDotEnd: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: THEME.colors.blue,
-    borderWidth: 2,
-    borderColor: 'rgba(56, 189, 248, 0.4)',
   },
-  routeTextGroup: {
+  routeDetails: {
     flex: 1,
+    justifyContent: 'space-between',
+    gap: 8,
   },
-  routeCity: {
-    color: THEME.colors.textPrimary,
-    fontSize: 12.5,
-    fontWeight: '700',
-  },
-  routeRole: {
-    color: THEME.colors.textDim,
-    fontSize: 9.5,
-    fontWeight: '500',
-  },
-  corridorDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 6,
-    paddingLeft: 4,
-  },
-  dottedLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: THEME.colors.border,
-  },
-  distanceBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#222222',
-    borderWidth: 1,
-    borderColor: THEME.colors.border,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    marginHorizontal: 8,
-  },
-  distanceText: {
-    color: THEME.colors.blue,
-    fontSize: 9.5,
-    fontWeight: '700',
-    fontFamily: THEME.typography.fontMono,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#181818',
-    borderWidth: 1,
-    borderColor: THEME.colors.borderMuted,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 14,
-  },
-  metricItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  metricLabel: {
-    color: THEME.colors.textMuted,
-    fontSize: 8.5,
-    fontWeight: '700',
-    fontFamily: THEME.typography.fontMono,
-    marginBottom: 3,
-    letterSpacing: 0.5,
-  },
-  metricValRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  metricValue: {
-    color: THEME.colors.textPrimary,
-    fontSize: 12.5,
-    fontWeight: '700',
-    fontFamily: THEME.typography.fontMono,
-  },
-  metricValueSmall: {
-    color: THEME.colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '600',
-    fontFamily: THEME.typography.fontMono,
-  },
-  rateValue: {
-    color: THEME.colors.emerald,
-    fontSize: 13,
-    fontWeight: '800',
-    fontFamily: THEME.typography.fontMono,
-  },
-  currencyCode: {
-    color: THEME.colors.textMuted,
-    fontSize: 8.5,
-    fontWeight: '600',
-    fontFamily: THEME.typography.fontMono,
-  },
-  metricSeparator: {
-    width: 1,
-    height: 26,
-    backgroundColor: THEME.colors.borderMuted,
-  },
-  footerRow: {
+  locationStop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  footerLeft: {
+  cityText: {
+    color: THEME.colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  windowText: {
+    color: THEME.colors.textMuted,
+    fontSize: 11,
+  },
+  distanceText: {
+    color: THEME.colors.textMuted,
+    fontSize: 11,
+    fontFamily: THEME.typography.mono,
+  },
+  specsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: THEME.colors.cardBorder,
+    marginBottom: 12,
+  },
+  specItem: {
     flex: 1,
+    alignItems: 'center',
   },
-  statusBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
+  specLabel: {
+    color: THEME.colors.textMuted,
+    fontSize: 10,
+    fontWeight: '500',
+    marginBottom: 2,
+    textTransform: 'uppercase',
   },
-  statusText: {
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.4,
+  specValue: {
+    color: THEME.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: THEME.typography.mono,
+  },
+  statusOpen: {
+    color: THEME.colors.primary,
+  },
+  statusBidPlaced: {
+    color: THEME.colors.amber,
+  },
+  specDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: THEME.colors.cardBorder,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  titleText: {
+    color: THEME.colors.textMuted,
+    fontSize: 12,
+    flex: 1,
+    marginRight: 10,
   },
   urgentBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    backgroundColor: THEME.colors.redGlow,
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.35)',
-    paddingHorizontal: 6,
-    paddingVertical: 2.5,
-    borderRadius: 6,
+    backgroundColor: THEME.colors.redSubtle,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   urgentText: {
     color: THEME.colors.red,
-    fontSize: 8.5,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  timeAgoText: {
-    color: THEME.colors.textDim,
-    fontSize: 9.5,
+    fontSize: 11,
+    fontWeight: '600',
   },
   bidButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: THEME.colors.emerald,
-    paddingHorizontal: 14,
+    backgroundColor: THEME.colors.primary,
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 9,
-    shadowColor: THEME.colors.emerald,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 2,
+    borderRadius: 6,
   },
   bidButtonText: {
-    color: THEME.colors.emeraldText,
-    fontSize: 12,
-    fontWeight: '800',
+    color: THEME.colors.primaryText,
+    fontSize: 13,
+    fontWeight: '700',
   },
-  placedBadge: {
+  bidPlacedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: THEME.colors.amberGlow,
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    backgroundColor: THEME.colors.amberSubtle,
     paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
-  placedText: {
+  bidPlacedText: {
     color: THEME.colors.amber,
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

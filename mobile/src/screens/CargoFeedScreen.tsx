@@ -1,4 +1,4 @@
-// TradeFlow Mobile — Cargo Feed Screen (Web CarrierPortal / LoadBoard Look)
+// TradeFlow Mobile — Cargo Feed Screen (Production Logistics Design)
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -11,7 +11,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { CargoLoad, OfflineAction } from '../types/cargo';
 import {
   initDatabase,
@@ -32,13 +32,13 @@ import BidModal from '../components/BidModal';
 import OfflineQueueModal from '../components/OfflineQueueModal';
 import { THEME } from '../styles/theme';
 
-const ROUTE_FILTERS = ['All Routes', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
+const ROUTE_FILTERS = ['All', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
 
 export default function CargoFeedScreen() {
   const [cargo, setCargo] = useState<CargoLoad[]>([]);
   const [activeTab, setActiveTab] = useState<'available' | 'my_bids'>('available');
   const [search, setSearch] = useState('');
-  const [activeRoute, setActiveRoute] = useState('All Routes');
+  const [activeRoute, setActiveRoute] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(getNetworkStatus());
   const [pendingCount, setPendingCount] = useState(0);
@@ -51,7 +51,6 @@ export default function CargoFeedScreen() {
   const [queueItems, setQueueItems] = useState<OfflineAction[]>([]);
   const [syncing, setSyncing] = useState(false);
 
-  // ── Init SQLite DB ──
   useEffect(() => {
     (async () => {
       await initDatabase();
@@ -59,11 +58,10 @@ export default function CargoFeedScreen() {
     })();
   }, []);
 
-  // ── Load Cargo from Local SQLite ──
   const loadCargo = useCallback(async () => {
     if (!dbReady) return;
-    const filterArg = activeRoute === 'All Routes' ? undefined : activeRoute;
-    const items = await getCachedCargo(search, filterArg);
+    const filter = activeRoute === 'All' ? undefined : activeRoute;
+    const items = await getCachedCargo(search, filter);
     setCargo(items);
     const count = await getPendingCount();
     setPendingCount(count);
@@ -73,7 +71,6 @@ export default function CargoFeedScreen() {
     loadCargo();
   }, [loadCargo]);
 
-  // ── Pull to refresh ──
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     if (isOnline) {
@@ -83,13 +80,11 @@ export default function CargoFeedScreen() {
     setRefreshing(false);
   }, [isOnline, loadCargo]);
 
-  // ── Toggle Network Simulation ──
   const handleToggleNetwork = () => {
     const newStatus = toggleNetworkStatus();
     setIsOnline(newStatus);
   };
 
-  // ── Bid Flow ──
   const handleOpenBid = (item: CargoLoad) => {
     setSelectedCargo(item);
     setBidModalVisible(true);
@@ -103,13 +98,10 @@ export default function CargoFeedScreen() {
   ) => {
     const payload = { cargoId, amountETB, licensePlate, estimatedArrival };
 
-    // Always enqueue to SQLite first (offline-first architecture)
+    // Save to local SQLite
     await enqueueOfflineAction('SUBMIT_BID', payload);
-
-    // Optimistically update local cargo state
     await updateLocalCargoStatus(cargoId, 'bid_placed');
 
-    // If online, immediately synchronize with remote
     if (isOnline) {
       await processQueue();
     }
@@ -117,14 +109,13 @@ export default function CargoFeedScreen() {
     await loadCargo();
 
     Alert.alert(
-      isOnline ? 'Tender Transmitted' : 'Bid Saved in Offline Queue',
+      isOnline ? 'Bid Submitted' : 'Bid Saved Offline',
       isOnline
-        ? `Your carrier bid of ${amountETB.toLocaleString()} ETB for truck ${licensePlate} was transmitted to TradeFlow dispatch.`
-        : `Cellular connection is offline. Your tender has been locked in local SQLite storage and will automatically dispatch upon corridor reconnection.`
+        ? `Your bid of ${amountETB.toLocaleString()} ETB for truck ${licensePlate} has been placed.`
+        : `You are currently offline. Your bid was saved to your device and will be submitted once connected.`
     );
   };
 
-  // ── Queue Management ──
   const handleOpenQueue = async () => {
     const items = await getAllQueueItems();
     setQueueItems(items);
@@ -133,10 +124,7 @@ export default function CargoFeedScreen() {
 
   const handleSyncNow = async () => {
     if (!isOnline) {
-      Alert.alert(
-        'Corridor Disconnected',
-        'Toggle network online to dispatch buffered transmissions.'
-      );
+      Alert.alert('Offline', 'Connect to network before syncing.');
       return;
     }
     setSyncing(true);
@@ -148,12 +136,11 @@ export default function CargoFeedScreen() {
     await loadCargo();
 
     Alert.alert(
-      'Ledger Synchronization',
-      `Processed: ${result.processed} items\nConfirmed: ${result.succeeded}\nPending/Failed: ${result.failed}`
+      'Sync Complete',
+      `Synchronized: ${result.succeeded} of ${result.processed} actions.`
     );
   };
 
-  // Filter list based on Sub-Tab
   const displayedCargo = cargo.filter((item) => {
     if (activeTab === 'my_bids') {
       return item.status === 'bid_placed' || item.status === 'in_transit';
@@ -168,8 +155,7 @@ export default function CargoFeedScreen() {
   if (!dbReady) {
     return (
       <View style={styles.loadingContainer}>
-        <Feather name="loader" size={24} color={THEME.colors.emerald} />
-        <Text style={styles.loadingText}>Loading TradeFlow Corridor Ledger...</Text>
+        <Text style={styles.loadingText}>Loading loads...</Text>
       </View>
     );
   }
@@ -183,96 +169,45 @@ export default function CargoFeedScreen() {
         onOpenQueue={handleOpenQueue}
       />
 
-      {/* Corridor Quick Metrics Strip (Web style) */}
-      <View style={styles.metricsStrip}>
-        <View style={styles.metricsItem}>
-          <Text style={styles.metricsLabel}>CORRIDOR SPOT</Text>
-          <Text style={styles.metricsVal}>340K ETB</Text>
-        </View>
-        <View style={styles.metricsDivider} />
-        <View style={styles.metricsItem}>
-          <Text style={styles.metricsLabel}>ACTIVE ROUTE</Text>
-          <Text style={styles.metricsVal}>Djibouti ⇄ Modjo</Text>
-        </View>
-        <View style={styles.metricsDivider} />
-        <View style={styles.metricsItem}>
-          <Text style={styles.metricsLabel}>SECURITY RADAR</Text>
-          <View style={styles.radarStatus}>
-            <View style={styles.radarDot} />
-            <Text style={styles.radarText}>Low Risk</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Sub Tabs: Available Consignments vs My Active Bids */}
-      <View style={styles.tabsContainer}>
+      {/* Segmented Tab Bar */}
+      <View style={styles.tabBar}>
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'available' && styles.tabButtonActive]}
+          style={[styles.tabItem, activeTab === 'available' && styles.tabItemActive]}
           onPress={() => setActiveTab('available')}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
           <Text
             style={[
-              styles.tabButtonText,
-              activeTab === 'available' && styles.tabButtonTextActive,
+              styles.tabText,
+              activeTab === 'available' && styles.tabTextActive,
             ]}
           >
-            Available Loads
+            Available Loads ({cargo.length})
           </Text>
-          <View
-            style={[
-              styles.tabBadge,
-              activeTab === 'available' && styles.tabBadgeActive,
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabBadgeText,
-                activeTab === 'available' && styles.tabBadgeTextActive,
-              ]}
-            >
-              {cargo.length}
-            </Text>
-          </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'my_bids' && styles.tabButtonActive]}
+          style={[styles.tabItem, activeTab === 'my_bids' && styles.tabItemActive]}
           onPress={() => setActiveTab('my_bids')}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
           <Text
             style={[
-              styles.tabButtonText,
-              activeTab === 'my_bids' && styles.tabButtonTextActive,
+              styles.tabText,
+              activeTab === 'my_bids' && styles.tabTextActive,
             ]}
           >
-            My Bids
+            My Bids ({myBidsCount})
           </Text>
-          <View
-            style={[
-              styles.tabBadge,
-              activeTab === 'my_bids' && styles.tabBadgeActive,
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabBadgeText,
-                activeTab === 'my_bids' && styles.tabBadgeTextActive,
-              ]}
-            >
-              {myBidsCount}
-            </Text>
-          </View>
         </TouchableOpacity>
       </View>
 
-      {/* Search Bar */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchBar}>
+      {/* Search & Filter Controls */}
+      <View style={styles.filterSection}>
+        <View style={styles.searchBox}>
           <Feather
             name="search"
-            size={14}
+            size={15}
             color={THEME.colors.textMuted}
             style={styles.searchIcon}
           />
@@ -280,8 +215,8 @@ export default function CargoFeedScreen() {
             style={styles.searchInput}
             value={search}
             onChangeText={setSearch}
-            placeholder="Search commodity, city, or ID..."
-            placeholderTextColor={THEME.colors.textDim}
+            placeholder="Search commodity, route, or ID..."
+            placeholderTextColor={THEME.colors.textMuted}
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch('')} activeOpacity={0.7}>
@@ -289,28 +224,26 @@ export default function CargoFeedScreen() {
             </TouchableOpacity>
           )}
         </View>
-      </View>
 
-      {/* Corridor Filter Chips */}
-      <View style={styles.chipsWrapper}>
+        {/* Route Filter Chips */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipsScroll}
+          contentContainerStyle={styles.routeChips}
         >
           {ROUTE_FILTERS.map((route) => {
             const active = activeRoute === route;
             return (
               <TouchableOpacity
                 key={route}
-                style={[styles.filterChip, active && styles.filterChipActive]}
+                style={[styles.routeChip, active && styles.routeChipActive]}
                 onPress={() => setActiveRoute(route)}
                 activeOpacity={0.7}
               >
                 <Text
                   style={[
-                    styles.filterChipText,
-                    active && styles.filterChipTextActive,
+                    styles.routeChipText,
+                    active && styles.routeChipTextActive,
                   ]}
                 >
                   {route}
@@ -321,7 +254,7 @@ export default function CargoFeedScreen() {
         </ScrollView>
       </View>
 
-      {/* Cargo Cards Feed */}
+      {/* Main Cargo Feed */}
       <FlatList
         data={displayedCargo}
         keyExtractor={(item) => item.id}
@@ -334,37 +267,20 @@ export default function CargoFeedScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={THEME.colors.emerald}
-            colors={[THEME.colors.emerald]}
+            tintColor={THEME.colors.primary}
+            colors={[THEME.colors.primary]}
           />
         }
         ListEmptyComponent={
-          <View style={styles.emptyCard}>
-            <Ionicons
-              name="cube-outline"
-              size={36}
-              color={THEME.colors.textDim}
-              style={{ marginBottom: 10 }}
-            />
+          <View style={styles.emptyContainer}>
             <Text style={styles.emptyTitle}>
-              {activeTab === 'my_bids'
-                ? 'No Active Carrier Bids'
-                : 'No Matching Consignments'}
+              {activeTab === 'my_bids' ? 'No Active Bids' : 'No Loads Found'}
             </Text>
-            <Text style={styles.emptyDesc}>
+            <Text style={styles.emptySubtitle}>
               {activeTab === 'my_bids'
-                ? 'Select any open consignment from the Available Loads tab to submit your competitive haul tender.'
-                : 'Adjust your search query or route filters to inspect other corridor legs.'}
+                ? 'Loads you place a bid on will show up here.'
+                : 'Try adjusting your search terms or corridor filters.'}
             </Text>
-            {search.length > 0 && (
-              <TouchableOpacity
-                style={styles.clearSearchBtn}
-                onPress={() => setSearch('')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.clearSearchText}>Reset Filters</Text>
-              </TouchableOpacity>
-            )}
           </View>
         }
       />
@@ -399,120 +315,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: THEME.colors.background,
-    gap: 12,
   },
   loadingText: {
-    color: THEME.colors.textSecondary,
+    color: THEME.colors.textMuted,
     fontSize: 13,
-    fontWeight: '600',
   },
-  metricsStrip: {
+  tabBar: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#181818',
+    backgroundColor: THEME.colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.borderMuted,
-    paddingVertical: 7,
+    borderBottomColor: THEME.colors.cardBorder,
     paddingHorizontal: 16,
   },
-  metricsItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  metricsLabel: {
-    color: THEME.colors.textDim,
-    fontSize: 8,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-    fontFamily: THEME.typography.fontMono,
-    marginBottom: 2,
-  },
-  metricsVal: {
-    color: THEME.colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '700',
-    fontFamily: THEME.typography.fontMono,
-  },
-  metricsDivider: {
-    width: 1,
-    height: 20,
-    backgroundColor: THEME.colors.borderMuted,
-  },
-  radarStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  radarDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: THEME.colors.emerald,
-  },
-  radarText: {
-    color: THEME.colors.emerald,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    backgroundColor: THEME.colors.backgroundSurface,
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.border,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  tabButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    marginRight: 20,
+  tabItem: {
+    paddingVertical: 12,
+    marginRight: 24,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  tabButtonActive: {
-    borderBottomColor: THEME.colors.emerald,
+  tabItemActive: {
+    borderBottomColor: THEME.colors.primary,
   },
-  tabButtonText: {
+  tabText: {
     color: THEME.colors.textMuted,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  tabButtonTextActive: {
+  tabTextActive: {
     color: THEME.colors.textPrimary,
-    fontWeight: '800',
-  },
-  tabBadge: {
-    backgroundColor: '#262626',
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 10,
-  },
-  tabBadgeActive: {
-    backgroundColor: THEME.colors.emeraldGlow,
-  },
-  tabBadgeText: {
-    color: THEME.colors.textMuted,
-    fontSize: 10,
     fontWeight: '700',
-    fontFamily: THEME.typography.fontMono,
   },
-  tabBadgeTextActive: {
-    color: THEME.colors.emerald,
-  },
-  searchSection: {
+  filterSection: {
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 8,
+    gap: 10,
   },
-  searchBar: {
+  searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME.colors.card,
+    backgroundColor: THEME.colors.surface,
     borderWidth: 1,
-    borderColor: THEME.colors.border,
-    borderRadius: 12,
+    borderColor: THEME.colors.cardBorder,
+    borderRadius: 8,
     paddingHorizontal: 12,
   },
   searchIcon: {
@@ -524,71 +369,51 @@ const styles = StyleSheet.create({
     fontSize: 13,
     paddingVertical: 9,
   },
-  chipsWrapper: {
-    paddingBottom: 10,
-  },
-  chipsScroll: {
-    paddingHorizontal: 16,
+  routeChips: {
     gap: 8,
   },
-  filterChip: {
-    backgroundColor: '#1C1C1C',
+  routeChip: {
+    backgroundColor: THEME.colors.surface,
     borderWidth: 1,
-    borderColor: THEME.colors.border,
+    borderColor: THEME.colors.cardBorder,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 16,
   },
-  filterChipActive: {
-    backgroundColor: THEME.colors.emeraldGlow,
-    borderColor: 'rgba(62, 207, 142, 0.45)',
+  routeChipActive: {
+    backgroundColor: THEME.colors.surfaceElevated,
+    borderColor: THEME.colors.primary,
   },
-  filterChipText: {
+  routeChipText: {
     color: THEME.colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
   },
-  filterChipTextActive: {
-    color: THEME.colors.emerald,
-    fontWeight: '700',
+  routeChipTextActive: {
+    color: THEME.colors.primary,
+    fontWeight: '600',
   },
   listContainer: {
     paddingHorizontal: 16,
+    paddingTop: 6,
     paddingBottom: 24,
   },
-  emptyCard: {
-    backgroundColor: THEME.colors.card,
-    borderWidth: 1,
-    borderColor: THEME.colors.border,
-    borderRadius: 16,
-    padding: 28,
+  emptyContainer: {
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    paddingVertical: 48,
+    paddingHorizontal: 24,
   },
   emptyTitle: {
     color: THEME.colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 6,
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
   },
-  emptyDesc: {
+  emptySubtitle: {
     color: THEME.colors.textMuted,
-    fontSize: 11.5,
+    fontSize: 12,
     textAlign: 'center',
-    lineHeight: 17,
-    marginBottom: 14,
-  },
-  clearSearchBtn: {
-    backgroundColor: '#262626',
-    borderWidth: 1,
-    borderColor: THEME.colors.border,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 8,
-  },
-  clearSearchText: {
-    color: THEME.colors.emerald,
-    fontSize: 11,
-    fontWeight: '700',
+    lineHeight: 18,
   },
 });
