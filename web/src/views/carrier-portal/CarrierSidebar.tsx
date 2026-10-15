@@ -10,8 +10,10 @@ import {
   Smartphone,
   ChevronRight,
   ShieldCheck,
-  Fuel
+  Fuel,
+  LogOut
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CarrierSidebarProps {
   activeTab: string;
@@ -21,6 +23,7 @@ interface CarrierSidebarProps {
 
 export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal }: CarrierSidebarProps) {
   const { t, i18n } = useTranslation();
+  const { logout } = useAuth();
   const isAm = i18n.language === 'am';
 
   const menuItems = [
@@ -73,9 +76,9 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
 
   return (
     <aside className="w-64 bg-[#1C1C1C] border-r border-[#2E2E2E] flex flex-col justify-between shrink-0 h-screen select-none">
-      {/* Brand Header */}
-      <div>
-        <div className="h-14 border-b border-[#2E2E2E] flex items-center px-4 gap-2.5">
+      {/* Brand Header & Navigation */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="h-14 border-b border-[#2E2E2E] flex items-center px-4 gap-2.5 sticky top-0 bg-[#1C1C1C] z-10">
           <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 flex items-center justify-center text-[#3ECF8E]">
             <Truck size={18} />
           </div>
@@ -140,8 +143,8 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
         </nav>
       </div>
 
-      {/* Footer System Status & Switch */}
-      <div className="p-3 border-t border-[#2E2E2E] space-y-2 bg-[#181818]">
+      {/* Footer System Status, Switch & Logout */}
+      <div className="p-3 border-t border-[#2E2E2E] space-y-2 bg-[#181818] shrink-0">
         {/* Corridor Telematics Status */}
         <div className="p-2.5 rounded-lg bg-[#232323] border border-[#2E2E2E] space-y-1.5">
           <div className="flex items-center justify-between">
@@ -167,6 +170,19 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
             <ChevronRight size={14} />
           </button>
         )}
+
+        {/* Logout Button */}
+        <button
+          onClick={logout}
+          className="w-full py-2 px-3 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-xs font-semibold text-rose-400 hover:text-rose-300 border border-rose-500/20 flex items-center justify-between transition-all cursor-pointer group"
+          title={isAm ? 'ውጣ (Logout)' : 'Log Out'}
+        >
+          <div className="flex items-center gap-2">
+            <LogOut size={14} className="text-rose-400 group-hover:text-rose-300 transition-colors" />
+            <span>{isAm ? 'ውጣ (Logout)' : 'Log Out'}</span>
+          </div>
+          <span className="text-[10px] font-mono text-rose-400/70 group-hover:text-rose-300">Exit</span>
+        </button>
       </div>
     </aside>
   );
