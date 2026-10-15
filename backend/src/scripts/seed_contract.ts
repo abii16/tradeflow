@@ -1,6 +1,6 @@
-import { db } from './src/db';
-import { users } from './src/db/schema/users';
-import { contracts } from './src/db/schema/contracts';
+import { db } from '../db';
+import { users } from '../db/schema/users';
+import { contracts } from '../db/schema/contracts';
 import { eq } from 'drizzle-orm';
 
 async function run() {

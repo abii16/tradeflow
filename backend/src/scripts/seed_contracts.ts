@@ -1,6 +1,6 @@
-import { db } from './src/db/index.js';
-import { contracts } from './src/db/schema/contracts.js';
-import { users } from './src/db/schema/users.js';
+import { db } from '../db/index.js';
+import { contracts } from '../db/schema/contracts.js';
+import { users } from '../db/schema/users.js';
 import { eq } from 'drizzle-orm';
 
 async function seed() {

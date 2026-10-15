@@ -1,8 +1,8 @@
-import { db } from './src/db';
-import { users } from './src/db/schema/users';
-import { loads } from './src/db/schema/loads';
-import { bids } from './src/db/schema/bids';
-import { shipments } from './src/db/schema/shipments';
+import { db } from '../db';
+import { users } from '../db/schema/users';
+import { loads } from '../db/schema/loads';
+import { bids } from '../db/schema/bids';
+import { shipments } from '../db/schema/shipments';
 import { eq, desc } from 'drizzle-orm';
 
 async function run() {

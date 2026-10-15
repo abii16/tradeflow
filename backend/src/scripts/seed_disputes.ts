@@ -1,9 +1,9 @@
-import { db } from './src/db';
-import { users } from './src/db/schema/users';
-import { shipments } from './src/db/schema/shipments';
-import { loads } from './src/db/schema/loads';
-import { bids } from './src/db/schema/bids';
-import { disputes } from './src/db/schema/disputes';
+import { db } from '../db';
+import { users } from '../db/schema/users';
+import { shipments } from '../db/schema/shipments';
+import { loads } from '../db/schema/loads';
+import { bids } from '../db/schema/bids';
+import { disputes } from '../db/schema/disputes';
 import { eq } from 'drizzle-orm';
 
 async function seedDisputes() {

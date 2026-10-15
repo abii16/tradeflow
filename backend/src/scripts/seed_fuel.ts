@@ -1,8 +1,8 @@
-import { db } from './src/db/index.js';
-import { shipments } from './src/db/schema/shipments.js';
-import { users } from './src/db/schema/users.js';
-import { loads } from './src/db/schema/loads.js';
-import { bids } from './src/db/schema/bids.js';
+import { db } from '../db/index.js';
+import { shipments } from '../db/schema/shipments.js';
+import { users } from '../db/schema/users.js';
+import { loads } from '../db/schema/loads.js';
+import { bids } from '../db/schema/bids.js';
 import { eq } from 'drizzle-orm';
 
 async function seed() {

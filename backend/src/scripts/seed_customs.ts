@@ -1,7 +1,7 @@
-import { db } from './src/db';
-import { shipments } from './src/db/schema/shipments';
-import { customsDocuments } from './src/db/schema/customs';
-import { users } from './src/db/schema/users';
+import { db } from '../db';
+import { shipments } from '../db/schema/shipments';
+import { customsDocuments } from '../db/schema/customs';
+import { users } from '../db/schema/users';
 import { eq } from 'drizzle-orm';
 
 async function run() {
