@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   Check
 } from 'lucide-react';
-import { submitHaulCheckin, reportCarrierIncident } from '@/lib/apiClient';
+import { submitHaulCheckin, reportCarrierIncident, syncOfflineQueueBatch } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
 interface QueuedAction {
@@ -52,14 +52,14 @@ export default function DriverConsoleTab() {
     toast.loading('Network detected! Syncing queued driver logs to central server...', { id: 'sync-status' });
 
     try {
-      // Simulate transmitting the queued items to /sync/batch endpoint
-      await new Promise(r => setTimeout(r, 1200));
+      // Real transmission of queued records to central backend /sync/batch (NFR 5.2)
+      await syncOfflineQueueBatch(offlineQueue);
 
       toast.success(`Successfully synchronized ${offlineQueue.length} offline records! (NFR 5.2 Conflict Resolution: Authoritative Device Timestamps)`, { id: 'sync-status' });
       setOfflineQueue([]);
       localStorage.removeItem('tradeflow_driver_offline_queue');
-    } catch (err) {
-      toast.error('Sync failed. Will retry automatically.', { id: 'sync-status' });
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Sync failed. Will retry automatically.', { id: 'sync-status' });
     } finally {
       setSyncing(false);
     }
