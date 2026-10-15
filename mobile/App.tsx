@@ -1,76 +1,99 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import CargoFeedScreen from './src/screens/CargoFeedScreen';
 import DriverScreen from './src/screens/DriverScreen';
 import { THEME } from './src/styles/theme';
 
-export default function App() {
+function MainApp() {
   const [activeRole, setActiveRole] = useState<'transporter' | 'driver'>('transporter');
+  const insets = useSafeAreaInsets();
 
   return (
+    <View
+      style={[
+        styles.screen,
+        {
+          paddingTop: insets.top,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
+    >
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        {activeRole === 'transporter' ? (
+          <CargoFeedScreen />
+        ) : (
+          <DriverScreen />
+        )}
+      </View>
+
+      {/* Bottom Actor Navigation Bar (Padded above Android/iOS system navigation) */}
+      <View
+        style={[
+          styles.bottomNav,
+          {
+            paddingBottom: Math.max(insets.bottom, 14),
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={[styles.navTab, activeRole === 'transporter' && styles.navTabActive]}
+          onPress={() => setActiveRole('transporter')}
+          activeOpacity={0.7}
+        >
+          <Feather
+            name="truck"
+            size={18}
+            color={activeRole === 'transporter' ? THEME.colors.primary : THEME.colors.textMuted}
+          />
+          <Text
+            style={[
+              styles.navLabel,
+              activeRole === 'transporter' && styles.navLabelActive,
+            ]}
+          >
+            Transporter
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navTab, activeRole === 'driver' && styles.navTabActive]}
+          onPress={() => setActiveRole('driver')}
+          activeOpacity={0.7}
+        >
+          <Feather
+            name="navigation"
+            size={18}
+            color={activeRole === 'driver' ? THEME.colors.primary : THEME.colors.textMuted}
+          />
+          <Text
+            style={[
+              styles.navLabel,
+              activeRole === 'driver' && styles.navLabelActive,
+            ]}
+          >
+            Driver Console
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+export default function App() {
+  return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-        <StatusBar style="light" />
-        <View style={styles.container}>
-          {activeRole === 'transporter' ? (
-            <CargoFeedScreen />
-          ) : (
-            <DriverScreen />
-          )}
-        </View>
-
-        {/* Bottom Actor Navigation Bar (Transporter vs Driver) */}
-        <View style={styles.bottomNav}>
-          <TouchableOpacity
-            style={[styles.navTab, activeRole === 'transporter' && styles.navTabActive]}
-            onPress={() => setActiveRole('transporter')}
-            activeOpacity={0.7}
-          >
-            <Feather
-              name="truck"
-              size={18}
-              color={activeRole === 'transporter' ? THEME.colors.primary : THEME.colors.textMuted}
-            />
-            <Text
-              style={[
-                styles.navLabel,
-                activeRole === 'transporter' && styles.navLabelActive,
-              ]}
-            >
-              Transporter
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.navTab, activeRole === 'driver' && styles.navTabActive]}
-            onPress={() => setActiveRole('driver')}
-            activeOpacity={0.7}
-          >
-            <Feather
-              name="navigation"
-              size={18}
-              color={activeRole === 'driver' ? THEME.colors.primary : THEME.colors.textMuted}
-            />
-            <Text
-              style={[
-                styles.navLabel,
-                activeRole === 'driver' && styles.navLabelActive,
-              ]}
-            >
-              Driver Console
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <MainApp />
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  screen: {
     flex: 1,
     backgroundColor: THEME.colors.background,
   },
@@ -83,8 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.surface,
     borderTopWidth: 1,
     borderTopColor: THEME.colors.cardBorder,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 10,
+    paddingTop: 10,
   },
   navTab: {
     flex: 1,
