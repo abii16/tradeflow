@@ -581,6 +581,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
         isOnline={isOnline}
         syncing={syncing}
         onSyncNow={handleSyncNow}
+        onToggleNetwork={handleToggleNetwork}
         onClose={() => setQueueModalVisible(false)}
       />
     </View>

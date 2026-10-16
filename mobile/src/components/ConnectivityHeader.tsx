@@ -1,6 +1,6 @@
 // TradeFlow Mobile — Top Header (Production Logistics Look)
 import React from 'react';
-import { View, Text, Switch, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { THEME } from '../styles/theme';
 
@@ -85,22 +85,16 @@ export default function ConnectivityHeader({
           </TouchableOpacity>
         )}
 
-        <View style={styles.connectionToggle}>
-          <View
-            style={[
-              styles.statusIndicator,
-              isOnline ? styles.indicatorOnline : styles.indicatorOffline,
-            ]}
-          />
-          <Text style={styles.statusLabel}>{isOnline ? 'Online' : 'Offline'}</Text>
-          <Switch
-            value={isOnline}
-            onValueChange={onToggleNetwork}
-            trackColor={{ false: '#3A3A3A', true: '#244533' }}
-            thumbColor={isOnline ? THEME.colors.primary : '#888888'}
-            style={styles.switch}
-          />
-        </View>
+        {!isOnline && (
+          <TouchableOpacity
+            style={styles.offlineBadge}
+            onPress={onToggleNetwork}
+            activeOpacity={0.7}
+          >
+            <Feather name="cloud-off" size={12} color={THEME.colors.amber} />
+            <Text style={styles.offlineBadgeText}>Offline</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -199,35 +193,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: THEME.typography.mono,
   },
-  connectionToggle: {
+  offlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: THEME.colors.surface,
-    paddingLeft: 8,
-    paddingRight: 2,
-    paddingVertical: 2,
-    borderRadius: 20,
+    gap: 5,
+    backgroundColor: THEME.colors.amberSubtle,
     borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
-  statusIndicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  indicatorOnline: {
-    backgroundColor: THEME.colors.primary,
-  },
-  indicatorOffline: {
-    backgroundColor: THEME.colors.red,
-  },
-  statusLabel: {
-    color: THEME.colors.textSecondary,
+  offlineBadgeText: {
+    color: THEME.colors.amber,
     fontSize: 11,
-    fontWeight: '500',
-  },
-  switch: {
-    transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }],
+    fontWeight: '700',
+    fontFamily: THEME.typography.mono,
   },
 });

@@ -20,6 +20,7 @@ interface Props {
   isOnline: boolean;
   syncing: boolean;
   onSyncNow: () => void;
+  onToggleNetwork?: () => void;
   onClose: () => void;
 }
 
@@ -44,6 +45,7 @@ export default function OfflineQueueModal({
   isOnline,
   syncing,
   onSyncNow,
+  onToggleNetwork,
   onClose,
 }: Props) {
   const pendingCount = items.filter((i) => i.status === 'pending').length;
@@ -140,11 +142,14 @@ export default function OfflineQueueModal({
           </View>
 
           {/* Status banner */}
-          <View
+          <TouchableOpacity
             style={[
               styles.connectionBanner,
               isOnline ? styles.bannerOnline : styles.bannerOffline,
             ]}
+            onPress={onToggleNetwork}
+            disabled={!onToggleNetwork}
+            activeOpacity={onToggleNetwork ? 0.7 : 1}
           >
             <Feather
               name={isOnline ? 'check-circle' : 'cloud-off'}
@@ -152,9 +157,11 @@ export default function OfflineQueueModal({
               color={isOnline ? THEME.colors.primary : THEME.colors.amber}
             />
             <Text style={styles.bannerText}>
-              {isOnline ? 'Online' : 'Offline — saved locally'}
+              {isOnline
+                ? 'Online' + (onToggleNetwork ? ' (Tap to simulate offline)' : '')
+                : 'Offline — saved locally' + (onToggleNetwork ? ' (Tap to reconnect)' : '')}
             </Text>
-          </View>
+          </TouchableOpacity>
 
           {/* List */}
           {items.length === 0 ? (
