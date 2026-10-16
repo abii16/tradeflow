@@ -28,6 +28,7 @@ import {
 import ConnectivityHeader from '../components/ConnectivityHeader';
 import OfflineQueueModal from '../components/OfflineQueueModal';
 import { THEME } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 
 const INITIAL_WAYPOINTS: Waypoint[] = [
   {
@@ -92,6 +93,7 @@ interface Props {
 }
 
 export default function DriverScreen({ currentUser, onSignOut }: Props) {
+  const { theme } = useTheme();
   const [waypoints, setWaypoints] = useState<Waypoint[]>(INITIAL_WAYPOINTS);
   const [tripCompleted, setTripCompleted] = useState(false);
   const [isOnline, setIsOnline] = useState(getNetworkStatus());
@@ -253,7 +255,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
       <ConnectivityHeader
         isOnline={isOnline}
         pendingCount={pendingCount}
@@ -265,37 +267,59 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
 
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         {/* Active Trip Header */}
-        <View style={styles.tripCard}>
+        <View
+          style={[
+            styles.tripCard,
+            {
+              backgroundColor: theme.colors.card,
+              borderColor: theme.colors.cardBorder,
+            },
+          ]}
+        >
           <View style={styles.tripTopRow}>
             <View style={styles.tripTag}>
               <Text style={styles.tripTagText}>
                 {tripCompleted ? 'Completed' : 'Active Trip'}
               </Text>
             </View>
-            <Text style={styles.truckPlate}>
+            <Text style={[styles.truckPlate, { color: theme.colors.textMuted }]}>
               Truck: {currentUser?.licensePlate || '3-AA-98214'}
             </Text>
           </View>
 
-          <Text style={styles.tripTitle}>Structural Steel (40T)</Text>
-          <Text style={styles.tripSubtitle}>
+          <Text style={[styles.tripTitle, { color: theme.colors.textPrimary }]}>
+            Structural Steel (40T)
+          </Text>
+          <Text style={[styles.tripSubtitle, { color: theme.colors.textMuted }]}>
             TF-LOAD-8805
           </Text>
 
           {/* Progress Strip */}
-          <View style={styles.progressContainer}>
+          <View
+            style={[
+              styles.progressContainer,
+              { backgroundColor: theme.colors.surfaceElevated },
+            ]}
+          >
             <View style={styles.progressHeader}>
-              <Text style={styles.progressLabel}>Progress</Text>
-              <Text style={styles.progressText}>
+              <Text style={[styles.progressLabel, { color: theme.colors.textMuted }]}>Progress</Text>
+              <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
                 {completedCount} of {waypoints.length} Stops ({progressPercent}%)
               </Text>
             </View>
-            <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressBar,
+                { backgroundColor: theme.colors.cardBorder },
+              ]}
+            >
               <View
                 style={[
                   styles.progressFill,
                   { width: `${progressPercent}%` },
-                  tripCompleted && { backgroundColor: THEME.colors.primary },
+                  tripCompleted
+                    ? { backgroundColor: theme.colors.primary }
+                    : { backgroundColor: theme.colors.blue },
                 ]}
               />
             </View>
@@ -308,7 +332,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
               onPress={() => setIncidentModalVisible(true)}
               activeOpacity={0.7}
             >
-              <Feather name="alert-circle" size={14} color={THEME.colors.amber} />
+              <Feather name="alert-circle" size={14} color={theme.colors.amber} />
               <Text style={styles.incidentBtnText}>Report Delay</Text>
             </TouchableOpacity>
 
@@ -318,7 +342,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                 onPress={() => setPodModalVisible(true)}
                 activeOpacity={0.7}
               >
-                <Feather name="check-square" size={14} color={THEME.colors.primaryText} />
+                <Feather name="check-square" size={14} color={theme.colors.primaryText} />
                 <Text style={styles.podBtnText}>Proof of Delivery</Text>
               </TouchableOpacity>
             )}
@@ -327,8 +351,10 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
 
         {/* Corridor Waypoint Timeline */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Waypoints</Text>
-          <Text style={styles.sectionSub}>Djibouti – Modjo (910 km)</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Waypoints</Text>
+          <Text style={[styles.sectionSub, { color: theme.colors.textMuted }]}>
+            Djibouti – Modjo (910 km)
+          </Text>
         </View>
 
         <View style={styles.timelineList}>
@@ -343,17 +369,31 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                   <View
                     style={[
                       styles.nodeCircle,
-                      isDone && styles.nodeCircleDone,
-                      isCurrent && styles.nodeCircleCurrent,
+                      isDone
+                        ? {
+                            backgroundColor: theme.colors.primary,
+                            borderColor: theme.colors.primary,
+                          }
+                        : isCurrent
+                        ? {
+                            backgroundColor: theme.colors.surface,
+                            borderColor: theme.colors.blue,
+                          }
+                        : {
+                            backgroundColor: theme.colors.surfaceElevated,
+                            borderColor: theme.colors.cardBorder,
+                          },
                     ]}
                   >
                     {isDone ? (
-                      <Feather name="check" size={11} color={THEME.colors.primaryText} />
+                      <Feather name="check" size={11} color={theme.colors.primaryText} />
                     ) : (
                       <Text
                         style={[
                           styles.nodeIndex,
-                          isCurrent && styles.nodeIndexCurrent,
+                          isCurrent
+                            ? { color: theme.colors.blue }
+                            : { color: theme.colors.textMuted },
                         ]}
                       >
                         {index + 1}
@@ -364,7 +404,9 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                     <View
                       style={[
                         styles.connectorLine,
-                        isDone && styles.connectorLineDone,
+                        isDone
+                          ? { backgroundColor: theme.colors.primary }
+                          : { backgroundColor: theme.colors.cardBorder },
                       ]}
                     />
                   )}
@@ -373,20 +415,36 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                 <View
                   style={[
                     styles.waypointCard,
-                    isCurrent && styles.waypointCardCurrent,
+                    isCurrent
+                      ? {
+                          backgroundColor: theme.colors.surface,
+                          borderColor: theme.colors.blue,
+                        }
+                      : {
+                          backgroundColor: theme.colors.card,
+                          borderColor: theme.colors.cardBorder,
+                        },
                   ]}
                 >
                   <View style={styles.wpHeader}>
-                    <Text style={styles.wpName}>{wp.name}</Text>
-                    <Text style={styles.wpKm}>{wp.kmFromOrigin} km</Text>
+                    <Text style={[styles.wpName, { color: theme.colors.textPrimary }]}>
+                      {wp.name}
+                    </Text>
+                    <Text style={[styles.wpKm, { color: theme.colors.textMuted }]}>
+                      {wp.kmFromOrigin} km
+                    </Text>
                   </View>
 
-                  <Text style={styles.wpLeg}>{wp.corridorLeg}</Text>
+                  <Text style={[styles.wpLeg, { color: theme.colors.textMuted }]}>
+                    {wp.corridorLeg}
+                  </Text>
 
                   {isDone && (
                     <View style={styles.verifiedRow}>
-                      <Feather name="check-circle" size={12} color={THEME.colors.primary} />
-                      <Text style={styles.verifiedText}>Verified: {wp.timestamp}</Text>
+                      <Feather name="check-circle" size={12} color={theme.colors.primary} />
+                      <Text style={[styles.verifiedText, { color: theme.colors.primary }]}>
+                        Verified: {wp.timestamp}
+                      </Text>
                     </View>
                   )}
 
@@ -428,16 +486,31 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
             activeOpacity={1}
             onPress={() => setIncidentModalVisible(false)}
           />
-          <View style={styles.modalContent}>
-            <View style={styles.dragHandle} />
+          <View
+            style={[
+              styles.modalContent,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.dragHandle,
+                { backgroundColor: theme.colors.cardBorder },
+              ]}
+            />
 
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Report Delay</Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>
+                Report Delay
+              </Text>
               <TouchableOpacity
                 onPress={() => setIncidentModalVisible(false)}
                 style={styles.modalClose}
               >
-                <Feather name="x" size={18} color={THEME.colors.textMuted} />
+                <Feather name="x" size={18} color={theme.colors.textMuted} />
               </TouchableOpacity>
             </View>
 
@@ -447,19 +520,33 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                 return (
                   <TouchableOpacity
                     key={type.key}
-                    style={[styles.typeChip, active && styles.typeChipActive]}
+                    style={[
+                      styles.typeChip,
+                      {
+                        backgroundColor: active
+                          ? theme.colors.amberSubtle
+                          : theme.colors.surfaceElevated,
+                        borderColor: active
+                          ? theme.colors.amber
+                          : theme.colors.cardBorder,
+                      },
+                    ]}
                     onPress={() => setSelectedIncidentType(type.key)}
                     activeOpacity={0.7}
                   >
                     <Feather
                       name={type.icon}
                       size={12}
-                      color={active ? THEME.colors.amber : THEME.colors.textSecondary}
+                      color={active ? theme.colors.amber : theme.colors.textSecondary}
                     />
                     <Text
                       style={[
                         styles.typeChipText,
-                        active && styles.typeChipTextActive,
+                        {
+                          color: active
+                            ? theme.colors.amber
+                            : theme.colors.textSecondary,
+                        },
                       ]}
                     >
                       {type.label}
@@ -469,28 +556,46 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
               })}
             </View>
 
-            <Text style={styles.notesLabel}>Notes</Text>
+            <Text style={[styles.notesLabel, { color: theme.colors.textMuted }]}>
+              Notes
+            </Text>
             <TextInput
-              style={styles.notesInput}
+              style={[
+                styles.notesInput,
+                {
+                  backgroundColor: theme.colors.surfaceElevated,
+                  borderColor: theme.colors.cardBorder,
+                  color: theme.colors.textPrimary,
+                },
+              ]}
               value={incidentNotes}
               onChangeText={setIncidentNotes}
               placeholder="Describe delay reason..."
-              placeholderTextColor={THEME.colors.textDim}
+              placeholderTextColor={theme.colors.textDim}
               multiline
               numberOfLines={3}
             />
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={styles.cancelBtn}
+                style={[
+                  styles.cancelBtn,
+                  {
+                    backgroundColor: theme.colors.redSubtle,
+                    borderColor: theme.colors.redBorder,
+                  },
+                ]}
                 onPress={() => setIncidentModalVisible(false)}
               >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text style={[styles.cancelBtnText, { color: theme.colors.red }]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[
                   styles.submitIncidentBtn,
+                  { backgroundColor: theme.colors.amber },
                   !incidentNotes.trim() && { opacity: 0.4 },
                 ]}
                 onPress={handleSubmitIncident}
@@ -516,58 +621,107 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
             activeOpacity={1}
             onPress={() => setPodModalVisible(false)}
           />
-          <View style={styles.modalContent}>
-            <View style={styles.dragHandle} />
+          <View
+            style={[
+              styles.modalContent,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.dragHandle,
+                { backgroundColor: theme.colors.cardBorder },
+              ]}
+            />
 
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Proof of Delivery</Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>
+                Proof of Delivery
+              </Text>
               <TouchableOpacity
                 onPress={() => setPodModalVisible(false)}
                 style={styles.modalClose}
               >
-                <Feather name="x" size={18} color={THEME.colors.textMuted} />
+                <Feather name="x" size={18} color={theme.colors.textMuted} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.notesLabel}>Receiver Name</Text>
+              <Text style={[styles.notesLabel, { color: theme.colors.textMuted }]}>
+                Receiver Name
+              </Text>
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                    color: theme.colors.textPrimary,
+                  },
+                ]}
                 value={receiverName}
                 onChangeText={setReceiverName}
                 placeholder="Receiver name"
-                placeholderTextColor={THEME.colors.textDim}
+                placeholderTextColor={theme.colors.textDim}
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.notesLabel}>Waybill Reference</Text>
+              <Text style={[styles.notesLabel, { color: theme.colors.textMuted }]}>
+                Waybill Reference
+              </Text>
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                    color: theme.colors.textPrimary,
+                  },
+                ]}
                 value={waybillNumber}
                 onChangeText={setWaybillNumber}
                 placeholder="e.g. TF-WB-9102"
-                placeholderTextColor={THEME.colors.textDim}
+                placeholderTextColor={theme.colors.textDim}
               />
             </View>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={styles.cancelBtn}
+                style={[
+                  styles.cancelBtn,
+                  {
+                    backgroundColor: theme.colors.redSubtle,
+                    borderColor: theme.colors.redBorder,
+                  },
+                ]}
                 onPress={() => setPodModalVisible(false)}
               >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text style={[styles.cancelBtnText, { color: theme.colors.red }]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[
                   styles.submitPodBtn,
+                  { backgroundColor: theme.colors.primary },
                   !receiverName.trim() && { opacity: 0.4 },
                 ]}
                 onPress={handleConfirmPod}
                 disabled={!receiverName.trim()}
               >
-                <Text style={styles.submitPodBtnText}>Sign & Complete</Text>
+                <Text
+                  style={[
+                    styles.submitPodBtnText,
+                    { color: theme.colors.primaryText },
+                  ]}
+                >
+                  Sign & Complete
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

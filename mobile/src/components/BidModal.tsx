@@ -14,6 +14,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { CargoLoad } from '../types/cargo';
 import { THEME } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 
 interface Props {
   visible: boolean;
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
+  const { theme } = useTheme();
   const [amount, setAmount] = useState('');
   const [plate, setPlate] = useState('');
   const [eta, setEta] = useState('');
@@ -73,43 +75,77 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
           onPress={onClose}
         />
 
-        <View style={styles.sheet}>
-          <View style={styles.dragHandle} />
+        <View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.cardBorder,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.dragHandle,
+              { backgroundColor: theme.colors.cardBorder },
+            ]}
+          />
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Header */}
             <View style={styles.header}>
               <View>
-                <Text style={styles.modalTitle}>Place Bid</Text>
-                <Text style={styles.modalSubtitle}>
+                <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>
+                  Place Bid
+                </Text>
+                <Text style={[styles.modalSubtitle, { color: theme.colors.textMuted }]}>
                   {cargo.id} • {cargo.cargoType}
                 </Text>
               </View>
 
               <TouchableOpacity
                 onPress={onClose}
-                style={styles.closeBtn}
+                style={[
+                  styles.closeBtn,
+                  { backgroundColor: theme.colors.surfaceElevated },
+                ]}
                 activeOpacity={0.7}
               >
-                <Feather name="x" size={18} color={THEME.colors.textMuted} />
+                <Feather name="x" size={18} color={theme.colors.textMuted} />
               </TouchableOpacity>
             </View>
 
             {/* Load Snapshot */}
-            <View style={styles.summaryBox}>
+            <View
+              style={[
+                styles.summaryBox,
+                {
+                  backgroundColor: theme.colors.surfaceElevated,
+                  borderColor: theme.colors.cardBorder,
+                },
+              ]}
+            >
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Route</Text>
-                <Text style={styles.summaryValue}>
+                <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  Route
+                </Text>
+                <Text style={[styles.summaryValue, { color: theme.colors.textSecondary }]}>
                   {cargo.origin} → {cargo.destination} ({cargo.distanceKm} km)
                 </Text>
               </View>
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Payload</Text>
-                <Text style={styles.summaryValue}>{cargo.weightTons} tons</Text>
+                <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  Payload
+                </Text>
+                <Text style={[styles.summaryValue, { color: theme.colors.textSecondary }]}>
+                  {cargo.weightTons} tons
+                </Text>
               </View>
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Listed Rate</Text>
-                <Text style={styles.summaryHighlight}>
+                <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  Listed Rate
+                </Text>
+                <Text style={[styles.summaryHighlight, { color: theme.colors.primary }]}>
                   {cargo.rateETB.toLocaleString('en-US')} ETB
                 </Text>
               </View>
@@ -117,89 +153,164 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
 
             {/* Quick Adjustments */}
             <View style={styles.presetSection}>
-              <Text style={styles.inputLabel}>Adjustment</Text>
+              <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
+                Adjustment
+              </Text>
               <View style={styles.presetRow}>
                 <TouchableOpacity
-                  style={styles.presetBtn}
+                  style={[
+                    styles.presetBtn,
+                    {
+                      backgroundColor: theme.colors.surfaceElevated,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                  ]}
                   onPress={() => handlePreset(0.95)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.presetBtnText}>-5%</Text>
+                  <Text style={[styles.presetBtnText, { color: theme.colors.textSecondary }]}>
+                    -5%
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.presetBtn, styles.presetBtnActive]}
+                  style={[
+                    styles.presetBtn,
+                    {
+                      backgroundColor: theme.colors.primarySubtle,
+                      borderColor: theme.colors.primaryBorder,
+                    },
+                  ]}
                   onPress={() => handlePreset(1.0)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.presetBtnText, styles.presetBtnTextActive]}>
+                  <Text
+                    style={[
+                      styles.presetBtnText,
+                      { color: theme.colors.primary, fontWeight: '700' },
+                    ]}
+                  >
                     Listed Rate
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.presetBtn}
+                  style={[
+                    styles.presetBtn,
+                    {
+                      backgroundColor: theme.colors.surfaceElevated,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                  ]}
                   onPress={() => handlePreset(1.05)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.presetBtnText}>+5%</Text>
+                  <Text style={[styles.presetBtnText, { color: theme.colors.textSecondary }]}>
+                    +5%
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Form Inputs */}
             <View style={styles.formGroup}>
-              <Text style={styles.inputLabel}>Bid (ETB)</Text>
+              <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
+                Bid (ETB)
+              </Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                    color: theme.colors.textPrimary,
+                  },
+                ]}
                 value={amount}
                 onChangeText={setAmount}
                 placeholder="e.g. 340000"
-                placeholderTextColor={THEME.colors.textDim}
+                placeholderTextColor={theme.colors.textDim}
                 keyboardType="numeric"
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.inputLabel}>Truck Plate</Text>
+              <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
+                Truck Plate
+              </Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                    color: theme.colors.textPrimary,
+                  },
+                ]}
                 value={plate}
                 onChangeText={setPlate}
                 placeholder="e.g. 3-AA-12345"
-                placeholderTextColor={THEME.colors.textDim}
+                placeholderTextColor={theme.colors.textDim}
                 autoCapitalize="characters"
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.inputLabel}>Availability</Text>
+              <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
+                Availability
+              </Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                    color: theme.colors.textPrimary,
+                  },
+                ]}
                 value={eta}
                 onChangeText={setEta}
                 placeholder="e.g. Ready in 24 hours"
-                placeholderTextColor={THEME.colors.textDim}
+                placeholderTextColor={theme.colors.textDim}
               />
             </View>
 
             {/* Buttons */}
             <View style={styles.buttonRow}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={[
+                  styles.cancelButton,
+                  {
+                    backgroundColor: theme.colors.redSubtle,
+                    borderColor: theme.colors.redBorder,
+                  },
+                ]}
                 onPress={onClose}
                 activeOpacity={0.7}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={[styles.cancelButtonText, { color: theme.colors.red }]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.submitButton, !isValid && styles.submitButtonDisabled]}
+                style={[
+                  styles.submitButton,
+                  { backgroundColor: theme.colors.primary },
+                  !isValid && styles.submitButtonDisabled,
+                ]}
                 onPress={handleSubmit}
                 disabled={!isValid}
                 activeOpacity={0.8}
               >
-                <Text style={styles.submitButtonText}>Submit Bid</Text>
+                <Text
+                  style={[
+                    styles.submitButtonText,
+                    { color: theme.colors.primaryText },
+                  ]}
+                >
+                  Submit Bid
+                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>

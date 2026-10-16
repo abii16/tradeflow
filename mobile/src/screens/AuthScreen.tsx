@@ -15,12 +15,14 @@ import { Feather } from '@expo/vector-icons';
 import { AuthUser, UserRole } from '../types/auth';
 import { saveUserSession } from '../services/database';
 import { THEME } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 
 interface Props {
   onLoginSuccess: (user: AuthUser) => void;
 }
 
 export default function AuthScreen({ onLoginSuccess }: Props) {
+  const { theme } = useTheme();
   const [role, setRole] = useState<UserRole>('TRANSPORTER');
   const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
@@ -212,10 +214,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.keyboardView}
+      style={[styles.keyboardView, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -226,35 +228,57 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <View
               style={[
                 styles.logoBadge,
-                role === 'DRIVER' && { borderColor: THEME.colors.blueBorder },
+                {
+                  backgroundColor: theme.colors.surfaceElevated,
+                  borderColor:
+                    role === 'DRIVER'
+                      ? theme.colors.blueBorder
+                      : theme.colors.primaryBorder,
+                },
               ]}
             >
               <Feather
                 name="layers"
                 size={20}
-                color={role === 'DRIVER' ? THEME.colors.blue : THEME.colors.primary}
+                color={role === 'DRIVER' ? theme.colors.blue : theme.colors.primary}
               />
             </View>
-            <Text style={styles.brandTitle}>TradeFlow</Text>
+            <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
+              TradeFlow
+            </Text>
           </View>
         </View>
 
         {/* Role Selector Tabs */}
         <View style={styles.roleContainer}>
           <TouchableOpacity
-            style={[styles.roleCard, role === 'TRANSPORTER' && styles.roleCardActiveTransporter]}
+            style={[
+              styles.roleCard,
+              {
+                backgroundColor: theme.colors.card,
+                borderColor: theme.colors.cardBorder,
+              },
+              role === 'TRANSPORTER' && {
+                borderColor: theme.colors.primary,
+                backgroundColor: theme.colors.primarySubtle,
+              },
+            ]}
             onPress={() => handleRoleChange('TRANSPORTER')}
             activeOpacity={0.8}
           >
             <Feather
               name="truck"
               size={16}
-              color={role === 'TRANSPORTER' ? THEME.colors.primary : THEME.colors.textMuted}
+              color={role === 'TRANSPORTER' ? theme.colors.primary : theme.colors.textMuted}
             />
             <Text
               style={[
                 styles.roleTitle,
-                role === 'TRANSPORTER' && styles.roleTitleActiveTransporter,
+                { color: theme.colors.textMuted },
+                role === 'TRANSPORTER' && {
+                  color: theme.colors.primary,
+                  fontWeight: '700',
+                },
               ]}
             >
               Transporter
@@ -262,19 +286,33 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.roleCard, role === 'DRIVER' && styles.roleCardActiveDriver]}
+            style={[
+              styles.roleCard,
+              {
+                backgroundColor: theme.colors.card,
+                borderColor: theme.colors.cardBorder,
+              },
+              role === 'DRIVER' && {
+                borderColor: theme.colors.blue,
+                backgroundColor: theme.colors.blueSubtle,
+              },
+            ]}
             onPress={() => handleRoleChange('DRIVER')}
             activeOpacity={0.8}
           >
             <Feather
               name="navigation"
               size={16}
-              color={role === 'DRIVER' ? THEME.colors.blue : THEME.colors.textMuted}
+              color={role === 'DRIVER' ? theme.colors.blue : theme.colors.textMuted}
             />
             <Text
               style={[
                 styles.roleTitle,
-                role === 'DRIVER' && styles.roleTitleActiveDriver,
+                { color: theme.colors.textMuted },
+                role === 'DRIVER' && {
+                  color: theme.colors.blue,
+                  fontWeight: '700',
+                },
               ]}
             >
               Driver
@@ -283,16 +321,35 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         </View>
 
         {/* Mode Toggle (Sign In / Register) */}
-        <View style={styles.modeContainer}>
+        <View
+          style={[
+            styles.modeContainer,
+            {
+              backgroundColor: theme.colors.surfaceElevated,
+              borderColor: theme.colors.cardBorder,
+            },
+          ]}
+        >
           <TouchableOpacity
-            style={[styles.modePill, mode === 'LOGIN' && styles.modePillActive]}
+            style={[
+              styles.modePill,
+              mode === 'LOGIN' && {
+                backgroundColor: theme.colors.card,
+                borderWidth: 1,
+                borderColor: theme.colors.cardBorderHover,
+              },
+            ]}
             onPress={() => handleModeChange('LOGIN')}
             activeOpacity={0.7}
           >
             <Text
               style={[
                 styles.modePillText,
-                mode === 'LOGIN' && styles.modePillTextActive,
+                { color: theme.colors.textMuted },
+                mode === 'LOGIN' && {
+                  color: theme.colors.textPrimary,
+                  fontWeight: '700',
+                },
               ]}
             >
               Sign In
@@ -300,14 +357,25 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.modePill, mode === 'REGISTER' && styles.modePillActive]}
+            style={[
+              styles.modePill,
+              mode === 'REGISTER' && {
+                backgroundColor: theme.colors.card,
+                borderWidth: 1,
+                borderColor: theme.colors.cardBorderHover,
+              },
+            ]}
             onPress={() => handleModeChange('REGISTER')}
             activeOpacity={0.7}
           >
             <Text
               style={[
                 styles.modePillText,
-                mode === 'REGISTER' && styles.modePillTextActive,
+                { color: theme.colors.textMuted },
+                mode === 'REGISTER' && {
+                  color: theme.colors.textPrimary,
+                  fontWeight: '700',
+                },
               ]}
             >
               Register
@@ -316,31 +384,48 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         </View>
 
         {/* Form Card */}
-        <View style={styles.card}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.card,
+              borderColor: theme.colors.cardBorder,
+            },
+          ]}
+        >
           {/* Registration: Full Name */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>
-                  FULL NAME <Text style={styles.asterisk}>*</Text>
+                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  FULL NAME <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
               </View>
-              <View style={[styles.inputBox, Boolean(errors.fullName) && styles.inputBoxError]}>
+              <View
+                style={[
+                  styles.inputBox,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.cardBorder,
+                  },
+                  Boolean(errors.fullName) && styles.inputBoxError,
+                ]}
+              >
                 <Feather
                   name="user"
                   size={15}
-                  color={THEME.colors.textMuted}
+                  color={theme.colors.textMuted}
                   style={styles.inputIcon}
                 />
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={fullName}
                   onChangeText={(val) => {
                     setFullName(val);
                     clearError('fullName');
                   }}
                   placeholder="Full name"
-                  placeholderTextColor={THEME.colors.textDim}
+                  placeholderTextColor={theme.colors.textDim}
                 />
               </View>
               {Boolean(errors.fullName) && (
@@ -354,26 +439,35 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    COMPANY NAME <Text style={styles.asterisk}>*</Text>
+                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                    COMPANY NAME <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
-                <View style={[styles.inputBox, Boolean(errors.companyName) && styles.inputBoxError]}>
+                <View
+                  style={[
+                    styles.inputBox,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                    Boolean(errors.companyName) && styles.inputBoxError,
+                  ]}
+                >
                   <Feather
                     name="briefcase"
                     size={15}
-                    color={THEME.colors.textMuted}
+                    color={theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={companyName}
                     onChangeText={(val) => {
                       setCompanyName(val);
                       clearError('companyName');
                     }}
                     placeholder="Company name"
-                    placeholderTextColor={THEME.colors.textDim}
+                    placeholderTextColor={theme.colors.textDim}
                   />
                 </View>
                 {Boolean(errors.companyName) && (
@@ -383,26 +477,35 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    TIN NUMBER <Text style={styles.asterisk}>*</Text>
+                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                    TIN NUMBER <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
-                <View style={[styles.inputBox, Boolean(errors.tinNumber) && styles.inputBoxError]}>
+                <View
+                  style={[
+                    styles.inputBox,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                    Boolean(errors.tinNumber) && styles.inputBoxError,
+                  ]}
+                >
                   <Feather
                     name="hash"
                     size={15}
-                    color={THEME.colors.textMuted}
+                    color={theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={tinNumber}
                     onChangeText={(val) => {
                       setTinNumber(val);
                       clearError('tinNumber');
                     }}
                     placeholder="10-digit TIN"
-                    placeholderTextColor={THEME.colors.textDim}
+                    placeholderTextColor={theme.colors.textDim}
                     keyboardType="numeric"
                   />
                 </View>
@@ -413,26 +516,35 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    FLEET SIZE <Text style={styles.asterisk}>*</Text>
+                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                    FLEET SIZE <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
-                <View style={[styles.inputBox, Boolean(errors.fleetSize) && styles.inputBoxError]}>
+                <View
+                  style={[
+                    styles.inputBox,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                    Boolean(errors.fleetSize) && styles.inputBoxError,
+                  ]}
+                >
                   <Feather
                     name="truck"
                     size={15}
-                    color={THEME.colors.textMuted}
+                    color={theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={fleetSize}
                     onChangeText={(val) => {
                       setFleetSize(val);
                       clearError('fleetSize');
                     }}
                     placeholder="Number of trucks"
-                    placeholderTextColor={THEME.colors.textDim}
+                    placeholderTextColor={theme.colors.textDim}
                   />
                 </View>
                 {Boolean(errors.fleetSize) && (
@@ -447,26 +559,35 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    TRUCK PLATE <Text style={styles.asterisk}>*</Text>
+                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                    TRUCK PLATE <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
-                <View style={[styles.inputBox, Boolean(errors.licensePlate) && styles.inputBoxError]}>
+                <View
+                  style={[
+                    styles.inputBox,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                    Boolean(errors.licensePlate) && styles.inputBoxError,
+                  ]}
+                >
                   <Feather
                     name="truck"
                     size={15}
-                    color={THEME.colors.textMuted}
+                    color={theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={licensePlate}
                     onChangeText={(val) => {
                       setLicensePlate(val);
                       clearError('licensePlate');
                     }}
                     placeholder="e.g. 3-AA-98214"
-                    placeholderTextColor={THEME.colors.textDim}
+                    placeholderTextColor={theme.colors.textDim}
                     autoCapitalize="characters"
                   />
                 </View>
@@ -477,26 +598,35 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    DRIVER LICENSE <Text style={styles.asterisk}>*</Text>
+                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                    DRIVER LICENSE <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
-                <View style={[styles.inputBox, Boolean(errors.driverLicense) && styles.inputBoxError]}>
+                <View
+                  style={[
+                    styles.inputBox,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                    Boolean(errors.driverLicense) && styles.inputBoxError,
+                  ]}
+                >
                   <Feather
                     name="shield"
                     size={15}
-                    color={THEME.colors.textMuted}
+                    color={theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={driverLicense}
                     onChangeText={(val) => {
                       setDriverLicense(val);
                       clearError('driverLicense');
                     }}
                     placeholder="License number"
-                    placeholderTextColor={THEME.colors.textDim}
+                    placeholderTextColor={theme.colors.textDim}
                     autoCapitalize="characters"
                   />
                 </View>
@@ -510,26 +640,42 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {/* Phone / Email Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>
+              <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
                 {role === 'DRIVER' ? 'PHONE NUMBER' : 'PHONE OR EMAIL'}{' '}
-                <Text style={styles.asterisk}>*</Text>
+                <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
               </Text>
             </View>
-            <View style={[styles.inputBox, Boolean(errors.phoneOrEmail) && styles.inputBoxError]}>
+            <View
+              style={[
+                styles.inputBox,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.cardBorder,
+                },
+                Boolean(errors.phoneOrEmail) && styles.inputBoxError,
+              ]}
+            >
               <View style={styles.countryCodePill}>
                 <Text style={styles.flagEmoji}>🇪🇹</Text>
-                <Text style={styles.countryCodeText}>+251</Text>
-                <View style={styles.pillDivider} />
+                <Text style={[styles.countryCodeText, { color: theme.colors.textPrimary }]}>
+                  +251
+                </Text>
+                <View
+                  style={[
+                    styles.pillDivider,
+                    { backgroundColor: theme.colors.cardBorder },
+                  ]}
+                />
               </View>
               <TextInput
-                style={styles.textInput}
+                style={[styles.textInput, { color: theme.colors.textPrimary }]}
                 value={phoneOrEmail}
                 onChangeText={(val) => {
                   setPhoneOrEmail(val);
                   clearError('phoneOrEmail');
                 }}
                 placeholder="91 123 4567"
-                placeholderTextColor={THEME.colors.textDim}
+                placeholderTextColor={theme.colors.textDim}
                 keyboardType={phoneOrEmail.includes('@') ? 'email-address' : 'phone-pad'}
                 autoCapitalize="none"
               />
@@ -542,8 +688,8 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {/* Password Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>
-                PASSWORD <Text style={styles.asterisk}>*</Text>
+              <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                PASSWORD <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
               </Text>
               {mode === 'LOGIN' && (
                 <TouchableOpacity
@@ -557,7 +703,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   <Text
                     style={[
                       styles.forgotText,
-                      role === 'DRIVER' && { color: THEME.colors.blue },
+                      { color: role === 'DRIVER' ? theme.colors.blue : theme.colors.primary },
                     ]}
                   >
                     Forgot password?
@@ -565,22 +711,31 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 </TouchableOpacity>
               )}
             </View>
-            <View style={[styles.inputBox, Boolean(errors.password) && styles.inputBoxError]}>
+            <View
+              style={[
+                styles.inputBox,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.cardBorder,
+                },
+                Boolean(errors.password) && styles.inputBoxError,
+              ]}
+            >
               <Feather
                 name="lock"
                 size={15}
-                color={THEME.colors.textMuted}
+                color={theme.colors.textMuted}
                 style={styles.inputIcon}
               />
               <TextInput
-                style={styles.textInput}
+                style={[styles.textInput, { color: theme.colors.textPrimary }]}
                 value={password}
                 onChangeText={(val) => {
                   setPassword(val);
                   clearError('password');
                 }}
                 placeholder="••••••••"
-                placeholderTextColor={THEME.colors.textDim}
+                placeholderTextColor={theme.colors.textDim}
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity
@@ -591,7 +746,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 <Feather
                   name={showPassword ? 'eye-off' : 'eye'}
                   size={15}
-                  color={THEME.colors.textMuted}
+                  color={theme.colors.textMuted}
                 />
               </TouchableOpacity>
             </View>
@@ -604,26 +759,35 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>
-                  CONFIRM PASSWORD <Text style={styles.asterisk}>*</Text>
+                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  CONFIRM PASSWORD <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
               </View>
-              <View style={[styles.inputBox, Boolean(errors.confirmPassword) && styles.inputBoxError]}>
+              <View
+                style={[
+                  styles.inputBox,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.cardBorder,
+                  },
+                  Boolean(errors.confirmPassword) && styles.inputBoxError,
+                ]}
+              >
                 <Feather
                   name="check-circle"
                   size={15}
-                  color={THEME.colors.textMuted}
+                  color={theme.colors.textMuted}
                   style={styles.inputIcon}
                 />
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={confirmPassword}
                   onChangeText={(val) => {
                     setConfirmPassword(val);
                     clearError('confirmPassword');
                   }}
                   placeholder="••••••••"
-                  placeholderTextColor={THEME.colors.textDim}
+                  placeholderTextColor={theme.colors.textDim}
                   secureTextEntry={!showConfirmPassword}
                 />
                 <TouchableOpacity
@@ -634,7 +798,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   <Feather
                     name={showConfirmPassword ? 'eye-off' : 'eye'}
                     size={15}
-                    color={THEME.colors.textMuted}
+                    color={theme.colors.textMuted}
                   />
                 </TouchableOpacity>
               </View>
@@ -648,7 +812,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           <TouchableOpacity
             style={[
               styles.primaryBtn,
-              role === 'DRIVER' && styles.primaryBtnDriver,
+              {
+                backgroundColor:
+                  role === 'DRIVER' ? theme.colors.blue : theme.colors.primary,
+              },
             ]}
             onPress={handleSubmit}
             activeOpacity={0.8}
@@ -656,7 +823,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <Text
               style={[
                 styles.primaryBtnText,
-                role === 'DRIVER' && styles.primaryBtnTextDriver,
+                {
+                  color:
+                    role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText,
+                },
               ]}
             >
               {mode === 'LOGIN' ? 'Sign In' : 'Create Account'}
@@ -664,40 +834,62 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <Feather
               name="arrow-right"
               size={16}
-              color={role === 'DRIVER' ? '#FFFFFF' : THEME.colors.primaryText}
+              color={role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText}
             />
           </TouchableOpacity>
         </View>
 
         {/* Demo Accounts */}
         <View style={styles.demoSection}>
-          <Text style={styles.demoLabel}>DEMO ACCOUNTS</Text>
+          <Text style={[styles.demoLabel, { color: theme.colors.textMuted }]}>
+            DEMO ACCOUNTS
+          </Text>
 
           <View style={styles.demoCards}>
             <TouchableOpacity
-              style={styles.demoCard}
+              style={[
+                styles.demoCard,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.cardBorder,
+                },
+              ]}
               onPress={() => handleQuickDemo('TRANSPORTER')}
               activeOpacity={0.7}
             >
-              <Feather name="truck" size={15} color={THEME.colors.primary} />
+              <Feather name="truck" size={15} color={theme.colors.primary} />
               <View style={styles.demoCardContent}>
-                <Text style={styles.demoCardTitle}>Demo Transporter</Text>
-                <Text style={styles.demoCardSub}>Solomon Haile • Rift Valley Transport</Text>
+                <Text style={[styles.demoCardTitle, { color: theme.colors.textPrimary }]}>
+                  Demo Transporter
+                </Text>
+                <Text style={[styles.demoCardSub, { color: theme.colors.textMuted }]}>
+                  Solomon Haile • Rift Valley Transport
+                </Text>
               </View>
-              <Feather name="chevron-right" size={16} color={THEME.colors.textMuted} />
+              <Feather name="chevron-right" size={16} color={theme.colors.textMuted} />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.demoCard}
+              style={[
+                styles.demoCard,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.cardBorder,
+                },
+              ]}
               onPress={() => handleQuickDemo('DRIVER')}
               activeOpacity={0.7}
             >
-              <Feather name="navigation" size={15} color={THEME.colors.blue} />
+              <Feather name="navigation" size={15} color={theme.colors.blue} />
               <View style={styles.demoCardContent}>
-                <Text style={styles.demoCardTitle}>Demo Driver</Text>
-                <Text style={styles.demoCardSub}>Abebe Kebede • Truck 3-AA-98214</Text>
+                <Text style={[styles.demoCardTitle, { color: theme.colors.textPrimary }]}>
+                  Demo Driver
+                </Text>
+                <Text style={[styles.demoCardSub, { color: theme.colors.textMuted }]}>
+                  Abebe Kebede • Truck 3-AA-98214
+                </Text>
               </View>
-              <Feather name="chevron-right" size={16} color={THEME.colors.textMuted} />
+              <Feather name="chevron-right" size={16} color={theme.colors.textMuted} />
             </TouchableOpacity>
           </View>
         </View>

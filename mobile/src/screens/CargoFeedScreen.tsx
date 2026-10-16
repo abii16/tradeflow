@@ -32,6 +32,7 @@ import BidModal from '../components/BidModal';
 import OfflineQueueModal from '../components/OfflineQueueModal';
 import { AuthUser } from '../types/auth';
 import { THEME } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 
 const ROUTE_FILTERS = ['All', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
 
@@ -41,6 +42,7 @@ interface Props {
 }
 
 export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
+  const { theme } = useTheme();
   const [cargo, setCargo] = useState<CargoLoad[]>([]);
   const [activeTab, setActiveTab] = useState<'available' | 'my_bids'>('available');
   const [search, setSearch] = useState('');
@@ -167,7 +169,7 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ConnectivityHeader
         isOnline={isOnline}
         pendingCount={pendingCount}
@@ -178,15 +180,27 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
       />
 
       {/* Segmented Tab Bar */}
-      <View style={styles.tabBar}>
+      <View
+        style={[
+          styles.tabBar,
+          {
+            backgroundColor: theme.colors.background,
+            borderBottomColor: theme.colors.cardBorder,
+          },
+        ]}
+      >
         <TouchableOpacity
-          style={[styles.tabItem, activeTab === 'available' && styles.tabItemActive]}
+          style={[
+            styles.tabItem,
+            activeTab === 'available' && { borderBottomColor: theme.colors.primary },
+          ]}
           onPress={() => setActiveTab('available')}
           activeOpacity={0.7}
         >
           <Text
             style={[
               styles.tabText,
+              { color: activeTab === 'available' ? theme.colors.textPrimary : theme.colors.textMuted },
               activeTab === 'available' && styles.tabTextActive,
             ]}
           >
@@ -195,13 +209,17 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabItem, activeTab === 'my_bids' && styles.tabItemActive]}
+          style={[
+            styles.tabItem,
+            activeTab === 'my_bids' && { borderBottomColor: theme.colors.primary },
+          ]}
           onPress={() => setActiveTab('my_bids')}
           activeOpacity={0.7}
         >
           <Text
             style={[
               styles.tabText,
+              { color: activeTab === 'my_bids' ? theme.colors.textPrimary : theme.colors.textMuted },
               activeTab === 'my_bids' && styles.tabTextActive,
             ]}
           >
@@ -212,23 +230,31 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
 
       {/* Search & Filter Controls */}
       <View style={styles.filterSection}>
-        <View style={styles.searchBox}>
+        <View
+          style={[
+            styles.searchBox,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.cardBorder,
+            },
+          ]}
+        >
           <Feather
             name="search"
             size={15}
-            color={THEME.colors.textMuted}
+            color={theme.colors.textMuted}
             style={styles.searchIcon}
           />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: theme.colors.textPrimary }]}
             value={search}
             onChangeText={setSearch}
             placeholder="Search loads..."
-            placeholderTextColor={THEME.colors.textMuted}
+            placeholderTextColor={theme.colors.textMuted}
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch('')} activeOpacity={0.7}>
-              <Feather name="x" size={14} color={THEME.colors.textMuted} />
+              <Feather name="x" size={14} color={theme.colors.textMuted} />
             </TouchableOpacity>
           )}
         </View>
@@ -244,13 +270,25 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
             return (
               <TouchableOpacity
                 key={route}
-                style={[styles.routeChip, active && styles.routeChipActive]}
+                style={[
+                  styles.routeChip,
+                  active
+                    ? {
+                        backgroundColor: theme.colors.primarySubtle,
+                        borderColor: theme.colors.primary,
+                      }
+                    : {
+                        backgroundColor: theme.colors.card,
+                        borderColor: theme.colors.cardBorder,
+                      },
+                ]}
                 onPress={() => setActiveRoute(route)}
                 activeOpacity={0.7}
               >
                 <Text
                   style={[
                     styles.routeChipText,
+                    { color: active ? theme.colors.primary : theme.colors.textMuted },
                     active && styles.routeChipTextActive,
                   ]}
                 >
@@ -275,16 +313,16 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={THEME.colors.primary}
-            colors={[THEME.colors.primary]}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>
+            <Text style={[styles.emptyTitle, { color: theme.colors.textPrimary }]}>
               {activeTab === 'my_bids' ? 'No active bids' : 'No loads found'}
             </Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={[styles.emptySubtitle, { color: theme.colors.textMuted }]}>
               {activeTab === 'my_bids'
                 ? 'Your placed bids will appear here.'
                 : 'Try adjusting your corridor filter.'}

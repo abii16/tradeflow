@@ -1,9 +1,9 @@
-// TradeFlow Mobile — Top Header (Production Logistics Look)
+// TradeFlow Mobile — Top Header (Dynamic Dark & Light Mode)
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { THEME } from '../styles/theme';
 import { AuthUser } from '../types/auth';
+import { useTheme } from '../context/ThemeContext';
 import SideMenuDrawer from './SideMenuDrawer';
 
 interface Props {
@@ -23,41 +23,70 @@ export default function ConnectivityHeader({
   currentUser,
   onSignOut,
 }: Props) {
+  const { theme } = useTheme();
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   return (
     <>
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.colors.background,
+            borderBottomColor: theme.colors.cardBorder,
+          },
+        ]}
+      >
         {/* Left Side: Hamburger Menu & Status Chips */}
         <View style={styles.leftGroup}>
           <TouchableOpacity
-            style={styles.hamburgerBtn}
+            style={[
+              styles.hamburgerBtn,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
             onPress={() => setDrawerVisible(true)}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Feather name="menu" size={20} color={THEME.colors.textPrimary} />
+            <Feather name="menu" size={20} color={theme.colors.textPrimary} />
           </TouchableOpacity>
 
           {!isOnline && (
             <TouchableOpacity
-              style={styles.offlineBadge}
+              style={[
+                styles.offlineBadge,
+                {
+                  backgroundColor: theme.colors.amberSubtle,
+                  borderColor: 'rgba(245, 158, 11, 0.3)',
+                },
+              ]}
               onPress={onToggleNetwork}
               activeOpacity={0.7}
             >
-              <Feather name="cloud-off" size={11} color={THEME.colors.amber} />
-              <Text style={styles.offlineBadgeText}>Offline</Text>
+              <Feather name="cloud-off" size={11} color={theme.colors.amber} />
+              <Text style={[styles.offlineBadgeText, { color: theme.colors.amber }]}>Offline</Text>
             </TouchableOpacity>
           )}
 
           {pendingCount > 0 && (
             <TouchableOpacity
-              style={styles.pendingBadge}
+              style={[
+                styles.pendingBadge,
+                {
+                  backgroundColor: theme.colors.amberSubtle,
+                  borderColor: 'rgba(245, 158, 11, 0.3)',
+                },
+              ]}
               onPress={onOpenQueue}
               activeOpacity={0.7}
             >
-              <View style={styles.pendingDot} />
-              <Text style={styles.pendingText}>{pendingCount} queued</Text>
+              <View style={[styles.pendingDot, { backgroundColor: theme.colors.amber }]} />
+              <Text style={[styles.pendingText, { color: theme.colors.amber }]}>
+                {pendingCount} queued
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -69,23 +98,36 @@ export default function ConnectivityHeader({
               <View
                 style={[
                   styles.userBadge,
-                  currentUser?.role === 'DRIVER' && styles.userBadgeDriver,
+                  currentUser?.role === 'DRIVER'
+                    ? {
+                        backgroundColor: theme.colors.blueSubtle,
+                        borderColor: theme.colors.blueBorder,
+                      }
+                    : {
+                        backgroundColor: theme.colors.primarySubtle,
+                        borderColor: theme.colors.primaryBorder,
+                      },
                 ]}
               >
                 <Text
                   style={[
                     styles.userBadgeText,
-                    currentUser?.role === 'DRIVER' && styles.userBadgeTextDriver,
+                    {
+                      color:
+                        currentUser?.role === 'DRIVER'
+                          ? theme.colors.blue
+                          : theme.colors.primary,
+                    },
                   ]}
                 >
                   {currentUser?.role === 'TRANSPORTER' ? 'CARRIER' : 'DRIVER'}
                 </Text>
               </View>
             )}
-            <Text style={styles.brandName}>TradeFlow</Text>
+            <Text style={[styles.brandName, { color: theme.colors.textPrimary }]}>TradeFlow</Text>
           </View>
 
-          <Text style={styles.brandSubRight} numberOfLines={1}>
+          <Text style={[styles.brandSubRight, { color: theme.colors.textMuted }]} numberOfLines={1}>
             {currentUser?.companyName ||
               currentUser?.fullName ||
               (currentUser?.role === 'DRIVER'
@@ -115,9 +157,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: THEME.colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.cardBorder,
   },
   leftGroup: {
     flexDirection: 'row',
@@ -128,9 +168,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: THEME.colors.surface,
     borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -144,46 +182,31 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   brandName: {
-    color: THEME.colors.textPrimary,
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: -0.3,
   },
   brandSubRight: {
-    color: THEME.colors.textMuted,
     fontSize: 11,
     fontWeight: '500',
     marginTop: 2,
     textAlign: 'right',
   },
   userBadge: {
-    backgroundColor: THEME.colors.primarySubtle,
-    borderWidth: 1,
-    borderColor: THEME.colors.primaryBorder,
     paddingHorizontal: 5,
     paddingVertical: 1,
     borderRadius: 4,
-  },
-  userBadgeDriver: {
-    backgroundColor: THEME.colors.blueSubtle,
-    borderColor: THEME.colors.blueBorder,
+    borderWidth: 1,
   },
   userBadgeText: {
-    color: THEME.colors.primary,
     fontSize: 9,
     fontWeight: '700',
-    fontFamily: THEME.typography.mono,
-  },
-  userBadgeTextDriver: {
-    color: THEME.colors.blue,
   },
   pendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: THEME.colors.amberSubtle,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 6,
@@ -192,29 +215,22 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: THEME.colors.amber,
   },
   pendingText: {
-    color: THEME.colors.amber,
     fontSize: 11,
     fontWeight: '600',
-    fontFamily: THEME.typography.mono,
   },
   offlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: THEME.colors.amberSubtle,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 6,
   },
   offlineBadgeText: {
-    color: THEME.colors.amber,
     fontSize: 11,
     fontWeight: '700',
-    fontFamily: THEME.typography.mono,
   },
 });

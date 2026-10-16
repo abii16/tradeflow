@@ -8,9 +8,10 @@ import DriverScreen from './src/screens/DriverScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import { AuthUser } from './src/types/auth';
 import { initDatabase, getCurrentUserSession, clearUserSession } from './src/services/database';
-import { THEME } from './src/styles/theme';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 
 function MainApp() {
+  const { theme, isDarkMode } = useTheme();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [activeRole, setActiveRole] = useState<'transporter' | 'driver'>('transporter');
   const [loading, setLoading] = useState(true);
@@ -45,8 +46,8 @@ function MainApp() {
 
   if (loading) {
     return (
-      <View style={[styles.screen, styles.center]}>
-        <StatusBar style="light" />
+      <View style={[styles.screen, styles.center, { backgroundColor: theme.colors.background }]}>
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       </View>
     );
   }
@@ -56,19 +57,20 @@ function MainApp() {
       style={[
         styles.screen,
         {
+          backgroundColor: theme.colors.background,
           paddingTop: insets.top,
           paddingLeft: insets.left,
           paddingRight: insets.right,
         },
       ]}
     >
-      <StatusBar style="light" />
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
       {!currentUser ? (
         <AuthScreen onLoginSuccess={handleLoginSuccess} />
       ) : (
         <>
-          <View style={styles.container}>
+          <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
             {activeRole === 'transporter' ? (
               <CargoFeedScreen
                 currentUser={currentUser}
@@ -87,6 +89,8 @@ function MainApp() {
             style={[
               styles.bottomNav,
               {
+                backgroundColor: theme.colors.surface,
+                borderTopColor: theme.colors.cardBorder,
                 paddingBottom: Math.max(insets.bottom, 14),
               },
             ]}
@@ -99,12 +103,13 @@ function MainApp() {
               <Feather
                 name="truck"
                 size={18}
-                color={activeRole === 'transporter' ? THEME.colors.primary : THEME.colors.textMuted}
+                color={activeRole === 'transporter' ? theme.colors.primary : theme.colors.textMuted}
               />
               <Text
                 style={[
                   styles.navLabel,
-                  activeRole === 'transporter' && styles.navLabelActive,
+                  { color: activeRole === 'transporter' ? theme.colors.primary : theme.colors.textMuted },
+                  activeRole === 'transporter' && styles.navLabelBold,
                 ]}
               >
                 Transporter
@@ -119,12 +124,13 @@ function MainApp() {
               <Feather
                 name="navigation"
                 size={18}
-                color={activeRole === 'driver' ? THEME.colors.blue : THEME.colors.textMuted}
+                color={activeRole === 'driver' ? theme.colors.blue : theme.colors.textMuted}
               />
               <Text
                 style={[
                   styles.navLabel,
-                  activeRole === 'driver' && styles.navLabelActiveDriver,
+                  { color: activeRole === 'driver' ? theme.colors.blue : theme.colors.textMuted },
+                  activeRole === 'driver' && styles.navLabelBold,
                 ]}
               >
                 Driver Console
@@ -140,7 +146,9 @@ function MainApp() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <MainApp />
+      <ThemeProvider>
+        <MainApp />
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
@@ -148,7 +156,6 @@ export default function App() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
   },
   center: {
     alignItems: 'center',
@@ -156,13 +163,10 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
   },
   bottomNav: {
     flexDirection: 'row',
-    backgroundColor: THEME.colors.surface,
     borderTopWidth: 1,
-    borderTopColor: THEME.colors.cardBorder,
     paddingTop: 10,
   },
   navTab: {
@@ -173,16 +177,10 @@ const styles = StyleSheet.create({
   },
   navTabActive: {},
   navLabel: {
-    color: THEME.colors.textMuted,
     fontSize: 11,
     fontWeight: '500',
   },
-  navLabelActive: {
-    color: THEME.colors.primary,
-    fontWeight: '700',
-  },
-  navLabelActiveDriver: {
-    color: THEME.colors.blue,
+  navLabelBold: {
     fontWeight: '700',
   },
 });

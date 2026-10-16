@@ -13,6 +13,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { OfflineAction } from '../types/cargo';
 import { THEME } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 
 interface Props {
   visible: boolean;
@@ -48,6 +49,7 @@ export default function OfflineQueueModal({
   onToggleNetwork,
   onClose,
 }: Props) {
+  const { theme } = useTheme();
   const pendingCount = items.filter((i) => i.status === 'pending').length;
 
   const renderItem = ({ item }: { item: OfflineAction }) => {
@@ -62,13 +64,23 @@ export default function OfflineQueueModal({
     const isSynced = item.status === 'synced';
 
     return (
-      <View style={styles.itemCard}>
+      <View
+        style={[
+          styles.itemCard,
+          {
+            backgroundColor: theme.colors.surfaceElevated,
+            borderColor: theme.colors.cardBorder,
+          },
+        ]}
+      >
         <View style={styles.itemHeader}>
           <View>
-            <Text style={styles.actionTitle}>
+            <Text style={[styles.actionTitle, { color: theme.colors.textPrimary }]}>
               {ACTION_DESCRIPTIONS[item.actionType] ?? item.actionType}
             </Text>
-            <Text style={styles.itemTime}>{formatTime(item.createdAt)}</Text>
+            <Text style={[styles.itemTime, { color: theme.colors.textMuted }]}>
+              {formatTime(item.createdAt)}
+            </Text>
           </View>
 
           <View
@@ -90,12 +102,18 @@ export default function OfflineQueueModal({
 
         {Boolean(payload.cargoId) && (
           <View style={styles.detailsRow}>
-            <Text style={styles.detailLabel}>Load ID:</Text>
-            <Text style={styles.detailValue}>{String(payload.cargoId)}</Text>
+            <Text style={[styles.detailLabel, { color: theme.colors.textMuted }]}>
+              Load ID:
+            </Text>
+            <Text style={[styles.detailValue, { color: theme.colors.textSecondary }]}>
+              {String(payload.cargoId)}
+            </Text>
             {Boolean(payload.amountETB) && (
               <>
-                <Text style={styles.detailSeparator}>•</Text>
-                <Text style={styles.detailRate}>
+                <Text style={[styles.detailSeparator, { color: theme.colors.textMuted }]}>
+                  •
+                </Text>
+                <Text style={[styles.detailRate, { color: theme.colors.primary }]}>
                   {Number(payload.amountETB).toLocaleString()} ETB
                 </Text>
               </>
@@ -120,24 +138,42 @@ export default function OfflineQueueModal({
           onPress={onClose}
         />
 
-        <View style={styles.modalContent}>
-          <View style={styles.dragHandle} />
+        <View
+          style={[
+            styles.modalContent,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.cardBorder,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.dragHandle,
+              { backgroundColor: theme.colors.cardBorder },
+            ]}
+          />
 
           {/* Header */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.title}>Offline Queue</Text>
-              <Text style={styles.subtitle}>
+              <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
+                Offline Queue
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>
                 {items.length} {items.length === 1 ? 'action' : 'actions'} stored locally
               </Text>
             </View>
 
             <TouchableOpacity
               onPress={onClose}
-              style={styles.closeBtn}
+              style={[
+                styles.closeBtn,
+                { backgroundColor: theme.colors.surfaceElevated },
+              ]}
               activeOpacity={0.7}
             >
-              <Feather name="x" size={18} color={THEME.colors.textMuted} />
+              <Feather name="x" size={18} color={theme.colors.textMuted} />
             </TouchableOpacity>
           </View>
 
@@ -145,7 +181,15 @@ export default function OfflineQueueModal({
           <TouchableOpacity
             style={[
               styles.connectionBanner,
-              isOnline ? styles.bannerOnline : styles.bannerOffline,
+              isOnline
+                ? {
+                    backgroundColor: theme.colors.primarySubtle,
+                    borderColor: theme.colors.primaryBorder,
+                  }
+                : {
+                    backgroundColor: theme.colors.amberSubtle,
+                    borderColor: theme.colors.amber,
+                  },
             ]}
             onPress={onToggleNetwork}
             disabled={!onToggleNetwork}
@@ -154,9 +198,14 @@ export default function OfflineQueueModal({
             <Feather
               name={isOnline ? 'check-circle' : 'cloud-off'}
               size={14}
-              color={isOnline ? THEME.colors.primary : THEME.colors.amber}
+              color={isOnline ? theme.colors.primary : theme.colors.amber}
             />
-            <Text style={styles.bannerText}>
+            <Text
+              style={[
+                styles.bannerText,
+                { color: isOnline ? theme.colors.primary : theme.colors.amber },
+              ]}
+            >
               {isOnline
                 ? 'Online' + (onToggleNetwork ? ' (Tap to simulate offline)' : '')
                 : 'Offline — saved locally' + (onToggleNetwork ? ' (Tap to reconnect)' : '')}
@@ -169,10 +218,12 @@ export default function OfflineQueueModal({
               <Feather
                 name="inbox"
                 size={32}
-                color={THEME.colors.textMuted}
+                color={theme.colors.textMuted}
                 style={{ marginBottom: 8 }}
               />
-              <Text style={styles.emptyTitle}>No queued actions</Text>
+              <Text style={[styles.emptyTitle, { color: theme.colors.textMuted }]}>
+                No queued actions
+              </Text>
             </View>
           ) : (
             <FlatList
@@ -187,16 +238,25 @@ export default function OfflineQueueModal({
           {/* Footer */}
           <View style={styles.footer}>
             <TouchableOpacity
-              style={styles.closeBtnFooter}
+              style={[
+                styles.closeBtnFooter,
+                {
+                  backgroundColor: theme.colors.redSubtle,
+                  borderColor: theme.colors.redBorder,
+                },
+              ]}
               onPress={onClose}
               activeOpacity={0.7}
             >
-              <Text style={styles.closeBtnText}>Close</Text>
+              <Text style={[styles.closeBtnText, { color: theme.colors.red }]}>
+                Close
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.syncBtn,
+                { backgroundColor: theme.colors.primary },
                 (!isOnline || syncing || pendingCount === 0) && styles.syncBtnDisabled,
               ]}
               onPress={onSyncNow}
@@ -204,9 +264,14 @@ export default function OfflineQueueModal({
               activeOpacity={0.8}
             >
               {syncing ? (
-                <ActivityIndicator size="small" color={THEME.colors.primaryText} />
+                <ActivityIndicator size="small" color={theme.colors.primaryText} />
               ) : (
-                <Text style={styles.syncBtnText}>
+                <Text
+                  style={[
+                    styles.syncBtnText,
+                    { color: theme.colors.primaryText },
+                  ]}
+                >
                   Sync {pendingCount > 0 ? `(${pendingCount})` : ''}
                 </Text>
               )}
