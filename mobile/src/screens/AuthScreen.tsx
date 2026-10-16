@@ -40,6 +40,29 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
   const [licensePlate, setLicensePlate] = useState('');
   const [driverLicense, setDriverLicense] = useState('');
 
+  // Field validation error state (highlights input border with red)
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handleRoleChange = (newRole: UserRole) => {
+    setRole(newRole);
+    setErrors({});
+  };
+
+  const handleModeChange = (newMode: 'LOGIN' | 'REGISTER') => {
+    setMode(newMode);
+    setErrors({});
+  };
+
   // ── Handle Demo One-Tap Access ──
   const handleQuickDemo = async (demoRole: UserRole) => {
     let demoUser: AuthUser;
@@ -72,18 +95,20 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
     onLoginSuccess(demoUser);
   };
 
-  // ── Handle Submit with Strict Required Field Validation ──
+  // ── Handle Submit with In-Place Red Border Highlighting ──
   const handleSubmit = async () => {
+    const newErrors: Record<string, string> = {};
+
     if (mode === 'LOGIN') {
-      // 1. Phone / Email required
       if (!phoneOrEmail.trim()) {
-        Alert.alert('Required Field', 'Please enter your registered phone number or corporate email.');
-        return;
+        newErrors.phoneOrEmail = 'Phone number or email is required';
+      }
+      if (!password.trim()) {
+        newErrors.password = 'Password is required';
       }
 
-      // 2. Password required
-      if (!password.trim()) {
-        Alert.alert('Required Field', 'Please enter your password.');
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
         return;
       }
 
@@ -108,68 +133,50 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
       await saveUserSession(user);
       onLoginSuccess(user);
     } else {
-      // Registration: Check every single field
-
-      // 1. Full legal name required
+      // Registration: Check each field and highlight red if empty
       if (!fullName.trim()) {
-        Alert.alert('Required Field', 'Full legal name is required.');
-        return;
+        newErrors.fullName = 'Full legal name is required';
       }
 
-      // 2. Transporter specific required fields
       if (role === 'TRANSPORTER') {
         if (!companyName.trim()) {
-          Alert.alert('Required Field', 'Transport enterprise / company name is required.');
-          return;
+          newErrors.companyName = 'Enterprise or company name is required';
         }
         if (!tinNumber.trim()) {
-          Alert.alert('Required Field', '10-digit Tax Identification Number (TIN) is required per FR-01.');
-          return;
+          newErrors.tinNumber = '10-digit TIN is required';
         }
         if (!fleetSize.trim()) {
-          Alert.alert('Required Field', 'Operating fleet size is required (e.g. 12 Trucks).');
-          return;
+          newErrors.fleetSize = 'Operating fleet size is required';
         }
       }
 
-      // 3. Driver specific required fields
       if (role === 'DRIVER') {
         if (!licensePlate.trim()) {
-          Alert.alert('Required Field', 'Commercial truck license plate is required (e.g. 3-AA-98214).');
-          return;
+          newErrors.licensePlate = 'Commercial truck license plate is required';
         }
         if (!driverLicense.trim()) {
-          Alert.alert('Required Field', 'Commercial driver license number is required (e.g. ETH-CDL-782190).');
-          return;
+          newErrors.driverLicense = 'Commercial driver license number is required';
         }
       }
 
-      // 4. Phone number / Email required
       if (!phoneOrEmail.trim()) {
-        Alert.alert('Required Field', 'Mobile phone number is required.');
-        return;
+        newErrors.phoneOrEmail = 'Mobile phone number is required';
       }
 
-      // 5. Password required & min length
       if (!password.trim()) {
-        Alert.alert('Required Field', 'Password is required.');
-        return;
-      }
-      if (password.length < 6) {
-        Alert.alert('Password Too Short', 'Password must be at least 6 characters long.');
-        return;
+        newErrors.password = 'Password is required';
+      } else if (password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
       }
 
-      // 6. Confirm Password required & must match
       if (!confirmPassword.trim()) {
-        Alert.alert('Required Field', 'Please confirm your password.');
-        return;
+        newErrors.confirmPassword = 'Confirmation password is required';
+      } else if (password !== confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
       }
-      if (password !== confirmPassword) {
-        Alert.alert(
-          'Passwords Do Not Match',
-          'Your password and confirm password do not match. Please verify and re-type them.'
-        );
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
         return;
       }
 
@@ -258,7 +265,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         <View style={styles.roleContainer}>
           <TouchableOpacity
             style={[styles.roleCard, role === 'TRANSPORTER' && styles.roleCardActive]}
-            onPress={() => setRole('TRANSPORTER')}
+            onPress={() => handleRoleChange('TRANSPORTER')}
             activeOpacity={0.8}
           >
             <View style={styles.roleCardHeader}>
@@ -289,7 +296,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
           <TouchableOpacity
             style={[styles.roleCard, role === 'DRIVER' && styles.roleCardActive]}
-            onPress={() => setRole('DRIVER')}
+            onPress={() => handleRoleChange('DRIVER')}
             activeOpacity={0.8}
           >
             <View style={styles.roleCardHeader}>
@@ -323,7 +330,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         <View style={styles.modeContainer}>
           <TouchableOpacity
             style={[styles.modePill, mode === 'LOGIN' && styles.modePillActive]}
-            onPress={() => setMode('LOGIN')}
+            onPress={() => handleModeChange('LOGIN')}
             activeOpacity={0.7}
           >
             <Text
@@ -338,7 +345,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
           <TouchableOpacity
             style={[styles.modePill, mode === 'REGISTER' && styles.modePillActive]}
-            onPress={() => setMode('REGISTER')}
+            onPress={() => handleModeChange('REGISTER')}
             activeOpacity={0.7}
           >
             <Text
@@ -354,155 +361,234 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
         {/* Input Card Container */}
         <View style={styles.card}>
-          {/* Registration: Full Name (Required) */}
+          {/* Registration: Full Name */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>FULL LEGAL NAME *</Text>
-                <Text style={styles.reqBadge}>REQUIRED</Text>
+                <Text style={[styles.label, Boolean(errors.fullName) && styles.labelError]}>
+                  FULL LEGAL NAME
+                </Text>
               </View>
-              <View style={styles.inputBox}>
-                <Feather name="user" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+              <View style={[styles.inputBox, Boolean(errors.fullName) && styles.inputBoxError]}>
+                <Feather
+                  name="user"
+                  size={15}
+                  color={errors.fullName ? THEME.colors.red : THEME.colors.textMuted}
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.textInput}
                   value={fullName}
-                  onChangeText={setFullName}
+                  onChangeText={(val) => {
+                    setFullName(val);
+                    clearError('fullName');
+                  }}
                   placeholder={role === 'TRANSPORTER' ? 'e.g. Solomon Haile' : 'e.g. Abebe Kebede'}
                   placeholderTextColor={THEME.colors.textDim}
                 />
               </View>
+              {Boolean(errors.fullName) && (
+                <Text style={styles.errorText}>{errors.fullName}</Text>
+              )}
             </View>
           )}
 
-          {/* Registration (Carrier): Enterprise, TIN, Fleet Size (All Required) */}
+          {/* Registration (Carrier): Enterprise, TIN, Fleet Size */}
           {mode === 'REGISTER' && role === 'TRANSPORTER' && (
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>ENTERPRISE / COMPANY NAME *</Text>
-                  <Text style={styles.reqBadge}>REQUIRED</Text>
+                  <Text style={[styles.label, Boolean(errors.companyName) && styles.labelError]}>
+                    ENTERPRISE / COMPANY NAME
+                  </Text>
                 </View>
-                <View style={styles.inputBox}>
-                  <Feather name="briefcase" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+                <View style={[styles.inputBox, Boolean(errors.companyName) && styles.inputBoxError]}>
+                  <Feather
+                    name="briefcase"
+                    size={15}
+                    color={errors.companyName ? THEME.colors.red : THEME.colors.textMuted}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={styles.textInput}
                     value={companyName}
-                    onChangeText={setCompanyName}
+                    onChangeText={(val) => {
+                      setCompanyName(val);
+                      clearError('companyName');
+                    }}
                     placeholder="e.g. Rift Valley Transport PLC"
                     placeholderTextColor={THEME.colors.textDim}
                   />
                 </View>
+                {Boolean(errors.companyName) && (
+                  <Text style={styles.errorText}>{errors.companyName}</Text>
+                )}
               </View>
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>TAX IDENTIFICATION NUMBER (TIN) *</Text>
-                  <Text style={styles.reqBadge}>FR-01 REQUIREMENT</Text>
+                  <Text style={[styles.label, Boolean(errors.tinNumber) && styles.labelError]}>
+                    TAX IDENTIFICATION NUMBER (TIN)
+                  </Text>
                 </View>
-                <View style={styles.inputBox}>
-                  <Feather name="hash" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+                <View style={[styles.inputBox, Boolean(errors.tinNumber) && styles.inputBoxError]}>
+                  <Feather
+                    name="hash"
+                    size={15}
+                    color={errors.tinNumber ? THEME.colors.red : THEME.colors.textMuted}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={styles.textInput}
                     value={tinNumber}
-                    onChangeText={setTinNumber}
+                    onChangeText={(val) => {
+                      setTinNumber(val);
+                      clearError('tinNumber');
+                    }}
                     placeholder="10-digit Ethiopian TIN (e.g. 0098234112)"
                     placeholderTextColor={THEME.colors.textDim}
                     keyboardType="numeric"
                   />
                 </View>
+                {Boolean(errors.tinNumber) && (
+                  <Text style={styles.errorText}>{errors.tinNumber}</Text>
+                )}
               </View>
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>OPERATING FLEET SIZE *</Text>
-                  <Text style={styles.reqBadge}>REQUIRED</Text>
+                  <Text style={[styles.label, Boolean(errors.fleetSize) && styles.labelError]}>
+                    OPERATING FLEET SIZE
+                  </Text>
                 </View>
-                <View style={styles.inputBox}>
-                  <Feather name="truck" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+                <View style={[styles.inputBox, Boolean(errors.fleetSize) && styles.inputBoxError]}>
+                  <Feather
+                    name="truck"
+                    size={15}
+                    color={errors.fleetSize ? THEME.colors.red : THEME.colors.textMuted}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={styles.textInput}
                     value={fleetSize}
-                    onChangeText={setFleetSize}
+                    onChangeText={(val) => {
+                      setFleetSize(val);
+                      clearError('fleetSize');
+                    }}
                     placeholder="e.g. 16 Trucks or 5-15 Trucks"
                     placeholderTextColor={THEME.colors.textDim}
                   />
                 </View>
+                {Boolean(errors.fleetSize) && (
+                  <Text style={styles.errorText}>{errors.fleetSize}</Text>
+                )}
               </View>
             </>
           )}
 
-          {/* Registration (Driver): Truck Plate & CDL (All Required) */}
+          {/* Registration (Driver): Truck Plate & CDL */}
           {mode === 'REGISTER' && role === 'DRIVER' && (
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>COMMERCIAL TRUCK LICENSE PLATE *</Text>
-                  <Text style={styles.reqBadge}>REQUIRED</Text>
+                  <Text style={[styles.label, Boolean(errors.licensePlate) && styles.labelError]}>
+                    COMMERCIAL TRUCK LICENSE PLATE
+                  </Text>
                 </View>
-                <View style={styles.inputBox}>
-                  <Feather name="truck" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+                <View style={[styles.inputBox, Boolean(errors.licensePlate) && styles.inputBoxError]}>
+                  <Feather
+                    name="truck"
+                    size={15}
+                    color={errors.licensePlate ? THEME.colors.red : THEME.colors.textMuted}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={styles.textInput}
                     value={licensePlate}
-                    onChangeText={setLicensePlate}
+                    onChangeText={(val) => {
+                      setLicensePlate(val);
+                      clearError('licensePlate');
+                    }}
                     placeholder="e.g. 3-AA-98214"
                     placeholderTextColor={THEME.colors.textDim}
                     autoCapitalize="characters"
                   />
                 </View>
+                {Boolean(errors.licensePlate) && (
+                  <Text style={styles.errorText}>{errors.licensePlate}</Text>
+                )}
               </View>
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>COMMERCIAL DRIVER LICENSE NO. *</Text>
-                  <Text style={styles.reqBadge}>REQUIRED</Text>
+                  <Text style={[styles.label, Boolean(errors.driverLicense) && styles.labelError]}>
+                    COMMERCIAL DRIVER LICENSE NO.
+                  </Text>
                 </View>
-                <View style={styles.inputBox}>
-                  <Feather name="shield" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+                <View style={[styles.inputBox, Boolean(errors.driverLicense) && styles.inputBoxError]}>
+                  <Feather
+                    name="shield"
+                    size={15}
+                    color={errors.driverLicense ? THEME.colors.red : THEME.colors.textMuted}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     style={styles.textInput}
                     value={driverLicense}
-                    onChangeText={setDriverLicense}
+                    onChangeText={(val) => {
+                      setDriverLicense(val);
+                      clearError('driverLicense');
+                    }}
                     placeholder="e.g. ETH-CDL-782190"
                     placeholderTextColor={THEME.colors.textDim}
                     autoCapitalize="characters"
                   />
                 </View>
+                {Boolean(errors.driverLicense) && (
+                  <Text style={styles.errorText}>{errors.driverLicense}</Text>
+                )}
               </View>
             </>
           )}
 
-          {/* Phone Number / Email Input (Required) */}
+          {/* Phone Number / Email Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>
-                {role === 'DRIVER' ? 'MOBILE PHONE NUMBER *' : 'PHONE NUMBER OR CORPORATE EMAIL *'}
+              <Text style={[styles.label, Boolean(errors.phoneOrEmail) && styles.labelError]}>
+                {role === 'DRIVER' ? 'MOBILE PHONE NUMBER' : 'PHONE NUMBER OR CORPORATE EMAIL'}
               </Text>
-              <Text style={styles.reqBadge}>REQUIRED</Text>
             </View>
-            <View style={styles.inputBox}>
+            <View style={[styles.inputBox, Boolean(errors.phoneOrEmail) && styles.inputBoxError]}>
               <View style={styles.countryCodePill}>
                 <Text style={styles.flagEmoji}>🇪🇹</Text>
-                <Text style={styles.countryCodeText}>+251</Text>
-                <View style={styles.pillDivider} />
+                <Text style={[styles.countryCodeText, Boolean(errors.phoneOrEmail) && { color: THEME.colors.red }]}>+251</Text>
+                <View style={[styles.pillDivider, Boolean(errors.phoneOrEmail) && { backgroundColor: THEME.colors.red }]} />
               </View>
               <TextInput
                 style={styles.textInput}
                 value={phoneOrEmail}
-                onChangeText={setPhoneOrEmail}
+                onChangeText={(val) => {
+                  setPhoneOrEmail(val);
+                  clearError('phoneOrEmail');
+                }}
                 placeholder={role === 'DRIVER' ? '91 123 4567' : '91 144 5566 or user@domain.et'}
                 placeholderTextColor={THEME.colors.textDim}
                 keyboardType={phoneOrEmail.includes('@') ? 'email-address' : 'phone-pad'}
                 autoCapitalize="none"
               />
             </View>
+            {Boolean(errors.phoneOrEmail) && (
+              <Text style={styles.errorText}>{errors.phoneOrEmail}</Text>
+            )}
           </View>
 
-          {/* Password Input (Required) */}
+          {/* Password Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>PASSWORD *</Text>
-              {mode === 'LOGIN' ? (
+              <Text style={[styles.label, Boolean(errors.password) && styles.labelError]}>
+                PASSWORD
+              </Text>
+              {mode === 'LOGIN' && (
                 <TouchableOpacity
                   onPress={() =>
                     Alert.alert(
@@ -513,17 +599,23 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 >
                   <Text style={styles.forgotText}>Forgot password?</Text>
                 </TouchableOpacity>
-              ) : (
-                <Text style={styles.reqBadge}>MIN 6 CHARS</Text>
               )}
             </View>
-            <View style={styles.inputBox}>
-              <Feather name="lock" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+            <View style={[styles.inputBox, Boolean(errors.password) && styles.inputBoxError]}>
+              <Feather
+                name="lock"
+                size={15}
+                color={errors.password ? THEME.colors.red : THEME.colors.textMuted}
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.textInput}
                 value={password}
-                onChangeText={setPassword}
-                placeholder={mode === 'LOGIN' ? 'Enter your account password' : 'Create a secure password (min 6 characters)'}
+                onChangeText={(val) => {
+                  setPassword(val);
+                  clearError('password');
+                }}
+                placeholder={mode === 'LOGIN' ? 'Enter your account password' : 'Create a password (min 6 characters)'}
                 placeholderTextColor={THEME.colors.textDim}
                 secureTextEntry={!showPassword}
               />
@@ -535,25 +627,37 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 <Feather
                   name={showPassword ? 'eye-off' : 'eye'}
                   size={15}
-                  color={THEME.colors.textMuted}
+                  color={errors.password ? THEME.colors.red : THEME.colors.textMuted}
                 />
               </TouchableOpacity>
             </View>
+            {Boolean(errors.password) && (
+              <Text style={styles.errorText}>{errors.password}</Text>
+            )}
           </View>
 
-          {/* Confirm Password Input (Registration only - Required) */}
+          {/* Confirm Password Input (Registration only) */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>CONFIRM PASSWORD *</Text>
-                <Text style={styles.reqBadge}>REQUIRED</Text>
+                <Text style={[styles.label, Boolean(errors.confirmPassword) && styles.labelError]}>
+                  CONFIRM PASSWORD
+                </Text>
               </View>
-              <View style={styles.inputBox}>
-                <Feather name="check-circle" size={15} color={THEME.colors.textMuted} style={styles.inputIcon} />
+              <View style={[styles.inputBox, Boolean(errors.confirmPassword) && styles.inputBoxError]}>
+                <Feather
+                  name="check-circle"
+                  size={15}
+                  color={errors.confirmPassword ? THEME.colors.red : THEME.colors.textMuted}
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.textInput}
                   value={confirmPassword}
-                  onChangeText={setConfirmPassword}
+                  onChangeText={(val) => {
+                    setConfirmPassword(val);
+                    clearError('confirmPassword');
+                  }}
                   placeholder="Re-enter password to confirm"
                   placeholderTextColor={THEME.colors.textDim}
                   secureTextEntry={!showConfirmPassword}
@@ -566,10 +670,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   <Feather
                     name={showConfirmPassword ? 'eye-off' : 'eye'}
                     size={15}
-                    color={THEME.colors.textMuted}
+                    color={errors.confirmPassword ? THEME.colors.red : THEME.colors.textMuted}
                   />
                 </TouchableOpacity>
               </View>
+              {Boolean(errors.confirmPassword) && (
+                <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+              )}
             </View>
           )}
 
@@ -859,11 +966,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     fontFamily: THEME.typography.mono,
   },
-  reqBadge: {
-    color: THEME.colors.amber,
-    fontSize: 9.5,
-    fontWeight: '700',
-    fontFamily: THEME.typography.mono,
+  labelError: {
+    color: THEME.colors.red,
   },
   forgotText: {
     color: THEME.colors.primary,
@@ -878,6 +982,16 @@ const styles = StyleSheet.create({
     borderColor: THEME.colors.cardBorder,
     borderRadius: 8,
     paddingHorizontal: 12,
+  },
+  inputBoxError: {
+    borderColor: THEME.colors.red,
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+  },
+  errorText: {
+    color: THEME.colors.red,
+    fontSize: 11,
+    marginTop: 4,
+    fontWeight: '500',
   },
   inputIcon: {
     marginRight: 10,
