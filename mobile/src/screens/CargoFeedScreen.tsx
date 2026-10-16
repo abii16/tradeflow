@@ -209,8 +209,12 @@ export default function CargoFeedScreen({
           <Text
             style={[
               styles.tabText,
-              { color: activeTab === 'available' ? theme.colors.textPrimary : theme.colors.textMuted },
               activeTab === 'available' && styles.tabTextActive,
+              {
+                color: theme.isDark
+                  ? (activeTab === 'available' ? '#FFFFFF' : theme.colors.textMuted)
+                  : '#000000',
+              },
             ]}
           >
             Available ({cargo.length})
@@ -228,8 +232,12 @@ export default function CargoFeedScreen({
           <Text
             style={[
               styles.tabText,
-              { color: activeTab === 'my_bids' ? theme.colors.textPrimary : theme.colors.textMuted },
               activeTab === 'my_bids' && styles.tabTextActive,
+              {
+                color: theme.isDark
+                  ? (activeTab === 'my_bids' ? '#FFFFFF' : theme.colors.textMuted)
+                  : '#000000',
+              },
             ]}
           >
             My Bids ({myBidsCount})
@@ -393,12 +401,10 @@ const styles = StyleSheet.create({
     borderBottomColor: THEME.colors.primary,
   },
   tabText: {
-    color: THEME.colors.textMuted,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   tabTextActive: {
-    color: THEME.colors.textPrimary,
     fontWeight: '700',
   },
   filterSection: {
