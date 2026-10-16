@@ -269,7 +269,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
           <View style={styles.tripTopRow}>
             <View style={styles.tripTag}>
               <Text style={styles.tripTagText}>
-                {tripCompleted ? 'HAUL COMPLETED' : 'ACTIVE ASSIGNMENT'}
+                {tripCompleted ? 'Completed' : 'Active Trip'}
               </Text>
             </View>
             <Text style={styles.truckPlate}>
@@ -277,15 +277,15 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
             </Text>
           </View>
 
-          <Text style={styles.tripTitle}>40T Structural Steel Consignment</Text>
+          <Text style={styles.tripTitle}>Structural Steel (40T)</Text>
           <Text style={styles.tripSubtitle}>
-            TF-LOAD-8805 • Driver: {currentUser?.fullName || 'Abebe Kebede'}
+            TF-LOAD-8805
           </Text>
 
           {/* Progress Strip */}
           <View style={styles.progressContainer}>
             <View style={styles.progressHeader}>
-              <Text style={styles.progressLabel}>Corridor Transit Progress</Text>
+              <Text style={styles.progressLabel}>Progress</Text>
               <Text style={styles.progressText}>
                 {completedCount} of {waypoints.length} Stops ({progressPercent}%)
               </Text>
@@ -327,8 +327,8 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
 
         {/* Corridor Waypoint Timeline */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Corridor Waypoint Check-ins</Text>
-          <Text style={styles.sectionSub}>A1 Transit Corridor • 910 km</Text>
+          <Text style={styles.sectionTitle}>Waypoints</Text>
+          <Text style={styles.sectionSub}>Djibouti – Modjo (910 km)</Text>
         </View>
 
         <View style={styles.timelineList}>
@@ -403,7 +403,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                           color="#FFFFFF"
                         />
                         <Text style={styles.checkinButtonText}>
-                          Check In at {wp.name.split('—')[0].trim()}
+                          Check In
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -432,7 +432,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
             <View style={styles.dragHandle} />
 
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Report Delay or Incident</Text>
+              <Text style={styles.modalTitle}>Report Delay</Text>
               <TouchableOpacity
                 onPress={() => setIncidentModalVisible(false)}
                 style={styles.modalClose}
@@ -440,10 +440,6 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                 <Feather name="x" size={18} color={THEME.colors.textMuted} />
               </TouchableOpacity>
             </View>
-
-            <Text style={styles.modalDesc}>
-              Report traffic bottlenecks, customs holds, or mechanical issues along the corridor.
-            </Text>
 
             <View style={styles.incidentChips}>
               {INCIDENT_TYPES.map((type) => {
@@ -458,7 +454,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                     <Feather
                       name={type.icon}
                       size={12}
-                      color={active ? THEME.colors.primary : THEME.colors.textSecondary}
+                      color={active ? THEME.colors.amber : THEME.colors.textSecondary}
                     />
                     <Text
                       style={[
@@ -473,12 +469,12 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
               })}
             </View>
 
-            <Text style={styles.notesLabel}>Driver Notes</Text>
+            <Text style={styles.notesLabel}>Notes</Text>
             <TextInput
               style={styles.notesInput}
               value={incidentNotes}
               onChangeText={setIncidentNotes}
-              placeholder="Describe situation (e.g. 2hr queue at depot fuel pump)..."
+              placeholder="Describe delay reason..."
               placeholderTextColor={THEME.colors.textDim}
               multiline
               numberOfLines={3}
@@ -500,7 +496,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
                 onPress={handleSubmitIncident}
                 disabled={!incidentNotes.trim()}
               >
-                <Text style={styles.submitIncidentBtnText}>Send Report</Text>
+                <Text style={styles.submitIncidentBtnText}>Submit</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -524,7 +520,7 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
             <View style={styles.dragHandle} />
 
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Confirm Proof of Delivery</Text>
+              <Text style={styles.modalTitle}>Proof of Delivery</Text>
               <TouchableOpacity
                 onPress={() => setPodModalVisible(false)}
                 style={styles.modalClose}
@@ -533,23 +529,19 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalDesc}>
-              Final sign-off for destination arrival at Modjo Dry Port.
-            </Text>
-
             <View style={styles.formGroup}>
-              <Text style={styles.notesLabel}>Receiving Agent Name</Text>
+              <Text style={styles.notesLabel}>Receiver Name</Text>
               <TextInput
                 style={styles.textInput}
                 value={receiverName}
                 onChangeText={setReceiverName}
-                placeholder="e.g. Dawit Alemayehu (ESLSE Modjo)"
+                placeholder="Receiver name"
                 placeholderTextColor={THEME.colors.textDim}
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.notesLabel}>Waybill / Clearance Reference</Text>
+              <Text style={styles.notesLabel}>Waybill Reference</Text>
               <TextInput
                 style={styles.textInput}
                 value={waybillNumber}
@@ -569,13 +561,13 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
 
               <TouchableOpacity
                 style={[
-                  styles.submitIncidentBtn,
+                  styles.submitPodBtn,
                   !receiverName.trim() && { opacity: 0.4 },
                 ]}
                 onPress={handleConfirmPod}
                 disabled={!receiverName.trim()}
               >
-                <Text style={styles.submitIncidentBtnText}>Sign & Complete</Text>
+                <Text style={styles.submitPodBtnText}>Sign & Complete</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -693,16 +685,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: THEME.colors.surface,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
     borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
+    borderColor: 'rgba(245, 158, 11, 0.35)',
     paddingVertical: 9,
     borderRadius: 6,
   },
   incidentBtnText: {
-    color: THEME.colors.textSecondary,
+    color: THEME.colors.amber,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   podBtn: {
     flex: 1,
@@ -914,8 +906,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   typeChipActive: {
-    borderColor: THEME.colors.primary,
-    backgroundColor: THEME.colors.primarySubtle,
+    borderColor: THEME.colors.amber,
+    backgroundColor: THEME.colors.amberSubtle,
   },
   typeChipText: {
     color: THEME.colors.textSecondary,
@@ -923,7 +915,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   typeChipTextActive: {
-    color: THEME.colors.primary,
+    color: THEME.colors.amber,
     fontWeight: '600',
   },
   notesLabel: {
@@ -975,12 +967,24 @@ const styles = StyleSheet.create({
   },
   submitIncidentBtn: {
     flex: 2,
-    backgroundColor: THEME.colors.primary,
+    backgroundColor: THEME.colors.amber,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   submitIncidentBtnText: {
+    color: '#000000',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  submitPodBtn: {
+    flex: 2,
+    backgroundColor: THEME.colors.primary,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  submitPodBtnText: {
     color: THEME.colors.primaryText,
     fontSize: 13,
     fontWeight: '700',

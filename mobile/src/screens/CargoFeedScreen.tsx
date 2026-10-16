@@ -190,7 +190,7 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
               activeTab === 'available' && styles.tabTextActive,
             ]}
           >
-            Available Loads ({cargo.length})
+            Available ({cargo.length})
           </Text>
         </TouchableOpacity>
 
@@ -223,7 +223,7 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
             style={styles.searchInput}
             value={search}
             onChangeText={setSearch}
-            placeholder="Search commodity, route, or ID..."
+            placeholder="Search loads..."
             placeholderTextColor={THEME.colors.textMuted}
           />
           {search.length > 0 && (
@@ -282,12 +282,12 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyTitle}>
-              {activeTab === 'my_bids' ? 'No Active Bids' : 'No Loads Found'}
+              {activeTab === 'my_bids' ? 'No active bids' : 'No loads found'}
             </Text>
             <Text style={styles.emptySubtitle}>
               {activeTab === 'my_bids'
-                ? 'Loads you place a bid on will show up here.'
-                : 'Try adjusting your search terms or corridor filters.'}
+                ? 'Your placed bids will appear here.'
+                : 'Try adjusting your corridor filter.'}
             </Text>
           </View>
         }

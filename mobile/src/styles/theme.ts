@@ -19,6 +19,8 @@ export const THEME = {
 
     // Functional Accents
     blue: '#3B82F6',
+    blueSubtle: 'rgba(59, 130, 246, 0.12)',
+    blueBorder: 'rgba(59, 130, 246, 0.25)',
     amber: '#F59E0B',
     amberSubtle: 'rgba(245, 158, 11, 0.12)',
     red: '#EF4444',

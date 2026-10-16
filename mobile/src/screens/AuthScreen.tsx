@@ -1,5 +1,4 @@
-// TradeFlow Mobile — Production Authentication Screen
-// Inspired by world-class logistics & fintech apps (Uber Freight, Convoy, Stripe, Flexport)
+// TradeFlow Mobile — Authentication Screen (Transporter & Driver)
 import React, { useState } from 'react';
 import {
   View,
@@ -32,7 +31,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Registration specific fields
+  // Registration fields
   const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [tinNumber, setTinNumber] = useState('');
@@ -40,7 +39,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
   const [licensePlate, setLicensePlate] = useState('');
   const [driverLicense, setDriverLicense] = useState('');
 
-  // Field validation error state (highlights input border and required text in red)
+  // Field validation error state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const clearError = (field: string) => {
@@ -95,7 +94,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
     onLoginSuccess(demoUser);
   };
 
-  // ── Handle Submit with In-Place Red Border Highlighting ──
+  // ── Handle Submit ──
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
 
@@ -133,7 +132,6 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
       await saveUserSession(user);
       onLoginSuccess(user);
     } else {
-      // Registration: Check each field and highlight red border + required text
       if (!fullName.trim()) {
         newErrors.fullName = 'Required';
       }
@@ -143,7 +141,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           newErrors.companyName = 'Required';
         }
         if (!tinNumber.trim()) {
-          newErrors.tinNumber = 'Required (10-digit TIN)';
+          newErrors.tinNumber = 'Required';
         }
         if (!fleetSize.trim()) {
           newErrors.fleetSize = 'Required';
@@ -152,10 +150,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
       if (role === 'DRIVER') {
         if (!licensePlate.trim()) {
-          newErrors.licensePlate = 'Required (e.g. 3-AA-98214)';
+          newErrors.licensePlate = 'Required';
         }
         if (!driverLicense.trim()) {
-          newErrors.driverLicense = 'Required (e.g. ETH-CDL-782190)';
+          newErrors.driverLicense = 'Required';
         }
       }
 
@@ -166,7 +164,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
       if (!password.trim()) {
         newErrors.password = 'Required';
       } else if (password.length < 6) {
-        newErrors.password = 'Must be at least 6 characters';
+        newErrors.password = 'Min 6 characters';
       }
 
       if (!confirmPassword.trim()) {
@@ -202,10 +200,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
       await saveUserSession(newUser);
       Alert.alert(
-        'Registration Successful',
+        'Account Registered',
         role === 'TRANSPORTER'
-          ? `Welcome to TradeFlow, ${fullName.trim()}! Your carrier account has been created.`
-          : `Welcome, Driver ${fullName.trim()}! Truck ${licensePlate.trim().toUpperCase()} registered.`
+          ? `Welcome, ${fullName.trim()}!`
+          : `Welcome, Driver ${fullName.trim()}!`
       );
       onLoginSuccess(newUser);
     }
@@ -222,111 +220,69 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Brand Emblem & Welcome Header */}
+        {/* Clean Header */}
         <View style={styles.header}>
           <View style={styles.brandRow}>
-            <View style={styles.logoBadge}>
-              <Feather name="layers" size={22} color={THEME.colors.primary} />
+            <View
+              style={[
+                styles.logoBadge,
+                role === 'DRIVER' && { borderColor: THEME.colors.blueBorder },
+              ]}
+            >
+              <Feather
+                name="layers"
+                size={20}
+                color={role === 'DRIVER' ? THEME.colors.blue : THEME.colors.primary}
+              />
             </View>
-            <View>
-              <View style={styles.titleRow}>
-                <Text style={styles.brandTitle}>TradeFlow</Text>
-                <View style={styles.corridorBadge}>
-                  <Text style={styles.corridorBadgeText}>CORRIDOR OS</Text>
-                </View>
-              </View>
-              <Text style={styles.brandSub}>Djibouti–Addis Ababa Logistics Gateway</Text>
-            </View>
-          </View>
-
-          <View style={styles.welcomeBox}>
-            <Text style={styles.headline}>
-              {mode === 'LOGIN'
-                ? role === 'TRANSPORTER'
-                  ? 'Transporter Sign In'
-                  : 'Driver Console Sign In'
-                : role === 'TRANSPORTER'
-                ? 'Register Carrier Fleet'
-                : 'Register Commercial Driver'}
-            </Text>
-            <Text style={styles.subheadline}>
-              {mode === 'LOGIN'
-                ? role === 'TRANSPORTER'
-                  ? 'Access live cargo loads, submit spot bids, and dispatch trucks.'
-                  : 'Check in at corridor waypoints, report delays, and complete deliveries.'
-                : role === 'TRANSPORTER'
-                ? 'Onboard your freight enterprise under Ethiopian Ministry of Transport guidelines.'
-                : 'Connect your heavy-duty truck to real-time dispatch along the A1 corridor.'}
-            </Text>
+            <Text style={styles.brandTitle}>TradeFlow</Text>
           </View>
         </View>
 
-        {/* Actor Role Cards (Uber Freight / Driver Style) */}
+        {/* Role Selector Tabs */}
         <View style={styles.roleContainer}>
           <TouchableOpacity
-            style={[styles.roleCard, role === 'TRANSPORTER' && styles.roleCardActive]}
+            style={[styles.roleCard, role === 'TRANSPORTER' && styles.roleCardActiveTransporter]}
             onPress={() => handleRoleChange('TRANSPORTER')}
             activeOpacity={0.8}
           >
-            <View style={styles.roleCardHeader}>
-              <View
-                style={[
-                  styles.roleIconCircle,
-                  role === 'TRANSPORTER' && styles.roleIconCircleActive,
-                ]}
-              >
-                <Feather
-                  name="truck"
-                  size={16}
-                  color={role === 'TRANSPORTER' ? THEME.colors.primary : THEME.colors.textMuted}
-                />
-              </View>
-              <View
-                style={[
-                  styles.radioDot,
-                  role === 'TRANSPORTER' && styles.radioDotActive,
-                ]}
-              >
-                {role === 'TRANSPORTER' && <View style={styles.radioDotInner} />}
-              </View>
-            </View>
-            <Text style={styles.roleTitle}>Transporter</Text>
-            <Text style={styles.roleDesc}>Carrier & Fleet Dispatch</Text>
+            <Feather
+              name="truck"
+              size={16}
+              color={role === 'TRANSPORTER' ? THEME.colors.primary : THEME.colors.textMuted}
+            />
+            <Text
+              style={[
+                styles.roleTitle,
+                role === 'TRANSPORTER' && styles.roleTitleActiveTransporter,
+              ]}
+            >
+              Transporter
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.roleCard, role === 'DRIVER' && styles.roleCardActive]}
+            style={[styles.roleCard, role === 'DRIVER' && styles.roleCardActiveDriver]}
             onPress={() => handleRoleChange('DRIVER')}
             activeOpacity={0.8}
           >
-            <View style={styles.roleCardHeader}>
-              <View
-                style={[
-                  styles.roleIconCircle,
-                  role === 'DRIVER' && styles.roleIconCircleActive,
-                ]}
-              >
-                <Feather
-                  name="navigation"
-                  size={16}
-                  color={role === 'DRIVER' ? THEME.colors.primary : THEME.colors.textMuted}
-                />
-              </View>
-              <View
-                style={[
-                  styles.radioDot,
-                  role === 'DRIVER' && styles.radioDotActive,
-                ]}
-              >
-                {role === 'DRIVER' && <View style={styles.radioDotInner} />}
-              </View>
-            </View>
-            <Text style={styles.roleTitle}>Truck Driver</Text>
-            <Text style={styles.roleDesc}>Waypoints & Proof of Delivery</Text>
+            <Feather
+              name="navigation"
+              size={16}
+              color={role === 'DRIVER' ? THEME.colors.blue : THEME.colors.textMuted}
+            />
+            <Text
+              style={[
+                styles.roleTitle,
+                role === 'DRIVER' && styles.roleTitleActiveDriver,
+              ]}
+            >
+              Driver
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Mode Segmented Tab (Sign In vs Create Account) */}
+        {/* Mode Toggle (Sign In / Register) */}
         <View style={styles.modeContainer}>
           <TouchableOpacity
             style={[styles.modePill, mode === 'LOGIN' && styles.modePillActive]}
@@ -354,26 +310,19 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 mode === 'REGISTER' && styles.modePillTextActive,
               ]}
             >
-              Create Account
+              Register
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Input Card Container */}
+        {/* Form Card */}
         <View style={styles.card}>
-          {/* Top Indicator: Asterisk denotes required by default */}
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.cardHeaderHint}>
-              Fields marked with <Text style={styles.asterisk}>*</Text> are required
-            </Text>
-          </View>
-
           {/* Registration: Full Name */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <Text style={styles.label}>
-                  FULL LEGAL NAME <Text style={styles.asterisk}>*</Text>
+                  FULL NAME <Text style={styles.asterisk}>*</Text>
                 </Text>
               </View>
               <View style={[styles.inputBox, Boolean(errors.fullName) && styles.inputBoxError]}>
@@ -390,7 +339,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                     setFullName(val);
                     clearError('fullName');
                   }}
-                  placeholder={role === 'TRANSPORTER' ? 'e.g. Solomon Haile' : 'e.g. Abebe Kebede'}
+                  placeholder="Full name"
                   placeholderTextColor={THEME.colors.textDim}
                 />
               </View>
@@ -400,13 +349,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             </View>
           )}
 
-          {/* Registration (Carrier): Enterprise, TIN, Fleet Size */}
+          {/* Registration (Carrier): Company, TIN, Fleet */}
           {mode === 'REGISTER' && role === 'TRANSPORTER' && (
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={styles.label}>
-                    ENTERPRISE / COMPANY NAME <Text style={styles.asterisk}>*</Text>
+                    COMPANY NAME <Text style={styles.asterisk}>*</Text>
                   </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.companyName) && styles.inputBoxError]}>
@@ -423,7 +372,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       setCompanyName(val);
                       clearError('companyName');
                     }}
-                    placeholder="e.g. Rift Valley Transport PLC"
+                    placeholder="Company name"
                     placeholderTextColor={THEME.colors.textDim}
                   />
                 </View>
@@ -435,7 +384,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={styles.label}>
-                    TAX IDENTIFICATION NUMBER (TIN) <Text style={styles.asterisk}>*</Text>
+                    TIN NUMBER <Text style={styles.asterisk}>*</Text>
                   </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.tinNumber) && styles.inputBoxError]}>
@@ -452,7 +401,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       setTinNumber(val);
                       clearError('tinNumber');
                     }}
-                    placeholder="10-digit Ethiopian TIN (e.g. 0098234112)"
+                    placeholder="10-digit TIN"
                     placeholderTextColor={THEME.colors.textDim}
                     keyboardType="numeric"
                   />
@@ -465,7 +414,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={styles.label}>
-                    OPERATING FLEET SIZE <Text style={styles.asterisk}>*</Text>
+                    FLEET SIZE <Text style={styles.asterisk}>*</Text>
                   </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.fleetSize) && styles.inputBoxError]}>
@@ -482,7 +431,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       setFleetSize(val);
                       clearError('fleetSize');
                     }}
-                    placeholder="e.g. 16 Trucks or 5-15 Trucks"
+                    placeholder="Number of trucks"
                     placeholderTextColor={THEME.colors.textDim}
                   />
                 </View>
@@ -493,13 +442,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             </>
           )}
 
-          {/* Registration (Driver): Truck Plate & CDL */}
+          {/* Registration (Driver): Plate & License */}
           {mode === 'REGISTER' && role === 'DRIVER' && (
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={styles.label}>
-                    COMMERCIAL TRUCK LICENSE PLATE <Text style={styles.asterisk}>*</Text>
+                    TRUCK PLATE <Text style={styles.asterisk}>*</Text>
                   </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.licensePlate) && styles.inputBoxError]}>
@@ -529,7 +478,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={styles.label}>
-                    COMMERCIAL DRIVER LICENSE NO. <Text style={styles.asterisk}>*</Text>
+                    DRIVER LICENSE <Text style={styles.asterisk}>*</Text>
                   </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.driverLicense) && styles.inputBoxError]}>
@@ -546,7 +495,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       setDriverLicense(val);
                       clearError('driverLicense');
                     }}
-                    placeholder="e.g. ETH-CDL-782190"
+                    placeholder="License number"
                     placeholderTextColor={THEME.colors.textDim}
                     autoCapitalize="characters"
                   />
@@ -558,11 +507,11 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             </>
           )}
 
-          {/* Phone Number / Email Input */}
+          {/* Phone / Email Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
               <Text style={styles.label}>
-                {role === 'DRIVER' ? 'MOBILE PHONE NUMBER' : 'PHONE NUMBER OR CORPORATE EMAIL'}{' '}
+                {role === 'DRIVER' ? 'PHONE NUMBER' : 'PHONE OR EMAIL'}{' '}
                 <Text style={styles.asterisk}>*</Text>
               </Text>
             </View>
@@ -579,7 +528,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   setPhoneOrEmail(val);
                   clearError('phoneOrEmail');
                 }}
-                placeholder={role === 'DRIVER' ? '91 123 4567' : '91 144 5566 or user@domain.et'}
+                placeholder="91 123 4567"
                 placeholderTextColor={THEME.colors.textDim}
                 keyboardType={phoneOrEmail.includes('@') ? 'email-address' : 'phone-pad'}
                 autoCapitalize="none"
@@ -601,11 +550,18 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   onPress={() =>
                     Alert.alert(
                       'Account Recovery',
-                      'For fleet password resets, contact your enterprise dispatcher or TradeFlow support at support@tradeflow.et.'
+                      'Contact TradeFlow support at support@tradeflow.et for password reset.'
                     )
                   }
                 >
-                  <Text style={styles.forgotText}>Forgot password?</Text>
+                  <Text
+                    style={[
+                      styles.forgotText,
+                      role === 'DRIVER' && { color: THEME.colors.blue },
+                    ]}
+                  >
+                    Forgot password?
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -623,7 +579,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   setPassword(val);
                   clearError('password');
                 }}
-                placeholder={mode === 'LOGIN' ? 'Enter your account password' : 'Create a password (min 6 characters)'}
+                placeholder="••••••••"
                 placeholderTextColor={THEME.colors.textDim}
                 secureTextEntry={!showPassword}
               />
@@ -644,7 +600,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             )}
           </View>
 
-          {/* Confirm Password Input (Registration only) */}
+          {/* Confirm Password (Registration only) */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
@@ -666,7 +622,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                     setConfirmPassword(val);
                     clearError('confirmPassword');
                   }}
-                  placeholder="Re-enter password to confirm"
+                  placeholder="••••••••"
                   placeholderTextColor={THEME.colors.textDim}
                   secureTextEntry={!showConfirmPassword}
                 />
@@ -690,26 +646,32 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
           {/* Primary Action Button */}
           <TouchableOpacity
-            style={styles.primaryBtn}
+            style={[
+              styles.primaryBtn,
+              role === 'DRIVER' && styles.primaryBtnDriver,
+            ]}
             onPress={handleSubmit}
             activeOpacity={0.8}
           >
-            <Text style={styles.primaryBtnText}>
-              {mode === 'LOGIN'
-                ? `Sign In as ${role === 'TRANSPORTER' ? 'Carrier' : 'Driver'}`
-                : `Complete ${role === 'TRANSPORTER' ? 'Carrier' : 'Driver'} Registration`}
+            <Text
+              style={[
+                styles.primaryBtnText,
+                role === 'DRIVER' && styles.primaryBtnTextDriver,
+              ]}
+            >
+              {mode === 'LOGIN' ? 'Sign In' : 'Create Account'}
             </Text>
-            <Feather name="arrow-right" size={16} color={THEME.colors.primaryText} />
+            <Feather
+              name="arrow-right"
+              size={16}
+              color={role === 'DRIVER' ? '#FFFFFF' : THEME.colors.primaryText}
+            />
           </TouchableOpacity>
         </View>
 
-        {/* One-Tap Sandbox & Demo Credentials (Flexport / Stripe Developer Style) */}
+        {/* Demo Accounts */}
         <View style={styles.demoSection}>
-          <View style={styles.demoHeaderRow}>
-            <View style={styles.demoLine} />
-            <Text style={styles.demoLabel}>ONE-TAP DEMO ENVIRONMENT</Text>
-            <View style={styles.demoLine} />
-          </View>
+          <Text style={styles.demoLabel}>DEMO ACCOUNTS</Text>
 
           <View style={styles.demoCards}>
             <TouchableOpacity
@@ -717,19 +679,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               onPress={() => handleQuickDemo('TRANSPORTER')}
               activeOpacity={0.7}
             >
-              <View style={[styles.demoCardIcon, { backgroundColor: THEME.colors.primarySubtle }]}>
-                <Feather name="truck" size={15} color={THEME.colors.primary} />
-              </View>
+              <Feather name="truck" size={15} color={THEME.colors.primary} />
               <View style={styles.demoCardContent}>
-                <View style={styles.demoCardTop}>
-                  <Text style={styles.demoCardTitle}>Demo Transporter / Carrier</Text>
-                  <View style={styles.verifiedTag}>
-                    <Text style={styles.verifiedTagText}>TIN VERIFIED</Text>
-                  </View>
-                </View>
-                <Text style={styles.demoCardSub}>
-                  Solomon Haile • Rift Valley Transport PLC (16 Trucks)
-                </Text>
+                <Text style={styles.demoCardTitle}>Demo Transporter</Text>
+                <Text style={styles.demoCardSub}>Solomon Haile • Rift Valley Transport</Text>
               </View>
               <Feather name="chevron-right" size={16} color={THEME.colors.textMuted} />
             </TouchableOpacity>
@@ -739,34 +692,14 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               onPress={() => handleQuickDemo('DRIVER')}
               activeOpacity={0.7}
             >
-              <View style={[styles.demoCardIcon, { backgroundColor: 'rgba(59, 130, 246, 0.12)' }]}>
-                <Feather name="navigation" size={15} color={THEME.colors.blue} />
-              </View>
+              <Feather name="navigation" size={15} color={THEME.colors.blue} />
               <View style={styles.demoCardContent}>
-                <View style={styles.demoCardTop}>
-                  <Text style={styles.demoCardTitle}>Demo Corridor Driver</Text>
-                  <View style={[styles.verifiedTag, { borderColor: 'rgba(59, 130, 246, 0.3)' }]}>
-                    <Text style={[styles.verifiedTagText, { color: THEME.colors.blue }]}>A1 EN ROUTE</Text>
-                  </View>
-                </View>
-                <Text style={styles.demoCardSub}>
-                  Abebe Kebede • Assigned Truck 3-AA-98214
-                </Text>
+                <Text style={styles.demoCardTitle}>Demo Driver</Text>
+                <Text style={styles.demoCardSub}>Abebe Kebede • Truck 3-AA-98214</Text>
               </View>
               <Feather name="chevron-right" size={16} color={THEME.colors.textMuted} />
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Security & Regulatory Footer */}
-        <View style={styles.footer}>
-          <View style={styles.footerSecurityRow}>
-            <Feather name="shield" size={12} color={THEME.colors.textMuted} />
-            <Text style={styles.footerSecurityText}>
-              256-bit Encrypted Session • Compliant with ESLSE & MOTI Regulations
-            </Text>
-          </View>
-          <Text style={styles.footerVersion}>TradeFlow Mobile v1.0.4 • Ethiopia–Djibouti Corridor</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -782,35 +715,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'ios' ? 24 : 16,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 24 : 20,
     paddingBottom: 40,
   },
 
-  // ── Header & Branding ──
+  // ── Header ──
   header: {
     marginBottom: 20,
+    alignItems: 'center',
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
   },
   logoBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     backgroundColor: THEME.colors.surfaceElevated,
     borderWidth: 1,
     borderColor: THEME.colors.primaryBorder,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   brandTitle: {
     color: THEME.colors.textPrimary,
@@ -818,43 +746,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -0.4,
   },
-  corridorBadge: {
-    backgroundColor: THEME.colors.primarySubtle,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: THEME.colors.primaryBorder,
-  },
-  corridorBadgeText: {
-    color: THEME.colors.primary,
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    fontFamily: THEME.typography.mono,
-  },
-  brandSub: {
-    color: THEME.colors.textMuted,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  welcomeBox: {
-    marginTop: 2,
-  },
-  headline: {
-    color: THEME.colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  subheadline: {
-    color: THEME.colors.textSecondary,
-    fontSize: 12.5,
-    lineHeight: 18,
-    marginTop: 4,
-  },
 
-  // ── Role Selector Cards (Uber Style) ──
+  // ── Role Selector ──
   roleContainer: {
     flexDirection: 'row',
     gap: 10,
@@ -862,67 +755,43 @@ const styles = StyleSheet.create({
   },
   roleCard: {
     flex: 1,
-    backgroundColor: THEME.colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
-    padding: 12,
-  },
-  roleCardActive: {
-    borderColor: THEME.colors.primary,
-    backgroundColor: THEME.colors.surfaceElevated,
-  },
-  roleCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  roleIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: THEME.colors.surface,
-    alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+    backgroundColor: THEME.colors.card,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: THEME.colors.cardBorder,
+    paddingVertical: 12,
   },
-  roleIconCircleActive: {
+  roleCardActiveTransporter: {
+    borderColor: THEME.colors.primary,
     backgroundColor: THEME.colors.primarySubtle,
   },
-  radioDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: THEME.colors.cardBorderHover,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioDotActive: {
-    borderColor: THEME.colors.primary,
-  },
-  radioDotInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: THEME.colors.primary,
+  roleCardActiveDriver: {
+    borderColor: THEME.colors.blue,
+    backgroundColor: THEME.colors.blueSubtle,
   },
   roleTitle: {
-    color: THEME.colors.textPrimary,
-    fontSize: 13.5,
+    color: THEME.colors.textMuted,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  roleTitleActiveTransporter: {
+    color: THEME.colors.primary,
     fontWeight: '700',
   },
-  roleDesc: {
-    color: THEME.colors.textMuted,
-    fontSize: 11,
-    marginTop: 2,
+  roleTitleActiveDriver: {
+    color: THEME.colors.blue,
+    fontWeight: '700',
   },
 
   // ── Mode Switcher ──
   modeContainer: {
     flexDirection: 'row',
     backgroundColor: THEME.colors.surface,
-    borderRadius: 10,
+    borderRadius: 8,
     padding: 3,
     marginBottom: 16,
     borderWidth: 1,
@@ -930,9 +799,9 @@ const styles = StyleSheet.create({
   },
   modePill: {
     flex: 1,
-    paddingVertical: 9,
+    paddingVertical: 8,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 6,
   },
   modePillActive: {
     backgroundColor: THEME.colors.card,
@@ -949,24 +818,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // ── Form Card & Inputs ──
+  // ── Form Card ──
   card: {
     backgroundColor: THEME.colors.card,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: THEME.colors.cardBorder,
     padding: 16,
-    marginBottom: 22,
-  },
-  cardHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: 12,
-  },
-  cardHeaderHint: {
-    color: THEME.colors.textMuted,
-    fontSize: 11,
-    fontFamily: THEME.typography.mono,
+    marginBottom: 20,
   },
   asterisk: {
     color: THEME.colors.red,
@@ -1042,7 +901,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: THEME.colors.textPrimary,
     fontSize: 13,
-    paddingVertical: 11,
+    paddingVertical: 10,
   },
   eyeBtn: {
     padding: 6,
@@ -1053,40 +912,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     backgroundColor: THEME.colors.primary,
-    paddingVertical: 14,
+    paddingVertical: 13,
     borderRadius: 8,
     marginTop: 6,
+  },
+  primaryBtnDriver: {
+    backgroundColor: THEME.colors.blue,
   },
   primaryBtnText: {
     color: THEME.colors.primaryText,
     fontSize: 13.5,
     fontWeight: '700',
   },
+  primaryBtnTextDriver: {
+    color: '#FFFFFF',
+  },
 
   // ── Demo Section ──
   demoSection: {
-    marginBottom: 20,
-  },
-  demoHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  demoLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: THEME.colors.cardBorder,
+    marginTop: 4,
   },
   demoLabel: {
     color: THEME.colors.textMuted,
-    fontSize: 9.5,
+    fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.8,
-    marginHorizontal: 10,
+    marginBottom: 10,
+    textAlign: 'center',
     fontFamily: THEME.typography.mono,
   },
   demoCards: {
-    gap: 9,
+    gap: 8,
   },
   demoCard: {
     flexDirection: 'row',
@@ -1094,69 +950,22 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.surface,
     borderWidth: 1,
     borderColor: THEME.colors.cardBorder,
-    borderRadius: 10,
-    padding: 12,
-    gap: 12,
-  },
-  demoCardIcon: {
-    width: 32,
-    height: 32,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 12,
   },
   demoCardContent: {
     flex: 1,
-  },
-  demoCardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   demoCardTitle: {
     color: THEME.colors.textPrimary,
     fontSize: 12.5,
     fontWeight: '600',
   },
-  verifiedTag: {
-    backgroundColor: THEME.colors.primarySubtle,
-    borderWidth: 1,
-    borderColor: THEME.colors.primaryBorder,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 3,
-  },
-  verifiedTagText: {
-    color: THEME.colors.primary,
-    fontSize: 8.5,
-    fontWeight: '700',
-    fontFamily: THEME.typography.mono,
-  },
   demoCardSub: {
     color: THEME.colors.textMuted,
     fontSize: 11,
-    marginTop: 2,
-  },
-
-  // ── Footer ──
-  footer: {
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
-  },
-  footerSecurityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  footerSecurityText: {
-    color: THEME.colors.textMuted,
-    fontSize: 10,
-    fontWeight: '500',
-  },
-  footerVersion: {
-    color: THEME.colors.textDim,
-    fontSize: 9.5,
-    fontFamily: THEME.typography.mono,
+    marginTop: 1,
   },
 });

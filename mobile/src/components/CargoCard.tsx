@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   rateAmount: {
-    color: THEME.colors.textPrimary,
+    color: THEME.colors.primary,
     fontSize: 18,
     fontWeight: '800',
     fontFamily: THEME.typography.mono,

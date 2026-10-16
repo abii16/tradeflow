@@ -119,12 +119,12 @@ function MainApp() {
               <Feather
                 name="navigation"
                 size={18}
-                color={activeRole === 'driver' ? THEME.colors.primary : THEME.colors.textMuted}
+                color={activeRole === 'driver' ? THEME.colors.blue : THEME.colors.textMuted}
               />
               <Text
                 style={[
                   styles.navLabel,
-                  activeRole === 'driver' && styles.navLabelActive,
+                  activeRole === 'driver' && styles.navLabelActiveDriver,
                 ]}
               >
                 Driver Console
@@ -179,6 +179,10 @@ const styles = StyleSheet.create({
   },
   navLabelActive: {
     color: THEME.colors.primary,
+    fontWeight: '700',
+  },
+  navLabelActiveDriver: {
+    color: THEME.colors.blue,
     fontWeight: '700',
   },
 });

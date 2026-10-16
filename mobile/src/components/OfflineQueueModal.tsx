@@ -152,9 +152,7 @@ export default function OfflineQueueModal({
               color={isOnline ? THEME.colors.primary : THEME.colors.amber}
             />
             <Text style={styles.bannerText}>
-              {isOnline
-                ? 'Online — ready to sync pending actions'
-                : 'Offline — actions are saved on device'}
+              {isOnline ? 'Online' : 'Offline — saved locally'}
             </Text>
           </View>
 
@@ -167,10 +165,7 @@ export default function OfflineQueueModal({
                 color={THEME.colors.textMuted}
                 style={{ marginBottom: 8 }}
               />
-              <Text style={styles.emptyTitle}>Queue is empty</Text>
-              <Text style={styles.emptyText}>
-                Actions performed while offline will appear here.
-              </Text>
+              <Text style={styles.emptyTitle}>No queued actions</Text>
             </View>
           ) : (
             <FlatList

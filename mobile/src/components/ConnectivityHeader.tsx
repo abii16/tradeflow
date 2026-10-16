@@ -31,8 +31,18 @@ export default function ConnectivityHeader({
           <View style={styles.nameRow}>
             <Text style={styles.brandName}>TradeFlow</Text>
             {Boolean(currentUser) && (
-              <View style={styles.userBadge}>
-                <Text style={styles.userBadgeText}>
+              <View
+                style={[
+                  styles.userBadge,
+                  currentUser?.role === 'DRIVER' && styles.userBadgeDriver,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.userBadgeText,
+                    currentUser?.role === 'DRIVER' && styles.userBadgeTextDriver,
+                  ]}
+                >
                   {currentUser?.role === 'TRANSPORTER' ? 'CARRIER' : 'DRIVER'}
                 </Text>
               </View>
@@ -141,11 +151,18 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 4,
   },
+  userBadgeDriver: {
+    backgroundColor: THEME.colors.blueSubtle,
+    borderColor: THEME.colors.blueBorder,
+  },
   userBadgeText: {
     color: THEME.colors.primary,
     fontSize: 9,
     fontWeight: '700',
     fontFamily: THEME.typography.mono,
+  },
+  userBadgeTextDriver: {
+    color: THEME.colors.blue,
   },
   signOutBtn: {
     padding: 6,

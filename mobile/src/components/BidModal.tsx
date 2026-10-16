@@ -80,7 +80,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
             {/* Header */}
             <View style={styles.header}>
               <View>
-                <Text style={styles.modalTitle}>Place a Bid</Text>
+                <Text style={styles.modalTitle}>Place Bid</Text>
                 <Text style={styles.modalSubtitle}>
                   {cargo.id} • {cargo.cargoType}
                 </Text>
@@ -117,7 +117,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
 
             {/* Quick Adjustments */}
             <View style={styles.presetSection}>
-              <Text style={styles.inputLabel}>Quick Rate Adjustment</Text>
+              <Text style={styles.inputLabel}>Adjustment</Text>
               <View style={styles.presetRow}>
                 <TouchableOpacity
                   style={styles.presetBtn}
@@ -149,7 +149,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
 
             {/* Form Inputs */}
             <View style={styles.formGroup}>
-              <Text style={styles.inputLabel}>Your Bid (ETB)</Text>
+              <Text style={styles.inputLabel}>Bid (ETB)</Text>
               <TextInput
                 style={styles.input}
                 value={amount}
@@ -161,7 +161,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.inputLabel}>Truck Plate Number</Text>
+              <Text style={styles.inputLabel}>Truck Plate</Text>
               <TextInput
                 style={styles.input}
                 value={plate}
@@ -173,7 +173,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.inputLabel}>Pickup Availability</Text>
+              <Text style={styles.inputLabel}>Availability</Text>
               <TextInput
                 style={styles.input}
                 value={eta}
@@ -181,14 +181,6 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
                 placeholder="e.g. Ready in 24 hours"
                 placeholderTextColor={THEME.colors.textDim}
               />
-            </View>
-
-            {/* Offline note */}
-            <View style={styles.offlineNote}>
-              <Feather name="info" size={13} color={THEME.colors.textMuted} />
-              <Text style={styles.offlineNoteText}>
-                Offline mode supported. If disconnected, bids queue locally and sync automatically.
-              </Text>
             </View>
 
             {/* Buttons */}
