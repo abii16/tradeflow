@@ -29,6 +29,11 @@ import ConnectivityHeader from '../components/ConnectivityHeader';
 import OfflineQueueModal from '../components/OfflineQueueModal';
 import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import {
+  formatWaypointTimestamp,
+  toEthiopianTime,
+} from '../utils/ethiopianCalendar';
 
 const INITIAL_WAYPOINTS: Waypoint[] = [
   {
@@ -80,13 +85,6 @@ const INITIAL_WAYPOINTS: Waypoint[] = [
   },
 ];
 
-const INCIDENT_TYPES = [
-  { key: 'FUEL', label: 'Fuel Station Queue', icon: 'droplet' as const },
-  { key: 'ROAD_BLOCK', label: 'Road Obstruction', icon: 'alert-triangle' as const },
-  { key: 'BREAKDOWN', label: 'Mechanical Issue', icon: 'tool' as const },
-  { key: 'CUSTOMS_HOLD', label: 'Customs Hold', icon: 'file-text' as const },
-];
-
 interface Props {
   currentUser?: AuthUser | null;
   onSignOut?: () => void;
@@ -101,6 +99,7 @@ export default function DriverScreen({
   onSelectRole,
 }: Props) {
   const { theme } = useTheme();
+  const { language, t } = useLanguage();
   const [waypoints, setWaypoints] = useState<Waypoint[]>(INITIAL_WAYPOINTS);
   const [tripCompleted, setTripCompleted] = useState(false);
   const [isOnline, setIsOnline] = useState(getNetworkStatus());
@@ -164,13 +163,18 @@ export default function DriverScreen({
 
   // ── Handle Check-in at Current Waypoint ──
   const handleCheckin = async (wp: Waypoint) => {
-    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    const ethTime = toEthiopianTime(now.getHours(), now.getMinutes());
+    const displayTimestamp =
+      language === 'AM'
+        ? ethTime.ethTimeStr
+        : `Today, ${ethTime.gcTimeStr}`;
 
     setWaypoints((prev) => {
       const idx = prev.findIndex((item) => item.id === wp.id);
       return prev.map((item, i) => {
         if (i === idx) {
-          return { ...item, status: 'completed', timestamp: `Today, ${nowTime}` };
+          return { ...item, status: 'completed', timestamp: displayTimestamp };
         }
         if (i === idx + 1) {
           return { ...item, status: 'current' };
@@ -288,11 +292,11 @@ export default function DriverScreen({
           <View style={styles.tripTopRow}>
             <View style={styles.tripTag}>
               <Text style={styles.tripTagText}>
-                {tripCompleted ? 'Completed' : 'Active Trip'}
+                {tripCompleted ? t('completed_trip') : t('active_trip')}
               </Text>
             </View>
             <Text style={[styles.truckPlate, { color: theme.colors.textMuted }]}>
-              Truck: {currentUser?.licensePlate || '3-AA-98214'}
+              {t('truck')}: {currentUser?.licensePlate || '3-AA-98214'}
             </Text>
           </View>
 
@@ -311,9 +315,9 @@ export default function DriverScreen({
             ]}
           >
             <View style={styles.progressHeader}>
-              <Text style={[styles.progressLabel, { color: theme.colors.textMuted }]}>Progress</Text>
+              <Text style={[styles.progressLabel, { color: theme.colors.textMuted }]}>{t('progress')}</Text>
               <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
-                {completedCount} of {waypoints.length} Stops ({progressPercent}%)
+                {completedCount} / {waypoints.length} {t('stops')} ({progressPercent}%)
               </Text>
             </View>
             <View
@@ -342,7 +346,7 @@ export default function DriverScreen({
               activeOpacity={0.7}
             >
               <Feather name="alert-circle" size={14} color={theme.colors.amber} />
-              <Text style={styles.incidentBtnText}>Report Delay</Text>
+              <Text style={styles.incidentBtnText}>{t('report_delay')}</Text>
             </TouchableOpacity>
 
             {completedCount >= 4 && !tripCompleted && (
@@ -352,7 +356,7 @@ export default function DriverScreen({
                 activeOpacity={0.7}
               >
                 <Feather name="check-square" size={14} color={theme.colors.primaryText} />
-                <Text style={styles.podBtnText}>Proof of Delivery</Text>
+                <Text style={styles.podBtnText}>{t('proof_of_delivery')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -360,7 +364,7 @@ export default function DriverScreen({
 
         {/* Corridor Waypoint Timeline */}
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Waypoints</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>{t('waypoints')}</Text>
           <Text style={[styles.sectionSub, { color: theme.colors.textMuted }]}>
             Djibouti – Modjo (910 km)
           </Text>
@@ -452,7 +456,7 @@ export default function DriverScreen({
                     <View style={styles.verifiedRow}>
                       <Feather name="check-circle" size={12} color={theme.colors.primary} />
                       <Text style={[styles.verifiedText, { color: theme.colors.primary }]}>
-                        Verified: {wp.timestamp}
+                        {t('verified')}: {formatWaypointTimestamp(wp.timestamp || '', language)}
                       </Text>
                     </View>
                   )}
@@ -470,7 +474,7 @@ export default function DriverScreen({
                           color="#FFFFFF"
                         />
                         <Text style={styles.checkinButtonText}>
-                          Check In
+                          {t('check_in')}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -513,7 +517,7 @@ export default function DriverScreen({
 
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>
-                Report Delay
+                {t('report_delay')}
               </Text>
               <TouchableOpacity
                 onPress={() => setIncidentModalVisible(false)}
@@ -524,7 +528,12 @@ export default function DriverScreen({
             </View>
 
             <View style={styles.incidentChips}>
-              {INCIDENT_TYPES.map((type) => {
+              {[
+                { key: 'FUEL', label: t('incident_fuel'), icon: 'droplet' as const },
+                { key: 'ROAD_BLOCK', label: t('incident_roadblock'), icon: 'alert-triangle' as const },
+                { key: 'BREAKDOWN', label: t('incident_breakdown'), icon: 'tool' as const },
+                { key: 'CUSTOMS_HOLD', label: t('incident_customs'), icon: 'file-text' as const },
+              ].map((type) => {
                 const active = selectedIncidentType === type.key;
                 return (
                   <TouchableOpacity
@@ -566,7 +575,7 @@ export default function DriverScreen({
             </View>
 
             <Text style={[styles.notesLabel, { color: theme.colors.textMuted }]}>
-              Notes
+              {t('notes')}
             </Text>
             <TextInput
               style={[
@@ -579,7 +588,7 @@ export default function DriverScreen({
               ]}
               value={incidentNotes}
               onChangeText={setIncidentNotes}
-              placeholder="Describe delay reason..."
+              placeholder={t('describe_delay')}
               placeholderTextColor={theme.colors.textDim}
               multiline
               numberOfLines={3}
@@ -597,7 +606,7 @@ export default function DriverScreen({
                 onPress={() => setIncidentModalVisible(false)}
               >
                 <Text style={[styles.cancelBtnText, { color: theme.colors.red }]}>
-                  Cancel
+                  {t('cancel')}
                 </Text>
               </TouchableOpacity>
 
@@ -610,7 +619,7 @@ export default function DriverScreen({
                 onPress={handleSubmitIncident}
                 disabled={!incidentNotes.trim()}
               >
-                <Text style={styles.submitIncidentBtnText}>Submit</Text>
+                <Text style={styles.submitIncidentBtnText}>{t('submit')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -648,7 +657,7 @@ export default function DriverScreen({
 
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>
-                Proof of Delivery
+                {t('proof_of_delivery')}
               </Text>
               <TouchableOpacity
                 onPress={() => setPodModalVisible(false)}
@@ -660,7 +669,7 @@ export default function DriverScreen({
 
             <View style={styles.formGroup}>
               <Text style={[styles.notesLabel, { color: theme.colors.textMuted }]}>
-                Receiver Name
+                {t('receiver_name')}
               </Text>
               <TextInput
                 style={[
@@ -673,14 +682,14 @@ export default function DriverScreen({
                 ]}
                 value={receiverName}
                 onChangeText={setReceiverName}
-                placeholder="Receiver name"
+                placeholder={t('receiver_name')}
                 placeholderTextColor={theme.colors.textDim}
               />
             </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.notesLabel, { color: theme.colors.textMuted }]}>
-                Waybill Reference
+                {t('waybill_ref')}
               </Text>
               <TextInput
                 style={[
@@ -710,7 +719,7 @@ export default function DriverScreen({
                 onPress={() => setPodModalVisible(false)}
               >
                 <Text style={[styles.cancelBtnText, { color: theme.colors.red }]}>
-                  Cancel
+                  {t('cancel')}
                 </Text>
               </TouchableOpacity>
 
@@ -729,7 +738,7 @@ export default function DriverScreen({
                     { color: theme.colors.primaryText },
                   ]}
                 >
-                  Sign & Complete
+                  {t('sign_complete')}
                 </Text>
               </TouchableOpacity>
             </View>

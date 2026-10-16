@@ -15,6 +15,8 @@ import { Feather } from '@expo/vector-icons';
 import { CargoLoad } from '../types/cargo';
 import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatPickupWindow, formatPickupDetails } from '../utils/ethiopianCalendar';
 
 interface Props {
   visible: boolean;
@@ -30,6 +32,7 @@ interface Props {
 
 export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
   const { theme } = useTheme();
+  const { language, t } = useLanguage();
   const [amount, setAmount] = useState('');
   const [plate, setPlate] = useState('');
   const [eta, setEta] = useState('');
@@ -96,7 +99,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
             <View style={styles.header}>
               <View>
                 <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>
-                  Place Bid
+                  {t('bid_modal_title')}
                 </Text>
                 <Text style={[styles.modalSubtitle, { color: theme.colors.textMuted }]}>
                   {cargo.id} • {cargo.cargoType}
@@ -127,7 +130,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
             >
               <View style={styles.summaryRow}>
                 <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
-                  Route
+                  {t('route')}
                 </Text>
                 <Text style={[styles.summaryValue, { color: theme.colors.textSecondary }]}>
                   {cargo.origin} → {cargo.destination} ({cargo.distanceKm} km)
@@ -135,15 +138,38 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
               </View>
               <View style={styles.summaryRow}>
                 <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
-                  Payload
+                  {t('payload')}
                 </Text>
                 <Text style={[styles.summaryValue, { color: theme.colors.textSecondary }]}>
-                  {cargo.weightTons} tons
+                  {cargo.weightTons} {t('tons')}
                 </Text>
               </View>
               <View style={styles.summaryRow}>
                 <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
-                  Listed Rate
+                  {t('pickup_window')}
+                </Text>
+                {(() => {
+                  const p = formatPickupDetails(cargo.pickupWindow, language);
+                  return (
+                    <Text style={[styles.summaryValue, { color: theme.colors.textSecondary, textAlign: 'right', fontWeight: '600' }]}>
+                      {language === 'AM' ? (
+                        <>
+                          <Text style={{ color: theme.colors.textPrimary }}>{p.ecDatePlain}</Text>
+                          <Text style={{ color: theme.colors.primary, fontWeight: '700' }}> ({p.ecTime})</Text>
+                        </>
+                      ) : (
+                        <>
+                          <Text style={{ color: theme.colors.textPrimary }}>{p.gcDatePlain}</Text>
+                          <Text style={{ color: theme.colors.blue, fontWeight: '700' }}> • {p.gcTime}</Text>
+                        </>
+                      )}
+                    </Text>
+                  );
+                })()}
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  {t('listed_rate')}
                 </Text>
                 <Text style={[styles.summaryHighlight, { color: theme.colors.primary }]}>
                   {cargo.rateETB.toLocaleString('en-US')} ETB
@@ -154,7 +180,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
             {/* Quick Adjustments */}
             <View style={styles.presetSection}>
               <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
-                Adjustment
+                {t('adjustment')}
               </Text>
               <View style={styles.presetRow}>
                 <TouchableOpacity
@@ -190,7 +216,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
                       { color: theme.colors.primary, fontWeight: '700' },
                     ]}
                   >
-                    Listed Rate
+                    {t('listed_rate')}
                   </Text>
                 </TouchableOpacity>
 
@@ -215,7 +241,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
             {/* Form Inputs */}
             <View style={styles.formGroup}>
               <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
-                Bid (ETB)
+                {t('bid_amount_etb')}
               </Text>
               <TextInput
                 style={[
@@ -236,7 +262,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
 
             <View style={styles.formGroup}>
               <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
-                Truck Plate
+                {t('truck_plate')}
               </Text>
               <TextInput
                 style={[
@@ -257,7 +283,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
 
             <View style={styles.formGroup}>
               <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
-                Availability
+                {t('availability')}
               </Text>
               <TextInput
                 style={[
@@ -289,7 +315,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
                 activeOpacity={0.7}
               >
                 <Text style={[styles.cancelButtonText, { color: theme.colors.red }]}>
-                  Cancel
+                  {t('cancel')}
                 </Text>
               </TouchableOpacity>
 
@@ -309,7 +335,7 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
                     { color: theme.colors.primaryText },
                   ]}
                 >
-                  Submit Bid
+                  {t('submit_bid')}
                 </Text>
               </TouchableOpacity>
             </View>

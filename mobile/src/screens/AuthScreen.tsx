@@ -16,6 +16,7 @@ import { AuthUser, UserRole } from '../types/auth';
 import { saveUserSession } from '../services/database';
 import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Props {
   onLoginSuccess: (user: AuthUser) => void;
@@ -23,6 +24,7 @@ interface Props {
 
 export default function AuthScreen({ onLoginSuccess }: Props) {
   const { theme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
   const [role, setRole] = useState<UserRole>('TRANSPORTER');
   const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
@@ -222,7 +224,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Clean Header */}
+        {/* Clean Header with Language Switch */}
         <View style={styles.header}>
           <View style={styles.brandRow}>
             <View
@@ -247,6 +249,24 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               TradeFlow
             </Text>
           </View>
+
+          {/* Quick Language Toggle Pill */}
+          <TouchableOpacity
+            style={[
+              styles.langPillAuth,
+              {
+                backgroundColor: theme.colors.surfaceElevated,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
+            onPress={toggleLanguage}
+            activeOpacity={0.7}
+          >
+            <Feather name="globe" size={13} color={theme.colors.textSecondary} />
+            <Text style={[styles.langPillAuthText, { color: theme.colors.textPrimary }]}>
+              {language === 'EN' ? 'አማርኛ' : 'EN'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Role Selector Tabs */}
@@ -281,7 +301,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 },
               ]}
             >
-              Transporter
+              {t('transporter')}
             </Text>
           </TouchableOpacity>
 
@@ -315,7 +335,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 },
               ]}
             >
-              Driver
+              {t('driver')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -352,7 +372,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 },
               ]}
             >
-              Sign In
+              {t('sign_in')}
             </Text>
           </TouchableOpacity>
 
@@ -378,7 +398,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 },
               ]}
             >
-              Register
+              {t('register')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -398,7 +418,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                  FULL NAME <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                  {t('full_name')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
               </View>
               <View
@@ -440,7 +460,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                    COMPANY NAME <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                    {t('company_name')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
                 <View
@@ -478,7 +498,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                    TIN NUMBER <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                    {t('tin_number')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
                 <View
@@ -517,7 +537,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                    FLEET SIZE <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                    {t('fleet_size')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
                 <View
@@ -560,7 +580,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                    TRUCK PLATE <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                    {t('truck_plate')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
                 <View
@@ -599,7 +619,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
                   <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                    DRIVER LICENSE <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                    {t('driver_license')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
                 <View
@@ -641,7 +661,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
               <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                {role === 'DRIVER' ? 'PHONE NUMBER' : 'PHONE OR EMAIL'}{' '}
+                {role === 'DRIVER' ? t('phone_number') : t('phone_or_email')}{' '}
                 <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
               </Text>
             </View>
@@ -689,7 +709,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
               <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                PASSWORD <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                {t('password')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
               </Text>
               {mode === 'LOGIN' && (
                 <TouchableOpacity
@@ -706,7 +726,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       { color: role === 'DRIVER' ? theme.colors.blue : theme.colors.primary },
                     ]}
                   >
-                    Forgot password?
+                    {t('forgot_password')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -760,7 +780,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                  CONFIRM PASSWORD <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                  {t('confirm_password')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
               </View>
               <View
@@ -829,7 +849,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 },
               ]}
             >
-              {mode === 'LOGIN' ? 'Sign In' : 'Create Account'}
+              {mode === 'LOGIN' ? t('sign_in') : t('create_account')}
             </Text>
             <Feather
               name="arrow-right"
@@ -842,7 +862,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         {/* Demo Accounts */}
         <View style={styles.demoSection}>
           <Text style={[styles.demoLabel, { color: theme.colors.textMuted }]}>
-            DEMO ACCOUNTS
+            {t('demo_accounts')}
           </Text>
 
           <View style={styles.demoCards}>
@@ -860,7 +880,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <Feather name="truck" size={15} color={theme.colors.primary} />
               <View style={styles.demoCardContent}>
                 <Text style={[styles.demoCardTitle, { color: theme.colors.textPrimary }]}>
-                  Demo Transporter
+                  {t('demo_transporter')}
                 </Text>
                 <Text style={[styles.demoCardSub, { color: theme.colors.textMuted }]}>
                   Solomon Haile • Rift Valley Transport
@@ -883,7 +903,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <Feather name="navigation" size={15} color={theme.colors.blue} />
               <View style={styles.demoCardContent}>
                 <Text style={[styles.demoCardTitle, { color: theme.colors.textPrimary }]}>
-                  Demo Driver
+                  {t('demo_driver')}
                 </Text>
                 <Text style={[styles.demoCardSub, { color: theme.colors.textMuted }]}>
                   Abebe Kebede • Truck 3-AA-98214
@@ -915,7 +935,22 @@ const styles = StyleSheet.create({
   // ── Header ──
   header: {
     marginBottom: 20,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  langPillAuth: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  langPillAuthText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   brandRow: {
     flexDirection: 'row',

@@ -33,6 +33,7 @@ import OfflineQueueModal from '../components/OfflineQueueModal';
 import { AuthUser } from '../types/auth';
 import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const ROUTE_FILTERS = ['All', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
 
@@ -50,6 +51,7 @@ export default function CargoFeedScreen({
   onSelectRole,
 }: Props) {
   const { theme } = useTheme();
+  const { language, t } = useLanguage();
   const [cargo, setCargo] = useState<CargoLoad[]>([]);
   const [activeTab, setActiveTab] = useState<'available' | 'my_bids'>('available');
   const [search, setSearch] = useState('');
@@ -170,7 +172,7 @@ export default function CargoFeedScreen({
   if (!dbReady) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading loads...</Text>
+        <Text style={styles.loadingText}>{t('loading_loads')}</Text>
       </View>
     );
   }
@@ -217,7 +219,7 @@ export default function CargoFeedScreen({
               },
             ]}
           >
-            Available ({cargo.length})
+            {t('available')} ({cargo.length})
           </Text>
         </TouchableOpacity>
 
@@ -240,7 +242,7 @@ export default function CargoFeedScreen({
               },
             ]}
           >
-            My Bids ({myBidsCount})
+            {t('my_bids')} ({myBidsCount})
           </Text>
         </TouchableOpacity>
       </View>
@@ -266,7 +268,7 @@ export default function CargoFeedScreen({
             style={[styles.searchInput, { color: theme.colors.textPrimary }]}
             value={search}
             onChangeText={setSearch}
-            placeholder="Search loads..."
+            placeholder={t('search_loads')}
             placeholderTextColor={theme.colors.textMuted}
           />
           {search.length > 0 && (
@@ -284,6 +286,7 @@ export default function CargoFeedScreen({
         >
           {ROUTE_FILTERS.map((route) => {
             const active = activeRoute === route;
+            const displayLabel = route === 'All' ? t('all_routes') : route;
             return (
               <TouchableOpacity
                 key={route}
@@ -309,7 +312,7 @@ export default function CargoFeedScreen({
                     active && styles.routeChipTextActive,
                   ]}
                 >
-                  {route}
+                  {displayLabel}
                 </Text>
               </TouchableOpacity>
             );
@@ -337,12 +340,12 @@ export default function CargoFeedScreen({
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={[styles.emptyTitle, { color: theme.colors.textPrimary }]}>
-              {activeTab === 'my_bids' ? 'No active bids' : 'No loads found'}
+              {activeTab === 'my_bids' ? t('no_active_bids') : t('no_loads_found')}
             </Text>
             <Text style={[styles.emptySubtitle, { color: theme.colors.textMuted }]}>
               {activeTab === 'my_bids'
-                ? 'Your placed bids will appear here.'
-                : 'Try adjusting your corridor filter.'}
+                ? t('my_bids_empty_sub')
+                : t('filter_empty_sub')}
             </Text>
           </View>
         }

@@ -1,9 +1,10 @@
-// TradeFlow Mobile — Freight Load Card (Dynamic Dark & Light Mode)
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { CargoLoad } from '../types/cargo';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatPickupWindow, formatPickupDetails, formatTimeAgo } from '../utils/ethiopianCalendar';
 
 interface Props {
   item: CargoLoad;
@@ -14,18 +15,10 @@ function formatETB(amount: number): string {
   return amount.toLocaleString('en-US');
 }
 
-function timeAgo(isoStr: string): string {
-  const diff = Date.now() - new Date(isoStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
 export default function CargoCard({ item, onBid }: Props) {
   const { theme } = useTheme();
+  const { language, t } = useLanguage();
+  const pickup = formatPickupDetails(item.pickupWindow, language);
   const isBidPlaced = item.status === 'bid_placed';
   const isUrgent = item.urgency === 'urgent';
 
@@ -46,7 +39,7 @@ export default function CargoCard({ item, onBid }: Props) {
             {item.cargoType}
           </Text>
           <Text style={[styles.loadId, { color: theme.colors.textMuted }]}>
-            {item.id} • {timeAgo(item.postedAt)}
+            {item.id} • {formatTimeAgo(item.postedAt, language)}
           </Text>
         </View>
 
@@ -91,8 +84,8 @@ export default function CargoCard({ item, onBid }: Props) {
             <Text style={[styles.cityText, { color: theme.colors.textPrimary }]}>
               {item.origin}
             </Text>
-            <Text style={[styles.windowText, { color: theme.colors.textMuted }]}>
-              Pickup: {item.pickupWindow}
+            <Text style={[styles.distanceText, { color: theme.colors.textMuted }]}>
+              {item.distanceKm} km
             </Text>
           </View>
 
@@ -100,8 +93,52 @@ export default function CargoCard({ item, onBid }: Props) {
             <Text style={[styles.cityText, { color: theme.colors.textPrimary }]}>
               {item.destination}
             </Text>
-            <Text style={[styles.distanceText, { color: theme.colors.textMuted }]}>
-              {item.distanceKm} km
+          </View>
+
+          {/* Pickup Window */}
+          <View
+            style={[
+              styles.pickupBar,
+              {
+                backgroundColor: theme.colors.surfaceElevated,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
+          >
+            <Feather
+              name="calendar"
+              size={12}
+              color={language === 'AM' ? theme.colors.primary : theme.colors.blue}
+            />
+            <Text
+              style={[
+                styles.pickupBarText,
+                { color: theme.colors.textSecondary },
+              ]}
+              numberOfLines={1}
+            >
+              <Text style={{ color: theme.colors.textMuted, fontWeight: '700' }}>
+                {t('pickup')}:{' '}
+              </Text>
+              {language === 'AM' ? (
+                <>
+                  <Text style={{ color: theme.colors.textPrimary, fontWeight: '600' }}>
+                    {pickup.ecDatePlain}
+                  </Text>
+                  <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>
+                    {' '}({pickup.ecTime})
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={{ color: theme.colors.textPrimary, fontWeight: '600' }}>
+                    {pickup.gcDatePlain}
+                  </Text>
+                  <Text style={{ color: theme.colors.blue, fontWeight: '700' }}>
+                    {' '}• {pickup.gcTime}
+                  </Text>
+                </>
+              )}
             </Text>
           </View>
         </View>
@@ -115,9 +152,9 @@ export default function CargoCard({ item, onBid }: Props) {
         ]}
       >
         <View style={styles.specItem}>
-          <Text style={[styles.specLabel, { color: theme.colors.textMuted }]}>Weight</Text>
+          <Text style={[styles.specLabel, { color: theme.colors.textMuted }]}>{t('weight')}</Text>
           <Text style={[styles.specValue, { color: theme.colors.textPrimary }]}>
-            {item.weightTons} tons
+            {item.weightTons} {t('tons')}
           </Text>
         </View>
 
@@ -129,9 +166,9 @@ export default function CargoCard({ item, onBid }: Props) {
         />
 
         <View style={styles.specItem}>
-          <Text style={[styles.specLabel, { color: theme.colors.textMuted }]}>Corridor Leg</Text>
+          <Text style={[styles.specLabel, { color: theme.colors.textMuted }]}>{t('corridor_leg')}</Text>
           <Text style={[styles.specValue, { color: theme.colors.textPrimary }]}>
-            {item.distanceKm > 500 ? 'Long Haul' : 'Regional'}
+            {item.distanceKm > 500 ? t('long_haul') : t('regional')}
           </Text>
         </View>
 
@@ -150,7 +187,7 @@ export default function CargoCard({ item, onBid }: Props) {
               { color: isBidPlaced ? theme.colors.amber : theme.colors.primary },
             ]}
           >
-            {isBidPlaced ? 'Bid Placed' : 'Available'}
+            {isBidPlaced ? t('bid_placed') : t('available')}
           </Text>
         </View>
       </View>
@@ -167,7 +204,9 @@ export default function CargoCard({ item, onBid }: Props) {
               },
             ]}
           >
-            <Text style={[styles.urgentText, { color: theme.colors.red }]}>Urgent Dispatch</Text>
+            <Text style={[styles.urgentText, { color: theme.colors.red }]}>
+              {t('urgent_dispatch')}
+            </Text>
           </View>
         ) : (
           <Text style={[styles.titleText, { color: theme.colors.textMuted }]} numberOfLines={1}>
@@ -185,7 +224,7 @@ export default function CargoCard({ item, onBid }: Props) {
             activeOpacity={0.7}
           >
             <Text style={[styles.bidButtonText, { color: theme.colors.primaryText }]}>
-              Place Bid
+              {t('place_bid')}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -200,7 +239,7 @@ export default function CargoCard({ item, onBid }: Props) {
           >
             <Feather name="check" size={13} color={theme.colors.amber} />
             <Text style={[styles.bidPlacedText, { color: theme.colors.amber }]}>
-              Bid Submitted
+              {t('bid_submitted')}
             </Text>
           </View>
         )}
@@ -290,11 +329,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-  windowText: {
-    fontSize: 11,
-  },
   distanceText: {
     fontSize: 11,
+  },
+  pickupBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginTop: 5,
+  },
+  pickupBarText: {
+    fontSize: 11.5,
+    flex: 1,
   },
   specsRow: {
     flexDirection: 'row',

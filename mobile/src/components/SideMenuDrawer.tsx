@@ -14,6 +14,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { AuthUser } from '../types/auth';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Props {
   visible: boolean;
@@ -37,27 +38,25 @@ export default function SideMenuDrawer({
   onSelectRole,
 }: Props) {
   const { isDarkMode, setDarkMode, theme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [selectedLanguage, setSelectedLanguage] = useState<'EN' | 'AM'>('EN');
 
   const handleToggleTheme = (val: boolean) => {
     setDarkMode(val);
   };
 
   const handleToggleLanguage = () => {
-    const next = selectedLanguage === 'EN' ? 'AM' : 'EN';
-    setSelectedLanguage(next);
-    Alert.alert('Language', next === 'AM' ? 'ቋንቋ ወደ አማርኛ ተቀይሯል' : 'Language set to English');
+    toggleLanguage();
   };
 
   const handleLogoutPress = () => {
     Alert.alert(
-      'Sign Out',
-      'Are you sure you want to log out of TradeFlow?',
+      t('log_out'),
+      t('log_out_confirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Log Out',
+          text: t('log_out'),
           style: 'destructive',
           onPress: () => {
             onClose();
@@ -174,7 +173,7 @@ export default function SideMenuDrawer({
             {Boolean(onSelectRole) && (
               <View style={styles.section}>
                 <Text style={[styles.sectionHeader, { color: theme.colors.textMuted }]}>
-                  CONSOLE MODE
+                  {t('console_mode')}
                 </Text>
 
                 <TouchableOpacity
@@ -221,10 +220,10 @@ export default function SideMenuDrawer({
                     </View>
                     <View>
                       <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
-                        Transporter
+                        {t('transporter_marketplace')}
                       </Text>
                       <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
-                        Freight & load marketplace
+                        {t('transporter_sub')}
                       </Text>
                     </View>
                   </View>
@@ -279,10 +278,10 @@ export default function SideMenuDrawer({
                     </View>
                     <View>
                       <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
-                        Driver Console
+                        {t('driver_console')}
                       </Text>
                       <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
-                        Waypoint check-ins & POD
+                        {t('driver_sub')}
                       </Text>
                     </View>
                   </View>
@@ -297,7 +296,7 @@ export default function SideMenuDrawer({
             {/* ── Appearance / Dark Mode & Light Mode ── */}
             <View style={styles.section}>
               <Text style={[styles.sectionHeader, { color: theme.colors.textMuted }]}>
-                APPEARANCE
+                {t('appearance')}
               </Text>
 
               <View
@@ -324,10 +323,10 @@ export default function SideMenuDrawer({
                   </View>
                   <View>
                     <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
-                      {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                      {isDarkMode ? t('dark_mode') : t('light_mode')}
                     </Text>
                     <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
-                      {isDarkMode ? 'Corridor night mode' : 'Daylight high contrast'}
+                      {isDarkMode ? t('night_mode_desc') : t('light_mode_desc')}
                     </Text>
                   </View>
                 </View>
@@ -348,7 +347,7 @@ export default function SideMenuDrawer({
             {/* ── Settings Section ── */}
             <View style={styles.section}>
               <Text style={[styles.sectionHeader, { color: theme.colors.textMuted }]}>
-                SETTINGS
+                {t('settings')}
               </Text>
 
               {/* Notifications Toggle */}
@@ -372,10 +371,10 @@ export default function SideMenuDrawer({
                   </View>
                   <View>
                     <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
-                      Notifications
+                      {t('notifications')}
                     </Text>
                     <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
-                      Load bids & waypoints
+                      {t('notifications_sub')}
                     </Text>
                   </View>
                 </View>
@@ -415,10 +414,10 @@ export default function SideMenuDrawer({
                   </View>
                   <View>
                     <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
-                      Language
+                      {t('language')}
                     </Text>
                     <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
-                      {selectedLanguage === 'EN' ? 'English' : 'አማርኛ (Amharic)'}
+                      {language === 'EN' ? 'English (EN)' : 'አማርኛ (AM)'}
                     </Text>
                   </View>
                 </View>
@@ -435,7 +434,7 @@ export default function SideMenuDrawer({
                       { color: theme.colors.textSecondary },
                     ]}
                   >
-                    {selectedLanguage}
+                    {language}
                   </Text>
                   <Feather name="chevron-right" size={13} color={theme.colors.textMuted} />
                 </View>
@@ -467,10 +466,10 @@ export default function SideMenuDrawer({
                   </View>
                   <View>
                     <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
-                      Offline Queue
+                      {t('offline_queue')}
                     </Text>
                     <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
-                      Local SQLite storage
+                      {t('offline_queue_sub')}
                     </Text>
                   </View>
                 </View>
@@ -486,7 +485,7 @@ export default function SideMenuDrawer({
                     ]}
                   >
                     <Text style={[styles.badgePillText, { color: theme.colors.amber }]}>
-                      {pendingCount} queued
+                      {pendingCount} {t('queued')}
                     </Text>
                   </View>
                 ) : (
@@ -518,7 +517,7 @@ export default function SideMenuDrawer({
                       TradeFlow Mobile
                     </Text>
                     <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
-                      v1.0.4 • Djibouti Corridor
+                      {t('app_version')}
                     </Text>
                   </View>
                 </View>
@@ -540,7 +539,9 @@ export default function SideMenuDrawer({
               activeOpacity={0.7}
             >
               <Feather name="log-out" size={16} color={theme.colors.red} />
-              <Text style={[styles.logoutBtnText, { color: theme.colors.red }]}>Log Out</Text>
+              <Text style={[styles.logoutBtnText, { color: theme.colors.red }]}>
+                {t('log_out')}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

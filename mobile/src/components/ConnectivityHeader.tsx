@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { AuthUser } from '../types/auth';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import SideMenuDrawer from './SideMenuDrawer';
 
 interface Props {
@@ -28,6 +29,7 @@ export default function ConnectivityHeader({
   onSelectRole,
 }: Props) {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   return (
@@ -71,7 +73,7 @@ export default function ConnectivityHeader({
               activeOpacity={0.7}
             >
               <Feather name="cloud-off" size={11} color={theme.colors.amber} />
-              <Text style={[styles.offlineBadgeText, { color: theme.colors.amber }]}>Offline</Text>
+              <Text style={[styles.offlineBadgeText, { color: theme.colors.amber }]}>{t('offline')}</Text>
             </TouchableOpacity>
           )}
 
@@ -89,7 +91,7 @@ export default function ConnectivityHeader({
             >
               <View style={[styles.pendingDot, { backgroundColor: theme.colors.amber }]} />
               <Text style={[styles.pendingText, { color: theme.colors.amber }]}>
-                {pendingCount} queued
+                {pendingCount} {t('queued')}
               </Text>
             </TouchableOpacity>
           )}

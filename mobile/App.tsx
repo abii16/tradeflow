@@ -9,9 +9,11 @@ import AuthScreen from './src/screens/AuthScreen';
 import { AuthUser } from './src/types/auth';
 import { initDatabase, getCurrentUserSession, clearUserSession } from './src/services/database';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 
 function MainApp() {
   const { theme, isDarkMode } = useTheme();
+  const { t } = useLanguage();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [activeRole, setActiveRole] = useState<'transporter' | 'driver'>('transporter');
   const [loading, setLoading] = useState(true);
@@ -116,7 +118,7 @@ function MainApp() {
                   activeRole === 'transporter' && styles.navLabelBold,
                 ]}
               >
-                Transporter
+                {t('transporter')}
               </Text>
             </TouchableOpacity>
 
@@ -137,7 +139,7 @@ function MainApp() {
                   activeRole === 'driver' && styles.navLabelBold,
                 ]}
               >
-                Driver Console
+                {t('driver_console')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -151,7 +153,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <MainApp />
+        <LanguageProvider>
+          <MainApp />
+        </LanguageProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

@@ -14,6 +14,8 @@ import { Feather } from '@expo/vector-icons';
 import { OfflineAction } from '../types/cargo';
 import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { toEthiopianTime } from '../utils/ethiopianCalendar';
 
 interface Props {
   visible: boolean;
@@ -31,10 +33,14 @@ const ACTION_DESCRIPTIONS: Record<string, string> = {
   WAYPOINT_CHECKIN: 'Waypoint Check-in',
 };
 
-function formatTime(isoStr: string): string {
+function formatQueueTime(isoStr: string, language: 'EN' | 'AM'): string {
   try {
     const d = new Date(isoStr);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const ethTime = toEthiopianTime(d.getHours(), d.getMinutes());
+    if (language === 'AM') {
+      return ethTime.ethTimeStr;
+    }
+    return `${ethTime.gcTimeStr} (GC)`;
   } catch {
     return isoStr;
   }
@@ -50,6 +56,7 @@ export default function OfflineQueueModal({
   onClose,
 }: Props) {
   const { theme } = useTheme();
+  const { language, t } = useLanguage();
   const pendingCount = items.filter((i) => i.status === 'pending').length;
 
   const renderItem = ({ item }: { item: OfflineAction }) => {
@@ -79,7 +86,7 @@ export default function OfflineQueueModal({
               {ACTION_DESCRIPTIONS[item.actionType] ?? item.actionType}
             </Text>
             <Text style={[styles.itemTime, { color: theme.colors.textMuted }]}>
-              {formatTime(item.createdAt)}
+              {formatQueueTime(item.createdAt, language)}
             </Text>
           </View>
 
@@ -95,7 +102,7 @@ export default function OfflineQueueModal({
                 isPending ? styles.textPending : isSynced ? styles.textSynced : styles.textFailed,
               ]}
             >
-              {isPending ? 'Pending' : isSynced ? 'Synced' : 'Failed'}
+              {isPending ? t('pending') : isSynced ? t('synced') : t('failed')}
             </Text>
           </View>
         </View>
@@ -103,7 +110,7 @@ export default function OfflineQueueModal({
         {Boolean(payload.cargoId) && (
           <View style={styles.detailsRow}>
             <Text style={[styles.detailLabel, { color: theme.colors.textMuted }]}>
-              Load ID:
+              {t('load_id')}:
             </Text>
             <Text style={[styles.detailValue, { color: theme.colors.textSecondary }]}>
               {String(payload.cargoId)}
@@ -158,10 +165,10 @@ export default function OfflineQueueModal({
           <View style={styles.header}>
             <View>
               <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
-                Offline Queue
+                {t('offline_queue_title')}
               </Text>
               <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>
-                {items.length} {items.length === 1 ? 'action' : 'actions'} stored locally
+                {items.length} {t('actions_stored')}
               </Text>
             </View>
 
@@ -206,9 +213,7 @@ export default function OfflineQueueModal({
                 { color: isOnline ? theme.colors.primary : theme.colors.amber },
               ]}
             >
-              {isOnline
-                ? 'Online' + (onToggleNetwork ? ' (Tap to simulate offline)' : '')
-                : 'Offline — saved locally' + (onToggleNetwork ? ' (Tap to reconnect)' : '')}
+              {isOnline ? t('online_status') : t('offline_status')}
             </Text>
           </TouchableOpacity>
 
@@ -222,7 +227,7 @@ export default function OfflineQueueModal({
                 style={{ marginBottom: 8 }}
               />
               <Text style={[styles.emptyTitle, { color: theme.colors.textMuted }]}>
-                No queued actions
+                {t('no_queued_actions')}
               </Text>
             </View>
           ) : (
@@ -249,7 +254,7 @@ export default function OfflineQueueModal({
               activeOpacity={0.7}
             >
               <Text style={[styles.closeBtnText, { color: theme.colors.red }]}>
-                Close
+                {t('close')}
               </Text>
             </TouchableOpacity>
 
@@ -272,7 +277,7 @@ export default function OfflineQueueModal({
                     { color: theme.colors.primaryText },
                   ]}
                 >
-                  Sync {pendingCount > 0 ? `(${pendingCount})` : ''}
+                  {t('sync')} {pendingCount > 0 ? `(${pendingCount})` : ''}
                 </Text>
               )}
             </TouchableOpacity>
