@@ -40,7 +40,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
   const [licensePlate, setLicensePlate] = useState('');
   const [driverLicense, setDriverLicense] = useState('');
 
-  // Field validation error state (highlights input border with red)
+  // Field validation error state (highlights input border and required text in red)
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const clearError = (field: string) => {
@@ -101,10 +101,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
     if (mode === 'LOGIN') {
       if (!phoneOrEmail.trim()) {
-        newErrors.phoneOrEmail = 'Phone number or email is required';
+        newErrors.phoneOrEmail = 'Required';
       }
       if (!password.trim()) {
-        newErrors.password = 'Password is required';
+        newErrors.password = 'Required';
       }
 
       if (Object.keys(newErrors).length > 0) {
@@ -133,44 +133,44 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
       await saveUserSession(user);
       onLoginSuccess(user);
     } else {
-      // Registration: Check each field and highlight red if empty
+      // Registration: Check each field and highlight red border + required text
       if (!fullName.trim()) {
-        newErrors.fullName = 'Full legal name is required';
+        newErrors.fullName = 'Required';
       }
 
       if (role === 'TRANSPORTER') {
         if (!companyName.trim()) {
-          newErrors.companyName = 'Enterprise or company name is required';
+          newErrors.companyName = 'Required';
         }
         if (!tinNumber.trim()) {
-          newErrors.tinNumber = '10-digit TIN is required';
+          newErrors.tinNumber = 'Required (10-digit TIN)';
         }
         if (!fleetSize.trim()) {
-          newErrors.fleetSize = 'Operating fleet size is required';
+          newErrors.fleetSize = 'Required';
         }
       }
 
       if (role === 'DRIVER') {
         if (!licensePlate.trim()) {
-          newErrors.licensePlate = 'Commercial truck license plate is required';
+          newErrors.licensePlate = 'Required (e.g. 3-AA-98214)';
         }
         if (!driverLicense.trim()) {
-          newErrors.driverLicense = 'Commercial driver license number is required';
+          newErrors.driverLicense = 'Required (e.g. ETH-CDL-782190)';
         }
       }
 
       if (!phoneOrEmail.trim()) {
-        newErrors.phoneOrEmail = 'Mobile phone number is required';
+        newErrors.phoneOrEmail = 'Required';
       }
 
       if (!password.trim()) {
-        newErrors.password = 'Password is required';
+        newErrors.password = 'Required';
       } else if (password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
+        newErrors.password = 'Must be at least 6 characters';
       }
 
       if (!confirmPassword.trim()) {
-        newErrors.confirmPassword = 'Confirmation password is required';
+        newErrors.confirmPassword = 'Required';
       } else if (password !== confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
@@ -365,15 +365,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, Boolean(errors.fullName) && styles.labelError]}>
-                  FULL LEGAL NAME
-                </Text>
+                <Text style={styles.label}>FULL LEGAL NAME</Text>
               </View>
               <View style={[styles.inputBox, Boolean(errors.fullName) && styles.inputBoxError]}>
                 <Feather
                   name="user"
                   size={15}
-                  color={errors.fullName ? THEME.colors.red : THEME.colors.textMuted}
+                  color={THEME.colors.textMuted}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -398,15 +396,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, Boolean(errors.companyName) && styles.labelError]}>
-                    ENTERPRISE / COMPANY NAME
-                  </Text>
+                  <Text style={styles.label}>ENTERPRISE / COMPANY NAME</Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.companyName) && styles.inputBoxError]}>
                   <Feather
                     name="briefcase"
                     size={15}
-                    color={errors.companyName ? THEME.colors.red : THEME.colors.textMuted}
+                    color={THEME.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -427,15 +423,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, Boolean(errors.tinNumber) && styles.labelError]}>
-                    TAX IDENTIFICATION NUMBER (TIN)
-                  </Text>
+                  <Text style={styles.label}>TAX IDENTIFICATION NUMBER (TIN)</Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.tinNumber) && styles.inputBoxError]}>
                   <Feather
                     name="hash"
                     size={15}
-                    color={errors.tinNumber ? THEME.colors.red : THEME.colors.textMuted}
+                    color={THEME.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -457,15 +451,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, Boolean(errors.fleetSize) && styles.labelError]}>
-                    OPERATING FLEET SIZE
-                  </Text>
+                  <Text style={styles.label}>OPERATING FLEET SIZE</Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.fleetSize) && styles.inputBoxError]}>
                   <Feather
                     name="truck"
                     size={15}
-                    color={errors.fleetSize ? THEME.colors.red : THEME.colors.textMuted}
+                    color={THEME.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -491,15 +483,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, Boolean(errors.licensePlate) && styles.labelError]}>
-                    COMMERCIAL TRUCK LICENSE PLATE
-                  </Text>
+                  <Text style={styles.label}>COMMERCIAL TRUCK LICENSE PLATE</Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.licensePlate) && styles.inputBoxError]}>
                   <Feather
                     name="truck"
                     size={15}
-                    color={errors.licensePlate ? THEME.colors.red : THEME.colors.textMuted}
+                    color={THEME.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -521,15 +511,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, Boolean(errors.driverLicense) && styles.labelError]}>
-                    COMMERCIAL DRIVER LICENSE NO.
-                  </Text>
+                  <Text style={styles.label}>COMMERCIAL DRIVER LICENSE NO.</Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.driverLicense) && styles.inputBoxError]}>
                   <Feather
                     name="shield"
                     size={15}
-                    color={errors.driverLicense ? THEME.colors.red : THEME.colors.textMuted}
+                    color={THEME.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -554,15 +542,15 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {/* Phone Number / Email Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={[styles.label, Boolean(errors.phoneOrEmail) && styles.labelError]}>
+              <Text style={styles.label}>
                 {role === 'DRIVER' ? 'MOBILE PHONE NUMBER' : 'PHONE NUMBER OR CORPORATE EMAIL'}
               </Text>
             </View>
             <View style={[styles.inputBox, Boolean(errors.phoneOrEmail) && styles.inputBoxError]}>
               <View style={styles.countryCodePill}>
                 <Text style={styles.flagEmoji}>🇪🇹</Text>
-                <Text style={[styles.countryCodeText, Boolean(errors.phoneOrEmail) && { color: THEME.colors.red }]}>+251</Text>
-                <View style={[styles.pillDivider, Boolean(errors.phoneOrEmail) && { backgroundColor: THEME.colors.red }]} />
+                <Text style={styles.countryCodeText}>+251</Text>
+                <View style={styles.pillDivider} />
               </View>
               <TextInput
                 style={styles.textInput}
@@ -585,9 +573,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {/* Password Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={[styles.label, Boolean(errors.password) && styles.labelError]}>
-                PASSWORD
-              </Text>
+              <Text style={styles.label}>PASSWORD</Text>
               {mode === 'LOGIN' && (
                 <TouchableOpacity
                   onPress={() =>
@@ -605,7 +591,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
               <Feather
                 name="lock"
                 size={15}
-                color={errors.password ? THEME.colors.red : THEME.colors.textMuted}
+                color={THEME.colors.textMuted}
                 style={styles.inputIcon}
               />
               <TextInput
@@ -627,7 +613,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 <Feather
                   name={showPassword ? 'eye-off' : 'eye'}
                   size={15}
-                  color={errors.password ? THEME.colors.red : THEME.colors.textMuted}
+                  color={THEME.colors.textMuted}
                 />
               </TouchableOpacity>
             </View>
@@ -640,15 +626,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, Boolean(errors.confirmPassword) && styles.labelError]}>
-                  CONFIRM PASSWORD
-                </Text>
+                <Text style={styles.label}>CONFIRM PASSWORD</Text>
               </View>
               <View style={[styles.inputBox, Boolean(errors.confirmPassword) && styles.inputBoxError]}>
                 <Feather
                   name="check-circle"
                   size={15}
-                  color={errors.confirmPassword ? THEME.colors.red : THEME.colors.textMuted}
+                  color={THEME.colors.textMuted}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -670,7 +654,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   <Feather
                     name={showConfirmPassword ? 'eye-off' : 'eye'}
                     size={15}
-                    color={errors.confirmPassword ? THEME.colors.red : THEME.colors.textMuted}
+                    color={THEME.colors.textMuted}
                   />
                 </TouchableOpacity>
               </View>
@@ -966,9 +950,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     fontFamily: THEME.typography.mono,
   },
-  labelError: {
-    color: THEME.colors.red,
-  },
   forgotText: {
     color: THEME.colors.primary,
     fontSize: 11,
@@ -985,13 +966,14 @@ const styles = StyleSheet.create({
   },
   inputBoxError: {
     borderColor: THEME.colors.red,
+    borderWidth: 1.5,
     backgroundColor: 'rgba(239, 68, 68, 0.05)',
   },
   errorText: {
     color: THEME.colors.red,
     fontSize: 11,
     marginTop: 4,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   inputIcon: {
     marginRight: 10,
