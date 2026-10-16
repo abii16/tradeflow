@@ -75,11 +75,15 @@ function MainApp() {
               <CargoFeedScreen
                 currentUser={currentUser}
                 onSignOut={handleSignOut}
+                activeRole={activeRole}
+                onSelectRole={setActiveRole}
               />
             ) : (
               <DriverScreen
                 currentUser={currentUser}
                 onSignOut={handleSignOut}
+                activeRole={activeRole}
+                onSelectRole={setActiveRole}
               />
             )}
           </View>

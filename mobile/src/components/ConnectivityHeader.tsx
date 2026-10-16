@@ -13,6 +13,8 @@ interface Props {
   onOpenQueue: () => void;
   currentUser?: AuthUser | null;
   onSignOut?: () => void;
+  activeRole?: 'transporter' | 'driver';
+  onSelectRole?: (role: 'transporter' | 'driver') => void;
 }
 
 export default function ConnectivityHeader({
@@ -22,6 +24,8 @@ export default function ConnectivityHeader({
   onOpenQueue,
   currentUser,
   onSignOut,
+  activeRole,
+  onSelectRole,
 }: Props) {
   const { theme } = useTheme();
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -91,49 +95,9 @@ export default function ConnectivityHeader({
           )}
         </View>
 
-        {/* Right Side: TradeFlow Brand, Role Badge & Entity Details */}
+        {/* Right Side: Clean TradeFlow Brand */}
         <View style={styles.brandGroupRight}>
-          <View style={styles.nameRowRight}>
-            {Boolean(currentUser) && (
-              <View
-                style={[
-                  styles.userBadge,
-                  currentUser?.role === 'DRIVER'
-                    ? {
-                        backgroundColor: theme.colors.blueSubtle,
-                        borderColor: theme.colors.blueBorder,
-                      }
-                    : {
-                        backgroundColor: theme.colors.primarySubtle,
-                        borderColor: theme.colors.primaryBorder,
-                      },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.userBadgeText,
-                    {
-                      color:
-                        currentUser?.role === 'DRIVER'
-                          ? theme.colors.blue
-                          : theme.colors.primary,
-                    },
-                  ]}
-                >
-                  {currentUser?.role === 'TRANSPORTER' ? 'CARRIER' : 'DRIVER'}
-                </Text>
-              </View>
-            )}
-            <Text style={[styles.brandName, { color: theme.colors.textPrimary }]}>TradeFlow</Text>
-          </View>
-
-          <Text style={[styles.brandSubRight, { color: theme.colors.textMuted }]} numberOfLines={1}>
-            {currentUser?.companyName ||
-              currentUser?.fullName ||
-              (currentUser?.role === 'DRIVER'
-                ? `Truck ${currentUser.licensePlate || '3-AA-98214'}`
-                : 'Transporter')}
-          </Text>
+          <Text style={[styles.brandName, { color: theme.colors.textPrimary }]}>TradeFlow</Text>
         </View>
       </View>
 
@@ -144,6 +108,8 @@ export default function ConnectivityHeader({
         pendingCount={pendingCount}
         onOpenQueue={onOpenQueue}
         onSignOut={onSignOut}
+        activeRole={activeRole}
+        onSelectRole={onSelectRole}
         onClose={() => setDrawerVisible(false)}
       />
     </>
@@ -176,31 +142,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
-  nameRowRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
   brandName: {
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: -0.3,
-  },
-  brandSubRight: {
-    fontSize: 11,
-    fontWeight: '500',
-    marginTop: 2,
-    textAlign: 'right',
-  },
-  userBadge: {
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 4,
-    borderWidth: 1,
-  },
-  userBadgeText: {
-    fontSize: 9,
-    fontWeight: '700',
   },
   pendingBadge: {
     flexDirection: 'row',

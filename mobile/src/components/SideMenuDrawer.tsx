@@ -22,6 +22,8 @@ interface Props {
   onOpenQueue: () => void;
   onSignOut?: () => void;
   onClose: () => void;
+  activeRole?: 'transporter' | 'driver';
+  onSelectRole?: (role: 'transporter' | 'driver') => void;
 }
 
 export default function SideMenuDrawer({
@@ -31,6 +33,8 @@ export default function SideMenuDrawer({
   onOpenQueue,
   onSignOut,
   onClose,
+  activeRole,
+  onSelectRole,
 }: Props) {
   const { isDarkMode, setDarkMode, theme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -166,6 +170,130 @@ export default function SideMenuDrawer({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.drawerBody}
           >
+            {/* ── Console Mode / Role Switcher ── */}
+            {Boolean(onSelectRole) && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionHeader, { color: theme.colors.textMuted }]}>
+                  CONSOLE MODE
+                </Text>
+
+                <TouchableOpacity
+                  style={[
+                    styles.menuItem,
+                    {
+                      backgroundColor: theme.colors.card,
+                      borderColor:
+                        activeRole === 'transporter'
+                          ? theme.colors.primary
+                          : theme.colors.cardBorder,
+                    },
+                    activeRole === 'transporter' && {
+                      backgroundColor: theme.colors.primarySubtle,
+                    },
+                  ]}
+                  onPress={() => {
+                    onClose();
+                    onSelectRole?.('transporter');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuItemLeft}>
+                    <View
+                      style={[
+                        styles.menuIconContainer,
+                        {
+                          backgroundColor:
+                            activeRole === 'transporter'
+                              ? theme.colors.primarySubtle
+                              : theme.colors.surfaceElevated,
+                        },
+                      ]}
+                    >
+                      <Feather
+                        name="truck"
+                        size={15}
+                        color={
+                          activeRole === 'transporter'
+                            ? theme.colors.primary
+                            : theme.colors.textSecondary
+                        }
+                      />
+                    </View>
+                    <View>
+                      <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
+                        Transporter
+                      </Text>
+                      <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
+                        Freight & load marketplace
+                      </Text>
+                    </View>
+                  </View>
+
+                  {activeRole === 'transporter' && (
+                    <Feather name="check" size={16} color={theme.colors.primary} />
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.menuItem,
+                    {
+                      backgroundColor: theme.colors.card,
+                      borderColor:
+                        activeRole === 'driver'
+                          ? theme.colors.blue
+                          : theme.colors.cardBorder,
+                      marginTop: 8,
+                    },
+                    activeRole === 'driver' && {
+                      backgroundColor: theme.colors.blueSubtle,
+                    },
+                  ]}
+                  onPress={() => {
+                    onClose();
+                    onSelectRole?.('driver');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuItemLeft}>
+                    <View
+                      style={[
+                        styles.menuIconContainer,
+                        {
+                          backgroundColor:
+                            activeRole === 'driver'
+                              ? theme.colors.blueSubtle
+                              : theme.colors.surfaceElevated,
+                        },
+                      ]}
+                    >
+                      <Feather
+                        name="navigation"
+                        size={15}
+                        color={
+                          activeRole === 'driver'
+                            ? theme.colors.blue
+                            : theme.colors.textSecondary
+                        }
+                      />
+                    </View>
+                    <View>
+                      <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
+                        Driver Console
+                      </Text>
+                      <Text style={[styles.menuItemSub, { color: theme.colors.textMuted }]}>
+                        Waypoint check-ins & POD
+                      </Text>
+                    </View>
+                  </View>
+
+                  {activeRole === 'driver' && (
+                    <Feather name="check" size={16} color={theme.colors.blue} />
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* ── Appearance / Dark Mode & Light Mode ── */}
             <View style={styles.section}>
               <Text style={[styles.sectionHeader, { color: theme.colors.textMuted }]}>

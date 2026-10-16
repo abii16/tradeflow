@@ -39,9 +39,16 @@ const ROUTE_FILTERS = ['All', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
 interface Props {
   currentUser?: AuthUser | null;
   onSignOut?: () => void;
+  activeRole?: 'transporter' | 'driver';
+  onSelectRole?: (role: 'transporter' | 'driver') => void;
 }
 
-export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
+export default function CargoFeedScreen({
+  currentUser,
+  onSignOut,
+  activeRole,
+  onSelectRole,
+}: Props) {
   const { theme } = useTheme();
   const [cargo, setCargo] = useState<CargoLoad[]>([]);
   const [activeTab, setActiveTab] = useState<'available' | 'my_bids'>('available');
@@ -177,6 +184,8 @@ export default function CargoFeedScreen({ currentUser, onSignOut }: Props) {
         onOpenQueue={handleOpenQueue}
         currentUser={currentUser}
         onSignOut={onSignOut}
+        activeRole={activeRole}
+        onSelectRole={onSelectRole}
       />
 
       {/* Segmented Tab Bar */}

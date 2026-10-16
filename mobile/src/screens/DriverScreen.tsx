@@ -90,9 +90,16 @@ const INCIDENT_TYPES = [
 interface Props {
   currentUser?: AuthUser | null;
   onSignOut?: () => void;
+  activeRole?: 'transporter' | 'driver';
+  onSelectRole?: (role: 'transporter' | 'driver') => void;
 }
 
-export default function DriverScreen({ currentUser, onSignOut }: Props) {
+export default function DriverScreen({
+  currentUser,
+  onSignOut,
+  activeRole,
+  onSelectRole,
+}: Props) {
   const { theme } = useTheme();
   const [waypoints, setWaypoints] = useState<Waypoint[]>(INITIAL_WAYPOINTS);
   const [tripCompleted, setTripCompleted] = useState(false);
@@ -263,6 +270,8 @@ export default function DriverScreen({ currentUser, onSignOut }: Props) {
         onOpenQueue={handleOpenQueue}
         currentUser={currentUser}
         onSignOut={onSignOut}
+        activeRole={activeRole}
+        onSelectRole={onSelectRole}
       />
 
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
