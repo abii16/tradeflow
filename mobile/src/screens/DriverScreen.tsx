@@ -959,6 +959,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: THEME.colors.cardBorder,
   },
   cancelBtnText: {
     color: THEME.colors.textSecondary,
