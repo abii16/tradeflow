@@ -955,17 +955,17 @@ const styles = StyleSheet.create({
   },
   cancelBtn: {
     flex: 1,
-    backgroundColor: THEME.colors.surfaceElevated,
+    backgroundColor: THEME.colors.redSubtle,
+    borderWidth: 1,
+    borderColor: THEME.colors.redBorder,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
   },
   cancelBtnText: {
-    color: THEME.colors.textSecondary,
+    color: THEME.colors.red,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   submitIncidentBtn: {
     flex: 2,

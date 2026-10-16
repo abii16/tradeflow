@@ -25,6 +25,7 @@ export const THEME = {
     amberSubtle: 'rgba(245, 158, 11, 0.12)',
     red: '#EF4444',
     redSubtle: 'rgba(239, 68, 68, 0.12)',
+    redBorder: 'rgba(239, 68, 68, 0.35)',
 
     // Text Hierarchy
     textPrimary: '#FFFFFF',

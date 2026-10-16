@@ -358,17 +358,17 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: THEME.colors.surfaceElevated,
+    backgroundColor: THEME.colors.redSubtle,
+    borderWidth: 1,
+    borderColor: THEME.colors.redBorder,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
   },
   cancelButtonText: {
-    color: THEME.colors.textSecondary,
+    color: THEME.colors.red,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   submitButton: {
     flex: 2,
