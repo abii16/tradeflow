@@ -1,10 +1,10 @@
 // TradeFlow Mobile — Top Header (Production Logistics Look)
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { THEME } from '../styles/theme';
-
 import { AuthUser } from '../types/auth';
+import SideMenuDrawer from './SideMenuDrawer';
 
 interface Props {
   isOnline: boolean;
@@ -23,13 +23,48 @@ export default function ConnectivityHeader({
   currentUser,
   onSignOut,
 }: Props) {
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
   return (
-    <View style={styles.header}>
-      {/* Brand title */}
-      <View style={styles.brandGroup}>
-        <View>
-          <View style={styles.nameRow}>
-            <Text style={styles.brandName}>TradeFlow</Text>
+    <>
+      <View style={styles.header}>
+        {/* Left Side: Hamburger Menu & Status Chips */}
+        <View style={styles.leftGroup}>
+          <TouchableOpacity
+            style={styles.hamburgerBtn}
+            onPress={() => setDrawerVisible(true)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather name="menu" size={20} color={THEME.colors.textPrimary} />
+          </TouchableOpacity>
+
+          {!isOnline && (
+            <TouchableOpacity
+              style={styles.offlineBadge}
+              onPress={onToggleNetwork}
+              activeOpacity={0.7}
+            >
+              <Feather name="cloud-off" size={11} color={THEME.colors.amber} />
+              <Text style={styles.offlineBadgeText}>Offline</Text>
+            </TouchableOpacity>
+          )}
+
+          {pendingCount > 0 && (
+            <TouchableOpacity
+              style={styles.pendingBadge}
+              onPress={onOpenQueue}
+              activeOpacity={0.7}
+            >
+              <View style={styles.pendingDot} />
+              <Text style={styles.pendingText}>{pendingCount} queued</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Right Side: TradeFlow Brand, Role Badge & Entity Details */}
+        <View style={styles.brandGroupRight}>
+          <View style={styles.nameRowRight}>
             {Boolean(currentUser) && (
               <View
                 style={[
@@ -47,56 +82,29 @@ export default function ConnectivityHeader({
                 </Text>
               </View>
             )}
+            <Text style={styles.brandName}>TradeFlow</Text>
           </View>
-          <Text style={styles.brandSub} numberOfLines={1}>
-            {currentUser?.companyName || currentUser?.fullName || (currentUser?.role === 'DRIVER' ? `Truck ${currentUser.licensePlate || '3-AA-98214'}` : 'Transporter')}
+
+          <Text style={styles.brandSubRight} numberOfLines={1}>
+            {currentUser?.companyName ||
+              currentUser?.fullName ||
+              (currentUser?.role === 'DRIVER'
+                ? `Truck ${currentUser.licensePlate || '3-AA-98214'}`
+                : 'Transporter')}
           </Text>
         </View>
       </View>
 
-      {/* Network toggle, Pending actions & Sign out */}
-      <View style={styles.controlsGroup}>
-        {Boolean(onSignOut) && (
-          <TouchableOpacity
-            style={styles.signOutBtn}
-            onPress={onSignOut}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Feather name="log-out" size={13} color={THEME.colors.textMuted} />
-          </TouchableOpacity>
-        )}
-        {pendingCount > 0 ? (
-          <TouchableOpacity
-            style={styles.pendingBadge}
-            onPress={onOpenQueue}
-            activeOpacity={0.7}
-          >
-            <View style={styles.pendingDot} />
-            <Text style={styles.pendingText}>{pendingCount} queued</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.queueButton}
-            onPress={onOpenQueue}
-            activeOpacity={0.7}
-          >
-            <Feather name="layers" size={14} color={THEME.colors.textMuted} />
-          </TouchableOpacity>
-        )}
-
-        {!isOnline && (
-          <TouchableOpacity
-            style={styles.offlineBadge}
-            onPress={onToggleNetwork}
-            activeOpacity={0.7}
-          >
-            <Feather name="cloud-off" size={12} color={THEME.colors.amber} />
-            <Text style={styles.offlineBadgeText}>Offline</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
+      {/* Slide-out Menu Drawer */}
+      <SideMenuDrawer
+        visible={drawerVisible}
+        currentUser={currentUser}
+        pendingCount={pendingCount}
+        onOpenQueue={onOpenQueue}
+        onSignOut={onSignOut}
+        onClose={() => setDrawerVisible(false)}
+      />
+    </>
   );
 }
 
@@ -111,10 +119,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: THEME.colors.cardBorder,
   },
-  brandGroup: {
+  leftGroup: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
+    alignItems: 'center',
+    gap: 10,
+  },
+  hamburgerBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: THEME.colors.surface,
+    borderWidth: 1,
+    borderColor: THEME.colors.cardBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandGroupRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  nameRowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   brandName: {
     color: THEME.colors.textPrimary,
@@ -122,20 +149,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.3,
   },
-  brandSub: {
+  brandSubRight: {
     color: THEME.colors.textMuted,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
-  },
-  controlsGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+    marginTop: 2,
+    textAlign: 'right',
   },
   userBadge: {
     backgroundColor: THEME.colors.primarySubtle,
@@ -158,18 +177,6 @@ const styles = StyleSheet.create({
   userBadgeTextDriver: {
     color: THEME.colors.blue,
   },
-  signOutBtn: {
-    padding: 6,
-    borderRadius: 6,
-    backgroundColor: THEME.colors.surface,
-    borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
-  },
-  queueButton: {
-    padding: 6,
-    borderRadius: 8,
-    backgroundColor: THEME.colors.surface,
-  },
   pendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -178,7 +185,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(245, 158, 11, 0.3)',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 6,
   },
   pendingDot: {
