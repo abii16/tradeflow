@@ -361,11 +361,20 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
         {/* Input Card Container */}
         <View style={styles.card}>
+          {/* Top Indicator: Asterisk denotes required by default */}
+          <View style={styles.cardHeaderRow}>
+            <Text style={styles.cardHeaderHint}>
+              Fields marked with <Text style={styles.asterisk}>*</Text> are required
+            </Text>
+          </View>
+
           {/* Registration: Full Name */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>FULL LEGAL NAME</Text>
+                <Text style={styles.label}>
+                  FULL LEGAL NAME <Text style={styles.asterisk}>*</Text>
+                </Text>
               </View>
               <View style={[styles.inputBox, Boolean(errors.fullName) && styles.inputBoxError]}>
                 <Feather
@@ -396,7 +405,9 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>ENTERPRISE / COMPANY NAME</Text>
+                  <Text style={styles.label}>
+                    ENTERPRISE / COMPANY NAME <Text style={styles.asterisk}>*</Text>
+                  </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.companyName) && styles.inputBoxError]}>
                   <Feather
@@ -423,7 +434,9 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>TAX IDENTIFICATION NUMBER (TIN)</Text>
+                  <Text style={styles.label}>
+                    TAX IDENTIFICATION NUMBER (TIN) <Text style={styles.asterisk}>*</Text>
+                  </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.tinNumber) && styles.inputBoxError]}>
                   <Feather
@@ -451,7 +464,9 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>OPERATING FLEET SIZE</Text>
+                  <Text style={styles.label}>
+                    OPERATING FLEET SIZE <Text style={styles.asterisk}>*</Text>
+                  </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.fleetSize) && styles.inputBoxError]}>
                   <Feather
@@ -483,7 +498,9 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             <>
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>COMMERCIAL TRUCK LICENSE PLATE</Text>
+                  <Text style={styles.label}>
+                    COMMERCIAL TRUCK LICENSE PLATE <Text style={styles.asterisk}>*</Text>
+                  </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.licensePlate) && styles.inputBoxError]}>
                   <Feather
@@ -511,7 +528,9 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
 
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.label}>COMMERCIAL DRIVER LICENSE NO.</Text>
+                  <Text style={styles.label}>
+                    COMMERCIAL DRIVER LICENSE NO. <Text style={styles.asterisk}>*</Text>
+                  </Text>
                 </View>
                 <View style={[styles.inputBox, Boolean(errors.driverLicense) && styles.inputBoxError]}>
                   <Feather
@@ -543,7 +562,8 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
               <Text style={styles.label}>
-                {role === 'DRIVER' ? 'MOBILE PHONE NUMBER' : 'PHONE NUMBER OR CORPORATE EMAIL'}
+                {role === 'DRIVER' ? 'MOBILE PHONE NUMBER' : 'PHONE NUMBER OR CORPORATE EMAIL'}{' '}
+                <Text style={styles.asterisk}>*</Text>
               </Text>
             </View>
             <View style={[styles.inputBox, Boolean(errors.phoneOrEmail) && styles.inputBoxError]}>
@@ -573,7 +593,9 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {/* Password Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>PASSWORD</Text>
+              <Text style={styles.label}>
+                PASSWORD <Text style={styles.asterisk}>*</Text>
+              </Text>
               {mode === 'LOGIN' && (
                 <TouchableOpacity
                   onPress={() =>
@@ -626,7 +648,9 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>CONFIRM PASSWORD</Text>
+                <Text style={styles.label}>
+                  CONFIRM PASSWORD <Text style={styles.asterisk}>*</Text>
+                </Text>
               </View>
               <View style={[styles.inputBox, Boolean(errors.confirmPassword) && styles.inputBoxError]}>
                 <Feather
@@ -933,6 +957,20 @@ const styles = StyleSheet.create({
     borderColor: THEME.colors.cardBorder,
     padding: 16,
     marginBottom: 22,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 12,
+  },
+  cardHeaderHint: {
+    color: THEME.colors.textMuted,
+    fontSize: 11,
+    fontFamily: THEME.typography.mono,
+  },
+  asterisk: {
+    color: THEME.colors.red,
+    fontWeight: '700',
   },
   inputGroup: {
     marginBottom: 14,
