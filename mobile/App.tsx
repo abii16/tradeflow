@@ -5,6 +5,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { LanguageProvider } from './src/context/LanguageContext';
 import LaunchSplashScreen from './src/components/LaunchSplashScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import CargoFeedScreen from './src/screens/CargoFeedScreen';
 import DriverScreen from './src/screens/DriverScreen';
@@ -19,6 +20,7 @@ function MainApp() {
   const [activeRole, setActiveRole] = useState<'transporter' | 'driver'>('transporter');
   const [splashActive, setSplashActive] = useState(true);
   const [isAppReady, setIsAppReady] = useState(false);
+  const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -28,6 +30,7 @@ function MainApp() {
         if (session) {
           setCurrentUser(session);
           setActiveRole(session.role === 'DRIVER' ? 'driver' : 'transporter');
+          setIsOnboardingCompleted(true);
         }
       } catch (err) {
         console.warn('Failed to load session:', err);
@@ -40,11 +43,13 @@ function MainApp() {
   const handleLoginSuccess = (user: AuthUser) => {
     setCurrentUser(user);
     setActiveRole(user.role === 'DRIVER' ? 'driver' : 'transporter');
+    setIsOnboardingCompleted(true);
   };
 
   const handleSignOut = async () => {
     await clearUserSession();
     setCurrentUser(null);
+    setIsOnboardingCompleted(false);
   };
 
   // 1. Initial Animated Launch Screen
@@ -57,7 +62,16 @@ function MainApp() {
     );
   }
 
-  // 2. Main Role-Based Experience
+  // 2. Cinematic Onboarding Screen (assets/image.png)
+  if (!currentUser && !isOnboardingCompleted) {
+    return (
+      <OnboardingScreen
+        onGetStarted={() => setIsOnboardingCompleted(true)}
+      />
+    );
+  }
+
+  // 3. Main Role-Based Experience (AuthScreen, DriverScreen, or CargoFeedScreen)
   return (
     <View
       style={[
@@ -73,7 +87,10 @@ function MainApp() {
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
       {!currentUser ? (
-        <AuthScreen onLoginSuccess={handleLoginSuccess} />
+        <AuthScreen
+          onLoginSuccess={handleLoginSuccess}
+          onBack={() => setIsOnboardingCompleted(false)}
+        />
       ) : activeRole === 'driver' ? (
         <DriverScreen
           currentUser={currentUser}

@@ -170,6 +170,7 @@ export const TRANSLATIONS = {
     driver_login_title: 'Driver Sign In',
     carrier_register_title: 'Register Carrier Account',
     driver_register_title: 'Register Driver Profile',
+    get_started: 'Get Started',
   },
   AM: {
     // Navigation & Roles
@@ -338,6 +339,7 @@ export const TRANSLATIONS = {
     driver_login_title: 'የአሽከርካሪ መግቢያ',
     carrier_register_title: 'የትራንስፖርተር መለያ ፍጠር',
     driver_register_title: 'የአሽከርካሪ መለያ ፍጠር',
+    get_started: 'ጀምር',
   },
 } as const;
 

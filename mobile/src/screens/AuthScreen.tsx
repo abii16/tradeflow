@@ -52,9 +52,10 @@ import GoogleSignInButton from '../components/GoogleSignInButton';
 interface Props {
   onLoginSuccess: (user: AuthUser) => void;
   initialMode?: 'LOGIN' | 'REGISTER';
+  onBack?: () => void;
 }
 
-export default function AuthScreen({ onLoginSuccess, initialMode = 'LOGIN' }: Props) {
+export default function AuthScreen({ onLoginSuccess, initialMode = 'LOGIN', onBack }: Props) {
   const { theme, isDarkMode } = useTheme();
   const { language, toggleLanguage, t } = useLanguage();
   const [role, setRole] = useState<UserRole>('TRANSPORTER');
@@ -434,7 +435,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'LOGIN' }: Pr
         {/* ── TOP NAV BAR: BRAND & LANGUAGE ── */}
         <View style={styles.topBar}>
           <View style={styles.brandGroup}>
-            {mode === 'REGISTER' && (
+            {mode === 'REGISTER' ? (
               <TouchableOpacity
                 style={[
                   styles.backBtn,
@@ -448,7 +449,21 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'LOGIN' }: Pr
               >
                 <Feather name="arrow-left" size={18} color={theme.colors.textPrimary} />
               </TouchableOpacity>
-            )}
+            ) : onBack ? (
+              <TouchableOpacity
+                style={[
+                  styles.backBtn,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                  },
+                ]}
+                onPress={onBack}
+                activeOpacity={0.7}
+              >
+                <Feather name="arrow-left" size={18} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            ) : null}
             <View
               style={[
                 styles.logoBadge,
