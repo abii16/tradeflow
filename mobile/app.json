@@ -9,6 +9,19 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "abiFilters": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ]
+          }
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true
     },

@@ -1,0 +1,10 @@
+web/
+backend/
+ai-engine/
+docs/
+node_modules/
+.git/
+*.mp4
+*.log
+dist/
+build/
