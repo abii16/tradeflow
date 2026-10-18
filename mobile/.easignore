@@ -1,0 +1,6 @@
+node_modules
+.expo
+.git
+*.log
+*.mp4
+dist
