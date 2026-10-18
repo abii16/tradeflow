@@ -16,6 +16,7 @@ import {
   Platform,
   Alert,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Feather, FontAwesome } from '@expo/vector-icons';
 import { AuthUser, UserRole } from '../types/auth';
@@ -30,6 +31,18 @@ import {
   isValidEthiopianPhone,
   isValidEmail,
 } from '../utils/phoneAuth';
+import {
+  validateFullName,
+  validateCompanyName,
+  validateTINNumber,
+  validateFleetSize,
+  validateEmail,
+  validatePhone,
+  validateLicensePlate,
+  validateDriverLicense,
+  validatePassword,
+  validateConfirmPassword,
+} from '../utils/registrationValidation';
 import { signInWithSupabase, signUpWithSupabase, ENV } from '../services/authService';
 
 interface Props {
@@ -66,6 +79,8 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 
   // Field validation error state
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Submission loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const clearError = (field: string) => {
     if (errors[field]) {
@@ -161,24 +176,31 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
     }
   };
 
-  // ── Handle Submit ──
+  // ── Handle Submit with Strict Validation ──
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     const newErrors: Record<string, string> = {};
 
     if (mode === 'LOGIN') {
       // --- LOGIN VALIDATION ---
+      let resolvedEmail = '';
+      let displayPhone = '';
+
       if (role === 'DRIVER') {
-        if (!phone.trim()) {
-          newErrors.phone = 'Phone number is required';
-        } else if (!isValidEthiopianPhone(phone)) {
-          newErrors.phone = 'Enter valid 10-digit phone (e.g. 0911234567)';
+        const phoneCheck = validatePhone(phone);
+        if (!phoneCheck.isValid) {
+          newErrors.phone = phoneCheck.error || 'Valid 10-digit phone required (e.g. 0911234567)';
+        } else {
+          resolvedEmail = phoneCheck.supabaseEmail;
+          displayPhone = phoneCheck.formatted;
         }
       } else {
-        // Transporter: Real email required
-        if (!email.trim()) {
-          newErrors.email = 'Email address is required';
-        } else if (!isValidEmail(email)) {
-          newErrors.email = 'Enter valid email (e.g. solomon@company.et)';
+        const emailCheck = validateEmail(email);
+        if (!emailCheck.isValid) {
+          newErrors.email = emailCheck.error || 'Valid email required (e.g. solomon@company.et)';
+        } else {
+          resolvedEmail = emailCheck.sanitized;
+          displayPhone = '+251 91 144 5566';
         }
       }
 
@@ -191,158 +213,194 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         return;
       }
 
-      // --- LOGIN IDENTITY RESOLUTION ---
-      let resolvedEmail: string;
-      let displayPhone: string;
+      setIsSubmitting(true);
+      try {
+        let token = `jwt-token-${Date.now()}`;
+        let userId = `USR-${Date.now().toString().slice(-4)}`;
 
-      if (role === 'DRIVER') {
-        // Phone-as-Email: Map 0911234567 -> 0911234567@tradeflow.et
-        const normalized = normalizeEthiopianPhone(phone);
-        resolvedEmail = driverPhoneToSupabaseEmail(normalized);
-        displayPhone = formatEthiopianPhoneDisplay(normalized);
-      } else {
-        // Transporter: Real email
-        resolvedEmail = email.trim().toLowerCase();
-        displayPhone = '+251 91 144 5566';
+        // Try Supabase Auth API
+        const authResult = await signInWithSupabase(resolvedEmail, password.trim());
+        if (authResult.success && authResult.token) {
+          token = authResult.token;
+          if (authResult.user?.id) userId = authResult.user.id;
+        }
+
+        const user: AuthUser = {
+          id: userId,
+          email: resolvedEmail,
+          fullName: role === 'TRANSPORTER' ? 'Solomon Haile' : 'Abebe Kebede',
+          phone: displayPhone,
+          role,
+          companyName: role === 'TRANSPORTER' ? 'Rift Valley Transport PLC' : undefined,
+          licensePlate: role === 'DRIVER' ? '3-AA-98214' : undefined,
+          driverLicense: role === 'DRIVER' ? 'ETH-CDL-4410' : undefined,
+          token,
+        };
+
+        await saveUserSession(user);
+        onLoginSuccess(user);
+      } catch (err: any) {
+        Alert.alert('Sign In Error', err.message || 'Failed to sign in. Please check your credentials.');
+      } finally {
+        setIsSubmitting(false);
       }
-
-      let token = `jwt-token-${Date.now()}`;
-      let userId = `USR-${Date.now().toString().slice(-4)}`;
-
-      // Try Supabase Auth API
-      const authResult = await signInWithSupabase(resolvedEmail, password.trim());
-      if (authResult.success && authResult.token) {
-        token = authResult.token;
-        if (authResult.user?.id) userId = authResult.user.id;
-      }
-
-      const user: AuthUser = {
-        id: userId,
-        email: resolvedEmail,
-        fullName: role === 'TRANSPORTER' ? 'Solomon Haile' : 'Abebe Kebede',
-        phone: displayPhone,
-        role,
-        companyName: role === 'TRANSPORTER' ? 'Rift Valley Transport PLC' : undefined,
-        licensePlate: role === 'DRIVER' ? '3-AA-98214' : undefined,
-        driverLicense: role === 'DRIVER' ? 'ETH-CDL-4410' : undefined,
-        token,
-      };
-
-      await saveUserSession(user);
-      onLoginSuccess(user);
     } else {
-      // --- REGISTRATION VALIDATION ---
-      if (!fullName.trim()) {
-        newErrors.fullName = 'Full name is required';
+      // --- STRICT REGISTRATION VALIDATION ---
+      // 1. Full Name Validation
+      const nameCheck = validateFullName(fullName);
+      if (!nameCheck.isValid) {
+        newErrors.fullName = nameCheck.error || 'Full name is required';
       }
 
+      let sanitizedCompanyName = '';
+      let sanitizedTinNumber = '';
+      let sanitizedFleetSize = '';
+      let sanitizedContactPhone = '';
+      let sanitizedLicensePlate = '';
+      let sanitizedDriverLicense = '';
+      let resolvedEmail = '';
+      let displayPhone = '';
+
+      // 2. Role-specific validations
       if (role === 'TRANSPORTER') {
-        if (!companyName.trim()) {
-          newErrors.companyName = 'Company name is required';
+        const compCheck = validateCompanyName(companyName);
+        if (!compCheck.isValid) {
+          newErrors.companyName = compCheck.error || 'Company name is required';
+        } else {
+          sanitizedCompanyName = compCheck.sanitized;
         }
-        if (!tinNumber.trim()) {
-          newErrors.tinNumber = 'TIN number is required';
+
+        const tinCheck = validateTINNumber(tinNumber);
+        if (!tinCheck.isValid) {
+          newErrors.tinNumber = tinCheck.error || 'Valid 10-digit TIN required';
+        } else {
+          sanitizedTinNumber = tinCheck.sanitized;
         }
-        if (!fleetSize.trim()) {
-          newErrors.fleetSize = 'Fleet size is required';
+
+        const fleetCheck = validateFleetSize(fleetSize);
+        if (!fleetCheck.isValid) {
+          newErrors.fleetSize = fleetCheck.error || 'Valid fleet size required';
+        } else {
+          sanitizedFleetSize = fleetCheck.sanitized;
         }
-        if (!email.trim()) {
-          newErrors.email = 'Company email is required';
-        } else if (!isValidEmail(email)) {
-          newErrors.email = 'Enter valid email (e.g. solomon@company.et)';
+
+        const emailCheck = validateEmail(email);
+        if (!emailCheck.isValid) {
+          newErrors.email = emailCheck.error || 'Valid company email required';
+        } else {
+          resolvedEmail = emailCheck.sanitized;
+        }
+
+        if (contactPhone.trim()) {
+          const contactCheck = validatePhone(contactPhone, true);
+          if (!contactCheck.isValid) {
+            newErrors.contactPhone = contactCheck.error || 'Enter a valid 10-digit phone';
+          } else {
+            sanitizedContactPhone = contactCheck.formatted;
+            displayPhone = contactCheck.formatted;
+          }
+        } else {
+          displayPhone = '+251 91 144 5566';
         }
       }
 
       if (role === 'DRIVER') {
-        if (!licensePlate.trim()) {
-          newErrors.licensePlate = 'License plate is required';
+        const plateCheck = validateLicensePlate(licensePlate);
+        if (!plateCheck.isValid) {
+          newErrors.licensePlate = plateCheck.error || 'Valid license plate required (e.g. 3-AA-98214)';
+        } else {
+          sanitizedLicensePlate = plateCheck.sanitized;
         }
-        if (!driverLicense.trim()) {
-          newErrors.driverLicense = 'Driver license number is required';
+
+        const cdlCheck = validateDriverLicense(driverLicense);
+        if (!cdlCheck.isValid) {
+          newErrors.driverLicense = cdlCheck.error || 'Valid commercial license required';
+        } else {
+          sanitizedDriverLicense = cdlCheck.sanitized;
         }
-        if (!phone.trim()) {
-          newErrors.phone = 'Phone number is required';
-        } else if (!isValidEthiopianPhone(phone)) {
-          newErrors.phone = 'Enter valid 10-digit phone (e.g. 0911234567)';
+
+        const phoneCheck = validatePhone(phone);
+        if (!phoneCheck.isValid) {
+          newErrors.phone = phoneCheck.error || 'Valid 10-digit phone required (e.g. 0911234567)';
+        } else {
+          resolvedEmail = phoneCheck.supabaseEmail;
+          displayPhone = phoneCheck.formatted;
         }
       }
 
-      if (!password.trim()) {
-        newErrors.password = 'Password is required';
-      } else if (password.length < 6) {
-        newErrors.password = 'Min 6 characters';
+      // 3. Password & Confirmation
+      const passCheck = validatePassword(password);
+      if (!passCheck.isValid) {
+        newErrors.password = passCheck.error || 'Password must be at least 6 characters';
       }
 
-      if (!confirmPassword.trim()) {
-        newErrors.confirmPassword = 'Confirm password is required';
-      } else if (password !== confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
+      const confirmCheck = validateConfirmPassword(password, confirmPassword);
+      if (!confirmCheck.isValid) {
+        newErrors.confirmPassword = confirmCheck.error || 'Passwords do not match';
       }
 
+      // If any field failed validation, reject immediately
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
+        Alert.alert(
+          'Incomplete or Invalid Information',
+          'Please correct the highlighted fields before registering.'
+        );
         return;
       }
 
-      // --- REGISTRATION IDENTITY RESOLUTION ---
-      let resolvedEmail: string;
-      let displayPhone: string;
+      setIsSubmitting(true);
+      try {
+        let token = `jwt-token-${Date.now()}`;
+        let userId = `USR-${Date.now().toString().slice(-4)}`;
 
-      if (role === 'DRIVER') {
-        // Driver only sees phone; Supabase gets 09XXXXXXXX@tradeflow.et
-        const normalized = normalizeEthiopianPhone(phone);
-        resolvedEmail = driverPhoneToSupabaseEmail(normalized);
-        displayPhone = formatEthiopianPhoneDisplay(normalized);
-      } else {
-        // Transporter enters real company email
-        resolvedEmail = email.trim().toLowerCase();
-        displayPhone = contactPhone.trim()
-          ? formatEthiopianPhoneDisplay(contactPhone)
-          : '+251 91 144 5566';
+        // Register with Supabase Auth API using strictly sanitized data
+        const signUpResult = await signUpWithSupabase(resolvedEmail, password.trim(), {
+          full_name: nameCheck.sanitized,
+          phone: displayPhone,
+          role,
+          company_name: role === 'TRANSPORTER' ? sanitizedCompanyName : undefined,
+          tin_number: role === 'TRANSPORTER' ? sanitizedTinNumber : undefined,
+          fleet_size: role === 'TRANSPORTER' ? sanitizedFleetSize : undefined,
+          license_plate: role === 'DRIVER' ? sanitizedLicensePlate : undefined,
+          driver_license: role === 'DRIVER' ? sanitizedDriverLicense : undefined,
+        });
+
+        if (signUpResult.success && signUpResult.token) {
+          token = signUpResult.token;
+          if (signUpResult.user?.id) userId = signUpResult.user.id;
+        } else if (!signUpResult.success && !signUpResult.isOffline) {
+          Alert.alert('Registration Notice', signUpResult.error || 'Registration failed');
+        }
+
+        const newUser: AuthUser = {
+          id: userId,
+          email: resolvedEmail,
+          fullName: nameCheck.sanitized,
+          phone: displayPhone,
+          role,
+          companyName: role === 'TRANSPORTER' ? sanitizedCompanyName : undefined,
+          tinNumber: role === 'TRANSPORTER' ? sanitizedTinNumber : undefined,
+          fleetSize: role === 'TRANSPORTER' ? sanitizedFleetSize : undefined,
+          licensePlate: role === 'DRIVER' ? sanitizedLicensePlate : undefined,
+          driverLicense: role === 'DRIVER' ? sanitizedDriverLicense : undefined,
+          token,
+        };
+
+        // Persist session to local SQLite database
+        await saveUserSession(newUser);
+        Alert.alert(
+          'Account Registered',
+          role === 'TRANSPORTER'
+            ? `Welcome, ${nameCheck.sanitized}! Logged in with ${resolvedEmail}`
+            : `Welcome, Driver ${nameCheck.sanitized}! Phone ${displayPhone} registered successfully.`
+        );
+        onLoginSuccess(newUser);
+      } catch (err: any) {
+        Alert.alert('Registration Error', err.message || 'An error occurred during registration.');
+      } finally {
+        setIsSubmitting(false);
       }
-
-      let token = `jwt-token-${Date.now()}`;
-      let userId = `USR-${Date.now().toString().slice(-4)}`;
-
-      // Register with Supabase Auth API
-      const signUpResult = await signUpWithSupabase(resolvedEmail, password.trim(), {
-        full_name: fullName.trim(),
-        phone: displayPhone,
-        role,
-        company_name: role === 'TRANSPORTER' ? companyName.trim() : undefined,
-        tin_number: role === 'TRANSPORTER' ? tinNumber.trim() : undefined,
-        fleet_size: role === 'TRANSPORTER' ? fleetSize.trim() : undefined,
-        license_plate: role === 'DRIVER' ? licensePlate.trim().toUpperCase() : undefined,
-        driver_license: role === 'DRIVER' ? driverLicense.trim().toUpperCase() : undefined,
-      });
-
-      if (signUpResult.success && signUpResult.token) {
-        token = signUpResult.token;
-        if (signUpResult.user?.id) userId = signUpResult.user.id;
-      }
-
-      const newUser: AuthUser = {
-        id: userId,
-        email: resolvedEmail,
-        fullName: fullName.trim(),
-        phone: displayPhone,
-        role,
-        companyName: role === 'TRANSPORTER' ? companyName.trim() : undefined,
-        tinNumber: role === 'TRANSPORTER' ? tinNumber.trim() : undefined,
-        fleetSize: role === 'TRANSPORTER' ? fleetSize.trim() : undefined,
-        licensePlate: role === 'DRIVER' ? licensePlate.trim().toUpperCase() : undefined,
-        driverLicense: role === 'DRIVER' ? driverLicense.trim().toUpperCase() : undefined,
-        token,
-      };
-
-      await saveUserSession(newUser);
-      Alert.alert(
-        'Account Registered',
-        role === 'TRANSPORTER'
-          ? `Welcome, ${fullName.trim()}! Logged in with ${resolvedEmail}`
-          : `Welcome, Driver ${fullName.trim()}! Phone ${displayPhone} registered successfully.`
-      );
-      onLoginSuccess(newUser);
     }
   };
 
@@ -683,12 +741,14 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                     style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={tinNumber}
                     onChangeText={(val) => {
-                      setTinNumber(val);
+                      const cleaned = val.replace(/\D/g, '').slice(0, 10);
+                      setTinNumber(cleaned);
                       clearError('tinNumber');
                     }}
                     placeholder="10-digit TIN (e.g. 0098234112)"
                     placeholderTextColor={theme.colors.textDim}
                     keyboardType="numeric"
+                    maxLength={10}
                   />
                 </View>
                 {Boolean(errors.tinNumber) && (
@@ -765,12 +825,14 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                     style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={licensePlate}
                     onChangeText={(val) => {
-                      setLicensePlate(val);
+                      const cleaned = val.toUpperCase().replace(/[^0-9A-Z-]/g, '').slice(0, 15);
+                      setLicensePlate(cleaned);
                       clearError('licensePlate');
                     }}
                     placeholder="e.g. 3-AA-98214"
                     placeholderTextColor={theme.colors.textDim}
                     autoCapitalize="characters"
+                    maxLength={15}
                   />
                 </View>
                 {Boolean(errors.licensePlate) && (
@@ -804,12 +866,14 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                     style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={driverLicense}
                     onChangeText={(val) => {
-                      setDriverLicense(val);
+                      const cleaned = val.toUpperCase().replace(/[^0-9A-Z-]/g, '').slice(0, 25);
+                      setDriverLicense(cleaned);
                       clearError('driverLicense');
                     }}
                     placeholder="License number (e.g. ETH-CDL-782190)"
                     placeholderTextColor={theme.colors.textDim}
                     autoCapitalize="characters"
+                    maxLength={25}
                   />
                 </View>
                 {Boolean(errors.driverLicense) && (
@@ -898,13 +962,15 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={phone}
                   onChangeText={(val) => {
-                    setPhone(val);
+                    const cleaned = val.replace(/\D/g, '').slice(0, 10);
+                    setPhone(cleaned);
                     clearError('phone');
                   }}
-                  placeholder="0911 234 567"
+                  placeholder="0911234567"
                   placeholderTextColor={theme.colors.textDim}
                   keyboardType="phone-pad"
                   autoCapitalize="none"
+                  maxLength={10}
                 />
               </View>
               {Boolean(errors.phone) && (
@@ -928,6 +994,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                     backgroundColor: theme.colors.surface,
                     borderColor: theme.colors.cardBorder,
                   },
+                  Boolean(errors.contactPhone) && styles.inputBoxError,
                 ]}
               >
                 <View style={styles.countryCodePill}>
@@ -945,12 +1012,20 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={contactPhone}
-                  onChangeText={setContactPhone}
-                  placeholder="91 144 5566"
+                  onChangeText={(val) => {
+                    const cleaned = val.replace(/\D/g, '').slice(0, 10);
+                    setContactPhone(cleaned);
+                    clearError('contactPhone');
+                  }}
+                  placeholder="0911445566"
                   placeholderTextColor={theme.colors.textDim}
                   keyboardType="phone-pad"
+                  maxLength={10}
                 />
               </View>
+              {Boolean(errors.contactPhone) && (
+                <Text style={styles.errorText}>{errors.contactPhone}</Text>
+              )}
             </View>
           )}
 
@@ -1086,27 +1161,38 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
               {
                 backgroundColor:
                   role === 'DRIVER' ? theme.colors.blue : theme.colors.primary,
+                opacity: isSubmitting ? 0.75 : 1,
               },
             ]}
             onPress={handleSubmit}
+            disabled={isSubmitting}
             activeOpacity={0.8}
           >
-            <Text
-              style={[
-                styles.primaryBtnText,
-                {
-                  color:
-                    role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText,
-                },
-              ]}
-            >
-              {mode === 'LOGIN' ? t('sign_in') : t('create_account')}
-            </Text>
-            <Feather
-              name="arrow-right"
-              size={16}
-              color={role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText}
-            />
+            {isSubmitting ? (
+              <ActivityIndicator
+                size="small"
+                color={role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText}
+              />
+            ) : (
+              <>
+                <Text
+                  style={[
+                    styles.primaryBtnText,
+                    {
+                      color:
+                        role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText,
+                    },
+                  ]}
+                >
+                  {mode === 'LOGIN' ? t('sign_in') : t('create_account')}
+                </Text>
+                <Feather
+                  name="arrow-right"
+                  size={16}
+                  color={role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText}
+                />
+              </>
+            )}
           </TouchableOpacity>
         </View>
 
