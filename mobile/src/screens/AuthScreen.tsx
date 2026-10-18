@@ -30,6 +30,7 @@ import {
   isValidEthiopianPhone,
   isValidEmail,
 } from '../utils/phoneAuth';
+import { signInWithSupabase, signUpWithSupabase, ENV } from '../services/authService';
 
 interface Props {
   onLoginSuccess: (user: AuthUser) => void;
@@ -205,8 +206,18 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         displayPhone = '+251 91 144 5566';
       }
 
+      let token = `jwt-token-${Date.now()}`;
+      let userId = `USR-${Date.now().toString().slice(-4)}`;
+
+      // Try Supabase Auth API
+      const authResult = await signInWithSupabase(resolvedEmail, password.trim());
+      if (authResult.success && authResult.token) {
+        token = authResult.token;
+        if (authResult.user?.id) userId = authResult.user.id;
+      }
+
       const user: AuthUser = {
-        id: `USR-${Date.now().toString().slice(-4)}`,
+        id: userId,
         email: resolvedEmail,
         fullName: role === 'TRANSPORTER' ? 'Solomon Haile' : 'Abebe Kebede',
         phone: displayPhone,
@@ -214,7 +225,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         companyName: role === 'TRANSPORTER' ? 'Rift Valley Transport PLC' : undefined,
         licensePlate: role === 'DRIVER' ? '3-AA-98214' : undefined,
         driverLicense: role === 'DRIVER' ? 'ETH-CDL-4410' : undefined,
-        token: `jwt-token-${Date.now()}`,
+        token,
       };
 
       await saveUserSession(user);
@@ -290,8 +301,28 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           : '+251 91 144 5566';
       }
 
+      let token = `jwt-token-${Date.now()}`;
+      let userId = `USR-${Date.now().toString().slice(-4)}`;
+
+      // Register with Supabase Auth API
+      const signUpResult = await signUpWithSupabase(resolvedEmail, password.trim(), {
+        full_name: fullName.trim(),
+        phone: displayPhone,
+        role,
+        company_name: role === 'TRANSPORTER' ? companyName.trim() : undefined,
+        tin_number: role === 'TRANSPORTER' ? tinNumber.trim() : undefined,
+        fleet_size: role === 'TRANSPORTER' ? fleetSize.trim() : undefined,
+        license_plate: role === 'DRIVER' ? licensePlate.trim().toUpperCase() : undefined,
+        driver_license: role === 'DRIVER' ? driverLicense.trim().toUpperCase() : undefined,
+      });
+
+      if (signUpResult.success && signUpResult.token) {
+        token = signUpResult.token;
+        if (signUpResult.user?.id) userId = signUpResult.user.id;
+      }
+
       const newUser: AuthUser = {
-        id: `USR-${Date.now().toString().slice(-4)}`,
+        id: userId,
         email: resolvedEmail,
         fullName: fullName.trim(),
         phone: displayPhone,
@@ -301,7 +332,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         fleetSize: role === 'TRANSPORTER' ? fleetSize.trim() : undefined,
         licensePlate: role === 'DRIVER' ? licensePlate.trim().toUpperCase() : undefined,
         driverLicense: role === 'DRIVER' ? driverLicense.trim().toUpperCase() : undefined,
-        token: `jwt-token-${Date.now()}`,
+        token,
       };
 
       await saveUserSession(newUser);
