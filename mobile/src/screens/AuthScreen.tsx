@@ -538,34 +538,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             },
           ]}
         >
-          {/* Continue with Google Button */}
-          <TouchableOpacity
-            style={[
-              styles.googleBtn,
-              {
-                backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.cardBorder,
-              },
-            ]}
-            onPress={handleGoogleAuth}
-            activeOpacity={0.75}
-          >
-            <View style={styles.googleIconBox}>
-              <FontAwesome name="google" size={16} color="#EA4335" />
-            </View>
-            <Text style={[styles.googleBtnText, { color: theme.colors.textPrimary }]}>
-              {t('continue_with_google')}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={styles.dividerRow}>
-            <View style={[styles.dividerLine, { backgroundColor: theme.colors.cardBorder }]} />
-            <Text style={[styles.dividerText, { color: theme.colors.textMuted }]}>
-              {role === 'DRIVER' ? t('or_continue_with_phone') : t('or_continue_with_email')}
-            </Text>
-            <View style={[styles.dividerLine, { backgroundColor: theme.colors.cardBorder }]} />
-          </View>
 
           {/* Registration: Full Name */}
           {mode === 'REGISTER' && (
@@ -1128,6 +1100,35 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
               </>
             )}
           </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: theme.colors.cardBorder }]} />
+            <Text style={[styles.dividerText, { color: theme.colors.textMuted }]}>
+              {t('or_continue_with_google')}
+            </Text>
+            <View style={[styles.dividerLine, { backgroundColor: theme.colors.cardBorder }]} />
+          </View>
+
+          {/* Continue with Google Button (Bottom) */}
+          <TouchableOpacity
+            style={[
+              styles.googleBtn,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
+            onPress={handleGoogleAuth}
+            activeOpacity={0.75}
+          >
+            <View style={styles.googleIconBox}>
+              <FontAwesome name="google" size={16} color="#EA4335" />
+            </View>
+            <Text style={[styles.googleBtnText, { color: theme.colors.textPrimary }]}>
+              {t('continue_with_google')}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -1262,8 +1263,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: THEME.colors.cardBorder,
     borderRadius: 8,
-    paddingVertical: 11,
-    marginBottom: 14,
+    paddingVertical: 12,
   },
   googleIconBox: {
     width: 22,
@@ -1280,7 +1280,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 14,
+    marginTop: 16,
+    marginBottom: 12,
   },
   dividerLine: {
     flex: 1,
