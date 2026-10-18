@@ -140,9 +140,6 @@ export const TRANSLATIONS = {
     confirm_password: 'CONFIRM PASSWORD',
     forgot_password: 'Forgot password?',
     create_account: 'Create Account',
-    demo_accounts: 'DEMO ACCOUNTS',
-    demo_transporter: 'Demo Transporter',
-    demo_driver: 'Demo Driver',
   },
   AM: {
     // Navigation & Roles
@@ -281,9 +278,6 @@ export const TRANSLATIONS = {
     confirm_password: 'የይለፍ ቃል አረጋግጥ',
     forgot_password: 'የይለፍ ቃል ረሳህ?',
     create_account: 'መለያ ፍጠር',
-    demo_accounts: 'የሙከራ መለያዎች',
-    demo_transporter: 'የሙከራ ትራንስፖርተር',
-    demo_driver: 'የሙከራ አሽከርካሪ',
   },
 } as const;
 

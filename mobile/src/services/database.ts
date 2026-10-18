@@ -7,101 +7,6 @@ const DB_NAME = 'tradeflow_mobile.db';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
-// ── Seed data — Ethiopian domestic corridor loads ──
-const SEED_CARGO: Omit<CargoLoad, 'id'>[] = [
-  {
-    title: '40T Structural Steel',
-    cargoType: 'Structural Steel',
-    origin: 'Hawassa Industrial Park',
-    destination: 'Modjo Dry Port',
-    distanceKm: 205,
-    weightTons: 40,
-    rateETB: 195000,
-    pickupWindow: '2026-08-20 06:00',
-    status: 'open',
-    urgency: 'urgent',
-    postedAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    title: '25T Coffee Beans (Export)',
-    cargoType: 'Coffee Beans',
-    origin: 'Jimma Cargo Depot',
-    destination: 'Modjo Dry Port',
-    distanceKm: 345,
-    weightTons: 25,
-    rateETB: 285000,
-    pickupWindow: '2026-08-21 08:00',
-    status: 'open',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 7200000).toISOString(),
-  },
-  {
-    title: '18T Textile Goods',
-    cargoType: 'Textile Goods',
-    origin: 'Hawassa Industrial Park',
-    destination: 'Addis Ababa',
-    distanceKm: 275,
-    weightTons: 18,
-    rateETB: 240000,
-    pickupWindow: '2026-08-19 14:00',
-    status: 'open',
-    urgency: 'urgent',
-    postedAt: new Date(Date.now() - 1800000).toISOString(),
-  },
-  {
-    title: '30T Fertilizer',
-    cargoType: 'Fertilizer',
-    origin: 'Adama Transit Depot',
-    destination: 'Dire Dawa',
-    distanceKm: 390,
-    weightTons: 30,
-    rateETB: 175000,
-    pickupWindow: '2026-08-22 07:00',
-    status: 'open',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 14400000).toISOString(),
-  },
-  {
-    title: '12T Electronics',
-    cargoType: 'Electronics',
-    origin: 'Modjo Dry Port',
-    destination: 'Addis Ababa',
-    distanceKm: 73,
-    weightTons: 12,
-    rateETB: 62000,
-    pickupWindow: '2026-08-20 10:00',
-    status: 'open',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 10800000).toISOString(),
-  },
-  {
-    title: '22T Machinery Parts',
-    cargoType: 'Machinery Parts',
-    origin: 'Addis Ababa',
-    destination: 'Hawassa',
-    distanceKm: 275,
-    weightTons: 22,
-    rateETB: 210000,
-    pickupWindow: '2026-08-21 05:00',
-    status: 'in_transit',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    title: '35T Construction Material',
-    cargoType: 'Construction Material',
-    origin: 'Dire Dawa',
-    destination: 'Addis Ababa',
-    distanceKm: 500,
-    weightTons: 35,
-    rateETB: 220000,
-    pickupWindow: '2026-08-23 06:00',
-    status: 'open',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 5400000).toISOString(),
-  },
-];
-
 // ── Database lifecycle ──
 
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
@@ -156,28 +61,16 @@ export async function initDatabase(): Promise<void> {
     );
   `);
 
-  // Seed if empty
-  const countResult = await database.getFirstAsync<{ cnt: number }>(
-    'SELECT COUNT(*) as cnt FROM cached_cargo'
+  // Remove any previously seeded mock cargo
+  await database.runAsync("DELETE FROM cached_cargo WHERE id LIKE 'TF-LOAD-%'");
+}
+
+export async function getActiveDriverTrip(): Promise<CargoLoad | null> {
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<CargoLoad>(
+    "SELECT * FROM cached_cargo WHERE status = 'in_transit' LIMIT 1"
   );
-
-  if (countResult && countResult.cnt === 0) {
-    for (let i = 0; i < SEED_CARGO.length; i++) {
-      const c = SEED_CARGO[i];
-      const id = `TF-LOAD-${8800 + i}`;
-      await database.runAsync(
-        `INSERT INTO cached_cargo (id, title, cargoType, origin, destination, distanceKm, weightTons, rateETB, pickupWindow, status, urgency, postedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        id, c.title, c.cargoType, c.origin, c.destination,
-        c.distanceKm, c.weightTons, c.rateETB, c.pickupWindow,
-        c.status, c.urgency, c.postedAt
-      );
-    }
-  }
-
-  // Sanitize any existing cached records from older runs
-  await database.runAsync("UPDATE cached_cargo SET origin = 'Hawassa Industrial Park' WHERE origin LIKE '%Djibouti%'");
-  await database.runAsync("UPDATE cached_cargo SET destination = 'Modjo Dry Port' WHERE destination LIKE '%Djibouti%'");
+  return row || null;
 }
 
 // ── Cargo CRUD ──

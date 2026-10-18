@@ -13,13 +13,14 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Waypoint, IncidentReportPayload, PodPayload, OfflineAction } from '../types/cargo';
+import { Waypoint, IncidentReportPayload, PodPayload, OfflineAction, CargoLoad } from '../types/cargo';
 import { AuthUser } from '../types/auth';
 import {
   enqueueOfflineAction,
   updateLocalCargoStatus,
   getPendingCount,
   getAllQueueItems,
+  getActiveDriverTrip,
 } from '../services/database';
 import {
   getNetworkStatus,
@@ -36,56 +37,6 @@ import {
   toEthiopianTime,
 } from '../utils/ethiopianCalendar';
 
-const INITIAL_WAYPOINTS: Waypoint[] = [
-  {
-    id: 'WP-1',
-    name: 'Addis Ababa — Kality Logistics Hub',
-    corridorLeg: 'Origin Hub (Capital)',
-    kmFromOrigin: 0,
-    status: 'completed',
-    timestamp: 'Today, 06:15 AM',
-    lat: 8.9480,
-    lng: 38.7460,
-  },
-  {
-    id: 'WP-2',
-    name: 'Modjo Dry Port Inland Terminal',
-    corridorLeg: 'Oromia Logistics Hub',
-    kmFromOrigin: 73,
-    status: 'completed',
-    timestamp: 'Today, 08:30 AM',
-    lat: 8.598,
-    lng: 39.123,
-  },
-  {
-    id: 'WP-3',
-    name: 'Adama (Nazret) Transit Depot',
-    corridorLeg: 'Central Rift Valley Checkpoint',
-    kmFromOrigin: 99,
-    status: 'current',
-    lat: 8.541,
-    lng: 39.268,
-  },
-  {
-    id: 'WP-4',
-    name: 'Meki Weighbridge Station',
-    corridorLeg: 'East Shewa Zone',
-    kmFromOrigin: 134,
-    status: 'upcoming',
-    lat: 8.153,
-    lng: 38.816,
-  },
-  {
-    id: 'WP-5',
-    name: 'Hawassa Industrial Park Terminal',
-    corridorLeg: 'Final Destination Hub',
-    kmFromOrigin: 275,
-    status: 'upcoming',
-    lat: 7.062,
-    lng: 38.476,
-  },
-];
-
 interface Props {
   currentUser?: AuthUser | null;
   onSignOut?: () => void;
@@ -101,7 +52,8 @@ export default function DriverScreen({
 }: Props) {
   const { theme } = useTheme();
   const { language, t } = useLanguage();
-  const [waypoints, setWaypoints] = useState<Waypoint[]>(INITIAL_WAYPOINTS);
+  const [activeTrip, setActiveTrip] = useState<CargoLoad | null>(null);
+  const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
   const [tripCompleted, setTripCompleted] = useState(false);
   const [isOnline, setIsOnline] = useState(getNetworkStatus());
   const [pendingCount, setPendingCount] = useState(0);
@@ -112,12 +64,43 @@ export default function DriverScreen({
   const [incidentNotes, setIncidentNotes] = useState('');
   const [podModalVisible, setPodModalVisible] = useState(false);
   const [receiverName, setReceiverName] = useState('');
-  const [waybillNumber, setWaybillNumber] = useState('TF-WB-9102');
+  const [waybillNumber, setWaybillNumber] = useState('');
 
   // Queue Modal
   const [queueModalVisible, setQueueModalVisible] = useState(false);
   const [queueItems, setQueueItems] = useState<OfflineAction[]>([]);
   const [syncing, setSyncing] = useState(false);
+
+  const loadDriverTrip = useCallback(async () => {
+    const trip = await getActiveDriverTrip();
+    setActiveTrip(trip);
+    if (trip) {
+      setWaybillNumber(`TF-WB-${trip.id.replace(/\D/g, '') || '01'}`);
+      setWaypoints([
+        {
+          id: `${trip.id}-WP1`,
+          name: `${trip.origin} Dispatch Hub`,
+          corridorLeg: 'Origin Checkpoint',
+          kmFromOrigin: 0,
+          status: 'completed',
+          lat: 8.948,
+          lng: 38.746,
+        },
+        {
+          id: `${trip.id}-WP2`,
+          name: `${trip.destination} Terminal`,
+          corridorLeg: 'Final Destination Hub',
+          kmFromOrigin: trip.distanceKm,
+          status: 'current',
+          lat: 7.062,
+          lng: 38.476,
+        },
+      ]);
+    } else {
+      setWaypoints([]);
+      setWaybillNumber('');
+    }
+  }, []);
 
   const refreshCount = useCallback(async () => {
     const count = await getPendingCount();
@@ -126,7 +109,8 @@ export default function DriverScreen({
 
   useEffect(() => {
     refreshCount();
-  }, [refreshCount]);
+    loadDriverTrip();
+  }, [refreshCount, loadDriverTrip]);
 
   const handleToggleNetwork = () => {
     const newStatus = toggleNetworkStatus();
@@ -184,8 +168,9 @@ export default function DriverScreen({
       });
     });
 
+    const tripId = activeTrip?.id || 'ACTIVE-TRIP';
     const payload = {
-      tripId: 'TF-LOAD-8805',
+      tripId,
       waypointId: wp.id,
       waypointName: wp.name,
       lat: wp.lat,
@@ -212,10 +197,15 @@ export default function DriverScreen({
   const handleSubmitIncident = async () => {
     if (!incidentNotes.trim()) return;
 
+    const tripId = activeTrip?.id || 'ACTIVE-TRIP';
     const payload: IncidentReportPayload = {
-      tripId: 'TF-LOAD-8805',
+      tripId,
       type: selectedIncidentType,
-      location: currentWaypoint ? currentWaypoint.name : 'A1 Corridor',
+      location: currentWaypoint
+        ? currentWaypoint.name
+        : activeTrip
+        ? `${activeTrip.origin} – ${activeTrip.destination}`
+        : 'Corridor Transit Leg',
       notes: incidentNotes.trim(),
       timestamp: new Date().toISOString(),
     };
@@ -242,15 +232,18 @@ export default function DriverScreen({
   const handleConfirmPod = async () => {
     if (!receiverName.trim()) return;
 
+    const tripId = activeTrip?.id || 'ACTIVE-TRIP';
     const payload: PodPayload = {
-      tripId: 'TF-LOAD-8805',
+      tripId,
       receiverName: receiverName.trim(),
       waybillNumber: waybillNumber.trim(),
       signatureDate: new Date().toISOString(),
     };
 
     await enqueueOfflineAction('PROOF_OF_DELIVERY', payload);
-    await updateLocalCargoStatus('TF-LOAD-8805', 'delivered');
+    if (activeTrip?.id) {
+      await updateLocalCargoStatus(activeTrip.id, 'delivered');
+    }
 
     if (isOnline) {
       await processQueue();
@@ -273,11 +266,9 @@ export default function DriverScreen({
     if (isOnline) {
       await processQueue();
     }
-    await refreshCount();
-    // 1-second deliberate wait for smooth modern refresh feel
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await Promise.all([refreshCount(), loadDriverTrip()]);
     setRefreshing(false);
-  }, [isOnline, refreshCount]);
+  }, [isOnline, refreshCount, loadDriverTrip]);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
@@ -305,33 +296,64 @@ export default function DriverScreen({
           />
         }
       >
-        {/* Active Trip Header */}
-        <View
-          style={[
-            styles.tripCard,
-            {
-              backgroundColor: theme.colors.card,
-              borderColor: theme.colors.cardBorder,
-            },
-          ]}
-        >
-          <View style={styles.tripTopRow}>
-            <View style={styles.tripTag}>
-              <Text style={styles.tripTagText}>
-                {tripCompleted ? t('completed_trip') : t('active_trip')}
-              </Text>
+        {!activeTrip || waypoints.length === 0 ? (
+          <View
+            style={[
+              styles.emptyContainer,
+              {
+                backgroundColor: theme.colors.card,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.emptyIconCircle,
+                { backgroundColor: theme.colors.surfaceElevated },
+              ]}
+            >
+              <Feather name="navigation" size={28} color={theme.colors.blue} />
             </View>
-            <Text style={[styles.truckPlate, { color: theme.colors.textMuted }]}>
-              {t('truck')}: {currentUser?.licensePlate || '3-AA-98214'}
+            <Text style={[styles.emptyTitle, { color: theme.colors.textPrimary }]}>
+              No Active Dispatches
+            </Text>
+            <Text style={[styles.emptySubtitle, { color: theme.colors.textMuted }]}>
+              There are currently no active corridor trips assigned to vehicle{' '}
+              <Text style={{ color: theme.colors.textPrimary, fontWeight: '700' }}>
+                {currentUser?.licensePlate || 'your truck'}
+              </Text>
+              . When a transporter assigns a corridor load, your route checkpoints and waypoints will appear here in real time.
             </Text>
           </View>
+        ) : (
+          <>
+            {/* Active Trip Header */}
+            <View
+              style={[
+                styles.tripCard,
+                {
+                  backgroundColor: theme.colors.card,
+                  borderColor: theme.colors.cardBorder,
+                },
+              ]}
+            >
+              <View style={styles.tripTopRow}>
+                <View style={styles.tripTag}>
+                  <Text style={styles.tripTagText}>
+                    {tripCompleted ? t('completed_trip') : t('active_trip')}
+                  </Text>
+                </View>
+                <Text style={[styles.truckPlate, { color: theme.colors.textMuted }]}>
+                  {t('truck')}: {currentUser?.licensePlate || '3-AA-98214'}
+                </Text>
+              </View>
 
-          <Text style={[styles.tripTitle, { color: theme.colors.textPrimary }]}>
-            Structural Steel (40T)
-          </Text>
-          <Text style={[styles.tripSubtitle, { color: theme.colors.textMuted }]}>
-            TF-LOAD-8805
-          </Text>
+              <Text style={[styles.tripTitle, { color: theme.colors.textPrimary }]}>
+                {activeTrip.title}
+              </Text>
+              <Text style={[styles.tripSubtitle, { color: theme.colors.textMuted }]}>
+                {activeTrip.id} • {activeTrip.cargoType} ({activeTrip.weightTons}T)
+              </Text>
 
           {/* Progress Strip */}
           <View
@@ -392,7 +414,7 @@ export default function DriverScreen({
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>{t('waypoints')}</Text>
           <Text style={[styles.sectionSub, { color: theme.colors.textMuted }]}>
-            Addis Ababa – Hawassa (275 km)
+            {activeTrip.origin} – {activeTrip.destination} ({activeTrip.distanceKm} km)
           </Text>
         </View>
 
@@ -510,7 +532,9 @@ export default function DriverScreen({
             );
           })}
         </View>
-      </ScrollView>
+      </>
+    )}
+  </ScrollView>
 
       {/* Report Incident Modal */}
       <Modal
@@ -1189,5 +1213,33 @@ const styles = StyleSheet.create({
     color: THEME.colors.primaryText,
     fontSize: 13,
     fontWeight: '700',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 52,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 10,
+  },
+  emptyIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: 'center',
   },
 });

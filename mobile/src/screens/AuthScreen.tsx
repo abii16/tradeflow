@@ -102,78 +102,12 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
     setErrors({});
   };
 
-  // ── Handle Demo One-Tap Access ──
-  const handleQuickDemo = async (demoRole: UserRole) => {
-    let demoUser: AuthUser;
-    if (demoRole === 'TRANSPORTER') {
-      demoUser = {
-        id: 'USR-TRANS-01',
-        email: 'solomon@company.et',
-        fullName: 'Solomon Haile',
-        phone: '+251 91 144 5566',
-        role: 'TRANSPORTER',
-        companyName: 'Rift Valley Transport PLC',
-        tinNumber: '0098234112',
-        fleetSize: '16 Trucks',
-        token: 'jwt-demo-transporter-token',
-      };
-    } else {
-      // Driver Phone-as-Email demo:
-      // Phone: 0911234567 -> Supabase identity: 0911234567@tradeflow.et
-      demoUser = {
-        id: 'USR-DRV-05',
-        email: '0911234567@tradeflow.et',
-        fullName: 'Abebe Kebede',
-        phone: '+251 91 123 4567',
-        role: 'DRIVER',
-        licensePlate: '3-AA-98214',
-        driverLicense: 'ETH-CDL-782190',
-        token: 'jwt-demo-driver-token',
-      };
-    }
-
-    await saveUserSession(demoUser);
-    onLoginSuccess(demoUser);
-  };
-
   // ── Handle Google One-Tap / OAuth ──
   const handleGoogleAuth = async () => {
-    try {
-      let googleUser: AuthUser;
-      if (role === 'TRANSPORTER') {
-        googleUser = {
-          id: `USR-GGL-${Date.now().toString().slice(-4)}`,
-          email: 'solomon.h@gmail.com',
-          fullName: 'Solomon Haile',
-          phone: '+251 91 144 5566',
-          role: 'TRANSPORTER',
-          companyName: 'Rift Valley Transport PLC',
-          tinNumber: '0098234112',
-          fleetSize: '16 Trucks',
-          token: `google-oauth-token-${Date.now()}`,
-        };
-      } else {
-        googleUser = {
-          id: `USR-GGL-${Date.now().toString().slice(-4)}`,
-          email: '0911234567@tradeflow.et',
-          fullName: 'Abebe Kebede',
-          phone: '+251 91 123 4567',
-          role: 'DRIVER',
-          licensePlate: '3-AA-98214',
-          driverLicense: 'ETH-CDL-782190',
-          token: `google-oauth-token-${Date.now()}`,
-        };
-      }
-
-      await saveUserSession(googleUser);
-      Alert.alert(
-        'Google Authentication',
-        `Authenticated with Google as ${googleUser.fullName} (${role === 'DRIVER' ? googleUser.phone : googleUser.email})`
-      );
-      onLoginSuccess(googleUser);
-    } catch (err: any) {
-      Alert.alert('Google Sign In Error', err.message || 'Failed to authenticate with Google');
-    }
+    Alert.alert(
+      'Google Authentication',
+      'Google OAuth 2.0 Client ID is active. To authenticate with Google SSO, open your browser or sign in directly with your email or phone number below.'
+    );
   };
 
   // ── Handle Submit with Strict Validation ──
@@ -1195,61 +1129,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             )}
           </TouchableOpacity>
         </View>
-
-        {/* Demo Accounts */}
-        <View style={styles.demoSection}>
-          <Text style={[styles.demoLabel, { color: theme.colors.textMuted }]}>
-            {t('demo_accounts')}
-          </Text>
-
-          <View style={styles.demoCards}>
-            <TouchableOpacity
-              style={[
-                styles.demoCard,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.cardBorder,
-                },
-              ]}
-              onPress={() => handleQuickDemo('TRANSPORTER')}
-              activeOpacity={0.7}
-            >
-              <Feather name="truck" size={15} color={theme.colors.primary} />
-              <View style={styles.demoCardContent}>
-                <Text style={[styles.demoCardTitle, { color: theme.colors.textPrimary }]}>
-                  {t('demo_transporter')}
-                </Text>
-                <Text style={[styles.demoCardSub, { color: theme.colors.textMuted }]}>
-                  Solomon Haile • solomon@company.et
-                </Text>
-              </View>
-              <Feather name="chevron-right" size={16} color={theme.colors.textMuted} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.demoCard,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.cardBorder,
-                },
-              ]}
-              onPress={() => handleQuickDemo('DRIVER')}
-              activeOpacity={0.7}
-            >
-              <Feather name="navigation" size={15} color={theme.colors.blue} />
-              <View style={styles.demoCardContent}>
-                <Text style={[styles.demoCardTitle, { color: theme.colors.textPrimary }]}>
-                  {t('demo_driver')}
-                </Text>
-                <Text style={[styles.demoCardSub, { color: theme.colors.textMuted }]}>
-                  Abebe Kebede • 0911 234 567 (Truck 3-AA-98214)
-                </Text>
-              </View>
-              <Feather name="chevron-right" size={16} color={theme.colors.textMuted} />
-            </TouchableOpacity>
-          </View>
-        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -1507,46 +1386,5 @@ const styles = StyleSheet.create({
     color: THEME.colors.primaryText,
     fontSize: 13.5,
     fontWeight: '700',
-  },
-
-  // ── Demo Section ──
-  demoSection: {
-    marginTop: 4,
-  },
-  demoLabel: {
-    color: THEME.colors.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    marginBottom: 10,
-    textAlign: 'center',
-    fontFamily: THEME.typography.mono,
-  },
-  demoCards: {
-    gap: 8,
-  },
-  demoCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: THEME.colors.surface,
-    borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    gap: 12,
-  },
-  demoCardContent: {
-    flex: 1,
-  },
-  demoCardTitle: {
-    color: THEME.colors.textPrimary,
-    fontSize: 12.5,
-    fontWeight: '600',
-  },
-  demoCardSub: {
-    color: THEME.colors.textMuted,
-    fontSize: 11,
-    marginTop: 1,
   },
 });
