@@ -11,19 +11,19 @@ export const DARK_THEME = {
     cardBorder: '#282828',
     cardBorderHover: '#383838',
 
-    // Primary Brand Emerald (Commerce, revenue, bidding, transporter)
-    primary: '#3ECF8E',
-    primaryDark: '#2DA870',
+    // Primary Brand — Amber Gold (Commerce, trade, value, transporter)
+    primary: '#F59E0B',
+    primaryDark: '#D97706',
     primaryText: '#121212',
-    primarySubtle: 'rgba(62, 207, 142, 0.1)',
-    primaryBorder: 'rgba(62, 207, 142, 0.25)',
+    primarySubtle: 'rgba(245, 158, 11, 0.12)',
+    primaryBorder: 'rgba(245, 158, 11, 0.3)',
 
     // Functional Accents
     blue: '#3B82F6',
     blueSubtle: 'rgba(59, 130, 246, 0.12)',
     blueBorder: 'rgba(59, 130, 246, 0.25)',
-    amber: '#F59E0B',
-    amberSubtle: 'rgba(245, 158, 11, 0.12)',
+    amber: '#3ECF8E',
+    amberSubtle: 'rgba(62, 207, 142, 0.12)',
     red: '#EF4444',
     redSubtle: 'rgba(239, 68, 68, 0.12)',
     redBorder: 'rgba(239, 68, 68, 0.35)',
@@ -37,13 +37,13 @@ export const DARK_THEME = {
     // Status Colors
     status: {
       open: {
-        bg: 'rgba(62, 207, 142, 0.1)',
-        text: '#3ECF8E',
+        bg: 'rgba(245, 158, 11, 0.12)',
+        text: '#F59E0B',
         label: 'Open',
       },
       bid_placed: {
-        bg: 'rgba(245, 158, 11, 0.1)',
-        text: '#F59E0B',
+        bg: 'rgba(62, 207, 142, 0.12)',
+        text: '#3ECF8E',
         label: 'Bid Placed',
       },
       in_transit: {
@@ -73,19 +73,19 @@ export const LIGHT_THEME = {
     cardBorder: '#E2E6EA',
     cardBorderHover: '#CED4DA',
 
-    // Primary Brand Emerald (Crisp high-contrast green for light mode)
-    primary: '#10B981',
-    primaryDark: '#059669',
+    // Primary Brand — Amber Gold (Warm, high-contrast gold for light mode)
+    primary: '#D97706',
+    primaryDark: '#B45309',
     primaryText: '#FFFFFF',
-    primarySubtle: 'rgba(16, 185, 129, 0.12)',
-    primaryBorder: 'rgba(16, 185, 129, 0.35)',
+    primarySubtle: 'rgba(217, 119, 6, 0.1)',
+    primaryBorder: 'rgba(217, 119, 6, 0.3)',
 
     // Functional Accents
     blue: '#2563EB',
     blueSubtle: 'rgba(37, 99, 235, 0.12)',
     blueBorder: 'rgba(37, 99, 235, 0.35)',
-    amber: '#D97706',
-    amberSubtle: 'rgba(217, 119, 6, 0.14)',
+    amber: '#10B981',
+    amberSubtle: 'rgba(16, 185, 129, 0.12)',
     red: '#EF4444',
     redSubtle: 'rgba(239, 68, 68, 0.1)',
     redBorder: 'rgba(239, 68, 68, 0.35)',
@@ -99,13 +99,13 @@ export const LIGHT_THEME = {
     // Status Colors
     status: {
       open: {
-        bg: 'rgba(16, 185, 129, 0.12)',
-        text: '#059669',
+        bg: 'rgba(217, 119, 6, 0.1)',
+        text: '#B45309',
         label: 'Open',
       },
       bid_placed: {
-        bg: 'rgba(217, 119, 6, 0.12)',
-        text: '#D97706',
+        bg: 'rgba(16, 185, 129, 0.12)',
+        text: '#059669',
         label: 'Bid Placed',
       },
       in_transit: {
@@ -125,5 +125,5 @@ export const LIGHT_THEME = {
   },
 };
 
-export const THEME = DARK_THEME;
+export const THEME = LIGHT_THEME;
 export type ThemeType = typeof DARK_THEME;

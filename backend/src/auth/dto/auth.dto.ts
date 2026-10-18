@@ -86,7 +86,7 @@ export const RegisterDto = z.object({
 });
 
 export const LoginDto = z.object({
-  email: z.string().email('Invalid email address format'),
+  email: z.string().min(1, 'Email or phone number is required'),
   password: z.string().min(1, 'Password is required'),
 });
 

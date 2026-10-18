@@ -289,7 +289,14 @@ export class AuthService {
    * - Active user session recording
    */
   async login(data: LoginRequestType, clientIp?: string, userAgent?: string) {
-    const emailKey = data.email.toLowerCase().trim();
+    let resolvedEmail = data.email.trim();
+    if (!resolvedEmail.includes('@')) {
+      const digits = resolvedEmail.replace(/\D/g, '');
+      const local = digits.startsWith('251') ? digits.slice(3) : digits;
+      const normalized = local.startsWith('0') ? local.slice(0, 10) : `0${local.slice(-9)}`;
+      resolvedEmail = `${normalized}@tradeflow.et`;
+    }
+    const emailKey = resolvedEmail.toLowerCase();
     const attempt = AuthService.failedLoginAttempts.get(emailKey);
 
     // 1. Check account lockout to prevent brute-force attacks
@@ -314,7 +321,7 @@ export class AuthService {
             'Authorization': `Bearer ${this.supabaseAnonKey}`,
           },
           body: JSON.stringify({
-            email: data.email,
+            email: resolvedEmail,
             password: data.password,
           }),
         });
@@ -327,10 +334,10 @@ export class AuthService {
           if (u) {
             userObj = u;
           } else {
-            const [byEmail] = await db.select().from(users).where(eq(users.email, data.email));
+            const [byEmail] = await db.select().from(users).where(eq(users.email, resolvedEmail));
             userObj = byEmail || {
               id: result.user.id,
-              email: data.email,
+              email: resolvedEmail,
               fullName: result.user.user_metadata?.full_name || 'User',
               role: result.user.user_metadata?.role || 'SHIPPER',
               isVerified: false,
@@ -345,7 +352,7 @@ export class AuthService {
 
     // 3. Local Database Password Verification (Offline or Local accounts)
     if (!token || !userObj) {
-      const [u] = await db.select().from(users).where(eq(users.email, data.email));
+      const [u] = await db.select().from(users).where(eq(users.email, resolvedEmail));
       if (!u) {
         this.recordFailedLogin(emailKey, clientIp);
       }

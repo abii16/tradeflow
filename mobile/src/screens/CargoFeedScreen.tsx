@@ -1,5 +1,5 @@
 // TradeFlow Mobile — Cargo Feed Screen (Production Logistics Design)
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Alert,
   ScrollView,
+  Animated,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { CargoLoad, OfflineAction } from '../types/cargo';
@@ -35,7 +36,54 @@ import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 
-const ROUTE_FILTERS = ['All', 'Djibouti', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
+const ROUTE_FILTERS = ['All', 'Hawassa', 'Modjo', 'Dire Dawa', 'Addis Ababa'];
+
+function CargoCardSkeleton({ theme }: { theme: any }) {
+  const pulseAnim = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 0.95,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.4,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        styles.skeletonCard,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.cardBorder,
+          opacity: pulseAnim,
+        },
+      ]}
+    >
+      <View style={styles.skeletonHeader}>
+        <View style={[styles.skeletonPill, { backgroundColor: theme.colors.surfaceElevated }]} />
+        <View style={[styles.skeletonBadge, { backgroundColor: theme.colors.surfaceElevated }]} />
+      </View>
+      <View style={[styles.skeletonLineLong, { backgroundColor: theme.colors.surfaceElevated }]} />
+      <View style={[styles.skeletonLineShort, { backgroundColor: theme.colors.surfaceElevated }]} />
+      <View style={[styles.skeletonFooter, { borderTopColor: theme.colors.cardBorder }]}>
+        <View style={[styles.skeletonPrice, { backgroundColor: theme.colors.surfaceElevated }]} />
+        <View style={[styles.skeletonBtn, { backgroundColor: theme.colors.primarySubtle }]} />
+      </View>
+    </Animated.View>
+  );
+}
 
 interface Props {
   currentUser?: AuthUser | null;
@@ -53,6 +101,7 @@ export default function CargoFeedScreen({
   const { theme } = useTheme();
   const { language, t } = useLanguage();
   const [cargo, setCargo] = useState<CargoLoad[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'available' | 'my_bids'>('available');
   const [search, setSearch] = useState('');
   const [activeRoute, setActiveRoute] = useState('All');
@@ -75,26 +124,51 @@ export default function CargoFeedScreen({
     })();
   }, []);
 
-  const loadCargo = useCallback(async () => {
+  const loadCargo = useCallback(async (isInitial = false) => {
     if (!dbReady) return;
-    const filter = activeRoute === 'All' ? undefined : activeRoute;
-    const items = await getCachedCargo(search, filter);
-    setCargo(items);
-    const count = await getPendingCount();
-    setPendingCount(count);
+    if (isInitial) {
+      setLoading(true);
+    }
+    try {
+      const filter = activeRoute === 'All' ? undefined : activeRoute;
+      const [items, count] = await Promise.all([
+        getCachedCargo(search, filter),
+        getPendingCount(),
+        // Industry-standard anti-flicker threshold on initial cold load (350ms)
+        isInitial
+          ? new Promise((resolve) => setTimeout(resolve, 350))
+          : Promise.resolve(),
+      ]);
+      setCargo(items);
+      setPendingCount(count);
+    } finally {
+      if (isInitial) {
+        setLoading(false);
+      }
+    }
   }, [dbReady, search, activeRoute]);
 
   useEffect(() => {
-    loadCargo();
+    loadCargo(false);
   }, [loadCargo]);
+
+  // Initial load trigger on database ready
+  useEffect(() => {
+    if (dbReady) {
+      loadCargo(true);
+    }
+  }, [dbReady]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    if (isOnline) {
-      await processQueue();
+    try {
+      if (isOnline) {
+        await processQueue();
+      }
+      await loadCargo(false);
+    } finally {
+      setRefreshing(false);
     }
-    await loadCargo();
-    setRefreshing(false);
   }, [isOnline, loadCargo]);
 
   const handleToggleNetwork = () => {
@@ -320,36 +394,44 @@ export default function CargoFeedScreen({
         </ScrollView>
       </View>
 
-      {/* Main Cargo Feed */}
-      <FlatList
-        data={displayedCargo}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <CargoCard item={item} onBid={handleOpenBid} />
-        )}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={theme.colors.primary}
-            colors={[theme.colors.primary]}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyTitle, { color: theme.colors.textPrimary }]}>
-              {activeTab === 'my_bids' ? t('no_active_bids') : t('no_loads_found')}
-            </Text>
-            <Text style={[styles.emptySubtitle, { color: theme.colors.textMuted }]}>
-              {activeTab === 'my_bids'
-                ? t('my_bids_empty_sub')
-                : t('filter_empty_sub')}
-            </Text>
-          </View>
-        }
-      />
+      {/* Main Cargo Feed with Skeleton Loading */}
+      {loading ? (
+        <View style={styles.listContainer}>
+          <CargoCardSkeleton theme={theme} />
+          <CargoCardSkeleton theme={theme} />
+          <CargoCardSkeleton theme={theme} />
+        </View>
+      ) : (
+        <FlatList
+          data={displayedCargo}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <CargoCard item={item} onBid={handleOpenBid} />
+          )}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.colors.primary}
+              colors={[theme.colors.primary]}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyTitle, { color: theme.colors.textPrimary }]}>
+                {activeTab === 'my_bids' ? t('no_active_bids') : t('no_loads_found')}
+              </Text>
+              <Text style={[styles.emptySubtitle, { color: theme.colors.textMuted }]}>
+                {activeTab === 'my_bids'
+                  ? t('my_bids_empty_sub')
+                  : t('filter_empty_sub')}
+              </Text>
+            </View>
+          }
+        />
+      )}
 
       {/* Modals */}
       <BidModal
@@ -480,5 +562,56 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 18,
+  },
+  skeletonCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 12,
+  },
+  skeletonHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  skeletonPill: {
+    width: 80,
+    height: 14,
+    borderRadius: 7,
+  },
+  skeletonBadge: {
+    width: 60,
+    height: 18,
+    borderRadius: 6,
+  },
+  skeletonLineLong: {
+    width: '75%',
+    height: 16,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  skeletonLineShort: {
+    width: '45%',
+    height: 12,
+    borderRadius: 4,
+    marginBottom: 16,
+  },
+  skeletonFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  skeletonPrice: {
+    width: 90,
+    height: 16,
+    borderRadius: 4,
+  },
+  skeletonBtn: {
+    width: 70,
+    height: 26,
+    borderRadius: 8,
   },
 });

@@ -10,6 +10,7 @@ import {
   ScrollView,
   Alert,
   Platform,
+  Image,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { AuthUser } from '../types/auth';
@@ -510,7 +511,11 @@ export default function SideMenuDrawer({
                       { backgroundColor: theme.colors.surfaceElevated },
                     ]}
                   >
-                    <Feather name="info" size={15} color={theme.colors.textSecondary} />
+                    <Image
+                      source={require('../../assets/tradeflow-logo.png')}
+                      style={styles.aboutLogo}
+                      resizeMode="contain"
+                    />
                   </View>
                   <View>
                     <Text style={[styles.menuItemTitle, { color: theme.colors.textPrimary }]}>
@@ -660,6 +665,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  aboutLogo: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
   },
   menuItemTitle: {
     fontSize: 13,

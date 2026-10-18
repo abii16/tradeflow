@@ -7,16 +7,16 @@ const DB_NAME = 'tradeflow_mobile.db';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
-// ── Seed data — Ethiopian corridor loads ──
+// ── Seed data — Ethiopian domestic corridor loads ──
 const SEED_CARGO: Omit<CargoLoad, 'id'>[] = [
   {
     title: '40T Structural Steel',
     cargoType: 'Structural Steel',
-    origin: 'Djibouti Port',
+    origin: 'Hawassa Industrial Park',
     destination: 'Modjo Dry Port',
-    distanceKm: 910,
+    distanceKm: 205,
     weightTons: 40,
-    rateETB: 340000,
+    rateETB: 195000,
     pickupWindow: '2026-08-20 06:00',
     status: 'open',
     urgency: 'urgent',
@@ -25,9 +25,9 @@ const SEED_CARGO: Omit<CargoLoad, 'id'>[] = [
   {
     title: '25T Coffee Beans (Export)',
     cargoType: 'Coffee Beans',
-    origin: 'Modjo Dry Port',
-    destination: 'Djibouti Port',
-    distanceKm: 910,
+    origin: 'Jimma Cargo Depot',
+    destination: 'Modjo Dry Port',
+    distanceKm: 345,
     weightTons: 25,
     rateETB: 285000,
     pickupWindow: '2026-08-21 08:00',
@@ -38,11 +38,11 @@ const SEED_CARGO: Omit<CargoLoad, 'id'>[] = [
   {
     title: '18T Textile Goods',
     cargoType: 'Textile Goods',
-    origin: 'Djibouti Port',
+    origin: 'Hawassa Industrial Park',
     destination: 'Addis Ababa',
-    distanceKm: 980,
+    distanceKm: 275,
     weightTons: 18,
-    rateETB: 410000,
+    rateETB: 240000,
     pickupWindow: '2026-08-19 14:00',
     status: 'open',
     urgency: 'urgent',
@@ -51,9 +51,9 @@ const SEED_CARGO: Omit<CargoLoad, 'id'>[] = [
   {
     title: '30T Fertilizer',
     cargoType: 'Fertilizer',
-    origin: 'Djibouti Port',
+    origin: 'Adama Transit Depot',
     destination: 'Dire Dawa',
-    distanceKm: 310,
+    distanceKm: 390,
     weightTons: 30,
     rateETB: 175000,
     pickupWindow: '2026-08-22 07:00',
@@ -77,11 +77,11 @@ const SEED_CARGO: Omit<CargoLoad, 'id'>[] = [
   {
     title: '22T Machinery Parts',
     cargoType: 'Machinery Parts',
-    origin: 'Djibouti Port',
-    destination: 'Modjo Dry Port',
-    distanceKm: 910,
+    origin: 'Addis Ababa',
+    destination: 'Hawassa',
+    distanceKm: 275,
     weightTons: 22,
-    rateETB: 298000,
+    rateETB: 210000,
     pickupWindow: '2026-08-21 05:00',
     status: 'in_transit',
     urgency: 'normal',
@@ -174,6 +174,10 @@ export async function initDatabase(): Promise<void> {
       );
     }
   }
+
+  // Sanitize any existing cached records from older runs
+  await database.runAsync("UPDATE cached_cargo SET origin = 'Hawassa Industrial Park' WHERE origin LIKE '%Djibouti%'");
+  await database.runAsync("UPDATE cached_cargo SET destination = 'Modjo Dry Port' WHERE destination LIKE '%Djibouti%'");
 }
 
 // ── Cargo CRUD ──

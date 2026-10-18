@@ -1,6 +1,6 @@
 // TradeFlow Mobile — Top Header (Dynamic Dark & Light Mode)
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { AuthUser } from '../types/auth';
 import { useTheme } from '../context/ThemeContext';
@@ -99,6 +99,11 @@ export default function ConnectivityHeader({
 
         {/* Right Side: Clean TradeFlow Brand */}
         <View style={styles.brandGroupRight}>
+          <Image
+            source={require('../../assets/tradeflow-logo.png')}
+            style={styles.logoSmall}
+            resizeMode="contain"
+          />
           <Text style={[styles.brandName, { color: theme.colors.textPrimary }]}>TradeFlow</Text>
         </View>
       </View>
@@ -141,8 +146,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   brandGroupRight: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    justifyContent: 'flex-end',
+  },
+  logoSmall: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
   },
   brandName: {
     fontSize: 18,

@@ -1,4 +1,9 @@
 // TradeFlow Mobile — Authentication Screen (Transporter & Driver)
+// Spec:
+// - Transporter: Uses real email (solomon@company.et) + password
+// - Truck Driver: Uses phone number (0911234567), mapped behind the scenes to Supabase identity (0911234567@tradeflow.et)
+// Zero SMS fees; standard free Supabase email account identity processed under the hood.
+
 import React, { useState } from 'react';
 import {
   View,
@@ -10,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { AuthUser, UserRole } from '../types/auth';
@@ -17,29 +23,43 @@ import { saveUserSession } from '../services/database';
 import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import {
+  normalizeEthiopianPhone,
+  formatEthiopianPhoneDisplay,
+  driverPhoneToSupabaseEmail,
+  isValidEthiopianPhone,
+  isValidEmail,
+} from '../utils/phoneAuth';
 
 interface Props {
   onLoginSuccess: (user: AuthUser) => void;
+  initialMode?: 'LOGIN' | 'REGISTER';
 }
 
-export default function AuthScreen({ onLoginSuccess }: Props) {
+export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }: Props) {
   const { theme } = useTheme();
   const { language, toggleLanguage, t } = useLanguage();
   const [role, setRole] = useState<UserRole>('TRANSPORTER');
-  const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
+  const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>(initialMode);
 
-  // Input states
-  const [phoneOrEmail, setPhoneOrEmail] = useState('');
+  // Authentication Credentials
+  // Transporter enters real email (e.g. solomon@company.et)
+  const [email, setEmail] = useState('');
+  // Driver enters phone number (e.g. 0911234567)
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Registration fields
+  // Registration Profile Fields
   const [fullName, setFullName] = useState('');
+  // Transporter specific
   const [companyName, setCompanyName] = useState('');
   const [tinNumber, setTinNumber] = useState('');
   const [fleetSize, setFleetSize] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  // Driver specific
   const [licensePlate, setLicensePlate] = useState('');
   const [driverLicense, setDriverLicense] = useState('');
 
@@ -72,7 +92,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
     if (demoRole === 'TRANSPORTER') {
       demoUser = {
         id: 'USR-TRANS-01',
-        email: 'solomon.h@riftvalley.et',
+        email: 'solomon@company.et',
         fullName: 'Solomon Haile',
         phone: '+251 91 144 5566',
         role: 'TRANSPORTER',
@@ -82,11 +102,13 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         token: 'jwt-demo-transporter-token',
       };
     } else {
+      // Driver Phone-as-Email demo:
+      // Phone: 0911234567 -> Supabase identity: 0911234567@tradeflow.et
       demoUser = {
         id: 'USR-DRV-05',
-        email: 'abebe.k@tradeflow.et',
+        email: '0911234567@tradeflow.et',
         fullName: 'Abebe Kebede',
-        phone: '+251 92 333 7788',
+        phone: '+251 91 123 4567',
         role: 'DRIVER',
         licensePlate: '3-AA-98214',
         driverLicense: 'ETH-CDL-782190',
@@ -103,11 +125,24 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
     const newErrors: Record<string, string> = {};
 
     if (mode === 'LOGIN') {
-      if (!phoneOrEmail.trim()) {
-        newErrors.phoneOrEmail = 'Required';
+      // --- LOGIN VALIDATION ---
+      if (role === 'DRIVER') {
+        if (!phone.trim()) {
+          newErrors.phone = 'Phone number is required';
+        } else if (!isValidEthiopianPhone(phone)) {
+          newErrors.phone = 'Enter valid 10-digit phone (e.g. 0911234567)';
+        }
+      } else {
+        // Transporter: Real email required
+        if (!email.trim()) {
+          newErrors.email = 'Email address is required';
+        } else if (!isValidEmail(email)) {
+          newErrors.email = 'Enter valid email (e.g. solomon@company.et)';
+        }
       }
+
       if (!password.trim()) {
-        newErrors.password = 'Required';
+        newErrors.password = 'Password is required';
       }
 
       if (Object.keys(newErrors).length > 0) {
@@ -115,17 +150,26 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         return;
       }
 
-      const formattedPhone = phoneOrEmail.includes('@')
-        ? phoneOrEmail.trim()
-        : phoneOrEmail.startsWith('+251')
-        ? phoneOrEmail.trim()
-        : `+251 ${phoneOrEmail.replace(/^0+/, '').trim()}`;
+      // --- LOGIN IDENTITY RESOLUTION ---
+      let resolvedEmail: string;
+      let displayPhone: string;
+
+      if (role === 'DRIVER') {
+        // Phone-as-Email: Map 0911234567 -> 0911234567@tradeflow.et
+        const normalized = normalizeEthiopianPhone(phone);
+        resolvedEmail = driverPhoneToSupabaseEmail(normalized);
+        displayPhone = formatEthiopianPhoneDisplay(normalized);
+      } else {
+        // Transporter: Real email
+        resolvedEmail = email.trim().toLowerCase();
+        displayPhone = '+251 91 144 5566';
+      }
 
       const user: AuthUser = {
         id: `USR-${Date.now().toString().slice(-4)}`,
-        email: phoneOrEmail.includes('@') ? phoneOrEmail.trim() : `${phoneOrEmail.replace(/\D/g, '')}@tradeflow.et`,
+        email: resolvedEmail,
         fullName: role === 'TRANSPORTER' ? 'Solomon Haile' : 'Abebe Kebede',
-        phone: formattedPhone,
+        phone: displayPhone,
         role,
         companyName: role === 'TRANSPORTER' ? 'Rift Valley Transport PLC' : undefined,
         licensePlate: role === 'DRIVER' ? '3-AA-98214' : undefined,
@@ -136,43 +180,50 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
       await saveUserSession(user);
       onLoginSuccess(user);
     } else {
+      // --- REGISTRATION VALIDATION ---
       if (!fullName.trim()) {
-        newErrors.fullName = 'Required';
+        newErrors.fullName = 'Full name is required';
       }
 
       if (role === 'TRANSPORTER') {
         if (!companyName.trim()) {
-          newErrors.companyName = 'Required';
+          newErrors.companyName = 'Company name is required';
         }
         if (!tinNumber.trim()) {
-          newErrors.tinNumber = 'Required';
+          newErrors.tinNumber = 'TIN number is required';
         }
         if (!fleetSize.trim()) {
-          newErrors.fleetSize = 'Required';
+          newErrors.fleetSize = 'Fleet size is required';
+        }
+        if (!email.trim()) {
+          newErrors.email = 'Company email is required';
+        } else if (!isValidEmail(email)) {
+          newErrors.email = 'Enter valid email (e.g. solomon@company.et)';
         }
       }
 
       if (role === 'DRIVER') {
         if (!licensePlate.trim()) {
-          newErrors.licensePlate = 'Required';
+          newErrors.licensePlate = 'License plate is required';
         }
         if (!driverLicense.trim()) {
-          newErrors.driverLicense = 'Required';
+          newErrors.driverLicense = 'Driver license number is required';
         }
-      }
-
-      if (!phoneOrEmail.trim()) {
-        newErrors.phoneOrEmail = 'Required';
+        if (!phone.trim()) {
+          newErrors.phone = 'Phone number is required';
+        } else if (!isValidEthiopianPhone(phone)) {
+          newErrors.phone = 'Enter valid 10-digit phone (e.g. 0911234567)';
+        }
       }
 
       if (!password.trim()) {
-        newErrors.password = 'Required';
+        newErrors.password = 'Password is required';
       } else if (password.length < 6) {
         newErrors.password = 'Min 6 characters';
       }
 
       if (!confirmPassword.trim()) {
-        newErrors.confirmPassword = 'Required';
+        newErrors.confirmPassword = 'Confirm password is required';
       } else if (password !== confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
@@ -182,17 +233,28 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
         return;
       }
 
-      const formattedPhone = phoneOrEmail.includes('@')
-        ? phoneOrEmail.trim()
-        : phoneOrEmail.startsWith('+251')
-        ? phoneOrEmail.trim()
-        : `+251 ${phoneOrEmail.replace(/^0+/, '').trim()}`;
+      // --- REGISTRATION IDENTITY RESOLUTION ---
+      let resolvedEmail: string;
+      let displayPhone: string;
+
+      if (role === 'DRIVER') {
+        // Driver only sees phone; Supabase gets 09XXXXXXXX@tradeflow.et
+        const normalized = normalizeEthiopianPhone(phone);
+        resolvedEmail = driverPhoneToSupabaseEmail(normalized);
+        displayPhone = formatEthiopianPhoneDisplay(normalized);
+      } else {
+        // Transporter enters real company email
+        resolvedEmail = email.trim().toLowerCase();
+        displayPhone = contactPhone.trim()
+          ? formatEthiopianPhoneDisplay(contactPhone)
+          : '+251 91 144 5566';
+      }
 
       const newUser: AuthUser = {
         id: `USR-${Date.now().toString().slice(-4)}`,
-        email: phoneOrEmail.includes('@') ? phoneOrEmail.trim() : `${phoneOrEmail.replace(/\D/g, '')}@tradeflow.et`,
+        email: resolvedEmail,
         fullName: fullName.trim(),
-        phone: formattedPhone,
+        phone: displayPhone,
         role,
         companyName: role === 'TRANSPORTER' ? companyName.trim() : undefined,
         tinNumber: role === 'TRANSPORTER' ? tinNumber.trim() : undefined,
@@ -206,8 +268,8 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
       Alert.alert(
         'Account Registered',
         role === 'TRANSPORTER'
-          ? `Welcome, ${fullName.trim()}!`
-          : `Welcome, Driver ${fullName.trim()}!`
+          ? `Welcome, ${fullName.trim()}! Logged in with ${resolvedEmail}`
+          : `Welcome, Driver ${fullName.trim()}! Phone ${displayPhone} registered successfully.`
       );
       onLoginSuccess(newUser);
     }
@@ -239,10 +301,10 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                 },
               ]}
             >
-              <Feather
-                name="layers"
-                size={20}
-                color={role === 'DRIVER' ? theme.colors.blue : theme.colors.primary}
+              <Image
+                source={require('../../assets/tradeflow-logo.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
               />
             </View>
             <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
@@ -444,7 +506,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                     setFullName(val);
                     clearError('fullName');
                   }}
-                  placeholder="Full name"
+                  placeholder={role === 'TRANSPORTER' ? 'Solomon Haile' : 'Abebe Kebede'}
                   placeholderTextColor={theme.colors.textDim}
                 />
               </View>
@@ -486,7 +548,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       setCompanyName(val);
                       clearError('companyName');
                     }}
-                    placeholder="Company name"
+                    placeholder="e.g. Rift Valley Transport PLC"
                     placeholderTextColor={theme.colors.textDim}
                   />
                 </View>
@@ -524,7 +586,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       setTinNumber(val);
                       clearError('tinNumber');
                     }}
-                    placeholder="10-digit TIN"
+                    placeholder="10-digit TIN (e.g. 0098234112)"
                     placeholderTextColor={theme.colors.textDim}
                     keyboardType="numeric"
                   />
@@ -563,7 +625,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       setFleetSize(val);
                       clearError('fleetSize');
                     }}
-                    placeholder="Number of trucks"
+                    placeholder="Number of trucks (e.g. 16 Trucks)"
                     placeholderTextColor={theme.colors.textDim}
                   />
                 </View>
@@ -645,7 +707,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                       setDriverLicense(val);
                       clearError('driverLicense');
                     }}
-                    placeholder="License number"
+                    placeholder="License number (e.g. ETH-CDL-782190)"
                     placeholderTextColor={theme.colors.textDim}
                     autoCapitalize="characters"
                   />
@@ -657,53 +719,140 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
             </>
           )}
 
-          {/* Phone / Email Input */}
-          <View style={styles.inputGroup}>
-            <View style={styles.labelRow}>
-              <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                {role === 'DRIVER' ? t('phone_number') : t('phone_or_email')}{' '}
-                <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.inputBox,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.cardBorder,
-                },
-                Boolean(errors.phoneOrEmail) && styles.inputBoxError,
-              ]}
-            >
-              <View style={styles.countryCodePill}>
-                <Text style={styles.flagEmoji}>🇪🇹</Text>
-                <Text style={[styles.countryCodeText, { color: theme.colors.textPrimary }]}>
-                  +251
+          {/* ── ROLE-SPECIFIC CREDENTIAL INPUT ── */}
+          {role === 'TRANSPORTER' ? (
+            /* Transporter: Real Email Address */
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  {t('email_address')}{' '}
+                  <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
-                <View
-                  style={[
-                    styles.pillDivider,
-                    { backgroundColor: theme.colors.cardBorder },
-                  ]}
+              </View>
+              <View
+                style={[
+                  styles.inputBox,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.cardBorder,
+                  },
+                  Boolean(errors.email) && styles.inputBoxError,
+                ]}
+              >
+                <Feather
+                  name="mail"
+                  size={15}
+                  color={theme.colors.textMuted}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                  value={email}
+                  onChangeText={(val) => {
+                    setEmail(val);
+                    clearError('email');
+                  }}
+                  placeholder="solomon@company.et"
+                  placeholderTextColor={theme.colors.textDim}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
               </View>
-              <TextInput
-                style={[styles.textInput, { color: theme.colors.textPrimary }]}
-                value={phoneOrEmail}
-                onChangeText={(val) => {
-                  setPhoneOrEmail(val);
-                  clearError('phoneOrEmail');
-                }}
-                placeholder="91 123 4567"
-                placeholderTextColor={theme.colors.textDim}
-                keyboardType={phoneOrEmail.includes('@') ? 'email-address' : 'phone-pad'}
-                autoCapitalize="none"
-              />
+              {Boolean(errors.email) && (
+                <Text style={styles.errorText}>{errors.email}</Text>
+              )}
             </View>
-            {Boolean(errors.phoneOrEmail) && (
-              <Text style={styles.errorText}>{errors.phoneOrEmail}</Text>
-            )}
-          </View>
+          ) : (
+            /* Truck Driver: Phone Number (Phone-as-Email behind the scenes) */
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  {t('phone_number')}{' '}
+                  <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.inputBox,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.cardBorder,
+                  },
+                  Boolean(errors.phone) && styles.inputBoxError,
+                ]}
+              >
+                <View style={styles.countryCodePill}>
+                  <Text style={styles.flagEmoji}>🇪🇹</Text>
+                  <Text style={[styles.countryCodeText, { color: theme.colors.textPrimary }]}>
+                    +251
+                  </Text>
+                  <View
+                    style={[
+                      styles.pillDivider,
+                      { backgroundColor: theme.colors.cardBorder },
+                    ]}
+                  />
+                </View>
+                <TextInput
+                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                  value={phone}
+                  onChangeText={(val) => {
+                    setPhone(val);
+                    clearError('phone');
+                  }}
+                  placeholder="0911 234 567"
+                  placeholderTextColor={theme.colors.textDim}
+                  keyboardType="phone-pad"
+                  autoCapitalize="none"
+                />
+              </View>
+              {Boolean(errors.phone) && (
+                <Text style={styles.errorText}>{errors.phone}</Text>
+              )}
+            </View>
+          )}
+
+          {/* Transporter Registration: Optional Contact Phone */}
+          {mode === 'REGISTER' && role === 'TRANSPORTER' && (
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  {t('phone_number')} (OFFICIAL CONTACT)
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.inputBox,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.cardBorder,
+                  },
+                ]}
+              >
+                <View style={styles.countryCodePill}>
+                  <Text style={styles.flagEmoji}>🇪🇹</Text>
+                  <Text style={[styles.countryCodeText, { color: theme.colors.textPrimary }]}>
+                    +251
+                  </Text>
+                  <View
+                    style={[
+                      styles.pillDivider,
+                      { backgroundColor: theme.colors.cardBorder },
+                    ]}
+                  />
+                </View>
+                <TextInput
+                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                  value={contactPhone}
+                  onChangeText={setContactPhone}
+                  placeholder="91 144 5566"
+                  placeholderTextColor={theme.colors.textDim}
+                  keyboardType="phone-pad"
+                />
+              </View>
+            </View>
+          )}
 
           {/* Password Input */}
           <View style={styles.inputGroup}>
@@ -716,7 +865,9 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   onPress={() =>
                     Alert.alert(
                       'Account Recovery',
-                      'Contact TradeFlow support at support@tradeflow.et for password reset.'
+                      role === 'DRIVER'
+                        ? 'Contact your carrier fleet manager or TradeFlow support at support@tradeflow.et for driver PIN reset.'
+                        : 'Contact TradeFlow carrier support at support@tradeflow.et for password reset.'
                     )
                   }
                 >
@@ -883,7 +1034,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   {t('demo_transporter')}
                 </Text>
                 <Text style={[styles.demoCardSub, { color: theme.colors.textMuted }]}>
-                  Solomon Haile • Rift Valley Transport
+                  Solomon Haile • solomon@company.et
                 </Text>
               </View>
               <Feather name="chevron-right" size={16} color={theme.colors.textMuted} />
@@ -906,7 +1057,7 @@ export default function AuthScreen({ onLoginSuccess }: Props) {
                   {t('demo_driver')}
                 </Text>
                 <Text style={[styles.demoCardSub, { color: theme.colors.textMuted }]}>
-                  Abebe Kebede • Truck 3-AA-98214
+                  Abebe Kebede • 0911 234 567 (Truck 3-AA-98214)
                 </Text>
               </View>
               <Feather name="chevron-right" size={16} color={theme.colors.textMuted} />
@@ -966,6 +1117,12 @@ const styles = StyleSheet.create({
     borderColor: THEME.colors.primaryBorder,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 6,
   },
   brandTitle: {
     color: THEME.colors.textPrimary,
@@ -992,26 +1149,10 @@ const styles = StyleSheet.create({
     borderColor: THEME.colors.cardBorder,
     paddingVertical: 12,
   },
-  roleCardActiveTransporter: {
-    borderColor: THEME.colors.primary,
-    backgroundColor: THEME.colors.primarySubtle,
-  },
-  roleCardActiveDriver: {
-    borderColor: THEME.colors.blue,
-    backgroundColor: THEME.colors.blueSubtle,
-  },
   roleTitle: {
     color: THEME.colors.textMuted,
     fontSize: 13,
     fontWeight: '600',
-  },
-  roleTitleActiveTransporter: {
-    color: THEME.colors.primary,
-    fontWeight: '700',
-  },
-  roleTitleActiveDriver: {
-    color: THEME.colors.blue,
-    fontWeight: '700',
   },
 
   // ── Mode Switcher ──
@@ -1030,19 +1171,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 6,
   },
-  modePillActive: {
-    backgroundColor: THEME.colors.card,
-    borderWidth: 1,
-    borderColor: THEME.colors.cardBorderHover,
-  },
   modePillText: {
     color: THEME.colors.textMuted,
     fontSize: 12.5,
     fontWeight: '600',
-  },
-  modePillTextActive: {
-    color: THEME.colors.textPrimary,
-    fontWeight: '700',
   },
 
   // ── Form Card ──
@@ -1143,16 +1275,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 6,
   },
-  primaryBtnDriver: {
-    backgroundColor: THEME.colors.blue,
-  },
   primaryBtnText: {
     color: THEME.colors.primaryText,
     fontSize: 13.5,
     fontWeight: '700',
-  },
-  primaryBtnTextDriver: {
-    color: '#FFFFFF',
   },
 
   // ── Demo Section ──

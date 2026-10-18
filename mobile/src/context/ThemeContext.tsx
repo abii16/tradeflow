@@ -10,14 +10,14 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: DARK_THEME,
-  isDarkMode: true,
+  theme: LIGHT_THEME,
+  isDarkMode: false,
   setDarkMode: () => {},
   toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const setDarkMode = (val: boolean) => {
     setIsDarkMode(val);

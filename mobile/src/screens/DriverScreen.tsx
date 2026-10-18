@@ -10,6 +10,7 @@ import {
   TextInput,
   Modal,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Waypoint, IncidentReportPayload, PodPayload, OfflineAction } from '../types/cargo';
@@ -38,50 +39,50 @@ import {
 const INITIAL_WAYPOINTS: Waypoint[] = [
   {
     id: 'WP-1',
-    name: 'Djibouti Port — Container Terminal Gate 4',
-    corridorLeg: 'Origin Hub (Red Sea)',
+    name: 'Addis Ababa — Kality Logistics Hub',
+    corridorLeg: 'Origin Hub (Capital)',
     kmFromOrigin: 0,
     status: 'completed',
     timestamp: 'Today, 06:15 AM',
-    lat: 11.595,
-    lng: 43.148,
+    lat: 8.9480,
+    lng: 38.7460,
   },
   {
     id: 'WP-2',
-    name: 'Galafi Border Crossing',
-    corridorLeg: 'Ethiopia–Djibouti Customs Checkpoint',
-    kmFromOrigin: 110,
+    name: 'Modjo Dry Port Inland Terminal',
+    corridorLeg: 'Oromia Logistics Hub',
+    kmFromOrigin: 73,
     status: 'completed',
-    timestamp: 'Today, 10:45 AM',
-    lat: 11.716,
-    lng: 41.838,
+    timestamp: 'Today, 08:30 AM',
+    lat: 8.598,
+    lng: 39.123,
   },
   {
     id: 'WP-3',
-    name: 'Semera Corridor Depot & Rest Stop',
-    corridorLeg: 'Afar Region Hub (A1 Highway)',
-    kmFromOrigin: 310,
+    name: 'Adama (Nazret) Transit Depot',
+    corridorLeg: 'Central Rift Valley Checkpoint',
+    kmFromOrigin: 99,
     status: 'current',
-    lat: 11.792,
-    lng: 41.006,
+    lat: 8.541,
+    lng: 39.268,
   },
   {
     id: 'WP-4',
-    name: 'Awash Arba Junction',
-    corridorLeg: 'Oromia / Rift Valley Transit Point',
-    kmFromOrigin: 680,
+    name: 'Meki Weighbridge Station',
+    corridorLeg: 'East Shewa Zone',
+    kmFromOrigin: 134,
     status: 'upcoming',
-    lat: 8.983,
-    lng: 40.167,
+    lat: 8.153,
+    lng: 38.816,
   },
   {
     id: 'WP-5',
-    name: 'Modjo Dry Port Inland Terminal',
+    name: 'Hawassa Industrial Park Terminal',
     corridorLeg: 'Final Destination Hub',
-    kmFromOrigin: 910,
+    kmFromOrigin: 275,
     status: 'upcoming',
-    lat: 8.598,
-    lng: 39.123,
+    lat: 7.062,
+    lng: 38.476,
   },
 ];
 
@@ -265,6 +266,19 @@ export default function DriverScreen({
     );
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    if (isOnline) {
+      await processQueue();
+    }
+    await refreshCount();
+    // 1-second deliberate wait for smooth modern refresh feel
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setRefreshing(false);
+  }, [isOnline, refreshCount]);
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
       <ConnectivityHeader
@@ -278,7 +292,19 @@ export default function DriverScreen({
         onSelectRole={onSelectRole}
       />
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.blue}
+            colors={[theme.colors.blue]}
+          />
+        }
+      >
         {/* Active Trip Header */}
         <View
           style={[
@@ -366,7 +392,7 @@ export default function DriverScreen({
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>{t('waypoints')}</Text>
           <Text style={[styles.sectionSub, { color: theme.colors.textMuted }]}>
-            Djibouti – Modjo (910 km)
+            Addis Ababa – Hawassa (275 km)
           </Text>
         </View>
 

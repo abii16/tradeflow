@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { LanguageProvider } from './src/context/LanguageContext';
+import LaunchSplashScreen from './src/components/LaunchSplashScreen';
+import AuthScreen from './src/screens/AuthScreen';
 import CargoFeedScreen from './src/screens/CargoFeedScreen';
 import DriverScreen from './src/screens/DriverScreen';
-import AuthScreen from './src/screens/AuthScreen';
 import { AuthUser } from './src/types/auth';
 import { initDatabase, getCurrentUserSession, clearUserSession } from './src/services/database';
-import { ThemeProvider, useTheme } from './src/context/ThemeContext';
-import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 
 function MainApp() {
   const { theme, isDarkMode } = useTheme();
-  const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
+
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [activeRole, setActiveRole] = useState<'transporter' | 'driver'>('transporter');
-  const [loading, setLoading] = useState(true);
-  const insets = useSafeAreaInsets();
+  const [splashActive, setSplashActive] = useState(true);
+  const [isAppReady, setIsAppReady] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -31,7 +32,7 @@ function MainApp() {
       } catch (err) {
         console.warn('Failed to load session:', err);
       } finally {
-        setLoading(false);
+        setIsAppReady(true);
       }
     })();
   }, []);
@@ -46,18 +47,21 @@ function MainApp() {
     setCurrentUser(null);
   };
 
-  if (loading) {
+  // 1. Initial Animated Launch Screen
+  if (splashActive) {
     return (
-      <View style={[styles.screen, styles.center, { backgroundColor: theme.colors.background }]}>
-        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-      </View>
+      <LaunchSplashScreen
+        isReady={isAppReady}
+        onFinish={() => setSplashActive(false)}
+      />
     );
   }
 
+  // 2. Main Role-Based Experience
   return (
     <View
       style={[
-        styles.screen,
+        styles.rootContainer,
         {
           backgroundColor: theme.colors.background,
           paddingTop: insets.top,
@@ -70,80 +74,20 @@ function MainApp() {
 
       {!currentUser ? (
         <AuthScreen onLoginSuccess={handleLoginSuccess} />
+      ) : activeRole === 'driver' ? (
+        <DriverScreen
+          currentUser={currentUser}
+          onSignOut={handleSignOut}
+          activeRole={activeRole}
+          onSelectRole={setActiveRole}
+        />
       ) : (
-        <>
-          <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            {activeRole === 'transporter' ? (
-              <CargoFeedScreen
-                currentUser={currentUser}
-                onSignOut={handleSignOut}
-                activeRole={activeRole}
-                onSelectRole={setActiveRole}
-              />
-            ) : (
-              <DriverScreen
-                currentUser={currentUser}
-                onSignOut={handleSignOut}
-                activeRole={activeRole}
-                onSelectRole={setActiveRole}
-              />
-            )}
-          </View>
-
-          {/* Bottom Actor Navigation Bar (Padded above Android/iOS system navigation) */}
-          <View
-            style={[
-              styles.bottomNav,
-              {
-                backgroundColor: theme.colors.surface,
-                borderTopColor: theme.colors.cardBorder,
-                paddingBottom: Math.max(insets.bottom, 14),
-              },
-            ]}
-          >
-            <TouchableOpacity
-              style={[styles.navTab, activeRole === 'transporter' && styles.navTabActive]}
-              onPress={() => setActiveRole('transporter')}
-              activeOpacity={0.7}
-            >
-              <Feather
-                name="truck"
-                size={18}
-                color={activeRole === 'transporter' ? theme.colors.primary : theme.colors.textMuted}
-              />
-              <Text
-                style={[
-                  styles.navLabel,
-                  { color: activeRole === 'transporter' ? theme.colors.primary : theme.colors.textMuted },
-                  activeRole === 'transporter' && styles.navLabelBold,
-                ]}
-              >
-                {t('transporter')}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.navTab, activeRole === 'driver' && styles.navTabActive]}
-              onPress={() => setActiveRole('driver')}
-              activeOpacity={0.7}
-            >
-              <Feather
-                name="navigation"
-                size={18}
-                color={activeRole === 'driver' ? theme.colors.blue : theme.colors.textMuted}
-              />
-              <Text
-                style={[
-                  styles.navLabel,
-                  { color: activeRole === 'driver' ? theme.colors.blue : theme.colors.textMuted },
-                  activeRole === 'driver' && styles.navLabelBold,
-                ]}
-              >
-                {t('driver_console')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </>
+        <CargoFeedScreen
+          currentUser={currentUser}
+          onSignOut={handleSignOut}
+          activeRole={activeRole}
+          onSelectRole={setActiveRole}
+        />
       )}
     </View>
   );
@@ -162,33 +106,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  rootContainer: {
     flex: 1,
-  },
-  center: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  container: {
-    flex: 1,
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    paddingTop: 10,
-  },
-  navTab: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-  },
-  navTabActive: {},
-  navLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-  },
-  navLabelBold: {
-    fontWeight: '700',
   },
 });
