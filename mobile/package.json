@@ -16,9 +16,11 @@
     "expo-build-properties": "~57.0.22",
     "expo-camera": "~57.0.6",
     "expo-font": "~57.0.4",
+    "expo-linking": "~57.0.2",
     "expo-location": "~57.0.21",
     "expo-sqlite": "~57.0.4",
     "expo-status-bar": "~57.0.1",
+    "expo-web-browser": "~57.0.3",
     "react": "19.2.3",
     "react-native": "^0.86.3",
     "react-native-safe-area-context": "~5.7.0"

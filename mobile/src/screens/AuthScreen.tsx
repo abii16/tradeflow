@@ -43,7 +43,7 @@ import {
   validatePassword,
   validateConfirmPassword,
 } from '../utils/registrationValidation';
-import { signInWithSupabase, signUpWithSupabase, ENV } from '../services/authService';
+import { signInWithSupabase, signUpWithSupabase, signInWithGoogle, ENV } from '../services/authService';
 
 interface Props {
   onLoginSuccess: (user: AuthUser) => void;
@@ -104,10 +104,21 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 
   // ── Handle Google One-Tap / OAuth ──
   const handleGoogleAuth = async () => {
-    Alert.alert(
-      'Google Authentication',
-      'Google OAuth 2.0 Client ID is active. To authenticate with Google SSO, open your browser or sign in directly with your email or phone number below.'
-    );
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const result = await signInWithGoogle(role);
+      if (result.success && result.user) {
+        await saveUserSession(result.user);
+        onLoginSuccess(result.user);
+      } else if (!result.cancelled) {
+        Alert.alert('Google Sign In', result.error || 'Failed to authenticate with Google.');
+      }
+    } catch (err: any) {
+      Alert.alert('Google Sign In Error', err.message || 'An unexpected error occurred during Google Sign In.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // ── Handle Submit with Strict Validation ──
