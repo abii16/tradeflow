@@ -5,6 +5,10 @@
 // - Security: Password strength, confirm match, input sanitization
 
 import {
+  normalizeEastAfricanPhone,
+  formatEastAfricanPhoneDisplay,
+  isValidEastAfricanPhone,
+  phoneToSupabaseEmail,
   normalizeEthiopianPhone,
   formatEthiopianPhoneDisplay,
   isValidEthiopianPhone,
@@ -162,10 +166,14 @@ export function validateEmail(input: string): ValidationResult {
 }
 
 /**
- * Validates Ethiopian Mobile Phone Number (for Drivers):
- * - 10 digits starting with 09 (Ethio Telecom) or 07 (Safaricom Ethiopia)
+ * Validates East African Mobile Phone Number (for Drivers):
+ * - Supports Ethiopia (+251), Djibouti (+253), Kenya (+254), Somalia (+252), Uganda (+256), Rwanda (+250), South Sudan (+211)
  */
-export function validatePhone(input: string, isOptional = false): ValidationResult & { formatted: string; supabaseEmail: string } {
+export function validatePhone(
+  input: string,
+  isOptional = false,
+  dialCode = '+251'
+): ValidationResult & { formatted: string; supabaseEmail: string } {
   const trimmed = input.trim();
   if (!trimmed) {
     if (isOptional) {
@@ -180,14 +188,14 @@ export function validatePhone(input: string, isOptional = false): ValidationResu
     };
   }
 
-  const normalized = normalizeEthiopianPhone(trimmed);
+  const normalized = normalizeEastAfricanPhone(trimmed, dialCode);
 
-  if (!isValidEthiopianPhone(normalized)) {
+  if (!isValidEastAfricanPhone(trimmed, dialCode)) {
     return {
       isValid: false,
-      error: 'Enter valid 10-digit Ethiopian phone starting with 09 or 07 (e.g. 0911234567)',
+      error: 'Enter a valid mobile phone number',
       sanitized: normalized,
-      formatted: formatEthiopianPhoneDisplay(normalized),
+      formatted: formatEastAfricanPhoneDisplay(trimmed, dialCode),
       supabaseEmail: '',
     };
   }
@@ -195,8 +203,8 @@ export function validatePhone(input: string, isOptional = false): ValidationResu
   return {
     isValid: true,
     sanitized: normalized,
-    formatted: formatEthiopianPhoneDisplay(normalized),
-    supabaseEmail: driverPhoneToSupabaseEmail(normalized),
+    formatted: formatEastAfricanPhoneDisplay(trimmed, dialCode),
+    supabaseEmail: phoneToSupabaseEmail(trimmed, dialCode),
   };
 }
 
