@@ -171,6 +171,8 @@ export const TRANSLATIONS = {
     carrier_register_title: 'Register Carrier Account',
     driver_register_title: 'Register Driver Profile',
     get_started: 'Get Started',
+    onboarding_headline: 'Deliver Faster, Operate Smarter',
+    onboarding_subtitle: 'Smarter shipping to save time, reduce costs and scale faster',
   },
   AM: {
     // Navigation & Roles
@@ -340,6 +342,8 @@ export const TRANSLATIONS = {
     carrier_register_title: 'የትራንስፖርተር መለያ ፍጠር',
     driver_register_title: 'የአሽከርካሪ መለያ ፍጠር',
     get_started: 'ጀምር',
+    onboarding_headline: 'በፍጥነት ያጓጉዙ፣ በብልሃት ይስሩ',
+    onboarding_subtitle: 'ጊዜን ለመቆጠብ፣ ወጪን ለመቀነስ እና ንግድዎን ለማሳደግ ብልህ የጭነት መጓጓዣ',
   },
 } as const;
 

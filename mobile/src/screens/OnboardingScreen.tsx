@@ -132,11 +132,22 @@ export default function OnboardingScreen({ onGetStarted }: Props) {
         style={styles.backgroundImage}
         resizeMode="cover"
       >
-        {/* Subtle Bottom Vignette for button legibility */}
-        <View style={styles.bottomVignette} />
+        {/* Subtle Bottom Darkening Vignette for text & button legibility */}
+        <View style={styles.bottomVignetteOuter} />
+        <View style={styles.bottomVignetteInner} />
 
-        {/* ── BOTTOM ACTION: GLASSMORHPIC SLIDE-TO-START PILL ── */}
-        <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom + 16, 32) }]}>
+        {/* ── BOTTOM ACTION: HEADLINE, SUBTITLE & GLASSMORHPIC SLIDE-TO-START PILL ── */}
+        <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom + 20, 36) }]}>
+          {/* Headline & Paragraph */}
+          <View style={styles.contentContainer}>
+            <Text style={styles.headline}>
+              {t('onboarding_headline')}
+            </Text>
+            <Text style={styles.subtitle}>
+              {t('onboarding_subtitle')}
+            </Text>
+          </View>
+
           <View
             style={styles.sliderContainer}
             onLayout={(e) => {
@@ -199,14 +210,22 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
 
-  // ── Bottom Vignette ──
-  bottomVignette: {
+  // ── Bottom Vignette Layers ──
+  bottomVignetteOuter: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 180,
-    backgroundColor: 'rgba(0, 0, 0, 0.22)',
+    height: 420,
+    backgroundColor: 'rgba(3, 7, 18, 0.35)',
+  },
+  bottomVignetteInner: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 230,
+    backgroundColor: 'rgba(3, 7, 18, 0.45)',
   },
 
   // ── Bottom Action Container ──
@@ -215,6 +234,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     zIndex: 10,
   },
+
+  // ── Bottom Headline & Subtitle Content ──
+  contentContainer: {
+    width: '100%',
+    maxWidth: 360,
+    alignItems: 'center',
+    marginBottom: 26,
+    paddingHorizontal: 8,
+  },
+  headline: {
+    color: '#FFFFFF',
+    fontSize: 27,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: -0.3,
+    lineHeight: 34,
+    textShadowColor: 'rgba(0, 0, 0, 0.9)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
+  },
+  subtitle: {
+    color: 'rgba(255, 255, 255, 0.88)',
+    fontSize: 15,
+    fontWeight: '400',
+    textAlign: 'center',
+    lineHeight: 21,
+    marginTop: 10,
+    paddingHorizontal: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
+  },
+
   sliderContainer: {
     width: '100%',
     maxWidth: 340,
