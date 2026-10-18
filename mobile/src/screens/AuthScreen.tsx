@@ -1,8 +1,8 @@
 // TradeFlow Mobile — Authentication Screen (Transporter & Driver)
 // Spec:
-// - Transporter: Uses real email (solomon@company.et) + password
-// - Truck Driver: Uses phone number (0911234567), mapped behind the scenes to Supabase identity (0911234567@tradeflow.et)
-// Zero SMS fees; standard free Supabase email account identity processed under the hood.
+// - Transporter: Real business email (e.g. solomon@company.et) + password
+// - Truck Driver: Ethiopian phone number (e.g. 0911234567), mapped behind the scenes to Supabase identity (0911234567@tradeflow.et)
+// Zero SMS fees; standard free Supabase identity processed under the hood.
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -26,13 +26,6 @@ import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import {
-  normalizeEthiopianPhone,
-  formatEthiopianPhoneDisplay,
-  driverPhoneToSupabaseEmail,
-  isValidEthiopianPhone,
-  isValidEmail,
-} from '../utils/phoneAuth';
-import {
   validateFullName,
   validateCompanyName,
   validateTINNumber,
@@ -44,7 +37,12 @@ import {
   validatePassword,
   validateConfirmPassword,
 } from '../utils/registrationValidation';
-import { signInWithSupabase, signUpWithSupabase, signInWithGoogle, processAuthRedirectUrl, ENV } from '../services/authService';
+import {
+  signInWithSupabase,
+  signUpWithSupabase,
+  signInWithGoogle,
+  processAuthRedirectUrl,
+} from '../services/authService';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 
 interface Props {
@@ -53,15 +51,13 @@ interface Props {
 }
 
 export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }: Props) {
-  const { theme } = useTheme();
+  const { theme, isDarkMode } = useTheme();
   const { language, toggleLanguage, t } = useLanguage();
   const [role, setRole] = useState<UserRole>('TRANSPORTER');
   const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>(initialMode);
 
   // Authentication Credentials
-  // Transporter enters real email (e.g. solomon@company.et)
   const [email, setEmail] = useState('');
-  // Driver enters phone number (e.g. 0911234567)
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -79,11 +75,19 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
   const [licensePlate, setLicensePlate] = useState('');
   const [driverLicense, setDriverLicense] = useState('');
 
+  // Field focus tracking for rich micro-interactions
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
   // Field validation error state
   const [errors, setErrors] = useState<Record<string, string>>({});
   // Submission loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+
+  // Dynamic role accent colors
+  const roleColor = role === 'DRIVER' ? theme.colors.blue : theme.colors.primary;
+  const roleBgSubtle = role === 'DRIVER' ? theme.colors.blueSubtle : theme.colors.primarySubtle;
+  const roleBorder = role === 'DRIVER' ? theme.colors.blueBorder : theme.colors.primaryBorder;
 
   // ── Listen for Incoming OAuth Deep Link Redirects ──
   useEffect(() => {
@@ -200,22 +204,29 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         let token = `jwt-token-${Date.now()}`;
         let userId = `USR-${Date.now().toString().slice(-4)}`;
 
-        // Try Supabase Auth API
+        // Supabase Auth API
         const authResult = await signInWithSupabase(resolvedEmail, password.trim());
         if (authResult.success && authResult.token) {
           token = authResult.token;
           if (authResult.user?.id) userId = authResult.user.id;
         }
 
+        const meta = authResult.user?.user_metadata || {};
+        const derivedName =
+          meta.full_name ||
+          (role === 'TRANSPORTER' ? 'Carrier Member' : 'Corridor Driver');
+
         const user: AuthUser = {
           id: userId,
           email: resolvedEmail,
-          fullName: role === 'TRANSPORTER' ? 'Solomon Haile' : 'Abebe Kebede',
-          phone: displayPhone,
+          fullName: derivedName,
+          phone: meta.phone || displayPhone,
           role,
-          companyName: role === 'TRANSPORTER' ? 'Rift Valley Transport PLC' : undefined,
-          licensePlate: role === 'DRIVER' ? '3-AA-98214' : undefined,
-          driverLicense: role === 'DRIVER' ? 'ETH-CDL-4410' : undefined,
+          companyName: role === 'TRANSPORTER' ? (meta.company_name || 'Carrier Partner') : undefined,
+          tinNumber: role === 'TRANSPORTER' ? meta.tin_number : undefined,
+          fleetSize: role === 'TRANSPORTER' ? meta.fleet_size : undefined,
+          licensePlate: role === 'DRIVER' ? (meta.license_plate || undefined) : undefined,
+          driverLicense: role === 'DRIVER' ? (meta.driver_license || undefined) : undefined,
           token,
         };
 
@@ -228,7 +239,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
       }
     } else {
       // --- STRICT REGISTRATION VALIDATION ---
-      // 1. Full Name Validation
       const nameCheck = validateFullName(fullName);
       if (!nameCheck.isValid) {
         newErrors.fullName = nameCheck.error || 'Full name is required';
@@ -243,7 +253,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
       let resolvedEmail = '';
       let displayPhone = '';
 
-      // 2. Role-specific validations
       if (role === 'TRANSPORTER') {
         const compCheck = validateCompanyName(companyName);
         if (!compCheck.isValid) {
@@ -310,7 +319,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         }
       }
 
-      // 3. Password & Confirmation
       const passCheck = validatePassword(password);
       if (!passCheck.isValid) {
         newErrors.password = passCheck.error || 'Password must be at least 6 characters';
@@ -321,7 +329,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         newErrors.confirmPassword = confirmCheck.error || 'Passwords do not match';
       }
 
-      // If any field failed validation, reject immediately
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
         Alert.alert(
@@ -336,7 +343,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         let token = `jwt-token-${Date.now()}`;
         let userId = `USR-${Date.now().toString().slice(-4)}`;
 
-        // Register with Supabase Auth API using strictly sanitized data
         const signUpResult = await signUpWithSupabase(resolvedEmail, password.trim(), {
           full_name: nameCheck.sanitized,
           phone: displayPhone,
@@ -369,12 +375,11 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           token,
         };
 
-        // Persist session to local SQLite database
         await saveUserSession(newUser);
         Alert.alert(
           'Account Registered',
           role === 'TRANSPORTER'
-            ? `Welcome, ${nameCheck.sanitized}! Logged in with ${resolvedEmail}`
+            ? `Welcome, ${nameCheck.sanitized}! Registered with ${resolvedEmail}`
             : `Welcome, Driver ${nameCheck.sanitized}! Phone ${displayPhone} registered successfully.`
         );
         onLoginSuccess(newUser);
@@ -384,6 +389,29 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         setIsSubmitting(false);
       }
     }
+  };
+
+  // Helper to determine active border highlight
+  const getInputBoxStyle = (fieldName: string) => {
+    const hasError = Boolean(errors[fieldName]);
+    const isFocused = focusedField === fieldName;
+
+    return [
+      styles.inputBox,
+      {
+        backgroundColor: theme.colors.surface,
+        borderColor: hasError
+          ? theme.colors.red
+          : isFocused
+          ? roleColor
+          : theme.colors.cardBorder,
+      },
+      isFocused && !hasError && {
+        borderWidth: 1.5,
+        backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+      },
+      hasError && styles.inputBoxError,
+    ];
   };
 
   return (
@@ -397,7 +425,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Clean Header with Language Switch */}
+        {/* ── TOP BRAND BAR ── */}
         <View style={styles.header}>
           <View style={styles.brandRow}>
             <View
@@ -405,10 +433,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 styles.logoBadge,
                 {
                   backgroundColor: theme.colors.surfaceElevated,
-                  borderColor:
-                    role === 'DRIVER'
-                      ? theme.colors.blueBorder
-                      : theme.colors.primaryBorder,
+                  borderColor: roleBorder,
                 },
               ]}
             >
@@ -418,12 +443,20 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 resizeMode="contain"
               />
             </View>
-            <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
-              TradeFlow
-            </Text>
+            <View style={styles.brandTitleCol}>
+              <View style={styles.brandTextWithDot}>
+                <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
+                  TradeFlow
+                </Text>
+                <View style={[styles.brandDot, { backgroundColor: roleColor }]} />
+              </View>
+              <Text style={[styles.brandSubtitle, { color: theme.colors.textMuted }]}>
+                Addis – Djibouti Freight
+              </Text>
+            </View>
           </View>
 
-          {/* Quick Language Toggle Pill */}
+          {/* Language Switcher Pill */}
           <TouchableOpacity
             style={[
               styles.langPillAuth,
@@ -435,15 +468,16 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             onPress={toggleLanguage}
             activeOpacity={0.7}
           >
-            <Feather name="globe" size={13} color={theme.colors.textSecondary} />
+            <Feather name="globe" size={13} color={roleColor} />
             <Text style={[styles.langPillAuthText, { color: theme.colors.textPrimary }]}>
               {language === 'EN' ? 'አማርኛ' : 'EN'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Role Selector Tabs */}
+        {/* ── ROLE SELECTION CARDS ── */}
         <View style={styles.roleContainer}>
+          {/* Transporter Card */}
           <TouchableOpacity
             style={[
               styles.roleCard,
@@ -454,30 +488,61 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
               role === 'TRANSPORTER' && {
                 borderColor: theme.colors.primary,
                 backgroundColor: theme.colors.primarySubtle,
+                borderWidth: 2,
               },
             ]}
             onPress={() => handleRoleChange('TRANSPORTER')}
             activeOpacity={0.8}
           >
-            <Feather
-              name="truck"
-              size={16}
-              color={role === 'TRANSPORTER' ? theme.colors.primary : theme.colors.textMuted}
-            />
+            <View style={styles.roleCardTop}>
+              <View
+                style={[
+                  styles.roleIconCircle,
+                  {
+                    backgroundColor:
+                      role === 'TRANSPORTER'
+                        ? theme.colors.primarySubtle
+                        : theme.colors.surfaceElevated,
+                  },
+                ]}
+              >
+                <Feather
+                  name="truck"
+                  size={18}
+                  color={role === 'TRANSPORTER' ? theme.colors.primary : theme.colors.textMuted}
+                />
+              </View>
+              <View
+                style={[
+                  styles.roleRadioCircle,
+                  role === 'TRANSPORTER'
+                    ? { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary }
+                    : { borderColor: theme.colors.cardBorder },
+                ]}
+              >
+                {role === 'TRANSPORTER' && (
+                  <Feather name="check" size={10} color={theme.colors.primaryText} />
+                )}
+              </View>
+            </View>
             <Text
               style={[
                 styles.roleTitle,
-                { color: theme.colors.textMuted },
+                { color: theme.colors.textPrimary },
                 role === 'TRANSPORTER' && {
                   color: theme.colors.primary,
-                  fontWeight: '700',
+                  fontWeight: '800',
                 },
               ]}
             >
-              {t('transporter')}
+              {t('transporter_role_title')}
+            </Text>
+            <Text style={[styles.roleSubtitle, { color: theme.colors.textSecondary }]}>
+              {t('transporter_role_subtitle')}
             </Text>
           </TouchableOpacity>
 
+          {/* Driver Card */}
           <TouchableOpacity
             style={[
               styles.roleCard,
@@ -488,32 +553,103 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
               role === 'DRIVER' && {
                 borderColor: theme.colors.blue,
                 backgroundColor: theme.colors.blueSubtle,
+                borderWidth: 2,
               },
             ]}
             onPress={() => handleRoleChange('DRIVER')}
             activeOpacity={0.8}
           >
-            <Feather
-              name="navigation"
-              size={16}
-              color={role === 'DRIVER' ? theme.colors.blue : theme.colors.textMuted}
-            />
+            <View style={styles.roleCardTop}>
+              <View
+                style={[
+                  styles.roleIconCircle,
+                  {
+                    backgroundColor:
+                      role === 'DRIVER'
+                        ? theme.colors.blueSubtle
+                        : theme.colors.surfaceElevated,
+                  },
+                ]}
+              >
+                <Feather
+                  name="navigation"
+                  size={18}
+                  color={role === 'DRIVER' ? theme.colors.blue : theme.colors.textMuted}
+                />
+              </View>
+              <View
+                style={[
+                  styles.roleRadioCircle,
+                  role === 'DRIVER'
+                    ? { borderColor: theme.colors.blue, backgroundColor: theme.colors.blue }
+                    : { borderColor: theme.colors.cardBorder },
+                ]}
+              >
+                {role === 'DRIVER' && (
+                  <Feather name="check" size={10} color="#FFFFFF" />
+                )}
+              </View>
+            </View>
             <Text
               style={[
                 styles.roleTitle,
-                { color: theme.colors.textMuted },
+                { color: theme.colors.textPrimary },
                 role === 'DRIVER' && {
                   color: theme.colors.blue,
-                  fontWeight: '700',
+                  fontWeight: '800',
                 },
               ]}
             >
-              {t('driver')}
+              {t('driver_role_title')}
+            </Text>
+            <Text style={[styles.roleSubtitle, { color: theme.colors.textSecondary }]}>
+              {t('driver_role_subtitle')}
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Mode Toggle (Sign In / Register) */}
+        {/* ── HERO BANNER & CONTEXT ── */}
+        <View
+          style={[
+            styles.heroCard,
+            {
+              backgroundColor: theme.colors.card,
+              borderColor: roleBorder,
+            },
+          ]}
+        >
+          <View style={styles.heroHeaderRow}>
+            <View
+              style={[
+                styles.portalBadge,
+                { backgroundColor: roleBgSubtle, borderColor: roleBorder },
+              ]}
+            >
+              <Feather
+                name={role === 'TRANSPORTER' ? 'briefcase' : 'smartphone'}
+                size={11}
+                color={roleColor}
+              />
+              <Text style={[styles.portalBadgeText, { color: roleColor }]}>
+                {role === 'TRANSPORTER' ? t('carrier_portal_badge') : t('driver_portal_badge')}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.heroTitle, { color: theme.colors.textPrimary }]}>
+            {mode === 'LOGIN'
+              ? (role === 'TRANSPORTER' ? t('sign_in_as_transporter') : t('sign_in_as_driver'))
+              : (role === 'TRANSPORTER' ? t('register_as_transporter') : t('register_as_driver'))}
+          </Text>
+
+          <Text style={[styles.heroDescription, { color: theme.colors.textSecondary }]}>
+            {mode === 'LOGIN'
+              ? (role === 'TRANSPORTER' ? t('transporter_login_hero') : t('driver_login_hero'))
+              : (role === 'TRANSPORTER' ? t('transporter_register_hero') : t('driver_register_hero'))}
+          </Text>
+        </View>
+
+        {/* ── MODE SWITCHER (Sign In / Register) ── */}
         <View
           style={[
             styles.modeContainer,
@@ -526,15 +662,22 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           <TouchableOpacity
             style={[
               styles.modePill,
-              mode === 'LOGIN' && {
-                backgroundColor: theme.colors.card,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorderHover,
-              },
+              mode === 'LOGIN' && [
+                styles.modePillActive,
+                {
+                  backgroundColor: theme.colors.card,
+                  borderColor: theme.colors.cardBorderHover,
+                },
+              ],
             ]}
             onPress={() => handleModeChange('LOGIN')}
             activeOpacity={0.7}
           >
+            <Feather
+              name="log-in"
+              size={14}
+              color={mode === 'LOGIN' ? roleColor : theme.colors.textMuted}
+            />
             <Text
               style={[
                 styles.modePillText,
@@ -552,15 +695,22 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           <TouchableOpacity
             style={[
               styles.modePill,
-              mode === 'REGISTER' && {
-                backgroundColor: theme.colors.card,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorderHover,
-              },
+              mode === 'REGISTER' && [
+                styles.modePillActive,
+                {
+                  backgroundColor: theme.colors.card,
+                  borderColor: theme.colors.cardBorderHover,
+                },
+              ],
             ]}
             onPress={() => handleModeChange('REGISTER')}
             activeOpacity={0.7}
           >
+            <Feather
+              name="user-plus"
+              size={14}
+              color={mode === 'REGISTER' ? roleColor : theme.colors.textMuted}
+            />
             <Text
               style={[
                 styles.modePillText,
@@ -576,7 +726,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           </TouchableOpacity>
         </View>
 
-        {/* Form Card */}
+        {/* ── FORM CONTAINER ── */}
         <View
           style={[
             styles.card,
@@ -586,44 +736,39 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             },
           ]}
         >
-
           {/* Registration: Full Name */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                   {t('full_name')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.inputBox,
-                  {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.cardBorder,
-                  },
-                  Boolean(errors.fullName) && styles.inputBoxError,
-                ]}
-              >
+              <View style={getInputBoxStyle('fullName')}>
                 <Feather
                   name="user"
-                  size={15}
-                  color={theme.colors.textMuted}
+                  size={16}
+                  color={focusedField === 'fullName' ? roleColor : theme.colors.textMuted}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={fullName}
+                  onFocus={() => setFocusedField('fullName')}
+                  onBlur={() => setFocusedField(null)}
                   onChangeText={(val) => {
                     setFullName(val);
                     clearError('fullName');
                   }}
-                  placeholder={role === 'TRANSPORTER' ? 'Solomon Haile' : 'Abebe Kebede'}
+                  placeholder={role === 'TRANSPORTER' ? 'e.g. Solomon Haile' : 'e.g. Abebe Kebede'}
                   placeholderTextColor={theme.colors.textDim}
                 />
               </View>
               {Boolean(errors.fullName) && (
-                <Text style={styles.errorText}>{errors.fullName}</Text>
+                <View style={styles.errorRow}>
+                  <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                  <Text style={styles.errorText}>{errors.fullName}</Text>
+                </View>
               )}
             </View>
           )}
@@ -631,31 +776,25 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           {/* Registration (Carrier): Company, TIN, Fleet */}
           {mode === 'REGISTER' && role === 'TRANSPORTER' && (
             <>
+              {/* Company Name */}
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                     {t('company_name')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
-                <View
-                  style={[
-                    styles.inputBox,
-                    {
-                      backgroundColor: theme.colors.surface,
-                      borderColor: theme.colors.cardBorder,
-                    },
-                    Boolean(errors.companyName) && styles.inputBoxError,
-                  ]}
-                >
+                <View style={getInputBoxStyle('companyName')}>
                   <Feather
                     name="briefcase"
-                    size={15}
-                    color={theme.colors.textMuted}
+                    size={16}
+                    color={focusedField === 'companyName' ? roleColor : theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
                     style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={companyName}
+                    onFocus={() => setFocusedField('companyName')}
+                    onBlur={() => setFocusedField(null)}
                     onChangeText={(val) => {
                       setCompanyName(val);
                       clearError('companyName');
@@ -665,86 +804,88 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                   />
                 </View>
                 {Boolean(errors.companyName) && (
-                  <Text style={styles.errorText}>{errors.companyName}</Text>
+                  <View style={styles.errorRow}>
+                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                    <Text style={styles.errorText}>{errors.companyName}</Text>
+                  </View>
                 )}
               </View>
 
+              {/* TIN Number */}
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                     {t('tin_number')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
+                  <View style={[styles.formatBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
+                    <Text style={[styles.formatBadgeText, { color: theme.colors.textMuted }]}>
+                      10 DIGITS
+                    </Text>
+                  </View>
                 </View>
-                <View
-                  style={[
-                    styles.inputBox,
-                    {
-                      backgroundColor: theme.colors.surface,
-                      borderColor: theme.colors.cardBorder,
-                    },
-                    Boolean(errors.tinNumber) && styles.inputBoxError,
-                  ]}
-                >
+                <View style={getInputBoxStyle('tinNumber')}>
                   <Feather
                     name="hash"
-                    size={15}
-                    color={theme.colors.textMuted}
+                    size={16}
+                    color={focusedField === 'tinNumber' ? roleColor : theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
                     style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={tinNumber}
+                    onFocus={() => setFocusedField('tinNumber')}
+                    onBlur={() => setFocusedField(null)}
                     onChangeText={(val) => {
                       const cleaned = val.replace(/\D/g, '').slice(0, 10);
                       setTinNumber(cleaned);
                       clearError('tinNumber');
                     }}
-                    placeholder="10-digit TIN (e.g. 0098234112)"
+                    placeholder="e.g. 0098234112"
                     placeholderTextColor={theme.colors.textDim}
                     keyboardType="numeric"
                     maxLength={10}
                   />
                 </View>
                 {Boolean(errors.tinNumber) && (
-                  <Text style={styles.errorText}>{errors.tinNumber}</Text>
+                  <View style={styles.errorRow}>
+                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                    <Text style={styles.errorText}>{errors.tinNumber}</Text>
+                  </View>
                 )}
               </View>
 
+              {/* Fleet Size */}
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                     {t('fleet_size')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
                 </View>
-                <View
-                  style={[
-                    styles.inputBox,
-                    {
-                      backgroundColor: theme.colors.surface,
-                      borderColor: theme.colors.cardBorder,
-                    },
-                    Boolean(errors.fleetSize) && styles.inputBoxError,
-                  ]}
-                >
+                <View style={getInputBoxStyle('fleetSize')}>
                   <Feather
                     name="truck"
-                    size={15}
-                    color={theme.colors.textMuted}
+                    size={16}
+                    color={focusedField === 'fleetSize' ? roleColor : theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
                     style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={fleetSize}
+                    onFocus={() => setFocusedField('fleetSize')}
+                    onBlur={() => setFocusedField(null)}
                     onChangeText={(val) => {
                       setFleetSize(val);
                       clearError('fleetSize');
                     }}
-                    placeholder="Number of trucks (e.g. 16 Trucks)"
+                    placeholder="e.g. 16 Heavy Trucks"
                     placeholderTextColor={theme.colors.textDim}
                   />
                 </View>
                 {Boolean(errors.fleetSize) && (
-                  <Text style={styles.errorText}>{errors.fleetSize}</Text>
+                  <View style={styles.errorRow}>
+                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                    <Text style={styles.errorText}>{errors.fleetSize}</Text>
+                  </View>
                 )}
               </View>
             </>
@@ -753,31 +894,30 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           {/* Registration (Driver): Plate & License */}
           {mode === 'REGISTER' && role === 'DRIVER' && (
             <>
+              {/* Truck License Plate */}
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                    {t('truck_plate')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
+                    {t('truck_plate_label')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
+                  <View style={[styles.formatBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
+                    <Text style={[styles.formatBadgeText, { color: theme.colors.textMuted }]}>
+                      3-AA-98214
+                    </Text>
+                  </View>
                 </View>
-                <View
-                  style={[
-                    styles.inputBox,
-                    {
-                      backgroundColor: theme.colors.surface,
-                      borderColor: theme.colors.cardBorder,
-                    },
-                    Boolean(errors.licensePlate) && styles.inputBoxError,
-                  ]}
-                >
+                <View style={getInputBoxStyle('licensePlate')}>
                   <Feather
                     name="truck"
-                    size={15}
-                    color={theme.colors.textMuted}
+                    size={16}
+                    color={focusedField === 'licensePlate' ? roleColor : theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
                     style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={licensePlate}
+                    onFocus={() => setFocusedField('licensePlate')}
+                    onBlur={() => setFocusedField(null)}
                     onChangeText={(val) => {
                       const cleaned = val.toUpperCase().replace(/[^0-9A-Z-]/g, '').slice(0, 15);
                       setLicensePlate(cleaned);
@@ -790,48 +930,53 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                   />
                 </View>
                 {Boolean(errors.licensePlate) && (
-                  <Text style={styles.errorText}>{errors.licensePlate}</Text>
+                  <View style={styles.errorRow}>
+                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                    <Text style={styles.errorText}>{errors.licensePlate}</Text>
+                  </View>
                 )}
               </View>
 
+              {/* Commercial Driver License (CDL) */}
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                     {t('driver_license')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                   </Text>
+                  <View style={[styles.formatBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
+                    <Text style={[styles.formatBadgeText, { color: theme.colors.textMuted }]}>
+                      ETH-CDL
+                    </Text>
+                  </View>
                 </View>
-                <View
-                  style={[
-                    styles.inputBox,
-                    {
-                      backgroundColor: theme.colors.surface,
-                      borderColor: theme.colors.cardBorder,
-                    },
-                    Boolean(errors.driverLicense) && styles.inputBoxError,
-                  ]}
-                >
+                <View style={getInputBoxStyle('driverLicense')}>
                   <Feather
                     name="shield"
-                    size={15}
-                    color={theme.colors.textMuted}
+                    size={16}
+                    color={focusedField === 'driverLicense' ? roleColor : theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
                     style={[styles.textInput, { color: theme.colors.textPrimary }]}
                     value={driverLicense}
+                    onFocus={() => setFocusedField('driverLicense')}
+                    onBlur={() => setFocusedField(null)}
                     onChangeText={(val) => {
                       const cleaned = val.toUpperCase().replace(/[^0-9A-Z-]/g, '').slice(0, 25);
                       setDriverLicense(cleaned);
                       clearError('driverLicense');
                     }}
-                    placeholder="License number (e.g. ETH-CDL-782190)"
+                    placeholder="e.g. ETH-CDL-782190"
                     placeholderTextColor={theme.colors.textDim}
                     autoCapitalize="characters"
                     maxLength={25}
                   />
                 </View>
                 {Boolean(errors.driverLicense) && (
-                  <Text style={styles.errorText}>{errors.driverLicense}</Text>
+                  <View style={styles.errorRow}>
+                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                    <Text style={styles.errorText}>{errors.driverLicense}</Text>
+                  </View>
                 )}
               </View>
             </>
@@ -839,33 +984,26 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 
           {/* ── ROLE-SPECIFIC CREDENTIAL INPUT ── */}
           {role === 'TRANSPORTER' ? (
-            /* Transporter: Real Email Address */
+            /* Transporter: Corporate Business Email */
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                   {t('email_address')}{' '}
                   <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.inputBox,
-                  {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.cardBorder,
-                  },
-                  Boolean(errors.email) && styles.inputBoxError,
-                ]}
-              >
+              <View style={getInputBoxStyle('email')}>
                 <Feather
                   name="mail"
-                  size={15}
-                  color={theme.colors.textMuted}
+                  size={16}
+                  color={focusedField === 'email' ? roleColor : theme.colors.textMuted}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={email}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
                   onChangeText={(val) => {
                     setEmail(val);
                     clearError('email');
@@ -878,28 +1016,27 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 />
               </View>
               {Boolean(errors.email) && (
-                <Text style={styles.errorText}>{errors.email}</Text>
+                <View style={styles.errorRow}>
+                  <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                  <Text style={styles.errorText}>{errors.email}</Text>
+                </View>
               )}
             </View>
           ) : (
-            /* Truck Driver: Phone Number (Phone-as-Email behind the scenes) */
+            /* Truck Driver: Ethiopian Mobile Phone Number */
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                   {t('phone_number')}{' '}
                   <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
+                <View style={[styles.formatBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
+                  <Text style={[styles.formatBadgeText, { color: theme.colors.textMuted }]}>
+                    09XXXXXXXX
+                  </Text>
+                </View>
               </View>
-              <View
-                style={[
-                  styles.inputBox,
-                  {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.cardBorder,
-                  },
-                  Boolean(errors.phone) && styles.inputBoxError,
-                ]}
-              >
+              <View style={getInputBoxStyle('phone')}>
                 <View style={styles.countryCodePill}>
                   <Text style={styles.flagEmoji}>🇪🇹</Text>
                   <Text style={[styles.countryCodeText, { color: theme.colors.textPrimary }]}>
@@ -915,6 +1052,8 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={phone}
+                  onFocus={() => setFocusedField('phone')}
+                  onBlur={() => setFocusedField(null)}
                   onChangeText={(val) => {
                     const cleaned = val.replace(/\D/g, '').slice(0, 10);
                     setPhone(cleaned);
@@ -928,7 +1067,10 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 />
               </View>
               {Boolean(errors.phone) && (
-                <Text style={styles.errorText}>{errors.phone}</Text>
+                <View style={styles.errorRow}>
+                  <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                  <Text style={styles.errorText}>{errors.phone}</Text>
+                </View>
               )}
             </View>
           )}
@@ -937,20 +1079,14 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           {mode === 'REGISTER' && role === 'TRANSPORTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-                  {t('phone_number')} (OFFICIAL CONTACT)
+                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
+                  {t('official_contact_phone')}
+                </Text>
+                <Text style={[styles.optionalTag, { color: theme.colors.textMuted }]}>
+                  {t('optional_label')}
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.inputBox,
-                  {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.cardBorder,
-                  },
-                  Boolean(errors.contactPhone) && styles.inputBoxError,
-                ]}
-              >
+              <View style={getInputBoxStyle('contactPhone')}>
                 <View style={styles.countryCodePill}>
                   <Text style={styles.flagEmoji}>🇪🇹</Text>
                   <Text style={[styles.countryCodeText, { color: theme.colors.textPrimary }]}>
@@ -966,6 +1102,8 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={contactPhone}
+                  onFocus={() => setFocusedField('contactPhone')}
+                  onBlur={() => setFocusedField(null)}
                   onChangeText={(val) => {
                     const cleaned = val.replace(/\D/g, '').slice(0, 10);
                     setContactPhone(cleaned);
@@ -978,7 +1116,10 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 />
               </View>
               {Boolean(errors.contactPhone) && (
-                <Text style={styles.errorText}>{errors.contactPhone}</Text>
+                <View style={styles.errorRow}>
+                  <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                  <Text style={styles.errorText}>{errors.contactPhone}</Text>
+                </View>
               )}
             </View>
           )}
@@ -986,7 +1127,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           {/* Password Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
-              <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                 {t('password')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
               </Text>
               {mode === 'LOGIN' && (
@@ -995,41 +1136,30 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                     Alert.alert(
                       'Account Recovery',
                       role === 'DRIVER'
-                        ? 'Contact your carrier fleet manager or TradeFlow support at support@tradeflow.et for driver PIN reset.'
-                        : 'Contact TradeFlow carrier support at support@tradeflow.et for password reset.'
+                        ? 'Contact your carrier fleet manager or TradeFlow support at support@tradeflow.et for driver credentials assistance.'
+                        : 'Contact TradeFlow carrier support at support@tradeflow.et for password reset instructions.'
                     )
                   }
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Text
-                    style={[
-                      styles.forgotText,
-                      { color: role === 'DRIVER' ? theme.colors.blue : theme.colors.primary },
-                    ]}
-                  >
+                  <Text style={[styles.forgotText, { color: roleColor }]}>
                     {t('forgot_password')}
                   </Text>
                 </TouchableOpacity>
               )}
             </View>
-            <View
-              style={[
-                styles.inputBox,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.cardBorder,
-                },
-                Boolean(errors.password) && styles.inputBoxError,
-              ]}
-            >
+            <View style={getInputBoxStyle('password')}>
               <Feather
                 name="lock"
-                size={15}
-                color={theme.colors.textMuted}
+                size={16}
+                color={focusedField === 'password' ? roleColor : theme.colors.textMuted}
                 style={styles.inputIcon}
               />
               <TextInput
                 style={[styles.textInput, { color: theme.colors.textPrimary }]}
                 value={password}
+                onFocus={() => setFocusedField('password')}
+                onBlur={() => setFocusedField(null)}
                 onChangeText={(val) => {
                   setPassword(val);
                   clearError('password');
@@ -1041,17 +1171,20 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
               <TouchableOpacity
                 style={styles.eyeBtn}
                 onPress={() => setShowPassword(!showPassword)}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
                 <Feather
                   name={showPassword ? 'eye-off' : 'eye'}
-                  size={15}
+                  size={16}
                   color={theme.colors.textMuted}
                 />
               </TouchableOpacity>
             </View>
             {Boolean(errors.password) && (
-              <Text style={styles.errorText}>{errors.password}</Text>
+              <View style={styles.errorRow}>
+                <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                <Text style={styles.errorText}>{errors.password}</Text>
+              </View>
             )}
           </View>
 
@@ -1059,29 +1192,22 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
                   {t('confirm_password')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.inputBox,
-                  {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.cardBorder,
-                  },
-                  Boolean(errors.confirmPassword) && styles.inputBoxError,
-                ]}
-              >
+              <View style={getInputBoxStyle('confirmPassword')}>
                 <Feather
-                  name="check-circle"
-                  size={15}
-                  color={theme.colors.textMuted}
+                  name="shield"
+                  size={16}
+                  color={focusedField === 'confirmPassword' ? roleColor : theme.colors.textMuted}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   value={confirmPassword}
+                  onFocus={() => setFocusedField('confirmPassword')}
+                  onBlur={() => setFocusedField(null)}
                   onChangeText={(val) => {
                     setConfirmPassword(val);
                     clearError('confirmPassword');
@@ -1093,17 +1219,20 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 <TouchableOpacity
                   style={styles.eyeBtn}
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 >
                   <Feather
                     name={showConfirmPassword ? 'eye-off' : 'eye'}
-                    size={15}
+                    size={16}
                     color={theme.colors.textMuted}
                   />
                 </TouchableOpacity>
               </View>
               {Boolean(errors.confirmPassword) && (
-                <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                <View style={styles.errorRow}>
+                  <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                  <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                </View>
               )}
             </View>
           )}
@@ -1113,14 +1242,13 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             style={[
               styles.primaryBtn,
               {
-                backgroundColor:
-                  role === 'DRIVER' ? theme.colors.blue : theme.colors.primary,
+                backgroundColor: roleColor,
                 opacity: isSubmitting ? 0.75 : 1,
               },
             ]}
             onPress={handleSubmit}
             disabled={isSubmitting}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
             {isSubmitting ? (
               <ActivityIndicator
@@ -1133,16 +1261,17 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                   style={[
                     styles.primaryBtnText,
                     {
-                      color:
-                        role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText,
+                      color: role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText,
                     },
                   ]}
                 >
-                  {mode === 'LOGIN' ? t('sign_in') : t('create_account')}
+                  {mode === 'LOGIN'
+                    ? (role === 'TRANSPORTER' ? t('sign_in_as_transporter') : t('sign_in_as_driver'))
+                    : (role === 'TRANSPORTER' ? t('register_as_transporter') : t('register_as_driver'))}
                 </Text>
                 <Feather
                   name="arrow-right"
-                  size={16}
+                  size={17}
                   color={role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText}
                 />
               </>
@@ -1165,6 +1294,21 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             disabled={isSubmitting}
           />
         </View>
+
+        {/* ── BOTTOM ACCOUNT SWITCHER PROMPT ── */}
+        <View style={styles.switchPromptContainer}>
+          <Text style={[styles.switchPromptText, { color: theme.colors.textSecondary }]}>
+            {mode === 'LOGIN' ? t('dont_have_account') : t('already_have_account')}{' '}
+          </Text>
+          <TouchableOpacity
+            onPress={() => handleModeChange(mode === 'LOGIN' ? 'REGISTER' : 'LOGIN')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.switchPromptLink, { color: roleColor }]}>
+              {mode === 'LOGIN' ? t('create_one') : t('sign_in_here')}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -1173,7 +1317,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
   },
   container: {
     flex: 1,
@@ -1181,176 +1324,249 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 24 : 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
   },
 
-  // ── Header ──
+  // ── Header & Branding ──
   header: {
     marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  logoBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 32,
+    height: 32,
+  },
+  brandTitleCol: {
+    justifyContent: 'center',
+  },
+  brandTextWithDot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  brandTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.4,
+  },
+  brandDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  brandSubtitle: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    marginTop: 1,
+  },
   langPillAuth: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
     borderWidth: 1,
   },
   langPillAuthText: {
     fontSize: 12,
     fontWeight: '700',
   },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  logoBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: THEME.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: THEME.colors.primaryBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  logoImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 6,
-  },
-  brandTitle: {
-    color: THEME.colors.textPrimary,
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: -0.4,
-  },
 
   // ── Role Selector ──
   roleContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
     marginBottom: 16,
   },
   roleCard: {
     flex: 1,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    padding: 14,
+    justifyContent: 'space-between',
+    minHeight: 104,
+  },
+  roleCardTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: THEME.colors.card,
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  roleIconCircle: {
+    width: 36,
+    height: 36,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
-    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  roleRadioCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   roleTitle: {
-    color: THEME.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14.5,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  roleSubtitle: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+
+  // ── Hero Banner ──
+  heroCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+  },
+  heroHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  portalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  portalBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+    marginBottom: 4,
+  },
+  heroDescription: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontWeight: '400',
   },
 
   // ── Mode Switcher ──
   modeContainer: {
     flexDirection: 'row',
-    backgroundColor: THEME.colors.surface,
-    borderRadius: 8,
-    padding: 3,
+    borderRadius: 10,
+    padding: 4,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
   },
   modePill: {
     flex: 1,
-    paddingVertical: 8,
+    flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 6,
+    justifyContent: 'center',
+    gap: 7,
+    paddingVertical: 9,
+    borderRadius: 8,
+  },
+  modePillActive: {
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   modePillText: {
-    color: THEME.colors.textMuted,
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '600',
   },
 
   // ── Form Card ──
   card: {
-    backgroundColor: THEME.colors.card,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
-    padding: 16,
-    marginBottom: 20,
-  },
-
-  // ── Google Divider ──
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 18,
+    padding: 18,
     marginBottom: 16,
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: THEME.colors.cardBorder,
-  },
-  dividerText: {
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    fontFamily: THEME.typography.mono,
-  },
-  asterisk: {
-    color: THEME.colors.red,
-    fontWeight: '700',
-  },
   inputGroup: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 7,
   },
   label: {
-    color: THEME.colors.textSecondary,
-    fontSize: 10.5,
+    fontSize: 12.5,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+  },
+  asterisk: {
     fontWeight: '700',
-    letterSpacing: 0.5,
-    fontFamily: THEME.typography.mono,
+  },
+  formatBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  formatBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
+  optionalTag: {
+    fontSize: 11,
+    fontWeight: '500',
   },
   forgotText: {
-    color: THEME.colors.primary,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME.colors.surface,
     borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 50,
   },
   inputBoxError: {
-    borderColor: THEME.colors.red,
     borderWidth: 1.5,
-    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+    backgroundColor: 'rgba(239, 68, 68, 0.06)',
+  },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 6,
   },
   errorText: {
-    color: THEME.colors.red,
-    fontSize: 11,
-    marginTop: 4,
-    fontWeight: '600',
+    color: '#EF4444',
+    fontSize: 11.5,
+    fontWeight: '500',
   },
   inputIcon: {
     marginRight: 10,
@@ -1358,47 +1574,84 @@ const styles = StyleSheet.create({
   countryCodePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
     paddingRight: 8,
     marginRight: 6,
   },
   flagEmoji: {
-    fontSize: 13,
+    fontSize: 15,
   },
   countryCodeText: {
-    color: THEME.colors.textPrimary,
-    fontSize: 12.5,
-    fontWeight: '600',
-    fontFamily: THEME.typography.mono,
+    fontSize: 13.5,
+    fontWeight: '700',
   },
   pillDivider: {
     width: 1,
-    height: 16,
-    backgroundColor: THEME.colors.cardBorder,
+    height: 18,
     marginLeft: 6,
   },
   textInput: {
     flex: 1,
-    color: THEME.colors.textPrimary,
-    fontSize: 13,
-    paddingVertical: 10,
+    fontSize: 14,
+    paddingVertical: 8,
   },
   eyeBtn: {
     padding: 6,
   },
+
+  // ── Primary Action Button ──
   primaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: THEME.colors.primary,
-    paddingVertical: 13,
-    borderRadius: 8,
+    gap: 10,
+    height: 50,
+    borderRadius: 12,
     marginTop: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   primaryBtnText: {
-    color: THEME.colors.primaryText,
-    fontSize: 13.5,
+    fontSize: 14.5,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+
+  // ── Divider ──
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 20,
+    marginBottom: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+
+  // ── Bottom Switcher ──
+  switchPromptContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  switchPromptText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  switchPromptLink: {
+    fontSize: 13,
     fontWeight: '700',
   },
 });
