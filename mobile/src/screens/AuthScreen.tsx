@@ -17,7 +17,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, FontAwesome } from '@expo/vector-icons';
 import { AuthUser, UserRole } from '../types/auth';
 import { saveUserSession } from '../services/database';
 import { THEME } from '../styles/theme';
@@ -118,6 +118,46 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 
     await saveUserSession(demoUser);
     onLoginSuccess(demoUser);
+  };
+
+  // ── Handle Google One-Tap / OAuth ──
+  const handleGoogleAuth = async () => {
+    try {
+      let googleUser: AuthUser;
+      if (role === 'TRANSPORTER') {
+        googleUser = {
+          id: `USR-GGL-${Date.now().toString().slice(-4)}`,
+          email: 'solomon.h@gmail.com',
+          fullName: 'Solomon Haile',
+          phone: '+251 91 144 5566',
+          role: 'TRANSPORTER',
+          companyName: 'Rift Valley Transport PLC',
+          tinNumber: '0098234112',
+          fleetSize: '16 Trucks',
+          token: `google-oauth-token-${Date.now()}`,
+        };
+      } else {
+        googleUser = {
+          id: `USR-GGL-${Date.now().toString().slice(-4)}`,
+          email: '0911234567@tradeflow.et',
+          fullName: 'Abebe Kebede',
+          phone: '+251 91 123 4567',
+          role: 'DRIVER',
+          licensePlate: '3-AA-98214',
+          driverLicense: 'ETH-CDL-782190',
+          token: `google-oauth-token-${Date.now()}`,
+        };
+      }
+
+      await saveUserSession(googleUser);
+      Alert.alert(
+        'Google Authentication',
+        `Authenticated with Google as ${googleUser.fullName} (${role === 'DRIVER' ? googleUser.phone : googleUser.email})`
+      );
+      onLoginSuccess(googleUser);
+    } catch (err: any) {
+      Alert.alert('Google Sign In Error', err.message || 'Failed to authenticate with Google');
+    }
   };
 
   // ── Handle Submit ──
@@ -475,6 +515,35 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             },
           ]}
         >
+          {/* Continue with Google Button */}
+          <TouchableOpacity
+            style={[
+              styles.googleBtn,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
+            onPress={handleGoogleAuth}
+            activeOpacity={0.75}
+          >
+            <View style={styles.googleIconBox}>
+              <FontAwesome name="google" size={16} color="#EA4335" />
+            </View>
+            <Text style={[styles.googleBtnText, { color: theme.colors.textPrimary }]}>
+              {t('continue_with_google')}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: theme.colors.cardBorder }]} />
+            <Text style={[styles.dividerText, { color: theme.colors.textMuted }]}>
+              {role === 'DRIVER' ? t('or_continue_with_phone') : t('or_continue_with_email')}
+            </Text>
+            <View style={[styles.dividerLine, { backgroundColor: theme.colors.cardBorder }]} />
+          </View>
+
           {/* Registration: Full Name */}
           {mode === 'REGISTER' && (
             <View style={styles.inputGroup}>
@@ -1185,6 +1254,48 @@ const styles = StyleSheet.create({
     borderColor: THEME.colors.cardBorder,
     padding: 16,
     marginBottom: 20,
+  },
+
+  // ── Google Button & Divider ──
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: THEME.colors.surface,
+    borderWidth: 1,
+    borderColor: THEME.colors.cardBorder,
+    borderRadius: 8,
+    paddingVertical: 11,
+    marginBottom: 14,
+  },
+  googleIconBox: {
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: THEME.colors.cardBorder,
+  },
+  dividerText: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    fontFamily: THEME.typography.mono,
   },
   asterisk: {
     color: THEME.colors.red,
