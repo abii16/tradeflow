@@ -162,6 +162,14 @@ export const TRANSLATIONS = {
     register_as_driver: 'Register Driver Profile',
     official_contact_phone: 'Official Contact Phone',
     optional_label: '(Optional)',
+    carrier_fleet_tab: 'Carrier / Fleet',
+    driver_tab: 'Truck Driver',
+    section_profile_fleet: 'PROFILE & FLEET DETAILS',
+    section_credentials: 'LOGIN CREDENTIALS',
+    carrier_login_title: 'Carrier Sign In',
+    driver_login_title: 'Driver Sign In',
+    carrier_register_title: 'Register Carrier Account',
+    driver_register_title: 'Register Driver Profile',
   },
   AM: {
     // Navigation & Roles
@@ -322,6 +330,14 @@ export const TRANSLATIONS = {
     register_as_driver: 'የአሽከርካሪ መለያ ፍጠር',
     official_contact_phone: 'የድርጅቱ ስልክ ቁጥር',
     optional_label: '(አማራጭ)',
+    carrier_fleet_tab: 'አጓጓዥ / ፍሊት',
+    driver_tab: 'የጭነት አሽከርካሪ',
+    section_profile_fleet: 'የመገለጫ እና የተሽከርካሪ መረጃ',
+    section_credentials: 'የመለያ መግቢያ መረጃ',
+    carrier_login_title: 'የአጓጓዥ መግቢያ',
+    driver_login_title: 'የአሽከርካሪ መግቢያ',
+    carrier_register_title: 'የትራንስፖርተር መለያ ፍጠር',
+    driver_register_title: 'የአሽከርካሪ መለያ ፍጠር',
   },
 } as const;
 

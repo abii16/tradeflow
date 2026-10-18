@@ -1,7 +1,7 @@
-// TradeFlow Mobile — Authentication Screen (Transporter & Driver)
-// Spec:
-// - Transporter: Real business email (e.g. solomon@company.et) + password
-// - Truck Driver: Ethiopian phone number (e.g. 0911234567), mapped behind the scenes to Supabase identity (0911234567@tradeflow.et)
+// TradeFlow Mobile — Industry Standard Authentication Screen (Carrier & Driver)
+// Designed to top-tier enterprise logistics standards (Uber Freight / Samsara / Motive)
+// - Carrier: Real business email (solomon@company.et) + password
+// - Truck Driver: Ethiopian mobile phone (0911234567) mapped behind the scenes to Supabase identity (0911234567@tradeflow.et)
 // Zero SMS fees; standard free Supabase identity processed under the hood.
 
 import React, { useState, useEffect } from 'react';
@@ -22,7 +22,6 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { AuthUser, UserRole } from '../types/auth';
 import { saveUserSession } from '../services/database';
-import { THEME } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import {
@@ -66,7 +65,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 
   // Registration Profile Fields
   const [fullName, setFullName] = useState('');
-  // Transporter specific
+  // Carrier specific
   const [companyName, setCompanyName] = useState('');
   const [tinNumber, setTinNumber] = useState('');
   const [fleetSize, setFleetSize] = useState('');
@@ -84,10 +83,10 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
-  // Dynamic role accent colors
-  const roleColor = role === 'DRIVER' ? theme.colors.blue : theme.colors.primary;
-  const roleBgSubtle = role === 'DRIVER' ? theme.colors.blueSubtle : theme.colors.primarySubtle;
-  const roleBorder = role === 'DRIVER' ? theme.colors.blueBorder : theme.colors.primaryBorder;
+  // Dynamic role theme colors
+  const isDriver = role === 'DRIVER';
+  const roleColor = isDriver ? theme.colors.blue : theme.colors.primary;
+  const roleBorder = isDriver ? theme.colors.blueBorder : theme.colors.primaryBorder;
 
   // ── Listen for Incoming OAuth Deep Link Redirects ──
   useEffect(() => {
@@ -168,11 +167,10 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
     const newErrors: Record<string, string> = {};
 
     if (mode === 'LOGIN') {
-      // --- LOGIN VALIDATION ---
       let resolvedEmail = '';
       let displayPhone = '';
 
-      if (role === 'DRIVER') {
+      if (isDriver) {
         const phoneCheck = validatePhone(phone);
         if (!phoneCheck.isValid) {
           newErrors.phone = phoneCheck.error || 'Valid 10-digit phone required (e.g. 0911234567)';
@@ -183,7 +181,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
       } else {
         const emailCheck = validateEmail(email);
         if (!emailCheck.isValid) {
-          newErrors.email = emailCheck.error || 'Valid email required (e.g. solomon@company.et)';
+          newErrors.email = emailCheck.error || 'Valid business email required (e.g. solomon@company.et)';
         } else {
           resolvedEmail = emailCheck.sanitized;
           displayPhone = '+251 91 144 5566';
@@ -204,7 +202,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         let token = `jwt-token-${Date.now()}`;
         let userId = `USR-${Date.now().toString().slice(-4)}`;
 
-        // Supabase Auth API
         const authResult = await signInWithSupabase(resolvedEmail, password.trim());
         if (authResult.success && authResult.token) {
           token = authResult.token;
@@ -214,7 +211,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         const meta = authResult.user?.user_metadata || {};
         const derivedName =
           meta.full_name ||
-          (role === 'TRANSPORTER' ? 'Carrier Member' : 'Corridor Driver');
+          (isDriver ? 'Corridor Driver' : 'Carrier Fleet Manager');
 
         const user: AuthUser = {
           id: userId,
@@ -222,11 +219,11 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           fullName: derivedName,
           phone: meta.phone || displayPhone,
           role,
-          companyName: role === 'TRANSPORTER' ? (meta.company_name || 'Carrier Partner') : undefined,
-          tinNumber: role === 'TRANSPORTER' ? meta.tin_number : undefined,
-          fleetSize: role === 'TRANSPORTER' ? meta.fleet_size : undefined,
-          licensePlate: role === 'DRIVER' ? (meta.license_plate || undefined) : undefined,
-          driverLicense: role === 'DRIVER' ? (meta.driver_license || undefined) : undefined,
+          companyName: !isDriver ? (meta.company_name || 'Carrier Partner') : undefined,
+          tinNumber: !isDriver ? meta.tin_number : undefined,
+          fleetSize: !isDriver ? meta.fleet_size : undefined,
+          licensePlate: isDriver ? (meta.license_plate || undefined) : undefined,
+          driverLicense: isDriver ? (meta.driver_license || undefined) : undefined,
           token,
         };
 
@@ -253,7 +250,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
       let resolvedEmail = '';
       let displayPhone = '';
 
-      if (role === 'TRANSPORTER') {
+      if (!isDriver) {
         const compCheck = validateCompanyName(companyName);
         if (!compCheck.isValid) {
           newErrors.companyName = compCheck.error || 'Company name is required';
@@ -295,7 +292,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         }
       }
 
-      if (role === 'DRIVER') {
+      if (isDriver) {
         const plateCheck = validateLicensePlate(licensePlate);
         if (!plateCheck.isValid) {
           newErrors.licensePlate = plateCheck.error || 'Valid license plate required (e.g. 3-AA-98214)';
@@ -347,11 +344,11 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           full_name: nameCheck.sanitized,
           phone: displayPhone,
           role,
-          company_name: role === 'TRANSPORTER' ? sanitizedCompanyName : undefined,
-          tin_number: role === 'TRANSPORTER' ? sanitizedTinNumber : undefined,
-          fleet_size: role === 'TRANSPORTER' ? sanitizedFleetSize : undefined,
-          license_plate: role === 'DRIVER' ? sanitizedLicensePlate : undefined,
-          driver_license: role === 'DRIVER' ? sanitizedDriverLicense : undefined,
+          company_name: !isDriver ? sanitizedCompanyName : undefined,
+          tin_number: !isDriver ? sanitizedTinNumber : undefined,
+          fleet_size: !isDriver ? sanitizedFleetSize : undefined,
+          license_plate: isDriver ? sanitizedLicensePlate : undefined,
+          driver_license: isDriver ? sanitizedDriverLicense : undefined,
         });
 
         if (signUpResult.success && signUpResult.token) {
@@ -367,18 +364,18 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           fullName: nameCheck.sanitized,
           phone: displayPhone,
           role,
-          companyName: role === 'TRANSPORTER' ? sanitizedCompanyName : undefined,
-          tinNumber: role === 'TRANSPORTER' ? sanitizedTinNumber : undefined,
-          fleetSize: role === 'TRANSPORTER' ? sanitizedFleetSize : undefined,
-          licensePlate: role === 'DRIVER' ? sanitizedLicensePlate : undefined,
-          driverLicense: role === 'DRIVER' ? sanitizedDriverLicense : undefined,
+          companyName: !isDriver ? sanitizedCompanyName : undefined,
+          tinNumber: !isDriver ? sanitizedTinNumber : undefined,
+          fleetSize: !isDriver ? sanitizedFleetSize : undefined,
+          licensePlate: isDriver ? sanitizedLicensePlate : undefined,
+          driverLicense: isDriver ? sanitizedDriverLicense : undefined,
           token,
         };
 
         await saveUserSession(newUser);
         Alert.alert(
           'Account Registered',
-          role === 'TRANSPORTER'
+          !isDriver
             ? `Welcome, ${nameCheck.sanitized}! Registered with ${resolvedEmail}`
             : `Welcome, Driver ${nameCheck.sanitized}! Phone ${displayPhone} registered successfully.`
         );
@@ -391,7 +388,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
     }
   };
 
-  // Helper to determine active border highlight
+  // Helper for input container styling
   const getInputBoxStyle = (fieldName: string) => {
     const hasError = Boolean(errors[fieldName]);
     const isFocused = focusedField === fieldName;
@@ -399,7 +396,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
     return [
       styles.inputBox,
       {
-        backgroundColor: theme.colors.surface,
+        backgroundColor: isDarkMode ? '#1A1A1A' : '#F8FAFC',
         borderColor: hasError
           ? theme.colors.red
           : isFocused
@@ -408,7 +405,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
       },
       isFocused && !hasError && {
         borderWidth: 1.5,
-        backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+        backgroundColor: isDarkMode ? '#222222' : '#FFFFFF',
       },
       hasError && styles.inputBoxError,
     ];
@@ -425,9 +422,9 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ── TOP BRAND BAR ── */}
-        <View style={styles.header}>
-          <View style={styles.brandRow}>
+        {/* ── TOP NAV BAR: BRAND & LANGUAGE ── */}
+        <View style={styles.topBar}>
+          <View style={styles.brandGroup}>
             <View
               style={[
                 styles.logoBadge,
@@ -443,23 +440,26 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 resizeMode="contain"
               />
             </View>
-            <View style={styles.brandTitleCol}>
-              <View style={styles.brandTextWithDot}>
+            <View>
+              <View style={styles.brandTitleRow}>
                 <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
                   TradeFlow
                 </Text>
-                <View style={[styles.brandDot, { backgroundColor: roleColor }]} />
+                <View style={[styles.networkBadge, { backgroundColor: isDarkMode ? '#262626' : '#E2E8F0' }]}>
+                  <Text style={[styles.networkBadgeText, { color: roleColor }]}>
+                    FREIGHT
+                  </Text>
+                </View>
               </View>
-              <Text style={[styles.brandSubtitle, { color: theme.colors.textMuted }]}>
-                Addis – Djibouti Freight
+              <Text style={[styles.brandCorridor, { color: theme.colors.textMuted }]}>
+                Addis Ababa – Djibouti Corridor
               </Text>
             </View>
           </View>
 
-          {/* Language Switcher Pill */}
           <TouchableOpacity
             style={[
-              styles.langPillAuth,
+              styles.langPill,
               {
                 backgroundColor: theme.colors.surfaceElevated,
                 borderColor: theme.colors.cardBorder,
@@ -469,204 +469,109 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             activeOpacity={0.7}
           >
             <Feather name="globe" size={13} color={roleColor} />
-            <Text style={[styles.langPillAuthText, { color: theme.colors.textPrimary }]}>
+            <Text style={[styles.langPillText, { color: theme.colors.textPrimary }]}>
               {language === 'EN' ? 'አማርኛ' : 'EN'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* ── ROLE SELECTION CARDS ── */}
-        <View style={styles.roleContainer}>
-          {/* Transporter Card */}
+        {/* ── UNIFIED SEGMENTED ROLE SELECTOR ── */}
+        <View
+          style={[
+            styles.segmentedRoleBar,
+            {
+              backgroundColor: isDarkMode ? '#1A1A1A' : '#E2E8F0',
+              borderColor: theme.colors.cardBorder,
+            },
+          ]}
+        >
+          {/* Carrier Tab */}
           <TouchableOpacity
             style={[
-              styles.roleCard,
-              {
-                backgroundColor: theme.colors.card,
-                borderColor: theme.colors.cardBorder,
-              },
-              role === 'TRANSPORTER' && {
-                borderColor: theme.colors.primary,
-                backgroundColor: theme.colors.primarySubtle,
-                borderWidth: 2,
-              },
+              styles.roleSegment,
+              !isDriver && [
+                styles.roleSegmentActive,
+                {
+                  backgroundColor: isDarkMode ? '#282828' : '#FFFFFF',
+                  borderColor: theme.colors.primary,
+                },
+              ],
             ]}
             onPress={() => handleRoleChange('TRANSPORTER')}
             activeOpacity={0.8}
           >
-            <View style={styles.roleCardTop}>
-              <View
-                style={[
-                  styles.roleIconCircle,
-                  {
-                    backgroundColor:
-                      role === 'TRANSPORTER'
-                        ? theme.colors.primarySubtle
-                        : theme.colors.surfaceElevated,
-                  },
-                ]}
-              >
-                <Feather
-                  name="truck"
-                  size={18}
-                  color={role === 'TRANSPORTER' ? theme.colors.primary : theme.colors.textMuted}
-                />
-              </View>
-              <View
-                style={[
-                  styles.roleRadioCircle,
-                  role === 'TRANSPORTER'
-                    ? { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary }
-                    : { borderColor: theme.colors.cardBorder },
-                ]}
-              >
-                {role === 'TRANSPORTER' && (
-                  <Feather name="check" size={10} color={theme.colors.primaryText} />
-                )}
-              </View>
-            </View>
+            <Feather
+              name="truck"
+              size={15}
+              color={!isDriver ? theme.colors.primary : theme.colors.textMuted}
+            />
             <Text
               style={[
-                styles.roleTitle,
-                { color: theme.colors.textPrimary },
-                role === 'TRANSPORTER' && {
+                styles.roleSegmentText,
+                { color: theme.colors.textMuted },
+                !isDriver && {
                   color: theme.colors.primary,
-                  fontWeight: '800',
+                  fontWeight: '700',
                 },
               ]}
             >
-              {t('transporter_role_title')}
-            </Text>
-            <Text style={[styles.roleSubtitle, { color: theme.colors.textSecondary }]}>
-              {t('transporter_role_subtitle')}
+              {t('carrier_fleet_tab')}
             </Text>
           </TouchableOpacity>
 
-          {/* Driver Card */}
+          {/* Driver Tab */}
           <TouchableOpacity
             style={[
-              styles.roleCard,
-              {
-                backgroundColor: theme.colors.card,
-                borderColor: theme.colors.cardBorder,
-              },
-              role === 'DRIVER' && {
-                borderColor: theme.colors.blue,
-                backgroundColor: theme.colors.blueSubtle,
-                borderWidth: 2,
-              },
+              styles.roleSegment,
+              isDriver && [
+                styles.roleSegmentActive,
+                {
+                  backgroundColor: isDarkMode ? '#282828' : '#FFFFFF',
+                  borderColor: theme.colors.blue,
+                },
+              ],
             ]}
             onPress={() => handleRoleChange('DRIVER')}
             activeOpacity={0.8}
           >
-            <View style={styles.roleCardTop}>
-              <View
-                style={[
-                  styles.roleIconCircle,
-                  {
-                    backgroundColor:
-                      role === 'DRIVER'
-                        ? theme.colors.blueSubtle
-                        : theme.colors.surfaceElevated,
-                  },
-                ]}
-              >
-                <Feather
-                  name="navigation"
-                  size={18}
-                  color={role === 'DRIVER' ? theme.colors.blue : theme.colors.textMuted}
-                />
-              </View>
-              <View
-                style={[
-                  styles.roleRadioCircle,
-                  role === 'DRIVER'
-                    ? { borderColor: theme.colors.blue, backgroundColor: theme.colors.blue }
-                    : { borderColor: theme.colors.cardBorder },
-                ]}
-              >
-                {role === 'DRIVER' && (
-                  <Feather name="check" size={10} color="#FFFFFF" />
-                )}
-              </View>
-            </View>
+            <Feather
+              name="navigation"
+              size={15}
+              color={isDriver ? theme.colors.blue : theme.colors.textMuted}
+            />
             <Text
               style={[
-                styles.roleTitle,
-                { color: theme.colors.textPrimary },
-                role === 'DRIVER' && {
+                styles.roleSegmentText,
+                { color: theme.colors.textMuted },
+                isDriver && {
                   color: theme.colors.blue,
-                  fontWeight: '800',
+                  fontWeight: '700',
                 },
               ]}
             >
-              {t('driver_role_title')}
-            </Text>
-            <Text style={[styles.roleSubtitle, { color: theme.colors.textSecondary }]}>
-              {t('driver_role_subtitle')}
+              {t('driver_tab')}
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* ── HERO BANNER & CONTEXT ── */}
+        {/* ── MODE SELECTOR (SIGN IN / REGISTER) ── */}
         <View
           style={[
-            styles.heroCard,
+            styles.modeSegmentedBar,
             {
-              backgroundColor: theme.colors.card,
-              borderColor: roleBorder,
-            },
-          ]}
-        >
-          <View style={styles.heroHeaderRow}>
-            <View
-              style={[
-                styles.portalBadge,
-                { backgroundColor: roleBgSubtle, borderColor: roleBorder },
-              ]}
-            >
-              <Feather
-                name={role === 'TRANSPORTER' ? 'briefcase' : 'smartphone'}
-                size={11}
-                color={roleColor}
-              />
-              <Text style={[styles.portalBadgeText, { color: roleColor }]}>
-                {role === 'TRANSPORTER' ? t('carrier_portal_badge') : t('driver_portal_badge')}
-              </Text>
-            </View>
-          </View>
-
-          <Text style={[styles.heroTitle, { color: theme.colors.textPrimary }]}>
-            {mode === 'LOGIN'
-              ? (role === 'TRANSPORTER' ? t('sign_in_as_transporter') : t('sign_in_as_driver'))
-              : (role === 'TRANSPORTER' ? t('register_as_transporter') : t('register_as_driver'))}
-          </Text>
-
-          <Text style={[styles.heroDescription, { color: theme.colors.textSecondary }]}>
-            {mode === 'LOGIN'
-              ? (role === 'TRANSPORTER' ? t('transporter_login_hero') : t('driver_login_hero'))
-              : (role === 'TRANSPORTER' ? t('transporter_register_hero') : t('driver_register_hero'))}
-          </Text>
-        </View>
-
-        {/* ── MODE SWITCHER (Sign In / Register) ── */}
-        <View
-          style={[
-            styles.modeContainer,
-            {
-              backgroundColor: theme.colors.surfaceElevated,
+              backgroundColor: isDarkMode ? '#1E1E1E' : '#EDEDF2',
               borderColor: theme.colors.cardBorder,
             },
           ]}
         >
           <TouchableOpacity
             style={[
-              styles.modePill,
+              styles.modeSegment,
               mode === 'LOGIN' && [
-                styles.modePillActive,
+                styles.modeSegmentActive,
                 {
                   backgroundColor: theme.colors.card,
-                  borderColor: theme.colors.cardBorderHover,
+                  borderColor: isDarkMode ? '#333333' : '#CBD5E1',
                 },
               ],
             ]}
@@ -680,7 +585,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             />
             <Text
               style={[
-                styles.modePillText,
+                styles.modeSegmentText,
                 { color: theme.colors.textMuted },
                 mode === 'LOGIN' && {
                   color: theme.colors.textPrimary,
@@ -694,12 +599,12 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 
           <TouchableOpacity
             style={[
-              styles.modePill,
+              styles.modeSegment,
               mode === 'REGISTER' && [
-                styles.modePillActive,
+                styles.modeSegmentActive,
                 {
                   backgroundColor: theme.colors.card,
-                  borderColor: theme.colors.cardBorderHover,
+                  borderColor: isDarkMode ? '#333333' : '#CBD5E1',
                 },
               ],
             ]}
@@ -713,7 +618,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             />
             <Text
               style={[
-                styles.modePillText,
+                styles.modeSegmentText,
                 { color: theme.colors.textMuted },
                 mode === 'REGISTER' && {
                   color: theme.colors.textPrimary,
@@ -726,278 +631,351 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           </TouchableOpacity>
         </View>
 
-        {/* ── FORM CONTAINER ── */}
+        {/* ── CLEAN TITLE & VALUE PROPOSITION ── */}
+        <View style={styles.titleSection}>
+          <Text style={[styles.mainHeading, { color: theme.colors.textPrimary }]}>
+            {mode === 'LOGIN'
+              ? (isDriver ? t('driver_login_title') : t('carrier_login_title'))
+              : (isDriver ? t('driver_register_title') : t('carrier_register_title'))}
+          </Text>
+          <Text style={[styles.subHeading, { color: theme.colors.textSecondary }]}>
+            {mode === 'LOGIN'
+              ? (isDriver
+                  ? t('driver_login_hero')
+                  : t('transporter_login_hero'))
+              : (isDriver
+                  ? t('driver_register_hero')
+                  : t('transporter_register_hero'))}
+          </Text>
+        </View>
+
+        {/* ── FORM CONTAINER CARD ── */}
         <View
           style={[
-            styles.card,
+            styles.formCard,
             {
               backgroundColor: theme.colors.card,
               borderColor: theme.colors.cardBorder,
             },
           ]}
         >
-          {/* Registration: Full Name */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* REGISTER MODE: SECTION 1 - PROFILE & FLEET DETAILS           */}
+          {/* ───────────────────────────────────────────────────────────── */}
           {mode === 'REGISTER' && (
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
+            <>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionHeaderText, { color: roleColor }]}>
+                  {t('section_profile_fleet')}
+                </Text>
+              </View>
+
+              {/* Full Name */}
+              <View style={styles.fieldGroup}>
+                <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
                   {t('full_name')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
-              </View>
-              <View style={getInputBoxStyle('fullName')}>
-                <Feather
-                  name="user"
-                  size={16}
-                  color={focusedField === 'fullName' ? roleColor : theme.colors.textMuted}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
-                  value={fullName}
-                  onFocus={() => setFocusedField('fullName')}
-                  onBlur={() => setFocusedField(null)}
-                  onChangeText={(val) => {
-                    setFullName(val);
-                    clearError('fullName');
-                  }}
-                  placeholder={role === 'TRANSPORTER' ? 'e.g. Solomon Haile' : 'e.g. Abebe Kebede'}
-                  placeholderTextColor={theme.colors.textDim}
-                />
-              </View>
-              {Boolean(errors.fullName) && (
-                <View style={styles.errorRow}>
-                  <Feather name="alert-circle" size={12} color={theme.colors.red} />
-                  <Text style={styles.errorText}>{errors.fullName}</Text>
+                <View style={getInputBoxStyle('fullName')}>
+                  <Feather
+                    name="user"
+                    size={16}
+                    color={focusedField === 'fullName' ? roleColor : theme.colors.textMuted}
+                    style={styles.fieldIcon}
+                  />
+                  <TextInput
+                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                    value={fullName}
+                    onFocus={() => setFocusedField('fullName')}
+                    onBlur={() => setFocusedField(null)}
+                    onChangeText={(val) => {
+                      setFullName(val);
+                      clearError('fullName');
+                    }}
+                    placeholder={!isDriver ? 'e.g. Solomon Haile' : 'e.g. Abebe Kebede'}
+                    placeholderTextColor={theme.colors.textDim}
+                  />
                 </View>
+                {Boolean(errors.fullName) && (
+                  <View style={styles.errorRow}>
+                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                    <Text style={styles.errorText}>{errors.fullName}</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Carrier Specific Profile Fields */}
+              {!isDriver && (
+                <>
+                  {/* Company Name */}
+                  <View style={styles.fieldGroup}>
+                    <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                      {t('company_name')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                    </Text>
+                    <View style={getInputBoxStyle('companyName')}>
+                      <Feather
+                        name="briefcase"
+                        size={16}
+                        color={focusedField === 'companyName' ? roleColor : theme.colors.textMuted}
+                        style={styles.fieldIcon}
+                      />
+                      <TextInput
+                        style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                        value={companyName}
+                        onFocus={() => setFocusedField('companyName')}
+                        onBlur={() => setFocusedField(null)}
+                        onChangeText={(val) => {
+                          setCompanyName(val);
+                          clearError('companyName');
+                        }}
+                        placeholder="e.g. Rift Valley Transport PLC"
+                        placeholderTextColor={theme.colors.textDim}
+                      />
+                    </View>
+                    {Boolean(errors.companyName) && (
+                      <View style={styles.errorRow}>
+                        <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                        <Text style={styles.errorText}>{errors.companyName}</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* TIN Number */}
+                  <View style={styles.fieldGroup}>
+                    <View style={styles.labelRow}>
+                      <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                        {t('tin_number')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                      </Text>
+                      <View style={[styles.chipBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
+                        <Text style={[styles.chipBadgeText, { color: theme.colors.textMuted }]}>
+                          10 DIGITS
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={getInputBoxStyle('tinNumber')}>
+                      <Feather
+                        name="hash"
+                        size={16}
+                        color={focusedField === 'tinNumber' ? roleColor : theme.colors.textMuted}
+                        style={styles.fieldIcon}
+                      />
+                      <TextInput
+                        style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                        value={tinNumber}
+                        onFocus={() => setFocusedField('tinNumber')}
+                        onBlur={() => setFocusedField(null)}
+                        onChangeText={(val) => {
+                          const cleaned = val.replace(/\D/g, '').slice(0, 10);
+                          setTinNumber(cleaned);
+                          clearError('tinNumber');
+                        }}
+                        placeholder="e.g. 0098234112"
+                        placeholderTextColor={theme.colors.textDim}
+                        keyboardType="numeric"
+                        maxLength={10}
+                      />
+                    </View>
+                    {Boolean(errors.tinNumber) && (
+                      <View style={styles.errorRow}>
+                        <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                        <Text style={styles.errorText}>{errors.tinNumber}</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Fleet Size */}
+                  <View style={styles.fieldGroup}>
+                    <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                      {t('fleet_size')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                    </Text>
+                    <View style={getInputBoxStyle('fleetSize')}>
+                      <Feather
+                        name="truck"
+                        size={16}
+                        color={focusedField === 'fleetSize' ? roleColor : theme.colors.textMuted}
+                        style={styles.fieldIcon}
+                      />
+                      <TextInput
+                        style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                        value={fleetSize}
+                        onFocus={() => setFocusedField('fleetSize')}
+                        onBlur={() => setFocusedField(null)}
+                        onChangeText={(val) => {
+                          setFleetSize(val);
+                          clearError('fleetSize');
+                        }}
+                        placeholder="e.g. 16 Heavy Trucks"
+                        placeholderTextColor={theme.colors.textDim}
+                      />
+                    </View>
+                    {Boolean(errors.fleetSize) && (
+                      <View style={styles.errorRow}>
+                        <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                        <Text style={styles.errorText}>{errors.fleetSize}</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Optional Official Contact Phone */}
+                  <View style={styles.fieldGroup}>
+                    <View style={styles.labelRow}>
+                      <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                        {t('official_contact_phone')}
+                      </Text>
+                      <Text style={[styles.optionalText, { color: theme.colors.textMuted }]}>
+                        {t('optional_label')}
+                      </Text>
+                    </View>
+                    <View style={getInputBoxStyle('contactPhone')}>
+                      <View style={styles.phonePrefixPill}>
+                        <Text style={styles.flagEmoji}>🇪🇹</Text>
+                        <Text style={[styles.phonePrefixText, { color: theme.colors.textPrimary }]}>
+                          +251
+                        </Text>
+                        <View style={[styles.verticalDivider, { backgroundColor: theme.colors.cardBorder }]} />
+                      </View>
+                      <TextInput
+                        style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                        value={contactPhone}
+                        onFocus={() => setFocusedField('contactPhone')}
+                        onBlur={() => setFocusedField(null)}
+                        onChangeText={(val) => {
+                          const cleaned = val.replace(/\D/g, '').slice(0, 10);
+                          setContactPhone(cleaned);
+                          clearError('contactPhone');
+                        }}
+                        placeholder="0911445566"
+                        placeholderTextColor={theme.colors.textDim}
+                        keyboardType="phone-pad"
+                        maxLength={10}
+                      />
+                    </View>
+                    {Boolean(errors.contactPhone) && (
+                      <View style={styles.errorRow}>
+                        <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                        <Text style={styles.errorText}>{errors.contactPhone}</Text>
+                      </View>
+                    )}
+                  </View>
+                </>
               )}
-            </View>
-          )}
 
-          {/* Registration (Carrier): Company, TIN, Fleet */}
-          {mode === 'REGISTER' && role === 'TRANSPORTER' && (
-            <>
-              {/* Company Name */}
-              <View style={styles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                    {t('company_name')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
-                  </Text>
-                </View>
-                <View style={getInputBoxStyle('companyName')}>
-                  <Feather
-                    name="briefcase"
-                    size={16}
-                    color={focusedField === 'companyName' ? roleColor : theme.colors.textMuted}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
-                    value={companyName}
-                    onFocus={() => setFocusedField('companyName')}
-                    onBlur={() => setFocusedField(null)}
-                    onChangeText={(val) => {
-                      setCompanyName(val);
-                      clearError('companyName');
-                    }}
-                    placeholder="e.g. Rift Valley Transport PLC"
-                    placeholderTextColor={theme.colors.textDim}
-                  />
-                </View>
-                {Boolean(errors.companyName) && (
-                  <View style={styles.errorRow}>
-                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
-                    <Text style={styles.errorText}>{errors.companyName}</Text>
+              {/* Driver Specific Profile Fields */}
+              {isDriver && (
+                <>
+                  {/* Truck License Plate */}
+                  <View style={styles.fieldGroup}>
+                    <View style={styles.labelRow}>
+                      <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                        {t('truck_plate_label')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                      </Text>
+                      <View style={[styles.chipBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
+                        <Text style={[styles.chipBadgeText, { color: theme.colors.textMuted }]}>
+                          3-AA-98214
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={getInputBoxStyle('licensePlate')}>
+                      <Feather
+                        name="truck"
+                        size={16}
+                        color={focusedField === 'licensePlate' ? roleColor : theme.colors.textMuted}
+                        style={styles.fieldIcon}
+                      />
+                      <TextInput
+                        style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                        value={licensePlate}
+                        onFocus={() => setFocusedField('licensePlate')}
+                        onBlur={() => setFocusedField(null)}
+                        onChangeText={(val) => {
+                          const cleaned = val.toUpperCase().replace(/[^0-9A-Z-]/g, '').slice(0, 15);
+                          setLicensePlate(cleaned);
+                          clearError('licensePlate');
+                        }}
+                        placeholder="e.g. 3-AA-98214"
+                        placeholderTextColor={theme.colors.textDim}
+                        autoCapitalize="characters"
+                        maxLength={15}
+                      />
+                    </View>
+                    {Boolean(errors.licensePlate) && (
+                      <View style={styles.errorRow}>
+                        <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                        <Text style={styles.errorText}>{errors.licensePlate}</Text>
+                      </View>
+                    )}
                   </View>
-                )}
-              </View>
 
-              {/* TIN Number */}
-              <View style={styles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                    {t('tin_number')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
-                  </Text>
-                  <View style={[styles.formatBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
-                    <Text style={[styles.formatBadgeText, { color: theme.colors.textMuted }]}>
-                      10 DIGITS
-                    </Text>
+                  {/* Commercial Driver License */}
+                  <View style={styles.fieldGroup}>
+                    <View style={styles.labelRow}>
+                      <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                        {t('driver_license')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                      </Text>
+                      <View style={[styles.chipBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
+                        <Text style={[styles.chipBadgeText, { color: theme.colors.textMuted }]}>
+                          ETH-CDL
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={getInputBoxStyle('driverLicense')}>
+                      <Feather
+                        name="shield"
+                        size={16}
+                        color={focusedField === 'driverLicense' ? roleColor : theme.colors.textMuted}
+                        style={styles.fieldIcon}
+                      />
+                      <TextInput
+                        style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                        value={driverLicense}
+                        onFocus={() => setFocusedField('driverLicense')}
+                        onBlur={() => setFocusedField(null)}
+                        onChangeText={(val) => {
+                          const cleaned = val.toUpperCase().replace(/[^0-9A-Z-]/g, '').slice(0, 25);
+                          setDriverLicense(cleaned);
+                          clearError('driverLicense');
+                        }}
+                        placeholder="e.g. ETH-CDL-782190"
+                        placeholderTextColor={theme.colors.textDim}
+                        autoCapitalize="characters"
+                        maxLength={25}
+                      />
+                    </View>
+                    {Boolean(errors.driverLicense) && (
+                      <View style={styles.errorRow}>
+                        <Feather name="alert-circle" size={12} color={theme.colors.red} />
+                        <Text style={styles.errorText}>{errors.driverLicense}</Text>
+                      </View>
+                    )}
                   </View>
-                </View>
-                <View style={getInputBoxStyle('tinNumber')}>
-                  <Feather
-                    name="hash"
-                    size={16}
-                    color={focusedField === 'tinNumber' ? roleColor : theme.colors.textMuted}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
-                    value={tinNumber}
-                    onFocus={() => setFocusedField('tinNumber')}
-                    onBlur={() => setFocusedField(null)}
-                    onChangeText={(val) => {
-                      const cleaned = val.replace(/\D/g, '').slice(0, 10);
-                      setTinNumber(cleaned);
-                      clearError('tinNumber');
-                    }}
-                    placeholder="e.g. 0098234112"
-                    placeholderTextColor={theme.colors.textDim}
-                    keyboardType="numeric"
-                    maxLength={10}
-                  />
-                </View>
-                {Boolean(errors.tinNumber) && (
-                  <View style={styles.errorRow}>
-                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
-                    <Text style={styles.errorText}>{errors.tinNumber}</Text>
-                  </View>
-                )}
-              </View>
+                </>
+              )}
 
-              {/* Fleet Size */}
-              <View style={styles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                    {t('fleet_size')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
-                  </Text>
-                </View>
-                <View style={getInputBoxStyle('fleetSize')}>
-                  <Feather
-                    name="truck"
-                    size={16}
-                    color={focusedField === 'fleetSize' ? roleColor : theme.colors.textMuted}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
-                    value={fleetSize}
-                    onFocus={() => setFocusedField('fleetSize')}
-                    onBlur={() => setFocusedField(null)}
-                    onChangeText={(val) => {
-                      setFleetSize(val);
-                      clearError('fleetSize');
-                    }}
-                    placeholder="e.g. 16 Heavy Trucks"
-                    placeholderTextColor={theme.colors.textDim}
-                  />
-                </View>
-                {Boolean(errors.fleetSize) && (
-                  <View style={styles.errorRow}>
-                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
-                    <Text style={styles.errorText}>{errors.fleetSize}</Text>
-                  </View>
-                )}
-              </View>
-            </>
-          )}
-
-          {/* Registration (Driver): Plate & License */}
-          {mode === 'REGISTER' && role === 'DRIVER' && (
-            <>
-              {/* Truck License Plate */}
-              <View style={styles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                    {t('truck_plate_label')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
-                  </Text>
-                  <View style={[styles.formatBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
-                    <Text style={[styles.formatBadgeText, { color: theme.colors.textMuted }]}>
-                      3-AA-98214
-                    </Text>
-                  </View>
-                </View>
-                <View style={getInputBoxStyle('licensePlate')}>
-                  <Feather
-                    name="truck"
-                    size={16}
-                    color={focusedField === 'licensePlate' ? roleColor : theme.colors.textMuted}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
-                    value={licensePlate}
-                    onFocus={() => setFocusedField('licensePlate')}
-                    onBlur={() => setFocusedField(null)}
-                    onChangeText={(val) => {
-                      const cleaned = val.toUpperCase().replace(/[^0-9A-Z-]/g, '').slice(0, 15);
-                      setLicensePlate(cleaned);
-                      clearError('licensePlate');
-                    }}
-                    placeholder="e.g. 3-AA-98214"
-                    placeholderTextColor={theme.colors.textDim}
-                    autoCapitalize="characters"
-                    maxLength={15}
-                  />
-                </View>
-                {Boolean(errors.licensePlate) && (
-                  <View style={styles.errorRow}>
-                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
-                    <Text style={styles.errorText}>{errors.licensePlate}</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Commercial Driver License (CDL) */}
-              <View style={styles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                    {t('driver_license')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
-                  </Text>
-                  <View style={[styles.formatBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
-                    <Text style={[styles.formatBadgeText, { color: theme.colors.textMuted }]}>
-                      ETH-CDL
-                    </Text>
-                  </View>
-                </View>
-                <View style={getInputBoxStyle('driverLicense')}>
-                  <Feather
-                    name="shield"
-                    size={16}
-                    color={focusedField === 'driverLicense' ? roleColor : theme.colors.textMuted}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[styles.textInput, { color: theme.colors.textPrimary }]}
-                    value={driverLicense}
-                    onFocus={() => setFocusedField('driverLicense')}
-                    onBlur={() => setFocusedField(null)}
-                    onChangeText={(val) => {
-                      const cleaned = val.toUpperCase().replace(/[^0-9A-Z-]/g, '').slice(0, 25);
-                      setDriverLicense(cleaned);
-                      clearError('driverLicense');
-                    }}
-                    placeholder="e.g. ETH-CDL-782190"
-                    placeholderTextColor={theme.colors.textDim}
-                    autoCapitalize="characters"
-                    maxLength={25}
-                  />
-                </View>
-                {Boolean(errors.driverLicense) && (
-                  <View style={styles.errorRow}>
-                    <Feather name="alert-circle" size={12} color={theme.colors.red} />
-                    <Text style={styles.errorText}>{errors.driverLicense}</Text>
-                  </View>
-                )}
-              </View>
-            </>
-          )}
-
-          {/* ── ROLE-SPECIFIC CREDENTIAL INPUT ── */}
-          {role === 'TRANSPORTER' ? (
-            /* Transporter: Corporate Business Email */
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                  {t('email_address')}{' '}
-                  <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+              {/* Section 2 Header */}
+              <View style={[styles.sectionHeader, { marginTop: 12 }]}>
+                <Text style={[styles.sectionHeaderText, { color: roleColor }]}>
+                  {t('section_credentials')}
                 </Text>
               </View>
+            </>
+          )}
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* CREDENTIALS SECTION (BOTH LOGIN & REGISTER)                  */}
+          {/* ───────────────────────────────────────────────────────────── */}
+
+          {/* Carrier Email or Driver Phone */}
+          {!isDriver ? (
+            /* Carrier: Business Email */
+            <View style={styles.fieldGroup}>
+              <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                {t('email_address')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+              </Text>
               <View style={getInputBoxStyle('email')}>
                 <Feather
                   name="mail"
                   size={16}
                   color={focusedField === 'email' ? roleColor : theme.colors.textMuted}
-                  style={styles.inputIcon}
+                  style={styles.fieldIcon}
                 />
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
@@ -1023,31 +1001,25 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
               )}
             </View>
           ) : (
-            /* Truck Driver: Ethiopian Mobile Phone Number */
-            <View style={styles.inputGroup}>
+            /* Driver: Ethiopian Mobile Phone */
+            <View style={styles.fieldGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                  {t('phone_number')}{' '}
-                  <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+                <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                  {t('phone_number')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
                 </Text>
-                <View style={[styles.formatBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
-                  <Text style={[styles.formatBadgeText, { color: theme.colors.textMuted }]}>
+                <View style={[styles.chipBadge, { backgroundColor: theme.colors.surfaceElevated }]}>
+                  <Text style={[styles.chipBadgeText, { color: theme.colors.textMuted }]}>
                     09XXXXXXXX
                   </Text>
                 </View>
               </View>
               <View style={getInputBoxStyle('phone')}>
-                <View style={styles.countryCodePill}>
+                <View style={styles.phonePrefixPill}>
                   <Text style={styles.flagEmoji}>🇪🇹</Text>
-                  <Text style={[styles.countryCodeText, { color: theme.colors.textPrimary }]}>
+                  <Text style={[styles.phonePrefixText, { color: theme.colors.textPrimary }]}>
                     +251
                   </Text>
-                  <View
-                    style={[
-                      styles.pillDivider,
-                      { backgroundColor: theme.colors.cardBorder },
-                    ]}
-                  />
+                  <View style={[styles.verticalDivider, { backgroundColor: theme.colors.cardBorder }]} />
                 </View>
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
@@ -1075,59 +1047,10 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             </View>
           )}
 
-          {/* Transporter Registration: Optional Contact Phone */}
-          {mode === 'REGISTER' && role === 'TRANSPORTER' && (
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                  {t('official_contact_phone')}
-                </Text>
-                <Text style={[styles.optionalTag, { color: theme.colors.textMuted }]}>
-                  {t('optional_label')}
-                </Text>
-              </View>
-              <View style={getInputBoxStyle('contactPhone')}>
-                <View style={styles.countryCodePill}>
-                  <Text style={styles.flagEmoji}>🇪🇹</Text>
-                  <Text style={[styles.countryCodeText, { color: theme.colors.textPrimary }]}>
-                    +251
-                  </Text>
-                  <View
-                    style={[
-                      styles.pillDivider,
-                      { backgroundColor: theme.colors.cardBorder },
-                    ]}
-                  />
-                </View>
-                <TextInput
-                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
-                  value={contactPhone}
-                  onFocus={() => setFocusedField('contactPhone')}
-                  onBlur={() => setFocusedField(null)}
-                  onChangeText={(val) => {
-                    const cleaned = val.replace(/\D/g, '').slice(0, 10);
-                    setContactPhone(cleaned);
-                    clearError('contactPhone');
-                  }}
-                  placeholder="0911445566"
-                  placeholderTextColor={theme.colors.textDim}
-                  keyboardType="phone-pad"
-                  maxLength={10}
-                />
-              </View>
-              {Boolean(errors.contactPhone) && (
-                <View style={styles.errorRow}>
-                  <Feather name="alert-circle" size={12} color={theme.colors.red} />
-                  <Text style={styles.errorText}>{errors.contactPhone}</Text>
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Password Input */}
-          <View style={styles.inputGroup}>
+          {/* Password */}
+          <View style={styles.fieldGroup}>
             <View style={styles.labelRow}>
-              <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
+              <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
                 {t('password')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
               </Text>
               {mode === 'LOGIN' && (
@@ -1135,14 +1058,14 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                   onPress={() =>
                     Alert.alert(
                       'Account Recovery',
-                      role === 'DRIVER'
+                      isDriver
                         ? 'Contact your carrier fleet manager or TradeFlow support at support@tradeflow.et for driver credentials assistance.'
                         : 'Contact TradeFlow carrier support at support@tradeflow.et for password reset instructions.'
                     )
                   }
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Text style={[styles.forgotText, { color: roleColor }]}>
+                  <Text style={[styles.forgotLink, { color: roleColor }]}>
                     {t('forgot_password')}
                   </Text>
                 </TouchableOpacity>
@@ -1153,7 +1076,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                 name="lock"
                 size={16}
                 color={focusedField === 'password' ? roleColor : theme.colors.textMuted}
-                style={styles.inputIcon}
+                style={styles.fieldIcon}
               />
               <TextInput
                 style={[styles.textInput, { color: theme.colors.textPrimary }]}
@@ -1190,18 +1113,16 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 
           {/* Confirm Password (Registration only) */}
           {mode === 'REGISTER' && (
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>
-                  {t('confirm_password')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
-                </Text>
-              </View>
+            <View style={styles.fieldGroup}>
+              <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>
+                {t('confirm_password')} <Text style={[styles.asterisk, { color: theme.colors.red }]}>*</Text>
+              </Text>
               <View style={getInputBoxStyle('confirmPassword')}>
                 <Feather
                   name="shield"
                   size={16}
                   color={focusedField === 'confirmPassword' ? roleColor : theme.colors.textMuted}
-                  style={styles.inputIcon}
+                  style={styles.fieldIcon}
                 />
                 <TextInput
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
@@ -1237,7 +1158,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             </View>
           )}
 
-          {/* Primary Action Button */}
+          {/* ── PRIMARY ACTION BUTTON ── */}
           <TouchableOpacity
             style={[
               styles.primaryBtn,
@@ -1253,7 +1174,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             {isSubmitting ? (
               <ActivityIndicator
                 size="small"
-                color={role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText}
+                color={isDriver ? '#FFFFFF' : theme.colors.primaryText}
               />
             ) : (
               <>
@@ -1261,24 +1182,24 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
                   style={[
                     styles.primaryBtnText,
                     {
-                      color: role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText,
+                      color: isDriver ? '#FFFFFF' : theme.colors.primaryText,
                     },
                   ]}
                 >
                   {mode === 'LOGIN'
-                    ? (role === 'TRANSPORTER' ? t('sign_in_as_transporter') : t('sign_in_as_driver'))
-                    : (role === 'TRANSPORTER' ? t('register_as_transporter') : t('register_as_driver'))}
+                    ? (!isDriver ? t('sign_in_as_transporter') : t('sign_in_as_driver'))
+                    : (!isDriver ? t('register_as_transporter') : t('register_as_driver'))}
                 </Text>
                 <Feather
                   name="arrow-right"
-                  size={17}
-                  color={role === 'DRIVER' ? '#FFFFFF' : theme.colors.primaryText}
+                  size={18}
+                  color={isDriver ? '#FFFFFF' : theme.colors.primaryText}
                 />
               </>
             )}
           </TouchableOpacity>
 
-          {/* Divider */}
+          {/* ── GOOGLE SIGN-IN DIVIDER & BUTTON ── */}
           <View style={styles.dividerRow}>
             <View style={[styles.dividerLine, { backgroundColor: theme.colors.cardBorder }]} />
             <Text style={[styles.dividerText, { color: theme.colors.textMuted }]}>
@@ -1287,7 +1208,6 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
             <View style={[styles.dividerLine, { backgroundColor: theme.colors.cardBorder }]} />
           </View>
 
-          {/* Continue with Google Button (Bottom) */}
           <GoogleSignInButton
             onPress={handleGoogleAuth}
             isLoading={isGoogleSubmitting}
@@ -1296,15 +1216,15 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
         </View>
 
         {/* ── BOTTOM ACCOUNT SWITCHER PROMPT ── */}
-        <View style={styles.switchPromptContainer}>
-          <Text style={[styles.switchPromptText, { color: theme.colors.textSecondary }]}>
+        <View style={styles.footerPrompt}>
+          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
             {mode === 'LOGIN' ? t('dont_have_account') : t('already_have_account')}{' '}
           </Text>
           <TouchableOpacity
             onPress={() => handleModeChange(mode === 'LOGIN' ? 'REGISTER' : 'LOGIN')}
             activeOpacity={0.7}
           >
-            <Text style={[styles.switchPromptLink, { color: roleColor }]}>
+            <Text style={[styles.footerLink, { color: roleColor }]}>
               {mode === 'LOGIN' ? t('create_one') : t('sign_in_here')}
             </Text>
           </TouchableOpacity>
@@ -1323,225 +1243,200 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 24 : 20,
+    paddingTop: Platform.OS === 'ios' ? 24 : 18,
     paddingBottom: 48,
   },
 
-  // ── Header & Branding ──
-  header: {
-    marginBottom: 20,
+  // ── Top Navigation Bar ──
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  brandRow: {
+  brandGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   logoBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   logoImage: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
   },
-  brandTitleCol: {
-    justifyContent: 'center',
-  },
-  brandTextWithDot: {
+  brandTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
   brandTitle: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '800',
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   },
-  brandDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  networkBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 4,
   },
-  brandSubtitle: {
-    fontSize: 11.5,
+  networkBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+  },
+  brandCorridor: {
+    fontSize: 11,
     fontWeight: '500',
-    marginTop: 1,
   },
-  langPillAuth: {
+  langPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 18,
     borderWidth: 1,
   },
-  langPillAuthText: {
+  langPillText: {
     fontSize: 12,
     fontWeight: '700',
   },
 
-  // ── Role Selector ──
-  roleContainer: {
+  // ── Unified Segmented Role Bar ──
+  segmentedRoleBar: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  roleCard: {
-    flex: 1,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    padding: 14,
-    justifyContent: 'space-between',
-    minHeight: 104,
-  },
-  roleCardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  roleIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  roleRadioCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  roleTitle: {
-    fontSize: 14.5,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  roleSubtitle: {
-    fontSize: 11,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-
-  // ── Hero Banner ──
-  heroCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
-  },
-  heroHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  portalBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 12,
     borderWidth: 1,
   },
-  portalBadgeText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-  },
-  heroTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: -0.3,
-    marginBottom: 4,
-  },
-  heroDescription: {
-    fontSize: 12.5,
-    lineHeight: 18,
-    fontWeight: '400',
-  },
-
-  // ── Mode Switcher ──
-  modeContainer: {
-    flexDirection: 'row',
-    borderRadius: 10,
-    padding: 4,
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  modePill: {
+  roleSegment: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 7,
-    paddingVertical: 9,
-    borderRadius: 8,
+    paddingVertical: 10,
+    borderRadius: 9,
   },
-  modePillActive: {
+  roleSegmentActive: {
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.5,
+    elevation: 2,
+  },
+  roleSegmentText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
+  // ── Mode Switcher (Sign In / Register) ──
+  modeSegmentedBar: {
+    flexDirection: 'row',
+    borderRadius: 10,
+    padding: 3,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  modeSegment: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: 7,
+  },
+  modeSegmentActive: {
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 1.5,
   },
-  modePillText: {
-    fontSize: 13,
+  modeSegmentText: {
+    fontSize: 12.5,
     fontWeight: '600',
   },
 
+  // ── Title Section ──
+  titleSection: {
+    marginBottom: 16,
+  },
+  mainHeading: {
+    fontSize: 21,
+    fontWeight: '800',
+    letterSpacing: -0.4,
+    marginBottom: 4,
+  },
+  subHeading: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '400',
+  },
+
   // ── Form Card ──
-  card: {
+  formCard: {
     borderRadius: 16,
     borderWidth: 1,
     padding: 18,
     marginBottom: 16,
   },
-  inputGroup: {
-    marginBottom: 16,
+  sectionHeader: {
+    marginBottom: 12,
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(150, 150, 150, 0.12)',
+  },
+  sectionHeaderText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  fieldGroup: {
+    marginBottom: 15,
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 7,
+    marginBottom: 6,
   },
-  label: {
+  fieldLabel: {
     fontSize: 12.5,
     fontWeight: '600',
+    marginBottom: 6,
     letterSpacing: -0.1,
   },
   asterisk: {
     fontWeight: '700',
   },
-  formatBadge: {
+  chipBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  formatBadgeText: {
+  chipBadgeText: {
     fontSize: 9.5,
     fontWeight: '700',
     letterSpacing: 0.4,
   },
-  optionalTag: {
+  optionalText: {
     fontSize: 11,
     fontWeight: '500',
   },
-  forgotText: {
+  forgotLink: {
     fontSize: 12,
     fontWeight: '600',
   },
@@ -1551,27 +1446,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 14,
-    height: 50,
+    height: 52,
   },
   inputBoxError: {
     borderWidth: 1.5,
     backgroundColor: 'rgba(239, 68, 68, 0.06)',
   },
-  errorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginTop: 6,
-  },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 11.5,
-    fontWeight: '500',
-  },
-  inputIcon: {
+  fieldIcon: {
     marginRight: 10,
   },
-  countryCodePill: {
+  phonePrefixPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -1579,13 +1463,13 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   flagEmoji: {
-    fontSize: 15,
+    fontSize: 16,
   },
-  countryCodeText: {
+  phonePrefixText: {
     fontSize: 13.5,
     fontWeight: '700',
   },
-  pillDivider: {
+  verticalDivider: {
     width: 1,
     height: 18,
     marginLeft: 6,
@@ -1593,10 +1477,21 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 14,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   eyeBtn: {
     padding: 6,
+  },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 5,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 11.5,
+    fontWeight: '500',
   },
 
   // ── Primary Action Button ──
@@ -1605,7 +1500,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    height: 50,
+    height: 52,
     borderRadius: 12,
     marginTop: 6,
     shadowColor: '#000',
@@ -1615,7 +1510,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   primaryBtnText: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
@@ -1638,19 +1533,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
 
-  // ── Bottom Switcher ──
-  switchPromptContainer: {
+  // ── Footer ──
+  footerPrompt: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
-    marginBottom: 20,
+    marginTop: 4,
+    marginBottom: 16,
   },
-  switchPromptText: {
+  footerText: {
     fontSize: 13,
     fontWeight: '500',
   },
-  switchPromptLink: {
+  footerLink: {
     fontSize: 13,
     fontWeight: '700',
   },
