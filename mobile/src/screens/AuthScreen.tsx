@@ -19,7 +19,7 @@ import {
   ActivityIndicator,
   Linking,
 } from 'react-native';
-import { Feather, FontAwesome } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { AuthUser, UserRole } from '../types/auth';
 import { saveUserSession } from '../services/database';
 import { THEME } from '../styles/theme';
@@ -45,6 +45,7 @@ import {
   validateConfirmPassword,
 } from '../utils/registrationValidation';
 import { signInWithSupabase, signUpWithSupabase, signInWithGoogle, processAuthRedirectUrl, ENV } from '../services/authService';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 interface Props {
   onLoginSuccess: (user: AuthUser) => void;
@@ -82,6 +83,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
   const [errors, setErrors] = useState<Record<string, string>>({});
   // Submission loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
   // ── Listen for Incoming OAuth Deep Link Redirects ──
   useEffect(() => {
@@ -139,8 +141,8 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
 
   // ── Handle Google One-Tap / OAuth ──
   const handleGoogleAuth = async () => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
+    if (isSubmitting || isGoogleSubmitting) return;
+    setIsGoogleSubmitting(true);
     try {
       const result = await signInWithGoogle(role);
       if (result.success && result.user) {
@@ -152,7 +154,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
     } catch (err: any) {
       Alert.alert('Google Sign In Error', err.message || 'An unexpected error occurred during Google Sign In.');
     } finally {
-      setIsSubmitting(false);
+      setIsGoogleSubmitting(false);
     }
   };
 
@@ -1157,24 +1159,11 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
           </View>
 
           {/* Continue with Google Button (Bottom) */}
-          <TouchableOpacity
-            style={[
-              styles.googleBtn,
-              {
-                backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.cardBorder,
-              },
-            ]}
+          <GoogleSignInButton
             onPress={handleGoogleAuth}
-            activeOpacity={0.75}
-          >
-            <View style={styles.googleIconBox}>
-              <FontAwesome name="google" size={16} color="#EA4335" />
-            </View>
-            <Text style={[styles.googleBtnText, { color: theme.colors.textPrimary }]}>
-              {t('continue_with_google')}
-            </Text>
-          </TouchableOpacity>
+            isLoading={isGoogleSubmitting}
+            disabled={isSubmitting}
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -1299,35 +1288,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  // ── Google Button & Divider ──
-  googleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: THEME.colors.surface,
-    borderWidth: 1,
-    borderColor: THEME.colors.cardBorder,
-    borderRadius: 8,
-    paddingVertical: 12,
-  },
-  googleIconBox: {
-    width: 22,
-    height: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
+  // ── Google Divider ──
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 16,
-    marginBottom: 12,
+    marginTop: 18,
+    marginBottom: 16,
   },
   dividerLine: {
     flex: 1,
