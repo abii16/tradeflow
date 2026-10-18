@@ -162,6 +162,86 @@ export function parseAuthCallbackUrl(url: string): {
 }
 
 /**
+ * Processes any incoming authentication callback URL and resolves the authenticated user
+ */
+export async function processAuthRedirectUrl(
+  url: string,
+  role: UserRole
+): Promise<{
+  success: boolean;
+  user?: AuthUser;
+  error?: string;
+}> {
+  const parsed = parseAuthCallbackUrl(url);
+
+  if (parsed.error) {
+    return { success: false, error: parsed.error };
+  }
+
+  let token = parsed.accessToken;
+
+  // Handle PKCE code exchange if applicable
+  if (!token && parsed.code) {
+    try {
+      const tokenRes = await fetch(`${ENV.SUPABASE_URL}/auth/v1/token?grant_type=pkce`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: ENV.SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          auth_code: parsed.code,
+        }),
+      });
+      if (tokenRes.ok) {
+        const tokenData = await tokenRes.json();
+        token = tokenData.access_token;
+      }
+    } catch {
+      // Continue to check if token exists
+    }
+  }
+
+  if (token) {
+    try {
+      // Fetch verified user details from Supabase using the access token
+      const userRes = await fetch(`${ENV.SUPABASE_URL}/auth/v1/user`, {
+        headers: {
+          apikey: ENV.SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        const authUser: AuthUser = {
+          id: userData.id,
+          email: userData.email,
+          fullName:
+            userData.user_metadata?.full_name ||
+            userData.user_metadata?.name ||
+            userData.email?.split('@')[0] ||
+            'Google User',
+          role,
+          phone:
+            userData.phone ||
+            (role === 'DRIVER' ? userData.email?.replace(/@.*$/, '') : undefined),
+          token,
+        };
+        return { success: true, user: authUser };
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to fetch user profile' };
+    }
+  }
+
+  return {
+    success: false,
+    error: 'Could not extract authentication session from response.',
+  };
+}
+
+/**
  * Initiates real Google OAuth sign-in flow via Supabase + Google OAuth 2.0
  */
 export async function signInWithGoogle(role: UserRole): Promise<{
@@ -171,10 +251,8 @@ export async function signInWithGoogle(role: UserRole): Promise<{
   cancelled?: boolean;
 }> {
   try {
-    const customSchemeRedirect = 'tradeflow://auth/callback';
-    const expoRedirect = Linking.createURL('auth/callback');
-    const redirectUrl = expoRedirect.includes('://') ? expoRedirect : customSchemeRedirect;
-
+    // Explicit custom scheme redirect for mobile app deep-linking
+    const redirectUrl = 'tradeflow://auth/callback';
     const authUrl = `${ENV.SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
 
     const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
@@ -184,60 +262,11 @@ export async function signInWithGoogle(role: UserRole): Promise<{
     }
 
     if (result.type === 'success' && result.url) {
-      const parsed = parseAuthCallbackUrl(result.url);
-
-      if (parsed.error) {
-        return { success: false, error: parsed.error };
+      const processed = await processAuthRedirectUrl(result.url, role);
+      if (processed.success && processed.user) {
+        return { success: true, user: processed.user };
       }
-
-      let token = parsed.accessToken;
-
-      // Handle PKCE code exchange if applicable
-      if (!token && parsed.code) {
-        const tokenRes = await fetch(`${ENV.SUPABASE_URL}/auth/v1/token?grant_type=pkce`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: ENV.SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({
-            auth_code: parsed.code,
-          }),
-        });
-        if (tokenRes.ok) {
-          const tokenData = await tokenRes.json();
-          token = tokenData.access_token;
-        }
-      }
-
-      if (token) {
-        // Fetch verified user details from Supabase using the access token
-        const userRes = await fetch(`${ENV.SUPABASE_URL}/auth/v1/user`, {
-          headers: {
-            apikey: ENV.SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          const authUser: AuthUser = {
-            id: userData.id,
-            email: userData.email,
-            fullName:
-              userData.user_metadata?.full_name ||
-              userData.user_metadata?.name ||
-              userData.email?.split('@')[0] ||
-              'Google User',
-            role,
-            phone:
-              userData.phone ||
-              (role === 'DRIVER' ? userData.email?.replace(/@.*$/, '') : undefined),
-            token,
-          };
-          return { success: true, user: authUser };
-        }
-      }
+      return { success: false, error: processed.error };
     }
 
     return {

@@ -4,7 +4,7 @@
 // - Truck Driver: Uses phone number (0911234567), mapped behind the scenes to Supabase identity (0911234567@tradeflow.et)
 // Zero SMS fees; standard free Supabase email account identity processed under the hood.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Feather, FontAwesome } from '@expo/vector-icons';
 import { AuthUser, UserRole } from '../types/auth';
@@ -43,7 +44,7 @@ import {
   validatePassword,
   validateConfirmPassword,
 } from '../utils/registrationValidation';
-import { signInWithSupabase, signUpWithSupabase, signInWithGoogle, ENV } from '../services/authService';
+import { signInWithSupabase, signUpWithSupabase, signInWithGoogle, processAuthRedirectUrl, ENV } from '../services/authService';
 
 interface Props {
   onLoginSuccess: (user: AuthUser) => void;
@@ -81,6 +82,40 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'REGISTER' }:
   const [errors, setErrors] = useState<Record<string, string>>({});
   // Submission loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ── Listen for Incoming OAuth Deep Link Redirects ──
+  useEffect(() => {
+    const handleDeepLink = async (incomingUrl: string) => {
+      if (
+        incomingUrl &&
+        (incomingUrl.includes('auth/callback') || incomingUrl.includes('access_token'))
+      ) {
+        try {
+          const res = await processAuthRedirectUrl(incomingUrl, role);
+          if (res.success && res.user) {
+            await saveUserSession(res.user);
+            onLoginSuccess(res.user);
+          }
+        } catch {
+          // Non-blocking deep link error
+        }
+      }
+    };
+
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    Linking.getInitialURL().then((initialUrl) => {
+      if (initialUrl) {
+        handleDeepLink(initialUrl);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [role, onLoginSuccess]);
 
   const clearError = (field: string) => {
     if (errors[field]) {
