@@ -33,6 +33,7 @@ import {
   getCarrierDrivers,
   getCarrierVehicles
 } from '@/lib/apiClient';
+import CarrierLiveGpsMap from '../components/CarrierLiveGpsMap';
 import toast from 'react-hot-toast';
 
 interface HaulItem {
@@ -141,6 +142,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedHaul, setSelectedHaul] = useState<HaulItem | null>(null);
   const [showTimeline, setShowTimeline] = useState<boolean>(true);
+  const [showMap, setShowMap] = useState<boolean>(true);
 
   // AI ETA State (SRS FR-03.2)
   const [etaData, setEtaData] = useState<{
@@ -794,6 +796,50 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   {checkingIn ? 'Recording...' : 'Record Waypoint Check-In'}
                 </button>
               </div>
+            </div>
+
+            {/* Live Corridor GPS Radar Map (SRS FR-03.1 / Admin-grade Google Hybrid Telematics) */}
+            <div className="mt-4 pt-3.5 border-t border-[#2E2E2E] space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Navigation size={15} className="text-[#3ECF8E]" />
+                  <h4 className="text-xs font-bold text-[#EDEDED] tracking-wide uppercase font-mono">
+                    Live Corridor GPS Radar Tracking
+                  </h4>
+                  <span className="text-[9px] font-mono font-bold bg-[#3ECF8E]/10 text-[#3ECF8E] px-1.5 py-0.5 rounded border border-[#3ECF8E]/20">
+                    REAL-TIME SAT TELEMATICS
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowMap(!showMap)}
+                  className="flex items-center gap-1.5 text-[10px] font-mono bg-[#1C1C1C] hover:bg-[#2A2A2A] text-[#8F8F8F] hover:text-[#EDEDED] px-2.5 py-1 rounded-lg border border-[#2E2E2E] transition"
+                >
+                  {showMap ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                  <span>{showMap ? 'Hide Radar Map' : 'Show Radar Map'}</span>
+                </button>
+              </div>
+
+              {showMap && (
+                <CarrierLiveGpsMap
+                  haulId={activeHaul.id}
+                  loadTitle={activeHaul.loadTitle}
+                  driverName={activeHaul.driverName}
+                  driverPhone={activeHaul.driverPhone}
+                  truckPlate={activeHaul.truckPlate || '3-ET-74192'}
+                  status={activeHaul.status}
+                  currentLat={activeHaul.currentLat}
+                  currentLng={activeHaul.currentLng}
+                  waypoints={getRouteCorridor(activeHaul.origin, activeHaul.destination).waypoints}
+                  currentWaypointIndex={getActiveWaypointIndex(
+                    activeHaul,
+                    getRouteCorridor(activeHaul.origin, activeHaul.destination).waypoints
+                  )}
+                  etaString={etaData ? `${etaData.estimatedArrival} (${etaData.predictedHours}h left)` : undefined}
+                  onWaypointCheckin={(wp, idx) => handleWaypointClick(activeHaul, wp, idx)}
+                />
+              )}
             </div>
 
             {/* Proof of Delivery Details (if already delivered) */}
