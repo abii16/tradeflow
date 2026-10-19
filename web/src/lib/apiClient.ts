@@ -417,6 +417,10 @@ export async function updateHaulStatus(haulId: string, status: string, currentLa
   return apiClient(`/carrier/hauls/${haulId}/status`, { method: 'PATCH', data: { status, currentLat, currentLng } });
 }
 
+export async function assignHaulDriver(haulId: string, data: { driverId?: string; truckPlate?: string }) {
+  return apiClient(`/carrier/hauls/${haulId}/assign`, { method: 'PATCH', data });
+}
+
 export async function submitHaulCheckin(haulId: string, data: { lat: number; lng: number; speed?: number; waypointName?: string; notes?: string }) {
   return apiClient(`/carrier/hauls/${haulId}/checkin`, { method: 'POST', data });
 }
@@ -433,7 +437,7 @@ export async function getCarrierVehicles() {
   return apiClient('/carrier/vehicles', { method: 'GET' });
 }
 
-export async function addCarrierVehicle(data: { vehicleType: string; capacityTons: number | string; fuelType?: string; insuranceDocUrl?: string; roadworthinessDocUrl?: string }) {
+export async function addCarrierVehicle(data: { vehicleType: string; capacityTons: number | string; fuelType?: string; insuranceDocUrl?: string; roadworthinessDocUrl?: string; plateNumber?: string }) {
   return apiClient('/carrier/vehicles', { method: 'POST', data });
 }
 

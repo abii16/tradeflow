@@ -14,11 +14,25 @@ import {
   X,
   FileCheck,
   Eye,
+  EyeOff,
+  ChevronDown,
+  ChevronUp,
   RefreshCw,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  User,
+  Phone
 } from 'lucide-react';
-import { getCarrierHauls, updateHaulStatus, submitHaulCheckin, submitProofOfDelivery, getHaulEta } from '@/lib/apiClient';
+import { 
+  getCarrierHauls, 
+  updateHaulStatus, 
+  submitHaulCheckin, 
+  submitProofOfDelivery, 
+  getHaulEta,
+  assignHaulDriver,
+  getCarrierDrivers,
+  getCarrierVehicles
+} from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
 interface HaulItem {
@@ -26,6 +40,7 @@ interface HaulItem {
   loadId: string;
   transporterId: string;
   driverId: string;
+  truckPlate?: string;
   status: 'DISPATCHED' | 'PICKED_UP' | 'IN_CUSTOMS' | 'IN_TRANSIT' | 'DELIVERED';
   currentLat: number | null;
   currentLng: number | null;
@@ -47,18 +62,85 @@ interface HaulItem {
   driverPhone: string;
 }
 
-const CORRIDOR_WAYPOINTS = [
-  { name: 'Doraleh Port (Djibouti)', lat: 11.59, lng: 43.14, km: 0 },
-  { name: 'Galafi Border Post', lat: 11.71, lng: 41.83, km: 190 },
-  { name: 'Mille / Semera Checkpoint', lat: 11.43, lng: 40.80, km: 380 },
-  { name: 'Awash Junction Hub', lat: 8.98, lng: 40.16, km: 590 },
-  { name: 'Modjo Dry Port Terminal', lat: 8.59, lng: 39.12, km: 810 },
-];
+export interface CorridorWaypoint {
+  name: string;
+  km: number;
+  lat: number;
+  lng: number;
+}
+
+export function getRouteCorridor(origin: any, destination: any) {
+  const o = ((typeof origin === 'string' ? origin : origin?.city || origin?.address || '') + '').toLowerCase();
+  const d = ((typeof destination === 'string' ? destination : destination?.city || destination?.address || '') + '').toLowerCase();
+
+  if (d.includes('addis') || (o.includes('modjo') && d.includes('addis'))) {
+    return {
+      title: 'Modjo ➔ Addis Ababa Artery (74 km Artery)',
+      totalKm: 74,
+      waypoints: [
+        { name: 'Modjo Dry Port Terminal', km: 0, lat: 8.59, lng: 39.12 },
+        { name: 'Bishoftu Expressway Toll', km: 25, lat: 8.75, lng: 38.98 },
+        { name: 'Dukem Logistics Hub', km: 42, lat: 8.80, lng: 38.90 },
+        { name: 'Kaliti Inland Customs', km: 60, lat: 8.92, lng: 38.77 },
+        { name: 'Addis Ababa Distribution', km: 74, lat: 9.03, lng: 38.74 },
+      ],
+    };
+  }
+
+  if (d.includes('dire dawa') || o.includes('dire dawa')) {
+    return {
+      title: 'Djibouti ➔ Dire Dawa Artery (380 km Artery)',
+      totalKm: 380,
+      waypoints: [
+        { name: 'Doraleh Port (Djibouti)', km: 0, lat: 11.59, lng: 43.14 },
+        { name: 'Dewele Border Post', km: 110, lat: 11.04, lng: 42.63 },
+        { name: 'Ayesha Checkpoint', km: 220, lat: 10.75, lng: 42.56 },
+        { name: 'Shinile Waypoint', km: 310, lat: 9.70, lng: 41.85 },
+        { name: 'Dire Dawa Free Trade Zone', km: 380, lat: 9.59, lng: 41.86 },
+      ],
+    };
+  }
+
+  return {
+    title: 'Djibouti ➔ Modjo Corridor (810 km Artery)',
+    totalKm: 810,
+    waypoints: [
+      { name: 'Doraleh Port (Djibouti)', km: 0, lat: 11.59, lng: 43.14 },
+      { name: 'Galafi Border Post', km: 190, lat: 11.71, lng: 41.83 },
+      { name: 'Mille / Semera Checkpoint', km: 380, lat: 11.43, lng: 40.80 },
+      { name: 'Awash Junction Hub', km: 590, lat: 8.98, lng: 40.16 },
+      { name: 'Modjo Dry Port Terminal', km: 810, lat: 8.59, lng: 39.12 },
+    ],
+  };
+}
+
+export function getActiveWaypointIndex(haul: HaulItem, waypoints: CorridorWaypoint[]): number {
+  if (haul.status === 'DELIVERED') {
+    return waypoints.length - 1;
+  }
+  if (haul.status === 'DISPATCHED' || haul.status === 'PICKED_UP' || haul.currentLat == null) {
+    return 0;
+  }
+
+  let closestIdx = 0;
+  let minDistanceSq = Number.MAX_VALUE;
+  for (let i = 0; i < waypoints.length; i++) {
+    const dLat = Number(haul.currentLat) - waypoints[i].lat;
+    const dLng = Number(haul.currentLng) - waypoints[i].lng;
+    const distSq = dLat * dLat + dLng * dLng;
+    if (distSq < minDistanceSq) {
+      minDistanceSq = distSq;
+      closestIdx = i;
+    }
+  }
+  return closestIdx;
+}
 
 export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: () => void }) {
   const [hauls, setHauls] = useState<HaulItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedHaul, setSelectedHaul] = useState<HaulItem | null>(null);
+  const [showTimeline, setShowTimeline] = useState<boolean>(true);
 
   // AI ETA State (SRS FR-03.2)
   const [etaData, setEtaData] = useState<{
@@ -91,6 +173,46 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
 
   // Waypoint Checkin State
   const [checkingIn, setCheckingIn] = useState<boolean>(false);
+
+  // Driver & Truck Assignment State
+  const [showAssignModal, setShowAssignModal] = useState<boolean>(false);
+  const [availableDrivers, setAvailableDrivers] = useState<any[]>([]);
+  const [availableVehicles, setAvailableVehicles] = useState<any[]>([]);
+  const [selectedDriverId, setSelectedDriverId] = useState<string>('');
+  const [selectedTruckPlate, setSelectedTruckPlate] = useState<string>('');
+  const [assigning, setAssigning] = useState<boolean>(false);
+
+  const loadFleetResources = async () => {
+    try {
+      const [dRes, vRes] = await Promise.all([
+        getCarrierDrivers(),
+        getCarrierVehicles(),
+      ]);
+      if (dRes?.drivers) setAvailableDrivers(dRes.drivers);
+      if (vRes?.vehicles) setAvailableVehicles(vRes.vehicles);
+    } catch (err) {
+      console.warn('Could not load fleet resources:', err);
+    }
+  };
+
+  const handleAssignDriverAndTruck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeHaul) return;
+    setAssigning(true);
+    try {
+      await assignHaulDriver(activeHaul.id, {
+        driverId: selectedDriverId || undefined,
+        truckPlate: selectedTruckPlate || undefined,
+      });
+      toast.success('Driver and truck assigned to haul!');
+      setShowAssignModal(false);
+      await fetchHauls(true);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to assign driver');
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   const fetchEta = async (haulId: string) => {
     setEtaLoading(true);
@@ -156,30 +278,53 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
     }
   };
 
-  // Waypoint Checkin
+  // Waypoint Checkin (advances to next waypoint along this route)
   const handleSimulateWaypointCheckin = async (haul: HaulItem) => {
+    if (haul.status === 'DELIVERED') {
+      toast('Haul is already delivered.', { icon: 'ℹ️' });
+      return;
+    }
+    const corridor = getRouteCorridor(haul.origin, haul.destination);
+    const currentIdx = getActiveWaypointIndex(haul, corridor.waypoints);
+    const nextIdx = Math.min(corridor.waypoints.length - 1, currentIdx + 1);
+    const nextWp = corridor.waypoints[nextIdx];
+
     setCheckingIn(true);
     try {
-      // Find current waypoint index or pick next
-      const currentLat = haul.currentLat || 11.59;
-      let nextWp = CORRIDOR_WAYPOINTS[1];
-      if (currentLat <= 11.72 && currentLat > 11.44) {
-        nextWp = CORRIDOR_WAYPOINTS[2]; // Mille
-      } else if (currentLat <= 11.44 && currentLat > 9.0) {
-        nextWp = CORRIDOR_WAYPOINTS[3]; // Awash
-      } else if (currentLat <= 9.0) {
-        nextWp = CORRIDOR_WAYPOINTS[4]; // Modjo
-      }
-
       await submitHaulCheckin(haul.id, {
         lat: nextWp.lat,
         lng: nextWp.lng,
         speed: 68,
         waypointName: nextWp.name,
-        notes: `Driver checked in at ${nextWp.name}`,
+        notes: `Driver check-in at ${nextWp.name} (${nextWp.km} KM)`,
       });
 
-      toast.success(`GPS Waypoint ping recorded: ${nextWp.name}`);
+      toast.success(`GPS ping recorded: ${nextWp.name} (${nextWp.km} KM)`);
+      await fetchHauls(true);
+      fetchEta(haul.id);
+    } catch (err: any) {
+      toast.error('Failed to record checkpoint ping');
+    } finally {
+      setCheckingIn(false);
+    }
+  };
+
+  // Click on a specific waypoint card directly to record check-in at that waypoint
+  const handleWaypointClick = async (haul: HaulItem, wp: CorridorWaypoint, index: number) => {
+    if (haul.status === 'DELIVERED') {
+      toast(`Milestone "${wp.name}" was completed upon final delivery.`, { icon: '✅' });
+      return;
+    }
+    setCheckingIn(true);
+    try {
+      await submitHaulCheckin(haul.id, {
+        lat: wp.lat,
+        lng: wp.lng,
+        speed: 65,
+        waypointName: wp.name,
+        notes: `Driver checkpoint ping at ${wp.name} (${wp.km} KM)`,
+      });
+      toast.success(`Checked in at ${wp.name} (${wp.km} KM)! GPS & AI ETA updated.`);
       await fetchHauls(true);
       fetchEta(haul.id);
     } catch (err: any) {
@@ -260,10 +405,10 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
         <div>
           <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2">
             <Truck size={22} className="text-[#3ECF8E]" />
-            Active Corridor Hauls & In-Transit Telematics
+            Active Hauls
           </h2>
           <p className="text-xs text-[#8F8F8F] mt-0.5">
-            SRS FR-03 Real-Time Shipment Execution, Checkpoint Milestones & Electronic Proof-of-Delivery
+            Real-time corridor tracking
           </p>
         </div>
 
@@ -271,16 +416,15 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
           onClick={() => fetchHauls(false)}
           className="flex items-center gap-1.5 bg-[#232323] hover:bg-[#2E2E2E] text-xs font-semibold px-3 py-1.5 rounded-lg border border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] transition"
         >
-          <RefreshCw size={13} /> Refresh Telematics
+          <RefreshCw size={13} /> Refresh
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
         {/* Haul Selector / Left List */}
-        <div className="space-y-3">
+        <div className="xl:col-span-3 space-y-3">
           <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#8F8F8F] px-1 flex items-center justify-between">
             <span>Fleet Dispatches ({hauls.length})</span>
-            <span className="text-[#3ECF8E] font-bold">A1 Corridor</span>
           </div>
 
           <div className="space-y-2.5">
@@ -292,18 +436,18 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                 <div
                   key={h.id}
                   onClick={() => setSelectedHaul(h)}
-                  className={`p-4 rounded-xl border transition cursor-pointer ${
+                  className={`p-3.5 rounded-xl border transition cursor-pointer ${
                     isSelected
                       ? 'bg-[#232323] border-[#3ECF8E] shadow-[0_0_15px_rgba(62,207,142,0.1)]'
                       : 'bg-[#1C1C1C] border-[#2E2E2E] hover:border-[#3E3E3E]'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
                     <h4 className="font-bold text-xs text-[#EDEDED] truncate leading-tight">
                       {h.loadTitle || 'Consolidated Freight Haul'}
                     </h4>
                     <span
-                      className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded uppercase shrink-0 ${
+                      className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
                         isDelivered
                           ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
                           : h.status === 'IN_TRANSIT'
@@ -315,15 +459,25 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-[#8F8F8F] flex items-center gap-1.5 font-mono mb-2">
+                  <div className="text-[11px] text-[#8F8F8F] flex items-center gap-1.5 font-mono mb-1.5">
                     <MapPin size={12} className="text-[#3ECF8E]" />
                     <span>{(h.origin as any)?.city || 'Djibouti'}</span>
                     <span>→</span>
                     <span>{(h.destination as any)?.city || 'Modjo'}</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[10px] font-mono text-[#8F8F8F] pt-2 border-t border-[#2E2E2E]">
-                    <span>{(Number(h.weightKg) / 1000).toFixed(1)} Tons • {h.cargoType}</span>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#8F8F8F] mb-1.5 bg-[#171717] px-2 py-1 rounded border border-[#2A2A2A]">
+                    <span className="truncate max-w-[110px] text-[#EDEDED] flex items-center gap-1">
+                      <User size={10} className="text-[#3ECF8E]" />
+                      {h.driverName ? h.driverName.split(' ')[0] : 'Lead Driver'}
+                    </span>
+                    <span className="text-[#3ECF8E] font-bold text-[9px] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20">
+                      {h.truckPlate || 'No Plate'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#8F8F8F] pt-1.5 border-t border-[#2E2E2E]">
+                    <span className="text-[#8F8F8F]">Payout</span>
                     <span className="text-[#3ECF8E] font-bold">ETB {Number(h.budgetAmount || 0).toLocaleString()}</span>
                   </div>
                 </div>
@@ -333,20 +487,53 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
         </div>
 
         {/* Selected Haul Main Control Panel */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl p-6 relative overflow-hidden">
+        <div className="xl:col-span-9 space-y-4">
+          <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl p-5 relative overflow-hidden">
             {/* Top Bar of Active Haul */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#2E2E2E] gap-3">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3.5 border-b border-[#2E2E2E] gap-3">
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded border border-[#3ECF8E]/30 uppercase font-bold">
                     Tracking ID: TF-{activeHaul.id.substring(0, 8).toUpperCase()}
                   </span>
-                  <span className="text-[10px] font-mono text-[#8F8F8F]">
-                    Driver: {activeHaul.driverName || 'Lead Fleet Driver'}
-                  </span>
+
+                  {/* Assigned Driver Badge */}
+                  <div className="flex items-center gap-1.5 bg-[#181818] border border-[#2E2E2E] px-2 py-0.5 rounded text-[11px] font-mono">
+                    <User size={12} className="text-[#3ECF8E]" />
+                    <span className="text-[#8F8F8F]">Driver:</span>
+                    <span className="text-[#EDEDED] font-semibold">{activeHaul.driverName || 'Lead Fleet Driver'}</span>
+                    {activeHaul.driverPhone && (
+                      <span className="text-[#8F8F8F] text-[10px] flex items-center gap-1 ml-1 border-l border-[#333] pl-1.5">
+                        <Phone size={10} className="text-[#3ECF8E]" />
+                        {activeHaul.driverPhone}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Assigned Truck / Plate Badge */}
+                  <div className="flex items-center gap-1.5 bg-[#181818] border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-mono">
+                    <Truck size={12} className="text-amber-400" />
+                    <span className="text-[#8F8F8F]">Plate / ታርጋ:</span>
+                    <span className="text-amber-300 font-bold tracking-wider">
+                      {activeHaul.truckPlate || 'Unassigned'}
+                    </span>
+                  </div>
+
+                  {/* Reassign Button */}
+                  <button
+                    onClick={() => {
+                      setSelectedDriverId(activeHaul.driverId || '');
+                      setSelectedTruckPlate(activeHaul.truckPlate || '');
+                      loadFleetResources();
+                      setShowAssignModal(true);
+                    }}
+                    className="text-[10px] font-mono bg-[#2E2E2E] hover:bg-[#3E3E3E] text-[#3ECF8E] px-2 py-0.5 rounded border border-[#3ECF8E]/30 transition flex items-center gap-1 font-semibold"
+                    title="Change assigned driver or truck from fleet"
+                  >
+                    <span>⇄</span> Assign Driver / Truck
+                  </button>
                 </div>
-                <h3 className="text-lg font-bold text-[#EDEDED]">{activeHaul.loadTitle}</h3>
+                <h3 className="text-base font-bold text-[#EDEDED]">{activeHaul.loadTitle}</h3>
               </div>
 
               {/* Status Action Buttons */}
@@ -390,83 +577,130 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
             </div>
 
             {/* Corridor Milestone Timeline */}
-            <div className="py-6">
-              <div className="text-xs font-mono text-[#8F8F8F] mb-4 uppercase tracking-wider font-bold">
-                Corridor Waypoint Timeline (810 km Artery)
-              </div>
+            {(() => {
+              const corridor = getRouteCorridor(activeHaul.origin, activeHaul.destination);
+              const waypoints = corridor.waypoints;
+              const corridorTitle = corridor.title;
 
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 relative">
-                {CORRIDOR_WAYPOINTS.map((wp, index) => {
-                  const currentLat = activeHaul.currentLat || 11.59;
-                  const isPassed = 
-                    (index === 0) ||
-                    (index === 1 && currentLat <= 11.75) ||
-                    (index === 2 && currentLat <= 11.45) ||
-                    (index === 3 && currentLat <= 9.0) ||
-                    (index === 4 && activeHaul.status === 'DELIVERED');
+              const isDelivered = activeHaul.status === 'DELIVERED';
+              const isDispatched = activeHaul.status === 'DISPATCHED';
+              const isPickedUp = activeHaul.status === 'PICKED_UP';
+              const currentWpIndex = getActiveWaypointIndex(activeHaul, waypoints);
 
-                  const isCurrent = 
-                    (index === 0 && currentLat > 11.75) ||
-                    (index === 1 && currentLat <= 11.75 && currentLat > 11.45) ||
-                    (index === 2 && currentLat <= 11.45 && currentLat > 9.0) ||
-                    (index === 3 && currentLat <= 9.0 && activeHaul.status !== 'DELIVERED') ||
-                    (index === 4 && activeHaul.status === 'DELIVERED');
-
-                  return (
-                    <div
-                      key={wp.name}
-                      className={`p-3 rounded-xl border flex flex-col justify-between transition ${
-                        isCurrent
-                          ? 'bg-[#3ECF8E]/10 border-[#3ECF8E] shadow-[0_0_15px_rgba(62,207,142,0.15)]'
-                          : isPassed
-                          ? 'bg-[#1C1C1C] border-[#2E2E2E]'
-                          : 'bg-[#181818] border-[#242424] opacity-50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-mono font-bold text-[#8F8F8F]">
-                          {wp.km} KM
-                        </span>
-                        {isPassed && <CheckCircle2 size={13} className="text-[#3ECF8E]" />}
-                        {isCurrent && !isPassed && (
-                          <div className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-ping"></div>
-                        )}
-                      </div>
-                      <div className="text-xs font-bold text-[#EDEDED] leading-snug mb-1">
-                        {wp.name}
-                      </div>
-                      <div className="text-[10px] font-mono text-[#8F8F8F]">
-                        {isCurrent ? 'Current Position' : isPassed ? 'Cleared' : 'Pending'}
-                      </div>
+              return (
+                <div className="py-3">
+                  <div className="text-xs font-mono text-[#8F8F8F] mb-2 uppercase tracking-wider font-bold flex items-center justify-between">
+                    <span>Corridor Timeline: {corridorTitle}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-[#3ECF8E] font-bold">
+                        {isDelivered ? 'Trip Completed' : isDispatched ? 'Ready for Dispatch' : isPickedUp ? 'Cargo Loaded' : 'In Transit'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowTimeline(!showTimeline)}
+                        className="flex items-center gap-1 text-[10px] font-mono bg-[#1C1C1C] hover:bg-[#2A2A2A] text-[#8F8F8F] hover:text-[#EDEDED] px-2 py-0.5 rounded border border-[#2E2E2E] transition"
+                        title={showTimeline ? 'Hide Waypoint Timeline' : 'Show Waypoint Timeline'}
+                      >
+                        {showTimeline ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                        <span>{showTimeline ? 'Hide Timeline' : 'Show Timeline'}</span>
+                      </button>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  </div>
+
+                  {showTimeline && (
+                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 relative">
+                      {waypoints.map((wp, index) => {
+                        const isPassed = isDelivered ? true : index < currentWpIndex;
+                        const isCurrent = isDelivered ? index === waypoints.length - 1 : index === currentWpIndex;
+
+                        return (
+                          <div
+                            key={wp.name}
+                            onClick={() => handleWaypointClick(activeHaul, wp, index)}
+                            title={isDelivered ? `${wp.name} - Cleared` : `Click to record check-in at ${wp.name}`}
+                            className={`px-3 py-2 rounded-xl border flex flex-col justify-between transition min-h-[64px] cursor-pointer select-none group ${
+                              isCurrent
+                                ? 'bg-[#3ECF8E]/10 border-[#3ECF8E] shadow-[0_0_15px_rgba(62,207,142,0.15)] ring-1 ring-[#3ECF8E]/30'
+                                : isPassed
+                                ? 'bg-[#1C1C1C] border-[#2E2E2E] hover:border-[#3ECF8E]/50'
+                                : 'bg-[#181818] border-[#242424] opacity-60 hover:opacity-100 hover:border-[#3ECF8E]/40'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-mono font-bold text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors">
+                                {wp.km} KM
+                              </span>
+                              {isPassed && <CheckCircle2 size={13} className="text-[#3ECF8E]" />}
+                              {isCurrent && !isDelivered && (
+                                <div className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-ping"></div>
+                              )}
+                            </div>
+                            <div className="text-xs font-bold text-[#EDEDED] leading-tight truncate my-0.5 group-hover:text-white transition-colors" title={wp.name}>
+                              {wp.name}
+                            </div>
+                            <div className="text-[9px] font-mono text-[#8F8F8F] flex items-center justify-between">
+                              <span>
+                                {isDelivered && index === waypoints.length - 1
+                                  ? 'Delivered & Received'
+                                  : isCurrent && (isDispatched || isPickedUp)
+                                  ? 'Origin Loading Bay'
+                                  : isCurrent
+                                  ? 'Current Position'
+                                  : isPassed
+                                  ? 'Cleared'
+                                  : 'Pending'}
+                              </span>
+                              {!isDelivered && !isCurrent && (
+                                <span className="text-[8px] opacity-0 group-hover:opacity-100 text-[#3ECF8E] transition-opacity">
+                                  Check In →
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Live Telematics & Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-4 border-t border-[#2E2E2E]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3.5 border-t border-[#2E2E2E]">
               {/* Telemetry Stats: Live GPS */}
-              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between space-y-1">
-                <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5">
-                  <Navigation size={12} className="text-[#3ECF8E]" /> Live GPS (FR-03.1)
-                </span>
-                <div className="text-xs font-mono font-bold text-[#EDEDED]">
+              <div className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5 font-bold">
+                    <Navigation size={12} className="text-[#3ECF8E]" /> Live GPS
+                  </span>
+                  <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
+                    FR-03.1
+                  </span>
+                </div>
+                <div className="text-xs font-mono font-bold text-[#EDEDED] truncate my-0.5">
                   {activeHaul.currentLat != null && activeHaul.currentLng != null ? (
                     `${activeHaul.currentLat.toFixed(4)}°N, ${activeHaul.currentLng.toFixed(4)}°E`
                   ) : (
                     <span className="text-[#8F8F8F] italic font-normal">Awaiting Device GPS Ping</span>
                   )}
                 </div>
-                <p className="text-[10px] text-[#8F8F8F] font-mono">
-                  {activeHaul.status === 'IN_TRANSIT' ? '64 km/h • In-transit telematics' : activeHaul.status}
+                <p className="text-[9px] text-[#8F8F8F] font-mono truncate">
+                  {activeHaul.status === 'DELIVERED'
+                    ? 'Delivered at Destination Terminal'
+                    : activeHaul.status === 'DISPATCHED'
+                    ? 'At Origin • Standby for Dispatch'
+                    : activeHaul.status === 'PICKED_UP'
+                    ? 'Terminal Gate • Pre-trip Clear'
+                    : '64 km/h • In-transit telematics'}
                 </p>
               </div>
 
               {/* AI Predicted ETA (SRS FR-03.2) */}
               <div
-                className={`p-3.5 rounded-xl border flex flex-col justify-between space-y-1 transition-colors ${
-                  etaError
+                className={`px-3.5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${
+                  activeHaul.status === 'DELIVERED'
+                    ? 'bg-[#1C1C1C] border-emerald-500/30'
+                    : etaError
                     ? 'bg-rose-500/10 border-rose-500/30'
                     : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
                 }`}
@@ -474,47 +708,59 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono uppercase flex items-center gap-1.5 font-bold">
                     <Sparkles size={12} className={etaError ? 'text-rose-400' : 'text-[#3ECF8E]'} />
-                    <span className={etaError ? 'text-rose-400' : 'text-[#EDEDED]'}>AI ETA (FR-03.2)</span>
+                    <span className={etaError ? 'text-rose-400' : 'text-[#EDEDED]'}>AI ETA</span>
                   </span>
-                  {etaData && (
-                    <span className="text-[9px] font-mono px-1 rounded bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold">
-                      PyTorch
-                    </span>
-                  )}
+                  <span className="text-[9px] font-mono px-1 rounded bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold">
+                    PyTorch
+                  </span>
                 </div>
 
-                {etaLoading ? (
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] py-1">
-                    <Loader2 size={13} className="animate-spin text-[#3ECF8E]" />
+                {activeHaul.status === 'DELIVERED' ? (
+                  <div>
+                    <div className="text-xs font-mono font-bold text-[#3ECF8E] truncate my-0.5">
+                      Delivered (0h left)
+                    </div>
+                    <p className="text-[9px] text-[#8F8F8F] font-mono truncate">
+                      0 km remaining • Milestone Complete
+                    </p>
+                  </div>
+                ) : etaLoading ? (
+                  <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] my-0.5">
+                    <Loader2 size={12} className="animate-spin text-[#3ECF8E]" />
                     <span>Inferring model...</span>
                   </div>
                 ) : etaError ? (
                   <div>
-                    <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline (Port 8000)</div>
-                    <p className="text-[10px] text-rose-400/80 mt-0.5 leading-snug">
-                      Cannot calculate live ETA without AI microservice. Mock data disabled per SRS.
+                    <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline</div>
+                    <p className="text-[9px] text-rose-400/80 truncate">
+                      Live ETA inference unavailable
                     </p>
                   </div>
                 ) : etaData ? (
                   <div>
-                    <div className="text-xs font-mono font-bold text-[#3ECF8E]">
-                      {etaData.estimatedArrival} ({etaData.predictedHours}h remaining)
+                    <div className="text-xs font-mono font-bold text-[#3ECF8E] truncate my-0.5">
+                      {etaData.estimatedArrival} ({etaData.predictedHours}h left)
                     </div>
-                    <p className="text-[10px] text-[#8F8F8F] font-mono">
-                      {etaData.remainingDistanceKm} km remaining to terminal
+                    <p className="text-[9px] text-[#8F8F8F] font-mono truncate">
+                      {etaData.remainingDistanceKm} km to terminal
                     </p>
                   </div>
                 ) : (
-                  <div className="text-xs text-[#8F8F8F]">Awaiting dispatch status</div>
+                  <div className="text-xs text-[#8F8F8F] my-0.5">Awaiting dispatch</div>
                 )}
               </div>
 
               {/* Fuel Tracker */}
-              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between space-y-1">
-                <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5">
-                  <Fuel size={12} className="text-[#3ECF8E]" /> Fuel Telemetry (FR-07)
-                </span>
-                <div className="text-xs font-mono font-bold text-[#EDEDED]">
+              <div className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5 font-bold">
+                    <Fuel size={12} className="text-[#3ECF8E]" /> Fuel Telemetry
+                  </span>
+                  <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
+                    FR-07
+                  </span>
+                </div>
+                <div className="text-xs font-mono font-bold text-[#EDEDED] truncate my-0.5">
                   {activeHaul.actualFuelLiters != null && activeHaul.estimatedFuelLiters != null ? (
                     `${activeHaul.actualFuelLiters} L / ${activeHaul.estimatedFuelLiters} L Est.`
                   ) : activeHaul.actualFuelLiters != null ? (
@@ -523,7 +769,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     <span className="text-[#8F8F8F] italic font-normal">Calibrating Flow Meter</span>
                   )}
                 </div>
-                <p className="text-[10px] text-emerald-400 font-mono">
+                <p className="text-[9px] text-emerald-400 font-mono truncate">
                   {activeHaul.actualFuelLiters && activeHaul.currentLat
                     ? `${((activeHaul.actualFuelLiters / 600) * 100).toFixed(1)} L/100km (Eco-Grade)`
                     : 'Telemetry sensor linked'}
@@ -531,19 +777,19 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
               </div>
 
               {/* Waypoint Check-in Action */}
-              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between space-y-1">
-                <div>
-                  <span className="text-[10px] font-mono uppercase text-[#8F8F8F]">
-                    Waypoint Ping (FR-03)
+              <div className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase text-[#8F8F8F] font-bold">
+                    Waypoint Ping
                   </span>
-                  <div className="text-xs font-semibold text-[#EDEDED] mt-0.5 truncate">
-                    Advance Milestone
-                  </div>
+                  <span className="text-[9px] font-mono text-[#8F8F8F]">
+                    FR-03
+                  </span>
                 </div>
                 <button
                   onClick={() => handleSimulateWaypointCheckin(activeHaul)}
                   disabled={checkingIn || activeHaul.status === 'DELIVERED'}
-                  className="mt-2 w-full py-1.5 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-xs font-mono font-bold text-[#EDEDED] rounded-lg transition"
+                  className="w-full py-1.5 px-2 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-[11px] font-mono font-bold text-[#EDEDED] hover:text-[#3ECF8E] rounded-lg transition truncate"
                 >
                   {checkingIn ? 'Recording...' : 'Record Waypoint Check-In'}
                 </button>
@@ -680,6 +926,118 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     </>
                   ) : (
                     'Confirm e-PoD & Release Payment'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Driver & Truck Assignment Modal */}
+      {showAssignModal && activeHaul && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-[#2E2E2E] flex items-center justify-between bg-[#232323]">
+              <div className="flex items-center gap-2">
+                <Truck size={18} className="text-[#3ECF8E]" />
+                <h3 className="font-bold text-sm text-[#EDEDED]">
+                  Assign Driver & Truck Asset
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="text-[#8F8F8F] hover:text-white transition p-1 rounded-lg hover:bg-[#2E2E2E]"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAssignDriverAndTruck} className="p-5 space-y-4">
+              <div className="p-3 rounded-xl bg-[#232323] border border-[#2E2E2E] space-y-1">
+                <span className="text-[10px] font-mono text-[#3ECF8E] font-bold">
+                  TF-{activeHaul.id.substring(0, 8).toUpperCase()} • {activeHaul.loadTitle}
+                </span>
+                <p className="text-xs text-[#8F8F8F]">
+                  Select a registered fleet driver and commercial transport vehicle plate for this active haul on the corridor.
+                </p>
+              </div>
+
+              {/* Driver Select */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-[#8F8F8F] block">
+                  Assign Fleet Driver (የተመደበ ሹፌር)
+                </label>
+                <select
+                  value={selectedDriverId}
+                  onChange={(e) => setSelectedDriverId(e.target.value)}
+                  className="w-full bg-[#151515] border border-[#2E2E2E] rounded-xl px-3 py-2 text-xs text-[#EDEDED] focus:border-[#3ECF8E] focus:outline-none"
+                >
+                  <option value="">-- Choose fleet driver --</option>
+                  {availableDrivers.map((d: any) => (
+                    <option key={d.id} value={d.id}>
+                      {d.fullName} ({d.phone || 'No phone'}) - {d.companyName || 'Driver'}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-[#707070]">
+                  Drivers receive trip dispatch instructions and waypoint GPS logging on their mobile terminal.
+                </p>
+              </div>
+
+              {/* Truck Plate Select / Input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-[#8F8F8F] block">
+                  Truck License Plate Number (የመኪና ታርጋ ቁጥር)
+                </label>
+                {availableVehicles.length > 0 && (
+                  <div className="mb-2">
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) setSelectedTruckPlate(e.target.value);
+                      }}
+                      className="w-full bg-[#151515] border border-[#2E2E2E] rounded-xl px-3 py-2 text-xs text-[#EDEDED] focus:border-[#3ECF8E] focus:outline-none"
+                    >
+                      <option value="">-- Choose from registered fleet vehicles --</option>
+                      {availableVehicles.map((v: any) => (
+                        <option key={v.id} value={v.plateNumber || ''}>
+                          {v.plateNumber || 'No plate'} • {v.vehicleType} ({v.capacityTons}T)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <input
+                  type="text"
+                  placeholder="e.g. 3-ET-74192 or 3-AA-98214"
+                  value={selectedTruckPlate}
+                  onChange={(e) => setSelectedTruckPlate(e.target.value)}
+                  className="w-full bg-[#151515] border border-[#2E2E2E] rounded-xl px-3 py-2 text-xs font-mono text-[#3ECF8E] focus:border-[#3ECF8E] focus:outline-none uppercase placeholder:text-[#555]"
+                />
+                <p className="text-[10px] text-[#707070]">
+                  Format standard: Regional Code - Code - Number (e.g., 3-AA-98214 or 3-ET-74192).
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2E2E2E]">
+                <button
+                  type="button"
+                  onClick={() => setShowAssignModal(false)}
+                  className="px-4 py-2 rounded-xl bg-[#232323] hover:bg-[#2E2E2E] text-xs font-semibold text-[#8F8F8F]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={assigning}
+                  className="px-5 py-2 rounded-xl bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition flex items-center gap-2"
+                >
+                  {assigning ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" /> Assigning Asset...
+                    </>
+                  ) : (
+                    'Save Driver & Truck'
                   )}
                 </button>
               </div>

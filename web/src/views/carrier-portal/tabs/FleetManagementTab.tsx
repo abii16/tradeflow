@@ -21,6 +21,7 @@ interface VehicleItem {
   id: string;
   ownerId: string;
   vehicleType: string;
+  plateNumber?: string | null;
   capacityTons: string;
   fuelType: string | null;
   insuranceDocUrl: string | null;
@@ -46,6 +47,7 @@ export default function FleetManagementTab() {
   // Add Truck Modal State
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [vehicleType, setVehicleType] = useState<string>('');
+  const [plateNumber, setPlateNumber] = useState<string>('');
   const [capacityTons, setCapacityTons] = useState<string>('40');
   const [fuelType, setFuelType] = useState<string>('Diesel');
   const [insuranceDocUrl, setInsuranceDocUrl] = useState<string>('https://tradeflow.et/docs/insurance_sample.pdf');
@@ -85,6 +87,7 @@ export default function FleetManagementTab() {
     try {
       await addCarrierVehicle({
         vehicleType,
+        plateNumber: plateNumber.trim() || undefined,
         capacityTons: parseFloat(capacityTons),
         fuelType,
         insuranceDocUrl,
@@ -94,6 +97,7 @@ export default function FleetManagementTab() {
       toast.success('Truck registered and added to fleet!');
       setShowAddModal(false);
       setVehicleType('');
+      setPlateNumber('');
       await fetchData(true);
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Failed to add vehicle');
@@ -210,7 +214,14 @@ export default function FleetManagementTab() {
                   <tr key={v.id} className="hover:bg-[#282828] transition-colors">
                     <td className="py-3.5 px-4 font-bold text-white flex items-center gap-2">
                       <Truck size={15} className="text-[#3ECF8E] shrink-0" />
-                      <span>{v.vehicleType}</span>
+                      <div>
+                        <span>{v.vehicleType}</span>
+                        {v.plateNumber && (
+                          <span className="ml-2 text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold tracking-wider">
+                            {v.plateNumber}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 text-[#3ECF8E] font-bold">
                       {v.capacityTons} Metric Tons
@@ -325,6 +336,19 @@ export default function FleetManagementTab() {
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
                   className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-mono uppercase text-[#8F8F8F] mb-1.5">
+                  License Plate Number (የመኪና ታርጋ ቁጥር)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 3-AA-98214 or 3-ET-74192"
+                  value={plateNumber}
+                  onChange={(e) => setPlateNumber(e.target.value)}
+                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs font-mono text-[#3ECF8E] uppercase focus:border-[#3ECF8E] outline-none placeholder:text-[#555]"
                 />
               </div>
 
