@@ -197,106 +197,210 @@ router.post('/governance/update', JwtAuthGuard, RolesGuard(['ADMIN']), async (re
 
 /**
  * GET /pricing/corridor-routes
- * Fetches live pricing for Route A vs Route B
+ * Fetches real-time AI ML pricing for active posted loads (FR-04)
+ * Strict Zero Mock: If no load exists in the database, returns empty routes.
+ * When a real load exists, sends its actual origin, destination, weight, and cargo type to the AI Engine ML model.
  */
 router.get('/corridor-routes', async (req: Request, res: Response): Promise<void> => {
   try {
     const AI_ENGINE_URL = process.env.AI_ENGINE_URL || 'http://127.0.0.1:8000';
 
-    // Direct Route: Djibouti Port -> Modjo Dry Port (810 km)
-    const directPayload = {
-      origin: { city: 'Djibouti', lat: 11.588, lng: 43.145 },
-      destination: { city: 'Modjo', lat: 8.59, lng: 39.12 },
-      cargo_type: 'CONTAINERIZED',
-      weight_kg: 28000,
-      truck_type: 'FLATBED',
-      urgency: 'standard'
-    };
+    // 1. Fetch real active load from database (zero mock data)
+    let targetLoad: any = null;
+    if (req.query.loadId) {
+      const [found] = await db.select().from(loads).where(eq(loads.id, String(req.query.loadId))).limit(1);
+      targetLoad = found;
+    } else {
+      const [latest] = await db.select().from(loads).where(eq(loads.status, 'POSTED')).orderBy(desc(loads.createdAt)).limit(1);
+      targetLoad = latest;
+    }
 
-    // Bypass Route Leg 1: Djibouti -> Dire Dawa (360 km)
-    const bypass1Payload = {
-      origin: { city: 'Djibouti', lat: 11.588, lng: 43.145 },
-      destination: { city: 'Dire Dawa', lat: 9.6, lng: 41.86 },
-      cargo_type: 'CONTAINERIZED',
-      weight_kg: 28000,
-      truck_type: 'FLATBED',
-      urgency: 'standard'
-    };
+    // If there is no real load in the database, return empty list (NO FAKE / MOCK DATA)
+    if (!targetLoad) {
+      res.status(200).json({
+        routes: [],
+        activeLoadsCount: 0,
+        source: 'DATABASE_LIVE',
+        message: 'No active cargo loads in database. Post a freight load to run live AI ML spot pricing.'
+      });
+      return;
+    }
 
-    // Bypass Route Leg 2: Dire Dawa -> Modjo (450 km)
-    const bypass2Payload = {
-      origin: { city: 'Dire Dawa', lat: 9.6, lng: 41.86 },
-      destination: { city: 'Modjo', lat: 8.59, lng: 39.12 },
-      cargo_type: 'CONTAINERIZED',
-      weight_kg: 28000,
-      truck_type: 'FLATBED',
-      urgency: 'standard'
+    // 2. Extract REAL load features directly from the database record
+    const originData = typeof targetLoad.origin === 'string' ? JSON.parse(targetLoad.origin) : targetLoad.origin;
+    const destData = typeof targetLoad.destination === 'string' ? JSON.parse(targetLoad.destination) : targetLoad.destination;
+    const weightKg = Number(targetLoad.weightKg || 0);
+    const cargoType = String(targetLoad.cargoType || 'CONTAINERIZED');
+
+    const originCity = originData?.city || originData?.address || '';
+    const destCity = destData?.city || destData?.address || '';
+
+    if (!originCity || !destCity || weightKg <= 0) {
+      res.status(400).json({
+        error: 'Invalid load parameters in database: Origin city, destination city, and weightKg (>0) are required.',
+        routes: []
+      });
+      return;
+    }
+
+    const originLat = originData?.lat ? Number(originData.lat) : undefined;
+    const originLng = originData?.lng ? Number(originData.lng) : undefined;
+    const destLat = destData?.lat ? Number(destData.lat) : undefined;
+    const destLng = destData?.lng ? Number(destData.lng) : undefined;
+
+    // 3. Build live AI ML payload from actual load entity
+    const spotPayload: any = {
+      origin: {
+        city: originCity,
+        ...(originLat ? { lat: originLat } : {}),
+        ...(originLng ? { lng: originLng } : {})
+      },
+      destination: {
+        city: destCity,
+        ...(destLat ? { lat: destLat } : {}),
+        ...(destLng ? { lng: destLng } : {})
+      },
+      cargo_type: cargoType,
+      weight_kg: weightKg,
+      load_id: targetLoad.id,
+      shipper_id: targetLoad.shipperId
     };
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+    const timeout = setTimeout(() => controller.abort(), 7000);
 
-    const [directRes, bypass1Res, bypass2Res] = await Promise.all([
-      fetch(`${AI_ENGINE_URL}/api/v1/pricing/calculate-spot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(directPayload),
-        signal: controller.signal
-      }),
-      fetch(`${AI_ENGINE_URL}/api/v1/pricing/calculate-spot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bypass1Payload),
-        signal: controller.signal
-      }),
-      fetch(`${AI_ENGINE_URL}/api/v1/pricing/calculate-spot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bypass2Payload),
-        signal: controller.signal
-      })
-    ]);
-    clearTimeout(timeout);
+    // Call live AI ML Spot Pricing Engine (LGBMRegressor)
+    const spotRes = await fetch(`${AI_ENGINE_URL}/api/v1/pricing/calculate-spot`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(spotPayload),
+      signal: controller.signal
+    });
 
-    if (!directRes.ok || !bypass1Res.ok || !bypass2Res.ok) {
-      throw new Error(`AI Pricing Engine returned error (HTTP Direct: ${directRes.status}, Bypass: ${bypass1Res.status})`);
+    if (!spotRes.ok) {
+      clearTimeout(timeout);
+      const errText = await spotRes.text();
+      throw new Error(`AI Pricing Engine error (${spotRes.status}): ${errText}`);
     }
 
-    const directData: any = await directRes.json();
-    const bypass1Data: any = await bypass1Res.json();
-    const bypass2Data: any = await bypass2Res.json();
+    const spotData: any = await spotRes.json();
 
-    const priceA = Math.round(directData.recommended_spot_rate || directData.spot_price);
-    const priceB = Math.round((bypass1Data.recommended_spot_rate || bypass1Data.spot_price) + (bypass2Data.recommended_spot_rate || bypass2Data.spot_price));
+    // 4. Call live AI Route Optimizer (Dijkstra graph cost model)
+    // Resolve coordinates if present or query city lookup for graph nodes
+    const CITY_COORDS: Record<string, [number, number]> = {
+      djibouti: [11.6082, 43.1497],
+      'addis ababa': [9.0320, 38.7483],
+      addis: [9.0320, 38.7483],
+      modjo: [8.5878, 39.1171],
+      adama: [8.5416, 39.2688],
+      'dire dawa': [9.6009, 41.8501],
+      hawassa: [7.0504, 38.4768],
+      mekelle: [13.4967, 39.4753],
+      semera: [11.7944, 41.0105],
+      kombolcha: [11.0833, 39.7333]
+    };
 
-    const varianceB = Number((((priceB - priceA) / priceA) * 100).toFixed(1));
+    const findCoords = (city: string): [number, number] | null => {
+      const lower = city.toLowerCase().trim();
+      for (const [key, coords] of Object.entries(CITY_COORDS)) {
+        if (lower.includes(key) || key.includes(lower)) return coords;
+      }
+      return null;
+    };
+
+    const startCoord = (originLat && originLng) ? [originLat, originLng] : findCoords(originCity);
+    const endCoord = (destLat && destLng) ? [destLat, destLng] : findCoords(destCity);
+
+    let routeOptData: any = null;
+    if (startCoord && endCoord) {
+      try {
+        const routeRes = await fetch(`${AI_ENGINE_URL}/api/v1/route/optimize`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': process.env.AI_API_KEY || 'tradeflow-default-key'
+          },
+          body: JSON.stringify({
+            current_lat: startCoord[0],
+            current_lng: startCoord[1],
+            destination_lat: endCoord[0],
+            destination_lng: endCoord[1],
+            vehicle_weight: weightKg / 1000,
+            fuel_level: 80.0
+          }),
+          signal: controller.signal
+        });
+        if (routeRes.ok) {
+          routeOptData = await routeRes.json();
+        }
+      } catch (err: any) {
+        console.warn('[pricing/corridor-routes] Route optimizer subcall bypassed:', err.message);
+      }
+    }
+    clearTimeout(timeout);
+
+    // 5. Construct routes strictly from live AI Engine ML and Routing outputs (ZERO mock numbers)
+    const baselinePrice = Math.round(spotData.recommended_spot_rate || spotData.spot_price);
+    const corridorLabel = spotData.corridor_matched || `${originCity} → ${destCity}`;
+
+    const routes: any[] = [
+      {
+        id: 'route_baseline',
+        name: `Direct: ${corridorLabel}`,
+        price: baselinePrice,
+        variance: 0.0,
+        calculationId: spotData.calculation_id,
+        confidence: spotData.model_confidence_r2,
+        corridor: spotData.corridor_matched,
+        loadTitle: targetLoad.title,
+        cargoWeightKg: weightKg
+      }
+    ];
+
+    if (routeOptData && routeOptData.better_route_found && routeOptData.recommended_path?.length > 1) {
+      const savingsPct = Number(routeOptData.cost_savings_percentage || 0);
+      const optimizedPrice = Math.round(baselinePrice * (1 - savingsPct / 100));
+      routes.push({
+        id: 'route_optimized',
+        name: `AI Optimized: ${routeOptData.recommended_path.join(' → ')}`,
+        price: optimizedPrice,
+        variance: -Number(savingsPct.toFixed(1)),
+        calculationId: spotData.calculation_id,
+        confidence: spotData.model_confidence_r2,
+        corridor: routeOptData.recommended_path.join(' → '),
+        loadTitle: targetLoad.title,
+        cargoWeightKg: weightKg
+      });
+    } else if (spotData.max_rate && spotData.max_rate !== baselinePrice) {
+      const surgeVariance = Number((((spotData.max_rate - baselinePrice) / baselinePrice) * 100).toFixed(1));
+      routes.push({
+        id: 'route_surge_bound',
+        name: `Dynamic Surge Ceiling (+${surgeVariance}%)`,
+        price: Math.round(spotData.max_rate),
+        variance: surgeVariance,
+        calculationId: spotData.calculation_id,
+        confidence: spotData.model_confidence_r2,
+        corridor: spotData.corridor_matched,
+        loadTitle: targetLoad.title,
+        cargoWeightKg: weightKg
+      });
+    }
 
     res.status(200).json({
-      routes: [
-        {
-          id: 'route_a',
-          name: 'Direct: Djibouti -> Awash -> Modjo',
-          price: priceA,
-          variance: 0.0,
-          calculationId: directData.calculation_id,
-          confidence: directData.model_confidence_r2,
-          corridor: directData.corridor_matched
-        },
-        {
-          id: 'route_b',
-          name: 'Bypass: Djibouti -> Dire Dawa -> Modjo',
-          price: priceB,
-          variance: varianceB,
-          calculationId: bypass1Data.calculation_id,
-          confidence: bypass1Data.model_confidence_r2,
-          corridor: `${bypass1Data.corridor_matched} + ${bypass2Data.corridor_matched}`
-        }
-      ],
+      routes,
+      activeLoad: {
+        id: targetLoad.id,
+        title: targetLoad.title,
+        originCity,
+        destCity,
+        weightKg,
+        cargoType
+      },
       source: 'AI_ENGINE_LIVE',
       model: 'LGBMRegressor'
     });
   } catch (error: any) {
-    console.error('[pricing/corridor-routes] AI Engine error:', error.message);
+    console.error('[pricing/corridor-routes] Error communicating with AI Engine:', error.message);
     res.status(503).json({ 
       error: `AI Spot Pricing Engine is offline or unreachable: ${error.message}. Real ML prediction is required.`,
       routes: [] 
