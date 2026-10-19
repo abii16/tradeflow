@@ -7,5 +7,5 @@ dotenv.config();
 
 const connectionString = process.env.DATABASE_URL || 'postgres://postgres:postgrespassword@localhost:5432/tradeflow';
 
-export const queryClient = postgres(connectionString);
+export const queryClient = postgres(connectionString, { prepare: false });
 export const db = drizzle(queryClient, { schema });
