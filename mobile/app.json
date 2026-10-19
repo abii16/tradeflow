@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "TradeFlow Mobile",
+    "name": "TradeFlow",
     "slug": "tradeflow-mobile",
     "scheme": "tradeflow",
     "version": "1.0.0",
@@ -16,8 +16,7 @@
         {
           "android": {
             "abiFilters": [
-              "arm64-v8a",
-              "armeabi-v7a"
+              "arm64-v8a"
             ]
           }
         }
