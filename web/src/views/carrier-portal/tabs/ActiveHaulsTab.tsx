@@ -521,19 +521,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     </span>
                   </div>
 
-                  {/* Reassign Button */}
-                  <button
-                    onClick={() => {
-                      setSelectedDriverId(activeHaul.driverId || '');
-                      setSelectedTruckPlate(activeHaul.truckPlate || '');
-                      loadFleetResources();
-                      setShowAssignModal(true);
-                    }}
-                    className="text-[10px] font-mono bg-[#2E2E2E] hover:bg-[#3E3E3E] text-[#3ECF8E] px-2 py-0.5 rounded border border-[#3ECF8E]/30 transition flex items-center gap-1 font-semibold"
-                    title="Change assigned driver or truck from fleet"
-                  >
-                    <span>⇄</span> Assign Driver / Truck
-                  </button>
+
                 </div>
                 <h3 className="text-base font-bold text-[#EDEDED]">{activeHaul.loadTitle}</h3>
               </div>
