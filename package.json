@@ -1,10 +1,8 @@
 {
   "name": "tradeflow",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "build": "turbo run build",
