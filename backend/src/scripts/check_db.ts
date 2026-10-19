@@ -1,5 +1,5 @@
-import { db } from './src/db';
-import { loads } from './src/db/schema/loads';
+import { db } from '../db';
+import { loads } from '../db/schema/loads';
 
 async function run() {
   const all = await db.select().from(loads);

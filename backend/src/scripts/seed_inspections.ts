@@ -1,7 +1,7 @@
-import { db } from './src/db';
-import { loads } from './src/db/schema/loads';
-import { customsDocuments } from './src/db/schema/customs';
-import { users } from './src/db/schema/users';
+import { db } from '../db';
+import { loads } from '../db/schema/loads';
+import { customsDocuments } from '../db/schema/customs';
+import { users } from '../db/schema/users';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 

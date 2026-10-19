@@ -10,7 +10,8 @@
     "isolatedModules": true,
     "types": ["jest", "node"],
     "outDir": "./dist",
-    "rootDir": "."
+    "rootDir": "./src"
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["src/scripts/**/*"]
 }

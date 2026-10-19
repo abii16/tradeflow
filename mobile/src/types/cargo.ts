@@ -1,4 +1,4 @@
-// TradeFlow Mobile — Type Definitions
+// TradeFlow Mobile — Type Definitions (Transporter & Driver Actors)
 
 export type CargoStatus = 'open' | 'bid_placed' | 'in_transit' | 'delivered';
 
@@ -28,7 +28,13 @@ export interface CargoLoad {
   postedAt: string; // ISO timestamp
 }
 
-export type ActionType = 'SUBMIT_BID' | 'ACCEPT_LOAD' | 'WAYPOINT_CHECKIN';
+export type ActionType =
+  | 'SUBMIT_BID'
+  | 'ACCEPT_LOAD'
+  | 'WAYPOINT_CHECKIN'
+  | 'REPORT_INCIDENT'
+  | 'PROOF_OF_DELIVERY';
+
 export type QueueStatus = 'pending' | 'synced' | 'failed';
 
 export interface OfflineAction {
@@ -45,4 +51,30 @@ export interface BidPayload {
   amountETB: number;
   licensePlate: string;
   estimatedArrival: string;
+}
+
+export interface Waypoint {
+  id: string;
+  name: string;
+  corridorLeg: string;
+  kmFromOrigin: number;
+  status: 'completed' | 'current' | 'upcoming';
+  timestamp?: string;
+  lat: number;
+  lng: number;
+}
+
+export interface IncidentReportPayload {
+  tripId: string;
+  type: string;
+  location: string;
+  notes: string;
+  timestamp: string;
+}
+
+export interface PodPayload {
+  tripId: string;
+  receiverName: string;
+  waybillNumber: string;
+  signatureDate: string;
 }

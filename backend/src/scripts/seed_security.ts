@@ -1,5 +1,5 @@
-import { db } from './src/db';
-import { riskZones } from './src/db/schema/risk_zones';
+import { db } from '../db';
+import { riskZones } from '../db/schema/risk_zones';
 
 async function seedSecurity() {
   console.log('Seeding security test data...');

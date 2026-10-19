@@ -1,99 +1,247 @@
-// TradeFlow Mobile — Cargo Card Component
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { CargoLoad } from '../types/cargo';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatPickupWindow, formatPickupDetails, formatTimeAgo } from '../utils/ethiopianCalendar';
 
 interface Props {
   item: CargoLoad;
   onBid: (item: CargoLoad) => void;
 }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  open: { bg: '#1a2e1a', text: '#4ade80', label: 'Open' },
-  bid_placed: { bg: '#2e2a1a', text: '#fbbf24', label: 'Bid Placed' },
-  in_transit: { bg: '#1a2335', text: '#60a5fa', label: 'In Transit' },
-  delivered: { bg: '#1e293b', text: '#94a3b8', label: 'Delivered' },
-};
-
 function formatETB(amount: number): string {
   return amount.toLocaleString('en-US');
 }
 
-function timeAgo(isoStr: string): string {
-  const diff = Date.now() - new Date(isoStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
 export default function CargoCard({ item, onBid }: Props) {
-  const statusStyle = STATUS_COLORS[item.status] ?? STATUS_COLORS.open;
-  const canBid = item.status === 'open';
+  const { theme } = useTheme();
+  const { language, t } = useLanguage();
+  const pickup = formatPickupDetails(item.pickupWindow, language);
+  const isBidPlaced = item.status === 'bid_placed';
+  const isUrgent = item.urgency === 'urgent';
 
   return (
-    <View style={styles.card}>
-      {/* Top row: ID + status */}
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.cardBorder,
+        },
+      ]}
+    >
+      {/* Top header row: Commodity and Rate */}
       <View style={styles.topRow}>
-        <Text style={styles.loadId}>{item.id}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-          <Text style={[styles.statusText, { color: statusStyle.text }]}>
-            {statusStyle.label}
+        <View style={styles.cargoInfo}>
+          <Text style={[styles.commodity, { color: theme.colors.textPrimary }]}>
+            {item.cargoType}
+          </Text>
+          <Text style={[styles.loadId, { color: theme.colors.textMuted }]}>
+            {item.id} • {formatTimeAgo(item.postedAt, language)}
+          </Text>
+        </View>
+
+        <View style={styles.rateBlock}>
+          <Text style={[styles.rateAmount, { color: theme.colors.primary }]}>
+            {formatETB(item.rateETB)}
+          </Text>
+          <Text style={[styles.rateCurrency, { color: theme.colors.textMuted }]}>ETB</Text>
+        </View>
+      </View>
+
+      {/* Route Section */}
+      <View
+        style={[
+          styles.routeContainer,
+          { backgroundColor: theme.colors.surfaceElevated },
+        ]}
+      >
+        <View style={styles.timeline}>
+          <View
+            style={[
+              styles.timelineDotStart,
+              { backgroundColor: theme.colors.primary },
+            ]}
+          />
+          <View
+            style={[
+              styles.timelineLine,
+              { backgroundColor: theme.colors.cardBorder },
+            ]}
+          />
+          <View
+            style={[
+              styles.timelineDotEnd,
+              { backgroundColor: theme.colors.blue },
+            ]}
+          />
+        </View>
+
+        <View style={styles.routeDetails}>
+          <View style={styles.locationStop}>
+            <Text style={[styles.cityText, { color: theme.colors.textPrimary }]}>
+              {item.origin}
+            </Text>
+            <Text style={[styles.distanceText, { color: theme.colors.textMuted }]}>
+              {item.distanceKm} km
+            </Text>
+          </View>
+
+          <View style={styles.locationStop}>
+            <Text style={[styles.cityText, { color: theme.colors.textPrimary }]}>
+              {item.destination}
+            </Text>
+          </View>
+
+          {/* Pickup Window */}
+          <View
+            style={[
+              styles.pickupBar,
+              {
+                backgroundColor: theme.colors.surfaceElevated,
+                borderColor: theme.colors.cardBorder,
+              },
+            ]}
+          >
+            <Feather
+              name="calendar"
+              size={12}
+              color={language === 'AM' ? theme.colors.primary : theme.colors.blue}
+            />
+            <Text
+              style={[
+                styles.pickupBarText,
+                { color: theme.colors.textSecondary },
+              ]}
+              numberOfLines={1}
+            >
+              <Text style={{ color: theme.colors.textMuted, fontWeight: '700' }}>
+                {t('pickup')}:{' '}
+              </Text>
+              {language === 'AM' ? (
+                <>
+                  <Text style={{ color: theme.colors.textPrimary, fontWeight: '600' }}>
+                    {pickup.ecDatePlain}
+                  </Text>
+                  <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>
+                    {' '}({pickup.ecTime})
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={{ color: theme.colors.textPrimary, fontWeight: '600' }}>
+                    {pickup.gcDatePlain}
+                  </Text>
+                  <Text style={{ color: theme.colors.blue, fontWeight: '700' }}>
+                    {' '}• {pickup.gcTime}
+                  </Text>
+                </>
+              )}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Load Specs strip */}
+      <View
+        style={[
+          styles.specsRow,
+          { borderColor: theme.colors.cardBorder },
+        ]}
+      >
+        <View style={styles.specItem}>
+          <Text style={[styles.specLabel, { color: theme.colors.textMuted }]}>{t('weight')}</Text>
+          <Text style={[styles.specValue, { color: theme.colors.textPrimary }]}>
+            {item.weightTons} {t('tons')}
+          </Text>
+        </View>
+
+        <View
+          style={[
+            styles.specDivider,
+            { backgroundColor: theme.colors.cardBorder },
+          ]}
+        />
+
+        <View style={styles.specItem}>
+          <Text style={[styles.specLabel, { color: theme.colors.textMuted }]}>{t('corridor_leg')}</Text>
+          <Text style={[styles.specValue, { color: theme.colors.textPrimary }]}>
+            {item.distanceKm > 500 ? t('long_haul') : t('regional')}
+          </Text>
+        </View>
+
+        <View
+          style={[
+            styles.specDivider,
+            { backgroundColor: theme.colors.cardBorder },
+          ]}
+        />
+
+        <View style={styles.specItem}>
+          <Text style={[styles.specLabel, { color: theme.colors.textMuted }]}>Status</Text>
+          <Text
+            style={[
+              styles.specValue,
+              { color: isBidPlaced ? theme.colors.amber : theme.colors.primary },
+            ]}
+          >
+            {isBidPlaced ? t('bid_placed') : t('available')}
           </Text>
         </View>
       </View>
 
-      {/* Title */}
-      <Text style={styles.title}>{item.title}</Text>
-
-      {/* Route */}
-      <View style={styles.routeRow}>
-        <Text style={styles.routeLabel}>{item.origin}</Text>
-        <Text style={styles.routeArrow}>→</Text>
-        <Text style={styles.routeLabel}>{item.destination}</Text>
-      </View>
-
-      {/* Specs row */}
-      <View style={styles.specsRow}>
-        <View style={styles.specItem}>
-          <Text style={styles.specValue}>{item.weightTons}T</Text>
-          <Text style={styles.specLabel}>Weight</Text>
-        </View>
-        <View style={styles.specDivider} />
-        <View style={styles.specItem}>
-          <Text style={styles.specValue}>{item.distanceKm} km</Text>
-          <Text style={styles.specLabel}>Distance</Text>
-        </View>
-        <View style={styles.specDivider} />
-        <View style={styles.specItem}>
-          <Text style={styles.specValue}>{formatETB(item.rateETB)} ETB</Text>
-          <Text style={styles.specLabel}>Rate</Text>
-        </View>
-      </View>
-
-      {/* Bottom row: pickup + urgency + bid button */}
-      <View style={styles.bottomRow}>
-        <View style={styles.metaCol}>
-          <Text style={styles.metaText}>Pickup: {item.pickupWindow}</Text>
-          <View style={styles.metaBottom}>
-            <Text style={styles.timeAgo}>{timeAgo(item.postedAt)}</Text>
-            {item.urgency === 'urgent' && (
-              <View style={styles.urgentBadge}>
-                <Text style={styles.urgentText}>Urgent</Text>
-              </View>
-            )}
+      {/* Footer / Action */}
+      <View style={styles.footer}>
+        {isUrgent ? (
+          <View
+            style={[
+              styles.urgentBadge,
+              {
+                backgroundColor: theme.colors.redSubtle,
+                borderColor: theme.colors.redBorder,
+              },
+            ]}
+          >
+            <Text style={[styles.urgentText, { color: theme.colors.red }]}>
+              {t('urgent_dispatch')}
+            </Text>
           </View>
-        </View>
-        {canBid && (
+        ) : (
+          <Text style={[styles.titleText, { color: theme.colors.textMuted }]} numberOfLines={1}>
+            {item.title}
+          </Text>
+        )}
+
+        {item.status === 'open' ? (
           <TouchableOpacity
-            style={styles.bidButton}
+            style={[
+              styles.bidButton,
+              { backgroundColor: theme.colors.primary },
+            ]}
             onPress={() => onBid(item)}
             activeOpacity={0.7}
           >
-            <Text style={styles.bidButtonText}>Place Bid</Text>
+            <Text style={[styles.bidButtonText, { color: theme.colors.primaryText }]}>
+              {t('place_bid')}
+            </Text>
           </TouchableOpacity>
+        ) : (
+          <View
+            style={[
+              styles.bidPlacedBadge,
+              {
+                backgroundColor: theme.colors.amberSubtle,
+                borderColor: 'rgba(245, 158, 11, 0.3)',
+              },
+            ]}
+          >
+            <Feather name="check" size={13} color={theme.colors.amber} />
+            <Text style={[styles.bidPlacedText, { color: theme.colors.amber }]}>
+              {t('bid_submitted')}
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -102,126 +250,170 @@ export default function CargoCard({ item, onBid }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1e293b',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#334155',
+    padding: 16,
+    marginBottom: 12,
   },
   topRow: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 14,
+  },
+  cargoInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  commodity: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   loadId: {
     fontSize: 12,
-    color: '#64748b',
-    fontWeight: '500',
   },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
+  rateBlock: {
+    alignItems: 'flex-end',
   },
-  statusText: {
+  rateAmount: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  rateCurrency: {
     fontSize: 11,
     fontWeight: '600',
+    marginTop: -2,
   },
-  title: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#f1f5f9',
-    marginBottom: 8,
+  routeContainer: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
   },
-  routeRow: {
+  timeline: {
+    width: 14,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+    marginRight: 10,
+  },
+  timelineDotStart: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  timelineLine: {
+    width: 2,
+    flex: 1,
+    marginVertical: 4,
+  },
+  timelineDotEnd: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  routeDetails: {
+    flex: 1,
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  locationStop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    justifyContent: 'space-between',
+  },
+  cityText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  distanceText: {
+    fontSize: 11,
+  },
+  pickupBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginTop: 5,
   },
-  routeLabel: {
-    fontSize: 13,
-    color: '#cbd5e1',
-  },
-  routeArrow: {
-    fontSize: 13,
-    color: '#64748b',
+  pickupBarText: {
+    fontSize: 11.5,
+    flex: 1,
   },
   specsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   specItem: {
     flex: 1,
     alignItems: 'center',
   },
-  specValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#e2e8f0',
-  },
   specLabel: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 2,
+    fontSize: 10,
+    fontWeight: '500',
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  specValue: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   specDivider: {
     width: 1,
-    height: 24,
-    backgroundColor: '#334155',
+    height: 16,
   },
-  bottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  metaCol: {
-    flex: 1,
-  },
-  metaText: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginBottom: 4,
-  },
-  metaBottom: {
+  footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  timeAgo: {
-    fontSize: 11,
-    color: '#64748b',
+  titleText: {
+    flex: 1,
+    fontSize: 12,
   },
   urgentBadge: {
-    backgroundColor: '#3b1a1a',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
   },
   urgentText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#f87171',
+    fontSize: 11,
+    fontWeight: '700',
   },
   bidButton: {
-    backgroundColor: '#334155',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#475569',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bidButtonText: {
-    color: '#f1f5f9',
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  bidPlacedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  bidPlacedText: {
+    fontSize: 11.5,
+    fontWeight: '700',
   },
 });

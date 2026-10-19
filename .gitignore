@@ -8,6 +8,10 @@ build/
 out/
 drizzle/
 doc folders/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
 
 # Environment variables
 .env

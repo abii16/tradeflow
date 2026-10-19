@@ -1,0 +1,8 @@
+node_modules
+.expo
+.git
+*.log
+*.mp4
+dist
+build
+.system_generated

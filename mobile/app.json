@@ -1,18 +1,23 @@
 {
   "expo": {
-    "name": "TradeFlow Mobile",
+    "name": "TradeFlow",
     "slug": "tradeflow-mobile",
+    "scheme": "tradeflow",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "abiFilters": [
+              "arm64-v8a"
+            ]
+          }
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true
@@ -27,7 +32,13 @@
         "ACCESS_FINE_LOCATION",
         "CAMERA",
         "WRITE_EXTERNAL_STORAGE"
-      ]
+      ],
+      "package": "com.tradeflow.tradeflow"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "569bfbdb-9b56-4f3e-a384-6cceb7a9eef5"
+      }
     }
   }
 }

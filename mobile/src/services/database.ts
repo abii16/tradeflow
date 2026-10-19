@@ -1,105 +1,11 @@
 // TradeFlow Mobile — SQLite Database Service
 import * as SQLite from 'expo-sqlite';
 import { CargoLoad, CargoStatus, OfflineAction, ActionType, QueueStatus } from '../types/cargo';
+import { AuthUser } from '../types/auth';
 
 const DB_NAME = 'tradeflow_mobile.db';
 
 let db: SQLite.SQLiteDatabase | null = null;
-
-// ── Seed data — Ethiopian corridor loads ──
-const SEED_CARGO: Omit<CargoLoad, 'id'>[] = [
-  {
-    title: '40T Structural Steel',
-    cargoType: 'Structural Steel',
-    origin: 'Djibouti Port',
-    destination: 'Modjo Dry Port',
-    distanceKm: 910,
-    weightTons: 40,
-    rateETB: 340000,
-    pickupWindow: '2026-08-20 06:00',
-    status: 'open',
-    urgency: 'urgent',
-    postedAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    title: '25T Coffee Beans (Export)',
-    cargoType: 'Coffee Beans',
-    origin: 'Modjo Dry Port',
-    destination: 'Djibouti Port',
-    distanceKm: 910,
-    weightTons: 25,
-    rateETB: 285000,
-    pickupWindow: '2026-08-21 08:00',
-    status: 'open',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 7200000).toISOString(),
-  },
-  {
-    title: '18T Textile Goods',
-    cargoType: 'Textile Goods',
-    origin: 'Djibouti Port',
-    destination: 'Addis Ababa',
-    distanceKm: 980,
-    weightTons: 18,
-    rateETB: 410000,
-    pickupWindow: '2026-08-19 14:00',
-    status: 'open',
-    urgency: 'urgent',
-    postedAt: new Date(Date.now() - 1800000).toISOString(),
-  },
-  {
-    title: '30T Fertilizer',
-    cargoType: 'Fertilizer',
-    origin: 'Djibouti Port',
-    destination: 'Dire Dawa',
-    distanceKm: 310,
-    weightTons: 30,
-    rateETB: 175000,
-    pickupWindow: '2026-08-22 07:00',
-    status: 'open',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 14400000).toISOString(),
-  },
-  {
-    title: '12T Electronics',
-    cargoType: 'Electronics',
-    origin: 'Modjo Dry Port',
-    destination: 'Addis Ababa',
-    distanceKm: 73,
-    weightTons: 12,
-    rateETB: 62000,
-    pickupWindow: '2026-08-20 10:00',
-    status: 'open',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 10800000).toISOString(),
-  },
-  {
-    title: '22T Machinery Parts',
-    cargoType: 'Machinery Parts',
-    origin: 'Djibouti Port',
-    destination: 'Modjo Dry Port',
-    distanceKm: 910,
-    weightTons: 22,
-    rateETB: 298000,
-    pickupWindow: '2026-08-21 05:00',
-    status: 'in_transit',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    title: '35T Construction Material',
-    cargoType: 'Construction Material',
-    origin: 'Dire Dawa',
-    destination: 'Addis Ababa',
-    distanceKm: 500,
-    weightTons: 35,
-    rateETB: 220000,
-    pickupWindow: '2026-08-23 06:00',
-    status: 'open',
-    urgency: 'normal',
-    postedAt: new Date(Date.now() - 5400000).toISOString(),
-  },
-];
 
 // ── Database lifecycle ──
 
@@ -140,24 +46,31 @@ export async function initDatabase(): Promise<void> {
     );
   `);
 
-  // Seed if empty
-  const countResult = await database.getFirstAsync<{ cnt: number }>(
-    'SELECT COUNT(*) as cnt FROM cached_cargo'
-  );
+  await database.execAsync(`
+    CREATE TABLE IF NOT EXISTS user_session (
+      id TEXT PRIMARY KEY NOT NULL,
+      email TEXT NOT NULL,
+      fullName TEXT NOT NULL,
+      role TEXT NOT NULL,
+      phone TEXT,
+      companyName TEXT,
+      tinNumber TEXT,
+      licensePlate TEXT,
+      driverLicense TEXT,
+      token TEXT
+    );
+  `);
 
-  if (countResult && countResult.cnt === 0) {
-    for (let i = 0; i < SEED_CARGO.length; i++) {
-      const c = SEED_CARGO[i];
-      const id = `TF-LOAD-${8800 + i}`;
-      await database.runAsync(
-        `INSERT INTO cached_cargo (id, title, cargoType, origin, destination, distanceKm, weightTons, rateETB, pickupWindow, status, urgency, postedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        id, c.title, c.cargoType, c.origin, c.destination,
-        c.distanceKm, c.weightTons, c.rateETB, c.pickupWindow,
-        c.status, c.urgency, c.postedAt
-      );
-    }
-  }
+  // Remove any previously seeded mock cargo
+  await database.runAsync("DELETE FROM cached_cargo WHERE id LIKE 'TF-LOAD-%'");
+}
+
+export async function getActiveDriverTrip(): Promise<CargoLoad | null> {
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<CargoLoad>(
+    "SELECT * FROM cached_cargo WHERE status = 'in_transit' LIMIT 1"
+  );
+  return row || null;
 }
 
 // ── Cargo CRUD ──
@@ -259,4 +172,38 @@ export async function getPendingCount(): Promise<number> {
     "SELECT COUNT(*) as cnt FROM offline_action_queue WHERE status = 'pending'"
   );
   return result?.cnt ?? 0;
+}
+
+// ── User Session (Local SQLite Persistence) ──
+
+export async function saveUserSession(user: AuthUser): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM user_session');
+  await database.runAsync(
+    `INSERT INTO user_session (id, email, fullName, role, phone, companyName, tinNumber, licensePlate, driverLicense, token)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    user.id,
+    user.email,
+    user.fullName,
+    user.role,
+    user.phone || '',
+    user.companyName || '',
+    user.tinNumber || '',
+    user.licensePlate || '',
+    user.driverLicense || '',
+    user.token || ''
+  );
+}
+
+export async function getCurrentUserSession(): Promise<AuthUser | null> {
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<AuthUser>(
+    'SELECT * FROM user_session LIMIT 1'
+  );
+  return row || null;
+}
+
+export async function clearUserSession(): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM user_session');
 }

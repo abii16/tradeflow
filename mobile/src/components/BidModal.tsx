@@ -1,5 +1,5 @@
-// TradeFlow Mobile — Bid Modal
-import React, { useState } from 'react';
+// TradeFlow Mobile — Bid Bottom Sheet (Clean, Functional UI)
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,122 +9,337 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { CargoLoad } from '../types/cargo';
+import { THEME } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatPickupWindow, formatPickupDetails } from '../utils/ethiopianCalendar';
 
 interface Props {
   visible: boolean;
   cargo: CargoLoad | null;
-  onSubmit: (cargoId: string, amountETB: number, licensePlate: string, estimatedArrival: string) => void;
+  onSubmit: (
+    cargoId: string,
+    amountETB: number,
+    licensePlate: string,
+    estimatedArrival: string
+  ) => void;
   onClose: () => void;
 }
 
 export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
+  const { theme } = useTheme();
+  const { language, t } = useLanguage();
   const [amount, setAmount] = useState('');
   const [plate, setPlate] = useState('');
   const [eta, setEta] = useState('');
 
+  useEffect(() => {
+    if (cargo) {
+      setAmount(String(cargo.rateETB));
+      setEta('Ready in 24 hours');
+    }
+  }, [cargo]);
+
+  if (!cargo) return null;
+
+  const handlePreset = (multiplier: number) => {
+    const val = Math.round((cargo.rateETB * multiplier) / 1000) * 1000;
+    setAmount(String(val));
+  };
+
   const handleSubmit = () => {
-    if (!cargo) return;
-    const numAmount = parseInt(amount, 10);
-    if (!numAmount || !plate.trim()) return;
-    onSubmit(cargo.id, numAmount, plate.trim(), eta.trim() || 'TBD');
-    setAmount('');
+    const cleanAmount = parseInt(amount.replace(/,/g, ''), 10);
+    if (!cleanAmount || !plate.trim()) return;
+    onSubmit(cargo.id, cleanAmount, plate.trim().toUpperCase(), eta.trim() || 'Ready');
     setPlate('');
-    setEta('');
     onClose();
   };
 
-  const canSubmit = amount.trim().length > 0 && plate.trim().length > 0;
-
-  if (!cargo) return null;
+  const isValid = amount.trim().length > 0 && plate.trim().length > 0;
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.overlay}
       >
-        <View style={styles.modal}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Place Bid</Text>
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
-              <Text style={styles.closeBtn}>✕</Text>
-            </TouchableOpacity>
-          </View>
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
 
-          {/* Cargo summary */}
-          <View style={styles.summary}>
-            <Text style={styles.summaryId}>{cargo.id}</Text>
-            <Text style={styles.summaryTitle}>{cargo.title}</Text>
-            <Text style={styles.summaryRoute}>
-              {cargo.origin} → {cargo.destination}
-            </Text>
-            <Text style={styles.summaryRate}>
-              Listed rate: {cargo.rateETB.toLocaleString('en-US')} ETB
-            </Text>
-          </View>
+        <View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.cardBorder,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.dragHandle,
+              { backgroundColor: theme.colors.cardBorder },
+            ]}
+          />
 
-          {/* Form fields */}
-          <View style={styles.field}>
-            <Text style={styles.label}>Bid Amount (ETB)</Text>
-            <TextInput
-              style={styles.input}
-              value={amount}
-              onChangeText={setAmount}
-              placeholder="e.g. 330000"
-              placeholderTextColor="#64748b"
-              keyboardType="numeric"
-            />
-          </View>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Header */}
+            <View style={styles.header}>
+              <View>
+                <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>
+                  {t('bid_modal_title')}
+                </Text>
+                <Text style={[styles.modalSubtitle, { color: theme.colors.textMuted }]}>
+                  {cargo.id} • {cargo.cargoType}
+                </Text>
+              </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>License Plate</Text>
-            <TextInput
-              style={styles.input}
-              value={plate}
-              onChangeText={setPlate}
-              placeholder="e.g. 3-AA-12345"
-              placeholderTextColor="#64748b"
-              autoCapitalize="characters"
-            />
-          </View>
+              <TouchableOpacity
+                onPress={onClose}
+                style={[
+                  styles.closeBtn,
+                  { backgroundColor: theme.colors.surfaceElevated },
+                ]}
+                activeOpacity={0.7}
+              >
+                <Feather name="x" size={18} color={theme.colors.textMuted} />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Estimated Arrival</Text>
-            <TextInput
-              style={styles.input}
-              value={eta}
-              onChangeText={setEta}
-              placeholder="e.g. 2026-08-22 14:00"
-              placeholderTextColor="#64748b"
-            />
-          </View>
-
-          {/* Actions */}
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={onClose}
-              activeOpacity={0.7}
+            {/* Load Snapshot */}
+            <View
+              style={[
+                styles.summaryBox,
+                {
+                  backgroundColor: theme.colors.surfaceElevated,
+                  borderColor: theme.colors.cardBorder,
+                },
+              ]}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
-              onPress={handleSubmit}
-              activeOpacity={0.7}
-              disabled={!canSubmit}
-            >
-              <Text style={styles.submitText}>Submit Bid</Text>
-            </TouchableOpacity>
-          </View>
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  {t('route')}
+                </Text>
+                <Text style={[styles.summaryValue, { color: theme.colors.textSecondary }]}>
+                  {cargo.origin} → {cargo.destination} ({cargo.distanceKm} km)
+                </Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  {t('payload')}
+                </Text>
+                <Text style={[styles.summaryValue, { color: theme.colors.textSecondary }]}>
+                  {cargo.weightTons} {t('tons')}
+                </Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  {t('pickup_window')}
+                </Text>
+                {(() => {
+                  const p = formatPickupDetails(cargo.pickupWindow, language);
+                  return (
+                    <Text style={[styles.summaryValue, { color: theme.colors.textSecondary, textAlign: 'right', fontWeight: '600' }]}>
+                      {language === 'AM' ? (
+                        <>
+                          <Text style={{ color: theme.colors.textPrimary }}>{p.ecDatePlain}</Text>
+                          <Text style={{ color: theme.colors.primary, fontWeight: '700' }}> ({p.ecTime})</Text>
+                        </>
+                      ) : (
+                        <>
+                          <Text style={{ color: theme.colors.textPrimary }}>{p.gcDatePlain}</Text>
+                          <Text style={{ color: theme.colors.blue, fontWeight: '700' }}> • {p.gcTime}</Text>
+                        </>
+                      )}
+                    </Text>
+                  );
+                })()}
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  {t('listed_rate')}
+                </Text>
+                <Text style={[styles.summaryHighlight, { color: theme.colors.primary }]}>
+                  {cargo.rateETB.toLocaleString('en-US')} ETB
+                </Text>
+              </View>
+            </View>
+
+            {/* Quick Adjustments */}
+            <View style={styles.presetSection}>
+              <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
+                {t('adjustment')}
+              </Text>
+              <View style={styles.presetRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.presetBtn,
+                    {
+                      backgroundColor: theme.colors.surfaceElevated,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                  ]}
+                  onPress={() => handlePreset(0.95)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.presetBtnText, { color: theme.colors.textSecondary }]}>
+                    -5%
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.presetBtn,
+                    {
+                      backgroundColor: theme.colors.primarySubtle,
+                      borderColor: theme.colors.primaryBorder,
+                    },
+                  ]}
+                  onPress={() => handlePreset(1.0)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.presetBtnText,
+                      { color: theme.colors.primary, fontWeight: '700' },
+                    ]}
+                  >
+                    {t('listed_rate')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.presetBtn,
+                    {
+                      backgroundColor: theme.colors.surfaceElevated,
+                      borderColor: theme.colors.cardBorder,
+                    },
+                  ]}
+                  onPress={() => handlePreset(1.05)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.presetBtnText, { color: theme.colors.textSecondary }]}>
+                    +5%
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Form Inputs */}
+            <View style={styles.formGroup}>
+              <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
+                {t('bid_amount_etb')}
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                    color: theme.colors.textPrimary,
+                  },
+                ]}
+                value={amount}
+                onChangeText={setAmount}
+                placeholder="e.g. 340000"
+                placeholderTextColor={theme.colors.textDim}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
+                {t('truck_plate')}
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                    color: theme.colors.textPrimary,
+                  },
+                ]}
+                value={plate}
+                onChangeText={setPlate}
+                placeholder="e.g. 3-AA-12345"
+                placeholderTextColor={theme.colors.textDim}
+                autoCapitalize="characters"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.inputLabel, { color: theme.colors.textMuted }]}>
+                {t('availability')}
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.colors.surfaceElevated,
+                    borderColor: theme.colors.cardBorder,
+                    color: theme.colors.textPrimary,
+                  },
+                ]}
+                value={eta}
+                onChangeText={setEta}
+                placeholder="e.g. Ready in 24 hours"
+                placeholderTextColor={theme.colors.textDim}
+              />
+            </View>
+
+            {/* Buttons */}
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={[
+                  styles.cancelButton,
+                  {
+                    backgroundColor: theme.colors.redSubtle,
+                    borderColor: theme.colors.redBorder,
+                  },
+                ]}
+                onPress={onClose}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.cancelButtonText, { color: theme.colors.red }]}>
+                  {t('cancel')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  { backgroundColor: theme.colors.primary },
+                  !isValid && styles.submitButtonDisabled,
+                ]}
+                onPress={handleSubmit}
+                disabled={!isValid}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.submitButtonText,
+                    { color: theme.colors.primaryText },
+                  ]}
+                >
+                  {t('submit_bid')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -134,118 +349,177 @@ export default function BidModal({ visible, cargo, onSubmit, onClose }: Props) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    justifyContent: 'flex-end',
   },
-  modal: {
-    backgroundColor: '#1e293b',
-    borderRadius: 8,
-    width: '100%',
-    maxWidth: 400,
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  sheet: {
+    backgroundColor: THEME.colors.surface,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: THEME.colors.cardBorder,
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
+    maxHeight: '85%',
+  },
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: THEME.colors.cardBorder,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 16,
   },
   header: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    marginBottom: 16,
   },
-  headerTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#f1f5f9',
+  modalTitle: {
+    color: THEME.colors.textPrimary,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  modalSubtitle: {
+    color: THEME.colors.textMuted,
+    fontSize: 12,
+    marginTop: 2,
+    fontFamily: THEME.typography.mono,
   },
   closeBtn: {
-    fontSize: 16,
-    color: '#94a3b8',
-    paddingHorizontal: 4,
-  },
-  summary: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#0f172a',
-    borderBottomWidth: 1,
-    borderBottomColor: '#334155',
-  },
-  summaryId: {
-    fontSize: 11,
-    color: '#64748b',
-    marginBottom: 2,
-  },
-  summaryTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#e2e8f0',
-    marginBottom: 2,
-  },
-  summaryRoute: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginBottom: 2,
-  },
-  summaryRate: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  field: {
-    paddingHorizontal: 16,
-    marginTop: 12,
-  },
-  label: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginBottom: 6,
-  },
-  input: {
-    backgroundColor: '#0f172a',
-    borderWidth: 1,
-    borderColor: '#334155',
+    padding: 6,
     borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#f1f5f9',
-    fontSize: 14,
+    backgroundColor: THEME.colors.surfaceElevated,
   },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+  summaryBox: {
+    backgroundColor: THEME.colors.card,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: THEME.colors.cardBorder,
+    padding: 12,
+    marginBottom: 16,
     gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginTop: 4,
   },
-  cancelBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#475569',
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  cancelText: {
-    color: '#94a3b8',
-    fontSize: 13,
+  summaryLabel: {
+    color: THEME.colors.textMuted,
+    fontSize: 12,
+  },
+  summaryValue: {
+    color: THEME.colors.textSecondary,
+    fontSize: 12,
     fontWeight: '500',
   },
-  submitBtn: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 16,
+  summaryHighlight: {
+    color: THEME.colors.primary,
+    fontSize: 13,
+    fontWeight: '700',
+    fontFamily: THEME.typography.mono,
+  },
+  presetSection: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    color: THEME.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  presetRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  presetBtn: {
+    flex: 1,
+    backgroundColor: THEME.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: THEME.colors.cardBorder,
     paddingVertical: 8,
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#475569',
+    alignItems: 'center',
   },
-  submitBtnDisabled: {
+  presetBtnActive: {
+    borderColor: THEME.colors.primaryBorder,
+    backgroundColor: THEME.colors.primarySubtle,
+  },
+  presetBtnText: {
+    color: THEME.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  presetBtnTextActive: {
+    color: THEME.colors.primary,
+  },
+  formGroup: {
+    marginBottom: 14,
+  },
+  input: {
+    backgroundColor: THEME.colors.card,
+    borderWidth: 1,
+    borderColor: THEME.colors.cardBorder,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: THEME.colors.textPrimary,
+    fontSize: 14,
+    fontFamily: THEME.typography.mono,
+  },
+  offlineNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+    marginBottom: 16,
+  },
+  offlineNoteText: {
+    color: THEME.colors.textMuted,
+    fontSize: 11,
+    flex: 1,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: THEME.colors.redSubtle,
+    borderWidth: 1,
+    borderColor: THEME.colors.redBorder,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: THEME.colors.red,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  submitButton: {
+    flex: 2,
+    backgroundColor: THEME.colors.primary,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  submitButtonDisabled: {
     opacity: 0.4,
   },
-  submitText: {
-    color: '#f1f5f9',
-    fontSize: 13,
-    fontWeight: '600',
+  submitButtonText: {
+    color: THEME.colors.primaryText,
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

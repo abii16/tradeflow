@@ -1,7 +1,7 @@
-import { db } from './src/db';
-import { users } from './src/db/schema/users';
-import { loads } from './src/db/schema/loads';
-import { customsDocuments } from './src/db/schema/customs';
+import { db } from '../db';
+import { users } from '../db/schema/users';
+import { loads } from '../db/schema/loads';
+import { customsDocuments } from '../db/schema/customs';
 
 async function seed() {
   console.log('Seeding customs document...');

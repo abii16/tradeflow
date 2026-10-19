@@ -24,7 +24,17 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     setIsLocked(false);
 
     try {
-      const result: any = await login({ email, password, rememberMe });
+      const trimmedInput = email.trim();
+      // Phone-as-Email mapping: If phone number is entered (no @), map behind the scenes to 09XXXXXXXX@tradeflow.et
+      let resolvedEmail = trimmedInput;
+      if (!trimmedInput.includes('@')) {
+        const digits = trimmedInput.replace(/\D/g, '');
+        const local = digits.startsWith('251') ? digits.slice(3) : digits;
+        const normalized = local.startsWith('0') ? local.slice(0, 10) : `0${local.slice(-9)}`;
+        resolvedEmail = `${normalized}@tradeflow.et`;
+      }
+
+      const result: any = await login({ email: resolvedEmail, password, rememberMe });
       if (result?.suspiciousLoginAlert) {
         alert(`Security Notice: Suspicious login activity detected (${result.suspiciousLoginAlert}). Active session logged.`);
       }
@@ -114,14 +124,16 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1.5">Email Address</label>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#8F8F8F] mb-1.5">
+                  Email Address or Driver Phone
+                </label>
                 <input 
-                  type="email" 
+                  type="text" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)} 
                   required
                   className="w-full bg-[#1C1C1C] text-[#EDEDED] border border-[#2E2E2E] rounded-xl p-3 text-sm focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] outline-none transition-all placeholder-[#8F8F8F]/50" 
-                  placeholder="admin@tradeflow.com" 
+                  placeholder="solomon@company.et or 0911234567" 
                 />
               </div>
               <div>
