@@ -186,8 +186,9 @@ export async function fetchLiveAssets() {
   return apiClient('/admin/telematics/live-assets', { method: 'GET' });
 }
 
-export async function fetchCorridorRoutes() {
-  return apiClient('/pricing/corridor-routes', { method: 'GET' });
+export async function fetchCorridorRoutes(loadId?: string) {
+  const query = loadId ? `?loadId=${encodeURIComponent(loadId)}` : '';
+  return apiClient(`/pricing/corridor-routes${query}`, { method: 'GET' });
 }
 
 export async function fetchEtaProjections() {
