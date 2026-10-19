@@ -342,9 +342,9 @@ export default function BidsTab() {
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="flex items-center gap-1.5 bg-amber-50 inline-flex px-2 py-1 rounded-md border border-amber-100/50">
-                                    <Star size={12} className="fill-amber-500 text-amber-500" />
-                                    <span className="text-xs font-bold text-amber-700">{bid.transporterRating || bid.rating || '4.8'}</span>
+                                  <div className="flex items-center gap-1.5 bg-amber-500/10 inline-flex px-2 py-1 rounded-md border border-amber-500/20">
+                                    <Star size={12} className="fill-amber-400 text-amber-400" />
+                                    <span className="text-xs font-bold text-amber-400">{bid.transporterRating || bid.rating || '—'}</span>
                                   </div>
                                 </TableCell>
                                 <TableCell>

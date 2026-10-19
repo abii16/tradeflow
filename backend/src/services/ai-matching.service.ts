@@ -70,7 +70,7 @@ export class AiMatchingService {
         id: users.id,
         fullName: users.fullName,
         companyName: users.companyName,
-        rating: users.vehicleCapacity,
+        metadata: users.metadata,
       })
       .from(users)
       .where(
@@ -107,7 +107,20 @@ export class AiMatchingService {
         const quoteFactor = 0.92 + (idx % 8) * 0.022;
         const proposedCost = Math.round(baseBudget * quoteFactor);
         const proximity = Math.round((8.0 + (idx % 12) * 2.8) * 10) / 10;
-        const reliability = 88.0 + (idx % 11) * 1.1;
+        
+        // Derive dynamic reliability score from carrier profile metadata or deterministic baseline
+        const meta = t.metadata as Record<string, any> | null;
+        let reliability = 92.0 + (idx % 8) * 1.0;
+        if (meta?.rating && !isNaN(Number(meta.rating))) {
+          reliability = Math.min(99.0, Math.max(80.0, Number(meta.rating) * 20));
+        } else if (meta?.reliabilityScore && !isNaN(Number(meta.reliabilityScore))) {
+          reliability = Number(meta.reliabilityScore);
+        } else if (t.id) {
+          const charSum = t.id.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+          const baselineRatings = [98.0, 94.0, 96.0, 92.0, 97.0];
+          reliability = baselineRatings[charSum % baselineRatings.length];
+        }
+
         const fuel = 84.0 + (idx % 9) * 1.4;
 
         return {
@@ -159,6 +172,9 @@ export class AiMatchingService {
       const candidateData = candidates.find(c => c.transporter_id === r.transporter_id);
       if (!candidateData) continue;
 
+      const carrierRating = (candidateData.historical_reliability_score / 20).toFixed(1);
+      const proximityStr = `${candidateData.proximity_distance_km} km`;
+
       const [createdBid] = await db
         .insert(bids)
         .values({
@@ -167,7 +183,7 @@ export class AiMatchingService {
           bidAmount: candidateData.proposed_cost_etb.toString(),
           currency: load.currency || 'ETB',
           status: 'PENDING',
-          notes: `AI Match: ${r.match_score}% | Conf: ${(r.confidence_score * 100).toFixed(1)}%`,
+          notes: `AI Match: ${r.match_score}% | Conf: ${(r.confidence_score * 100).toFixed(1)}% | Rating: ${carrierRating} | Proximity: ${proximityStr}`,
         })
         .returning();
 
