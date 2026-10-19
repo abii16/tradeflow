@@ -16,7 +16,7 @@ import {
   RotateCcw,
   Sparkles
 } from 'lucide-react';
-import { getCarrierLoads, getCarrierMyBids, submitCarrierBid, withdrawCarrierBid } from '@/lib/apiClient';
+import { getCarrierLoads, getCarrierMyBids, submitCarrierBid, withdrawCarrierBid, getCarrierOverview } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
 interface LoadItem {
@@ -67,6 +67,8 @@ export default function LoadBoardTab() {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCargoType, setSelectedCargoType] = useState<string>('ALL');
+  const [verificationStatus, setVerificationStatus] = useState<string>('VERIFIED');
+  const [aiErrorMessage, setAiErrorMessage] = useState<string | null>(null);
 
   // Place Bid Modal State
   const [showBidModal, setShowBidModal] = useState<boolean>(false);
@@ -78,17 +80,27 @@ export default function LoadBoardTab() {
 
   const fetchData = async (silent = false) => {
     if (!silent) setLoading(true);
+    setAiErrorMessage(null);
     try {
-      const [loadsRes, bidsRes] = await Promise.all([
-        getCarrierLoads(),
-        getCarrierMyBids(),
+      const [loadsRes, bidsRes, overviewRes] = await Promise.all([
+        getCarrierLoads().catch((e) => {
+          if (e.response?.status === 503 || e.response?.data?.error) {
+            setAiErrorMessage(e.response?.data?.error || 'AI Freight Matching Engine is offline.');
+          }
+          throw e;
+        }),
+        getCarrierMyBids().catch(() => ({ bids: [] })),
+        getCarrierOverview().catch(() => null),
       ]);
 
       if (loadsRes?.loads) setLoads(loadsRes.loads);
       if (bidsRes?.bids) setMyBids(bidsRes.bids);
+      if (overviewRes?.verificationStatus) setVerificationStatus(overviewRes.verificationStatus);
     } catch (err: any) {
       console.error('Failed to fetch load board data:', err);
-      toast.error('Could not load marketplace listings');
+      if (!aiErrorMessage) {
+        toast.error(err.response?.data?.error || 'Could not load marketplace listings');
+      }
     } finally {
       if (!silent) setLoading(false);
     }
@@ -114,6 +126,10 @@ export default function LoadBoardTab() {
   });
 
   const handleOpenBidModal = (load: LoadItem) => {
+    if (verificationStatus !== 'VERIFIED') {
+      toast.error('Bidding blocked: Transporter account pending verification per SRS FR-01');
+      return;
+    }
     setSelectedLoad(load);
     // Suggest 95% of shipper's budget as competitive AI recommendation
     const suggested = Math.round(Number(load.budgetAmount || 300000) * 0.96);
@@ -204,6 +220,31 @@ export default function LoadBoardTab() {
           </button>
         </div>
       </div>
+
+      {/* SRS FR-01: Verification status banner */}
+      {verificationStatus !== 'VERIFIED' && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3 animate-in fade-in">
+          <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={18} />
+          <div>
+            <h4 className="text-sm font-bold text-amber-400">Transporter Account Pending Verification (SRS FR-01)</h4>
+            <p className="text-xs text-[#8F8F8F] mt-0.5">
+              Your trade license and vehicle roadworthiness credentials are under review by Platform Administration.
+              Per SRS Section 3.1, submitting bids and accepting loads is locked until your account is approved.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* AI Engine Status Banner */}
+      {aiErrorMessage && (
+        <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 flex items-start gap-3 animate-in fade-in">
+          <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={18} />
+          <div>
+            <h4 className="text-sm font-bold text-rose-400">AI Microservice Notice</h4>
+            <p className="text-xs text-[#8F8F8F] mt-0.5">{aiErrorMessage}</p>
+          </div>
+        </div>
+      )}
 
       {activeSubTab === 'available' ? (
         <>

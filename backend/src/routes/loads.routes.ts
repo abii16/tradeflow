@@ -7,6 +7,7 @@ import { eq, and, gte, lte, desc } from 'drizzle-orm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateLoadSchema, QueryLoadSchema, UpdateLoadStatusSchema } from '../dto/loads.dto';
+import { aiMatchingService } from '../services/ai-matching.service';
 
 const router = Router();
 
@@ -53,27 +54,12 @@ router.post('/', JwtAuthGuard, RolesGuard(['SHIPPER', 'SYSTEM_ADMIN']), async (r
       status: 'POSTED',
     }).returning();
 
-    // --- MOCK BIDS GENERATION FOR DEMO PURPOSES ---
-    const transporters = await db.select().from(users).where(eq(users.role, 'TRANSPORTER')).limit(3);
-    
-    if (transporters.length > 0) {
-       const mockBids = transporters.map((t, index) => {
-         // Vary the bid amount around the budget
-         const variance = 1 - (index * 0.05); // e.g. 1.0, 0.95, 0.90 of budget
-         const bidAmount = (Number(data.budgetAmount) * variance).toString();
-         
-         return {
-           loadId: newLoad.id,
-           transporterId: t.id,
-           bidAmount,
-           currency: data.currency,
-           status: 'PENDING' as const,
-         };
-       });
-       
-       await db.insert(bids).values(mockBids);
+    // SRS FR-02.3: Automatically evaluate & generate ranked AI match shortlist within 5s
+    try {
+      await aiMatchingService.generateAiMatchesForLoad(newLoad.id);
+    } catch (aiErr: any) {
+      console.warn(`[Loads Route] AI matching warning for load ${newLoad.id}:`, aiErr.message);
     }
-    // ----------------------------------------------
 
     res.status(201).json({ message: 'Load created successfully', load: newLoad });
   } catch (error) {

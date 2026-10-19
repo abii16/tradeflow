@@ -282,6 +282,10 @@ export async function acceptBidEscrow(bidId: string) {
   return apiClient(`/shipper/bids/${bidId}/accept-escrow`, { method: 'POST' });
 }
 
+export async function triggerAiMatching(loadId: string) {
+  return apiClient(`/shipper/loads/${loadId}/match`, { method: 'POST' });
+}
+
 export async function getContractRates() {
   return apiClient('/shipper/contract-rates', { method: 'GET' });
 }
@@ -420,6 +424,10 @@ export async function submitProofOfDelivery(haulId: string, data: { podPhotoUrl?
   return apiClient(`/carrier/hauls/${haulId}/pod`, { method: 'POST', data });
 }
 
+export async function getHaulEta(haulId: string) {
+  return apiClient(`/carrier/hauls/${haulId}/eta`, { method: 'GET' });
+}
+
 export async function getCarrierVehicles() {
   return apiClient('/carrier/vehicles', { method: 'GET' });
 }
@@ -451,4 +459,86 @@ export async function reportCarrierIncident(data: { shipmentId?: string; inciden
 export async function getRiskZones() {
   return apiClient('/risk-zones', { method: 'GET' });
 }
+
+export async function optimizeCarrierRoute(data: {
+  currentLat: number;
+  currentLng: number;
+  destinationLat: number;
+  destinationLng: number;
+  vehicleWeight?: number;
+  fuelLevel?: number;
+}) {
+  return apiClient('/carrier/optimize-route', { method: 'POST', data });
+}
+
+export async function disputePayment(paymentId: string, reason: string, evidenceUrl?: string) {
+  return apiClient(`/payments/${paymentId}/dispute`, { method: 'POST', data: { reason, evidenceUrl } });
+}
+
+export async function syncOfflineQueueBatch(items: any[]) {
+  const checkIns = items
+    .filter((i) => i.type === 'CHECKIN')
+    .map((i) => ({
+      shipmentId: i.payload.shipmentId || '00000000-0000-0000-0000-000000000000',
+      latitude: i.payload.lat,
+      longitude: i.payload.lng,
+      speedKmH: i.payload.speed || 60,
+      timestamp: i.payload.timestamp || new Date().toISOString(),
+    }));
+
+  const incidentsList = items
+    .filter((i) => i.type === 'INCIDENT')
+    .map((i) => ({
+      shipmentId: i.payload.shipmentId,
+      incidentType: i.payload.incidentType || 'CHECKPOINT_DELAY',
+      severity: i.payload.severity || 'MEDIUM',
+      latitude: i.payload.latitude || 11.43,
+      longitude: i.payload.longitude || 40.8,
+      notes: i.payload.notes || 'Offline queued incident',
+      timestamp: i.payload.timestamp || new Date().toISOString(),
+    }));
+
+  return apiClient('/sync/batch', {
+    method: 'POST',
+    data: {
+      checkIns,
+      incidents: incidentsList,
+    },
+  });
+}
+
+// ==========================================
+// FORWARDER PORTAL APIS (SRS COMPLIANT)
+// ==========================================
+
+export async function getForwarderWorkspace() {
+  return apiClient('/forwarder/workspace', { method: 'GET' });
+}
+
+export async function getForwarderManifests() {
+  return apiClient('/forwarder/manifests', { method: 'GET' });
+}
+
+export async function validateForwarderDocument(data: {
+  documentUrl: string;
+  expectedQuantity: number;
+  expectedValue?: number;
+  documentType?: string;
+  loadId?: string;
+}) {
+  return apiClient('/forwarder/manifests/validate', { method: 'POST', data });
+}
+
+export async function getForwarderBiddingExchange() {
+  return apiClient('/forwarder/bidding-exchange', { method: 'GET' });
+}
+
+export async function awardForwarderBid(bidId: string, driverId?: string) {
+  return apiClient('/forwarder/award-bid', { method: 'POST', data: { bidId, driverId } });
+}
+
+export async function getForwarderAnalytics() {
+  return apiClient('/forwarder/analytics', { method: 'GET' });
+}
+
 

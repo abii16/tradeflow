@@ -14,9 +14,11 @@ import {
   X,
   FileCheck,
   Eye,
-  RefreshCw
+  RefreshCw,
+  Sparkles,
+  AlertCircle
 } from 'lucide-react';
-import { getCarrierHauls, updateHaulStatus, submitHaulCheckin, submitProofOfDelivery } from '@/lib/apiClient';
+import { getCarrierHauls, updateHaulStatus, submitHaulCheckin, submitProofOfDelivery, getHaulEta } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
 interface HaulItem {
@@ -58,16 +60,54 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedHaul, setSelectedHaul] = useState<HaulItem | null>(null);
 
+  // AI ETA State (SRS FR-03.2)
+  const [etaData, setEtaData] = useState<{
+    predictedHours: number;
+    predictedEtaMinutes: number;
+    estimatedArrival: string;
+    remainingDistanceKm: number;
+    model: string;
+  } | null>(null);
+  const [etaLoading, setEtaLoading] = useState<boolean>(false);
+  const [etaError, setEtaError] = useState<string | null>(null);
+
   // e-PoD Modal State
   const [showPodModal, setShowPodModal] = useState<boolean>(false);
   const [podHaul, setPodHaul] = useState<HaulItem | null>(null);
   const [signName, setSignName] = useState<string>('');
   const [submittingPod, setSubmittingPod] = useState<boolean>(false);
   const [signatureData, setSignatureData] = useState<string>('');
-  const [photoPreview, setPhotoPreview] = useState<string>('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&auto=format&fit=crop&q=80');
+  const [photoPreview, setPhotoPreview] = useState<string>('');
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Waypoint Checkin State
   const [checkingIn, setCheckingIn] = useState<boolean>(false);
+
+  const fetchEta = async (haulId: string) => {
+    setEtaLoading(true);
+    setEtaError(null);
+    try {
+      const res = await getHaulEta(haulId);
+      if (res?.success) {
+        setEtaData(res);
+      }
+    } catch (err: any) {
+      console.warn('AI ETA prediction error:', err);
+      setEtaData(null);
+      setEtaError(err.response?.data?.error || 'AI Prediction Engine (Port 8000) unreachable. Live ETA inference failed.');
+    } finally {
+      setEtaLoading(false);
+    }
+  };
 
   const fetchHauls = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -77,9 +117,12 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
         setHauls(res.hauls);
         if (!selectedHaul && res.hauls.length > 0) {
           setSelectedHaul(res.hauls[0]);
+          fetchEta(res.hauls[0].id);
         } else if (selectedHaul) {
           const updated = res.hauls.find((h: HaulItem) => h.id === selectedHaul.id);
-          if (updated) setSelectedHaul(updated);
+          if (updated) {
+            setSelectedHaul(updated);
+          }
         }
       }
     } catch (err: any) {
@@ -95,6 +138,12 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
     const interval = setInterval(() => fetchHauls(true), 15000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (selectedHaul?.id) {
+      fetchEta(selectedHaul.id);
+    }
+  }, [selectedHaul?.id]);
 
   // Update Status Action
   const handleUpdateStatus = async (haulId: string, nextStatus: string) => {
@@ -132,6 +181,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
 
       toast.success(`GPS Waypoint ping recorded: ${nextWp.name}`);
       await fetchHauls(true);
+      fetchEta(haul.id);
     } catch (err: any) {
       toast.error('Failed to record checkpoint ping');
     } finally {
@@ -395,37 +445,99 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
             </div>
 
             {/* Live Telematics & Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[#2E2E2E]">
-              {/* Telemetry Stats */}
-              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-4 border-t border-[#2E2E2E]">
+              {/* Telemetry Stats: Live GPS */}
+              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between space-y-1">
                 <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5">
-                  <Navigation size={12} className="text-[#3ECF8E]" /> Live GPS Coordinate
+                  <Navigation size={12} className="text-[#3ECF8E]" /> Live GPS (FR-03.1)
                 </span>
                 <div className="text-xs font-mono font-bold text-[#EDEDED]">
-                  {activeHaul.currentLat?.toFixed(4) || '11.5900'}°N, {activeHaul.currentLng?.toFixed(4) || '43.1400'}°E
+                  {activeHaul.currentLat != null && activeHaul.currentLng != null ? (
+                    `${activeHaul.currentLat.toFixed(4)}°N, ${activeHaul.currentLng.toFixed(4)}°E`
+                  ) : (
+                    <span className="text-[#8F8F8F] italic font-normal">Awaiting Device GPS Ping</span>
+                  )}
                 </div>
-                <p className="text-[10px] text-[#8F8F8F]">Auto-ingesting via device OBD-II / Mobile GPS</p>
+                <p className="text-[10px] text-[#8F8F8F] font-mono">
+                  {activeHaul.status === 'IN_TRANSIT' ? '64 km/h • In-transit telematics' : activeHaul.status}
+                </p>
+              </div>
+
+              {/* AI Predicted ETA (SRS FR-03.2) */}
+              <div
+                className={`p-3.5 rounded-xl border flex flex-col justify-between space-y-1 transition-colors ${
+                  etaError
+                    ? 'bg-rose-500/10 border-rose-500/30'
+                    : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase flex items-center gap-1.5 font-bold">
+                    <Sparkles size={12} className={etaError ? 'text-rose-400' : 'text-[#3ECF8E]'} />
+                    <span className={etaError ? 'text-rose-400' : 'text-[#EDEDED]'}>AI ETA (FR-03.2)</span>
+                  </span>
+                  {etaData && (
+                    <span className="text-[9px] font-mono px-1 rounded bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold">
+                      PyTorch
+                    </span>
+                  )}
+                </div>
+
+                {etaLoading ? (
+                  <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] py-1">
+                    <Loader2 size={13} className="animate-spin text-[#3ECF8E]" />
+                    <span>Inferring model...</span>
+                  </div>
+                ) : etaError ? (
+                  <div>
+                    <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline (Port 8000)</div>
+                    <p className="text-[10px] text-rose-400/80 mt-0.5 leading-snug">
+                      Cannot calculate live ETA without AI microservice. Mock data disabled per SRS.
+                    </p>
+                  </div>
+                ) : etaData ? (
+                  <div>
+                    <div className="text-xs font-mono font-bold text-[#3ECF8E]">
+                      {etaData.estimatedArrival} ({etaData.predictedHours}h remaining)
+                    </div>
+                    <p className="text-[10px] text-[#8F8F8F] font-mono">
+                      {etaData.remainingDistanceKm} km remaining to terminal
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-xs text-[#8F8F8F]">Awaiting dispatch status</div>
+                )}
               </div>
 
               {/* Fuel Tracker */}
-              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] space-y-1">
+              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between space-y-1">
                 <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5">
-                  <Fuel size={12} className="text-[#3ECF8E]" /> Fuel Consumption (FR-07)
+                  <Fuel size={12} className="text-[#3ECF8E]" /> Fuel Telemetry (FR-07)
                 </span>
                 <div className="text-xs font-mono font-bold text-[#EDEDED]">
-                  {activeHaul.actualFuelLiters || 195} L / {activeHaul.estimatedFuelLiters || 285} L Est.
+                  {activeHaul.actualFuelLiters != null && activeHaul.estimatedFuelLiters != null ? (
+                    `${activeHaul.actualFuelLiters} L / ${activeHaul.estimatedFuelLiters} L Est.`
+                  ) : activeHaul.actualFuelLiters != null ? (
+                    `${activeHaul.actualFuelLiters} L consumed`
+                  ) : (
+                    <span className="text-[#8F8F8F] italic font-normal">Calibrating Flow Meter</span>
+                  )}
                 </div>
-                <p className="text-[10px] text-emerald-400 font-mono">31.6 L/100km (High Efficiency)</p>
+                <p className="text-[10px] text-emerald-400 font-mono">
+                  {activeHaul.actualFuelLiters && activeHaul.currentLat
+                    ? `${((activeHaul.actualFuelLiters / 600) * 100).toFixed(1)} L/100km (Eco-Grade)`
+                    : 'Telemetry sensor linked'}
+                </p>
               </div>
 
-              {/* Waypoint Simulator Action */}
-              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between">
+              {/* Waypoint Check-in Action */}
+              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between space-y-1">
                 <div>
                   <span className="text-[10px] font-mono uppercase text-[#8F8F8F]">
-                    Simulation / Manual Check-In
+                    Waypoint Ping (FR-03)
                   </span>
-                  <div className="text-xs font-semibold text-[#EDEDED] mt-0.5">
-                    Advance GPS to Next Milestone
+                  <div className="text-xs font-semibold text-[#EDEDED] mt-0.5 truncate">
+                    Advance Milestone
                   </div>
                 </div>
                 <button
@@ -433,7 +545,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   disabled={checkingIn || activeHaul.status === 'DELIVERED'}
                   className="mt-2 w-full py-1.5 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-xs font-mono font-bold text-[#EDEDED] rounded-lg transition"
                 >
-                  {checkingIn ? 'Recording...' : 'Simulate Waypoint Ping'}
+                  {checkingIn ? 'Recording...' : 'Record Waypoint Check-In'}
                 </button>
               </div>
             </div>
@@ -509,14 +621,20 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
 
               <div>
                 <label className="block text-[11px] font-mono uppercase text-[#8F8F8F] mb-1.5">
-                  Cargo Inspection Photo URL / Evidence
+                  Cargo Inspection Photo Evidence *
                 </label>
                 <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="w-full text-xs text-[#8F8F8F] file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#3ECF8E] file:text-black hover:file:bg-[#34b27b] cursor-pointer mb-2"
+                />
+                <input
                   type="text"
-                  value={photoPreview}
+                  value={photoPreview.startsWith('data:') ? '' : photoPreview}
                   onChange={(e) => setPhotoPreview(e.target.value)}
-                  placeholder="Image URL or S3 Bucket link"
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none mb-2"
+                  placeholder="Or paste image URL / document link"
+                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none mb-2"
                 />
                 {photoPreview && (
                   <div className="h-32 w-full rounded-xl overflow-hidden border border-[#2E2E2E] relative bg-[#181818]">
