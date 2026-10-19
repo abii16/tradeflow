@@ -17,6 +17,7 @@ export const shipments = pgTable('shipments', {
   acceptedBidId: uuid('accepted_bid_id').notNull().references(() => bids.id),
   transporterId: uuid('transporter_id').notNull().references(() => users.id),
   driverId: uuid('driver_id').notNull().references(() => users.id),
+  truckPlate: varchar('truck_plate', { length: 50 }),
   currentLat: doublePrecision('current_lat'),
   currentLng: doublePrecision('current_lng'),
   status: shipmentStatusEnum('status').notNull().default('DISPATCHED'),

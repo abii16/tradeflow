@@ -7,6 +7,7 @@ export const vehicles = pgTable('vehicles', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   vehicleType: varchar('vehicle_type', { length: 100 }).notNull(),
+  plateNumber: varchar('plate_number', { length: 50 }),
   capacityTons: decimal('capacity_tons', { precision: 10, scale: 2 }).notNull(),
   fuelType: varchar('fuel_type', { length: 50 }),
   insuranceDocUrl: varchar('insurance_doc_url', { length: 2048 }),
