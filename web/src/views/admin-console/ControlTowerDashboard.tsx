@@ -57,16 +57,22 @@ export default function ControlTowerDashboard() {
     }
   };
 
-  const loadRoutes = async () => {
+  const [selectedLoadId, setSelectedLoadId] = useState<string | null>(null);
+
+  const loadRoutes = async (targetId?: string) => {
     setLoadingRoutes(true);
     try {
-      const routeRes = await fetchCorridorRoutes();
+      const activeId = targetId || selectedLoadId || undefined;
+      const routeRes = await fetchCorridorRoutes(activeId);
       if (routeRes && routeRes.routes && routeRes.routes.length > 0) {
         setRoutes(routeRes.routes);
         setRoutesError(null);
+        if (routeRes.activeLoad?.id && !targetId && !selectedLoadId) {
+          setSelectedLoadId(routeRes.activeLoad.id);
+        }
       } else {
         setRoutes([]);
-        setRoutesError('No routes returned from AI Pricing Engine.');
+        setRoutesError(routeRes?.message || 'No routes returned from AI Pricing Engine.');
       }
     } catch (err: any) {
       console.error('[ControlTower] Failed to fetch AI corridor routes:', err);
@@ -221,7 +227,7 @@ export default function ControlTowerDashboard() {
           
           {/* Card A: Spot Pricing Optimizer */}
           <div className="bg-[#232323] rounded-xl shadow-sm border border-[#2E2E2E] p-5 flex-1 flex flex-col">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-[#EDEDED] text-sm flex items-center gap-1.5">
                 <TrendingUp size={16} className="text-[#8F8F8F]" />
                 {t('spo_title')}
@@ -236,7 +242,7 @@ export default function ControlTowerDashboard() {
                   {routesError ? 'AI Offline' : 'LGBM ML Live'}
                 </span>
                 <button
-                  onClick={loadRoutes}
+                  onClick={() => loadRoutes(selectedLoadId || undefined)}
                   disabled={loadingRoutes}
                   className="p-1 hover:bg-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] rounded transition-colors disabled:opacity-50"
                   title="Recalculate with Live AI Engine"
@@ -245,6 +251,33 @@ export default function ControlTowerDashboard() {
                 </button>
               </div>
             </div>
+
+            {loads.length > 1 && (
+              <div className="mb-3">
+                <label className="text-[10px] font-medium text-[#8F8F8F] block mb-1">
+                  Active Cargo Loads ({loads.length}):
+                </label>
+                <select
+                  value={selectedLoadId || ''}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setSelectedLoadId(id);
+                    loadRoutes(id);
+                  }}
+                  className="w-full bg-[#181818] border border-[#2E2E2E] text-xs text-[#EDEDED] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#3ECF8E] font-medium cursor-pointer"
+                >
+                  {loads.map((l: any) => {
+                    const orig = typeof l.origin === 'object' ? l.origin?.city || l.origin?.address : l.origin;
+                    const dest = typeof l.destination === 'object' ? l.destination?.city || l.destination?.address : l.destination;
+                    return (
+                      <option key={l.id} value={l.id}>
+                        {l.title} ({orig} → {dest}) • {(Number(l.weightKg || 0) / 1000).toFixed(1)}t
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
 
             <div className="space-y-3 flex-1 flex flex-col justify-center">
               {loadingRoutes ? (
@@ -260,15 +293,21 @@ export default function ControlTowerDashboard() {
                     {routesError}
                   </p>
                   <button
-                    onClick={loadRoutes}
+                    onClick={() => loadRoutes(selectedLoadId || undefined)}
                     className="mt-3 px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs rounded border border-rose-500/30 transition-colors"
                   >
                     Retry Live AI Query
                   </button>
                 </div>
               ) : routes.length === 0 ? (
-                <div className="text-center py-6 text-xs text-zinc-500">
-                  No pricing routes returned by AI Engine
+                <div className="flex flex-col items-center justify-center py-8 text-center text-[#8F8F8F]">
+                  <div className="w-12 h-12 rounded-full bg-[#181818] flex items-center justify-center mb-3 text-[#8F8F8F]">
+                    <TrendingUp size={24} />
+                  </div>
+                  <p className="text-xs font-semibold text-[#EDEDED]">No active cargo loads to optimize</p>
+                  <p className="text-[10px] text-[#8F8F8F] max-w-[240px] mt-1">
+                    Post a freight load in the marketplace to trigger live AI ML route pricing and yield optimization.
+                  </p>
                 </div>
               ) : (
                 routes.map((route) => (
@@ -276,8 +315,14 @@ export default function ControlTowerDashboard() {
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
                     <div>
                       <div className="text-xs font-semibold text-[#EDEDED]">{route.name}</div>
+                      {route.loadTitle && (
+                        <div className="text-[10px] text-zinc-400 mt-0.5 flex items-center gap-1.5">
+                          <span className="text-emerald-400 font-medium truncate max-w-[160px]">{route.loadTitle}</span>
+                          {route.cargoWeightKg && <span>• {(Number(route.cargoWeightKg) / 1000).toFixed(1)}t</span>}
+                        </div>
+                      )}
                       {route.calculationId && (
-                        <div className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                        <div className="text-[9px] font-mono text-zinc-500 mt-0.5">
                           ID: {route.calculationId} {route.confidence ? `• R² ${(route.confidence * 100).toFixed(1)}%` : ''}
                         </div>
                       )}
@@ -447,7 +492,17 @@ export default function ControlTowerDashboard() {
                   </tr>
                 ) : (
                   loads.map((load) => (
-                    <tr key={load.id} className="hover:bg-[#2A2A2A] transition-colors group cursor-default">
+                    <tr 
+                      key={load.id} 
+                      onClick={() => {
+                        setSelectedLoadId(load.id);
+                        loadRoutes(load.id);
+                      }}
+                      className={`hover:bg-[#2A2A2A] transition-colors group cursor-pointer ${
+                        selectedLoadId === load.id ? 'bg-[#3ECF8E]/10 border-l-2 border-l-[#3ECF8E]' : ''
+                      }`}
+                      title="Click to optimize this cargo load with live AI ML pricing"
+                    >
                       <td className="px-5 py-3.5 leading-normal whitespace-nowrap">
                         <span className="font-mono text-xs font-semibold bg-[#181818] border border-[#2E2E2E] text-[#EDEDED] px-2.5 py-1 rounded-md shadow-sm">
                           TF-LOAD-{load.id?.split('-')?.[0]?.substring(0, 4)?.toUpperCase() || '8821'}
