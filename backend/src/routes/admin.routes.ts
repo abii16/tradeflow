@@ -800,8 +800,9 @@ router.post('/pricing/publish', async (req: Request, res: Response): Promise<voi
   }
 });
 
-router.post('/pricing/optimize', async (req: Request, res: Response): Promise<void> => {
+router.post('/pricing/optimize', JwtAuthGuard, RolesGuard(['ADMIN']), async (req: Request, res: Response): Promise<void> => {
   try {
+    const AI_ENGINE_URL = process.env.AI_ENGINE_URL || 'http://127.0.0.1:8000';
     const activeLoads = await db.select().from(loads).where(eq(loads.status, 'POSTED'));
     const activeTransporters = await db.select().from(users).where(eq(users.role, 'TRANSPORTER'));
     
@@ -813,6 +814,20 @@ router.post('/pricing/optimize', async (req: Request, res: Response): Promise<vo
        else if (ratio < 0.5) multiplier = 0.9;
     }
 
+    // Sync live corridor supply/demand into AI Engine
+    try {
+      await fetch(`${AI_ENGINE_URL}/api/v1/pricing/corridors/DJIBOUTI_MODJO/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          active_loads_count: Math.max(1, activeLoads.length),
+          available_trucks_count: Math.max(1, activeTransporters.length)
+        })
+      });
+    } catch (aiErr: any) {
+      console.warn('[pricing/optimize] AI Engine corridor update notice:', aiErr.message);
+    }
+
     let policy = await db.query.pricingPolicies.findFirst({
       orderBy: (policies, { desc }) => [desc(policies.updatedAt)]
     });
@@ -822,13 +837,13 @@ router.post('/pricing/optimize', async (req: Request, res: Response): Promise<vo
       spotRateCeiling: policy?.spotRateCeiling || '45.00',
       dieselPrice: policy?.dieselPrice || '95.50',
       demandMultiplier: multiplier.toString(),
-      updatedBy: req.user!.id
+      updatedBy: req.user?.id || null
     });
 
     res.status(200).json({ success: true, message: 'AI optimization complete.' });
   } catch (error: any) {
     console.error('Error optimizing pricing:', error);
-    res.status(500).json({ error: 'Failed to optimize pricing' });
+    res.status(500).json({ error: error.message || 'Failed to optimize pricing' });
   }
 });
 

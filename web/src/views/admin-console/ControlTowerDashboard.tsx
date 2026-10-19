@@ -36,6 +36,8 @@ export default function ControlTowerDashboard() {
   // Live states
   const [summary, setSummary] = useState({ activeAssets: 0, corridorStatus: 'OPERATIONAL', activeAlerts: 0 });
   const [routes, setRoutes] = useState<any[]>([]);
+  const [routesError, setRoutesError] = useState<string | null>(null);
+  const [loadingRoutes, setLoadingRoutes] = useState(true);
   const [etaData, setEtaData] = useState<any[]>([]);
   const [recalculating, setRecalculating] = useState(false);
   const [refreshingEta, setRefreshingEta] = useState(false);
@@ -55,19 +57,37 @@ export default function ControlTowerDashboard() {
     }
   };
 
+  const loadRoutes = async () => {
+    setLoadingRoutes(true);
+    try {
+      const routeRes = await fetchCorridorRoutes();
+      if (routeRes && routeRes.routes && routeRes.routes.length > 0) {
+        setRoutes(routeRes.routes);
+        setRoutesError(null);
+      } else {
+        setRoutes([]);
+        setRoutesError('No routes returned from AI Pricing Engine.');
+      }
+    } catch (err: any) {
+      console.error('[ControlTower] Failed to fetch AI corridor routes:', err);
+      setRoutes([]);
+      setRoutesError(err?.message || 'AI Spot Pricing Engine is offline. Real ML prediction is required.');
+    } finally {
+      setLoadingRoutes(false);
+    }
+  };
+
   useEffect(() => {
     async function loadAll() {
       try {
-        const [vRes, sumRes, routeRes, etaRes, loadsRes] = await Promise.all([
+        const [vRes, sumRes, etaRes, loadsRes] = await Promise.all([
           getAllVerifications(),
           fetchCorridorSummary(),
-          fetchCorridorRoutes(),
           fetchEtaProjections(),
           getAllLoads()
         ]);
         setVerifications((vRes.data || []).filter((v: any) => v.status === 'PENDING'));
         setSummary(sumRes);
-        setRoutes(routeRes.routes || []);
         setEtaData(etaRes.projections || []);
         setLoads(loadsRes?.loads || []);
       } catch (err) {
@@ -75,6 +95,9 @@ export default function ControlTowerDashboard() {
       } finally {
         setLoadingVerifications(false);
       }
+
+      // Load AI corridor routes with fail-fast detection
+      await loadRoutes();
     }
     loadAll();
 
@@ -106,11 +129,10 @@ export default function ControlTowerDashboard() {
     setRecalculating(true);
     try {
       await recalculateYield();
-      const routeRes = await fetchCorridorRoutes();
-      setRoutes(routeRes.routes || []);
-      toast.success('Yield recalculated from live database policy');
-    } catch (err) {
-      toast.error('Failed to recalculate yield');
+      await loadRoutes();
+      toast.success('Live AI Yield optimization complete!');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to recalculate yield from AI Engine');
     } finally {
       setRecalculating(false);
     }
@@ -204,33 +226,79 @@ export default function ControlTowerDashboard() {
                 <TrendingUp size={16} className="text-[#8F8F8F]" />
                 {t('spo_title')}
               </h3>
-
+              <div className="flex items-center gap-2">
+                <span className={`flex items-center gap-1 text-[10px] font-mono font-medium px-2 py-0.5 rounded-full border ${
+                  routesError 
+                    ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' 
+                    : 'text-[#3ECF8E] bg-[#3ECF8E]/10 border-[#3ECF8E]/20'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${routesError ? 'bg-rose-500' : 'bg-[#3ECF8E] animate-pulse'}`}></span>
+                  {routesError ? 'AI Offline' : 'LGBM ML Live'}
+                </span>
+                <button
+                  onClick={loadRoutes}
+                  disabled={loadingRoutes}
+                  className="p-1 hover:bg-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] rounded transition-colors disabled:opacity-50"
+                  title="Recalculate with Live AI Engine"
+                >
+                  <RefreshCw size={13} className={loadingRoutes ? 'animate-spin text-[#3ECF8E]' : ''} />
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-3 flex-1">
-              {routes.map((route, i) => (
-                <div key={route.id} className="flex items-center justify-between p-3 border border-[#2E2E2E] rounded-lg bg-[#181818] relative overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
-                  <div>
-                    <div className="text-xs font-semibold text-[#EDEDED]">{route.name}</div>
-
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-mono font-bold text-[#EDEDED]">ETB {route.price.toLocaleString()}</div>
-                    <div className={`text-[10px] font-semibold ${route.variance < 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {route.variance > 0 ? '+' : ''}{Number(route.variance).toFixed(1)}% {t('spo_variance')}
+            <div className="space-y-3 flex-1 flex flex-col justify-center">
+              {loadingRoutes ? (
+                <div className="flex flex-col items-center justify-center py-8 text-zinc-500">
+                  <RefreshCw size={20} className="animate-spin text-[#3ECF8E] mb-2" />
+                  <span className="text-xs">Querying Live AI Pricing Engine...</span>
+                </div>
+              ) : routesError ? (
+                <div className="flex flex-col items-center justify-center p-4 text-center border border-rose-500/20 bg-rose-500/5 rounded-lg">
+                  <AlertTriangle size={24} className="text-rose-400 mb-2" />
+                  <div className="text-xs font-semibold text-rose-300">AI Spot Pricing Engine Offline</div>
+                  <p className="text-[11px] text-zinc-400 mt-1 max-w-[240px]">
+                    {routesError}
+                  </p>
+                  <button
+                    onClick={loadRoutes}
+                    className="mt-3 px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs rounded border border-rose-500/30 transition-colors"
+                  >
+                    Retry Live AI Query
+                  </button>
+                </div>
+              ) : routes.length === 0 ? (
+                <div className="text-center py-6 text-xs text-zinc-500">
+                  No pricing routes returned by AI Engine
+                </div>
+              ) : (
+                routes.map((route) => (
+                  <div key={route.id} className="flex items-center justify-between p-3 border border-[#2E2E2E] rounded-lg bg-[#181818] relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
+                    <div>
+                      <div className="text-xs font-semibold text-[#EDEDED]">{route.name}</div>
+                      {route.calculationId && (
+                        <div className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                          ID: {route.calculationId} {route.confidence ? `• R² ${(route.confidence * 100).toFixed(1)}%` : ''}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-mono font-bold text-[#EDEDED]">ETB {Number(route.price).toLocaleString()}</div>
+                      <div className={`text-[10px] font-semibold ${route.variance <= 0 ? 'text-emerald-500' : 'text-rose-400'}`}>
+                        {route.variance > 0 ? '+' : ''}{Number(route.variance).toFixed(1)}% {t('spo_variance')}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             <button 
               onClick={handleRecalculate}
-              disabled={recalculating}
+              disabled={recalculating || Boolean(routesError)}
               className="w-full mt-4 bg-[#181818] text-[#3ECF8E] border border-[#2E2E2E] text-xs font-bold py-2.5 rounded-lg hover:bg-[#3ECF8E]/10 transition-colors disabled:opacity-50"
             >
-              {recalculating ? 'Recalculating...' : t('spo_recalc')}
+              {recalculating ? 'Optimizing with AI Engine...' : t('spo_recalc')}
             </button>
           </div>
 
