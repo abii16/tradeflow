@@ -460,16 +460,11 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-[#8F8F8F] flex items-center justify-between font-mono mb-1.5">
-                    <div className="flex items-center gap-1.5 truncate mr-2">
-                      <MapPin size={12} className="text-[#3ECF8E] shrink-0" />
-                      <span>{(h.origin as any)?.city || 'Djibouti'}</span>
-                      <span>→</span>
-                      <span>{(h.destination as any)?.city || 'Modjo'}</span>
-                    </div>
-                    <span className="text-[#3ECF8E] font-bold text-[9px] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20 shrink-0">
-                      {h.truckPlate || 'No Plate'}
-                    </span>
+                  <div className="text-[11px] text-[#8F8F8F] flex items-center gap-1.5 font-mono mb-2">
+                    <MapPin size={12} className="text-[#3ECF8E]" />
+                    <span>{(h.origin as any)?.city || 'Djibouti'}</span>
+                    <span>→</span>
+                    <span>{(h.destination as any)?.city || 'Modjo'}</span>
                   </div>
 
                   <div className="flex items-center justify-between text-[10px] font-mono text-[#8F8F8F] pt-1.5 border-t border-[#2E2E2E]">
