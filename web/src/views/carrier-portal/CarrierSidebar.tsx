@@ -190,31 +190,7 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
 
       {/* Footer System Status & Operations */}
       <div className="p-3 border-t border-[#242424] space-y-2 bg-[#141414] shrink-0">
-        {/* Supabase-style Corridor Infrastructure Monitor */}
-        <div className="p-3 rounded-xl bg-gradient-to-b from-[#1C1C1C] to-[#171717] border border-[#282828] space-y-2 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3ECF8E] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#3ECF8E]"></span>
-              </span>
-              <span className="text-[10px] font-mono font-medium text-[#EDEDED]">Corridor Link (A1)</span>
-            </div>
-            <span className="text-[9px] font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20">
-              99.9% UPTIME
-            </span>
-          </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/[0.05] text-[10px] font-mono">
-            <div className="flex items-center gap-1 text-[#8F8F8F]">
-              <Clock size={11} className="text-[#3ECF8E]" />
-              <span className="truncate">Galafi Dwell:</span>
-            </div>
-            <div className="text-right text-[#EDEDED] font-bold">
-              45m normal
-            </div>
-          </div>
-        </div>
 
         {/* Quick Portal Switch */}
         {onSwitchPortal && (
