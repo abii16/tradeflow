@@ -56,7 +56,7 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
         },
         {
           id: 'load_board',
-          label: isAm ? 'ጭነቶች' : 'Loads',
+          label: isAm ? 'የጭነት ገበያ' : 'Load Board',
           icon: Package,
         },
         {
