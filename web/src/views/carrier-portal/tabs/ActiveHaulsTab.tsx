@@ -540,94 +540,130 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
               </div>
             </div>
 
-            {/* Live Telematics (AI ETA & Fuel Tracker) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+            {/* Live Telematics & Quick Actions */}
+            {(() => {
+              const corridor = getRouteCorridor(activeHaul.origin, activeHaul.destination);
+              const currentWpIdx = getActiveWaypointIndex(activeHaul, corridor.waypoints);
+              const currentWp = corridor.waypoints[currentWpIdx];
+              const nextWpIdx = Math.min(corridor.waypoints.length - 1, currentWpIdx + 1);
+              const nextWp = corridor.waypoints[nextWpIdx];
 
-              {/* AI Predicted ETA (SRS FR-03.2) */}
-              <div
-                className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${activeHaul.status === 'DELIVERED'
-                    ? 'bg-[#1C1C1C] border-emerald-500/30'
-                    : etaError
-                      ? 'bg-rose-500/10 border-rose-500/40'
-                      : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-mono uppercase font-bold tracking-wider ${etaError ? 'text-rose-400' : 'text-[#EDEDED]'}`}>
-                    AI ETA
-                  </span>
-                  {etaError && (
-                    <button
-                      type="button"
-                      onClick={() => fetchEta(activeHaul.id)}
-                      className="text-[9px] font-mono text-rose-400 hover:text-white underline cursor-pointer"
-                    >
-                      Retry
-                    </button>
-                  )}
-                </div>
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
 
-                {activeHaul.status === 'DELIVERED' ? (
-                  <div className="flex items-baseline justify-between font-mono my-auto">
-                    <span className="text-xs font-bold text-[#3ECF8E]">Delivered</span>
-                    <span className="text-xs font-semibold text-[#3ECF8E]">0h left</span>
-                  </div>
-                ) : etaLoading ? (
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] my-auto">
-                    <Loader2 size={12} className="animate-spin text-[#3ECF8E]" />
-                    <span>Querying AI Engine...</span>
-                  </div>
-                ) : etaError ? (
-                  <div className="my-auto">
-                    <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline</div>
-                  </div>
-                ) : etaData ? (
-                  <div className="flex items-baseline justify-between font-mono my-auto">
-                    <span className="text-xs font-bold text-[#3ECF8E] truncate">
-                      {etaData.estimatedArrival}
-                    </span>
-                    <span className="text-xs font-semibold text-[#3ECF8E] shrink-0 ml-2">
-                      {etaData.predictedHours}h left
-                    </span>
-                  </div>
-                ) : (
-                  <div className="text-xs text-[#8F8F8F] my-auto">Awaiting dispatch</div>
-                )}
-              </div>
-
-              {/* Fuel Tracker */}
-              <div
-                className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] ${activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0
-                    ? 'bg-[#1C1C1C] border-[#2E2E2E]'
-                    : 'bg-[#1C1C1C] border-amber-500/30'
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-[#EDEDED]">
-                    Fuel
-                  </span>
-                </div>
-                <div className="flex items-baseline justify-between font-mono my-auto">
-                  {activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 && activeHaul.estimatedFuelLiters ? (
-                    <>
-                      <span className="text-xs font-bold text-[#EDEDED]">
-                        {activeHaul.actualFuelLiters} L
+                  {/* AI Predicted ETA (SRS FR-03.2) */}
+                  <div
+                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${activeHaul.status === 'DELIVERED'
+                        ? 'bg-[#1C1C1C] border-emerald-500/30'
+                        : etaError
+                          ? 'bg-rose-500/10 border-rose-500/40'
+                          : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-mono uppercase font-bold tracking-wider ${etaError ? 'text-rose-400' : 'text-[#EDEDED]'}`}>
+                        AI ETA
                       </span>
-                      <span className="text-xs font-medium text-[#8F8F8F]">
-                        / {activeHaul.estimatedFuelLiters} L
-                      </span>
-                    </>
-                  ) : activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 ? (
-                    <span className="text-xs font-bold text-[#EDEDED]">
-                      {activeHaul.actualFuelLiters} L
-                    </span>
-                  ) : (
-                    <span className="text-xs text-amber-400 font-semibold">Offline</span>
-                  )}
-                </div>
-              </div>
+                      {etaError && (
+                        <button
+                          type="button"
+                          onClick={() => fetchEta(activeHaul.id)}
+                          className="text-[9px] font-mono text-rose-400 hover:text-white underline cursor-pointer"
+                        >
+                          Retry
+                        </button>
+                      )}
+                    </div>
 
-            </div>
+                    {activeHaul.status === 'DELIVERED' ? (
+                      <div className="flex items-baseline justify-between font-mono my-auto">
+                        <span className="text-xs font-bold text-[#3ECF8E]">Delivered</span>
+                        <span className="text-xs font-semibold text-[#3ECF8E]">0h left</span>
+                      </div>
+                    ) : etaLoading ? (
+                      <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] my-auto">
+                        <Loader2 size={12} className="animate-spin text-[#3ECF8E]" />
+                        <span>Querying AI Engine...</span>
+                      </div>
+                    ) : etaError ? (
+                      <div className="my-auto">
+                        <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline</div>
+                      </div>
+                    ) : etaData ? (
+                      <div className="flex items-baseline justify-between font-mono my-auto">
+                        <span className="text-xs font-bold text-[#3ECF8E] truncate">
+                          {etaData.estimatedArrival}
+                        </span>
+                        <span className="text-xs font-semibold text-[#3ECF8E] shrink-0 ml-2">
+                          {etaData.predictedHours}h left
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-[#8F8F8F] my-auto">Awaiting dispatch</div>
+                    )}
+                  </div>
+
+                  {/* Fuel Tracker */}
+                  <div
+                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] ${activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0
+                        ? 'bg-[#1C1C1C] border-[#2E2E2E]'
+                        : 'bg-[#1C1C1C] border-amber-500/30'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-[#EDEDED]">
+                        Fuel
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-between font-mono my-auto">
+                      {activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 && activeHaul.estimatedFuelLiters ? (
+                        <>
+                          <span className="text-xs font-bold text-[#EDEDED]">
+                            {activeHaul.actualFuelLiters} L
+                          </span>
+                          <span className="text-xs font-medium text-[#8F8F8F]">
+                            / {activeHaul.estimatedFuelLiters} L
+                          </span>
+                        </>
+                      ) : activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 ? (
+                        <span className="text-xs font-bold text-[#EDEDED]">
+                          {activeHaul.actualFuelLiters} L
+                        </span>
+                      ) : (
+                        <span className="text-xs text-amber-400 font-semibold">Offline</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Waypoint Check-in Action */}
+                  <div className="px-5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
+                    <div className="flex items-center justify-end">
+                      <span className="text-[9px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20 font-bold">
+                        {currentWpIdx + 1}/{corridor.waypoints.length}
+                      </span>
+                    </div>
+                    <div className="text-xs font-mono font-bold text-[#EDEDED] truncate my-auto flex items-center justify-between">
+                      <span className="truncate">{currentWp.name}</span>
+                      <span className="text-[10px] text-[#8F8F8F] shrink-0 font-normal ml-2">({currentWp.km} km)</span>
+                    </div>
+                    {activeHaul.status === 'DELIVERED' || currentWpIdx >= corridor.waypoints.length - 1 ? (
+                      <div className="text-[10px] font-mono text-[#3ECF8E] font-bold">
+                        ✓ At Terminal
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleSimulateWaypointCheckin(activeHaul)}
+                        disabled={checkingIn}
+                        className="w-full py-1 px-2.5 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-[10px] font-mono font-bold text-[#EDEDED] hover:text-[#3ECF8E] rounded-lg border border-[#3A3A3A] transition flex items-center justify-between cursor-pointer"
+                      >
+                        <span>{checkingIn ? 'Saving...' : 'Check-in'}</span>
+                        <span className="text-[#3ECF8E]">+{nextWp.km - currentWp.km} km →</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Live Corridor GPS Radar Map (SRS FR-03.1 / Admin-grade Google Hybrid Telematics) */}
             <div className="mt-4 pt-3.5 border-t border-[#2E2E2E] space-y-2.5">
