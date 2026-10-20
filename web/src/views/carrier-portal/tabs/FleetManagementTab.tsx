@@ -149,36 +149,36 @@ export default function FleetManagementTab() {
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-[#232323] border border-[#2E2E2E] space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#8F8F8F]">Total Active Fleet</span>
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#242424] space-y-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#707070]">Total Active Fleet</span>
           <div className="text-2xl font-mono font-bold text-[#EDEDED]">{vehicles.length} Trucks</div>
           <span className="text-[10px] text-[#3ECF8E] font-mono">Corridor certified heavy haulers</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#232323] border border-[#2E2E2E] space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#8F8F8F]">Total Fleet Capacity</span>
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#242424] space-y-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#707070]">Total Fleet Capacity</span>
           <div className="text-2xl font-mono font-bold text-[#EDEDED]">{totalCapacity.toFixed(1)} Tons</div>
-          <span className="text-[10px] text-[#8F8F8F] font-mono">Payload capacity on principal corridor</span>
+          <span className="text-[10px] text-[#707070] font-mono">Payload capacity on principal corridor</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#232323] border border-[#2E2E2E] space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#8F8F8F]">Inspection Compliance</span>
-          <div className="text-2xl font-mono font-bold text-emerald-400">
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#242424] space-y-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#707070]">Inspection Compliance</span>
+          <div className="text-2xl font-mono font-bold text-[#3ECF8E]">
             {verifiedCount}/{vehicles.length} Verified
           </div>
-          <span className="text-[10px] text-[#8F8F8F] font-mono">Federal Transport Authority certified</span>
+          <span className="text-[10px] text-[#707070] font-mono">Federal Transport Authority certified</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#232323] border border-[#2E2E2E] space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#8F8F8F]">Assigned Drivers</span>
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#242424] space-y-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#707070]">Assigned Drivers</span>
           <div className="text-2xl font-mono font-bold text-[#EDEDED]">{drivers.length} Drivers</div>
           <span className="text-[10px] text-[#3ECF8E] font-mono">Active on Djibouti-Modjo artery</span>
         </div>
       </div>
 
       {/* Vehicles Table */}
-      <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl overflow-hidden shadow-lg">
-        <div className="p-4 border-b border-[#2E2E2E] flex items-center justify-between">
+      <div className="bg-[#171717] border border-[#242424] rounded-xl overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-[#242424] flex items-center justify-between">
           <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F]">
             Registered Heavy Vehicle Inventory ({vehicles.length})
           </h3>
@@ -188,14 +188,14 @@ export default function FleetManagementTab() {
         </div>
 
         {vehicles.length === 0 ? (
-          <div className="p-8 text-center text-[#8F8F8F]">
+          <div className="p-8 text-center text-[#707070]">
             <Truck size={32} className="mx-auto mb-2 opacity-50" />
             <p className="text-xs">No vehicles registered yet. Click &quot;Register New Heavy Truck&quot; above.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-[#1C1C1C] border-b border-[#2E2E2E] text-[10px] text-[#8F8F8F] uppercase">
+              <thead className="bg-[#121212] border-b border-[#242424] text-[10px] text-[#707070] uppercase">
                 <tr>
                   <th className="py-3 px-4">Vehicle Model / Fleet Asset</th>
                   <th className="py-3 px-4">Capacity</th>
@@ -205,15 +205,15 @@ export default function FleetManagementTab() {
                   <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2E2E2E] text-[#EDEDED]">
+              <tbody className="divide-y divide-[#242424] text-[#EDEDED]">
                 {vehicles.map((v) => (
-                  <tr key={v.id} className="hover:bg-[#282828] transition-colors">
+                  <tr key={v.id} className="hover:bg-[#1C1C1C] transition-colors">
                     <td className="py-3.5 px-4 font-bold text-white flex items-center gap-2">
                       <Truck size={15} className="text-[#3ECF8E] shrink-0" />
                       <div>
-                        <span>{v.vehicleType}</span>
+                        <span className="uppercase">{v.vehicleType}</span>
                         {v.plateNumber && (
-                          <span className="ml-2 text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold tracking-wider">
+                          <span className="ml-2 text-[10px] font-mono bg-[#121212] text-[#3ECF8E] border border-[#3ECF8E]/30 px-1.5 py-0.5 rounded font-bold tracking-wider">
                             {v.plateNumber}
                           </span>
                         )}
@@ -250,14 +250,14 @@ export default function FleetManagementTab() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="text-[9px] font-bold px-2 py-0.5 rounded uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded uppercase bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/30">
                         {v.isVerified ? 'VERIFIED' : 'PENDING'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => handleDeleteTruck(v.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1.5 rounded-lg transition"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1.5 rounded-md transition cursor-pointer"
                         title="Delete Vehicle"
                       >
                         <Trash2 size={14} />
@@ -272,7 +272,7 @@ export default function FleetManagementTab() {
       </div>
 
       {/* Driver Roster Panel */}
-      <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl p-5 shadow-lg">
+      <div className="bg-[#171717] border border-[#242424] rounded-xl p-5 shadow-sm">
         <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F] mb-3 flex items-center gap-2">
           <UserCheck size={15} className="text-[#3ECF8E]" />
           Corridor Driver Roster & Telematics Sync
@@ -281,14 +281,14 @@ export default function FleetManagementTab() {
           {drivers.map((d) => (
             <div
               key={d.id}
-              className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex items-center justify-between"
+              className="p-3.5 rounded-lg bg-[#121212] border border-[#242424] hover:border-[#383838] flex items-center justify-between transition-colors"
             >
               <div>
                 <div className="text-xs font-bold text-[#EDEDED]">{d.fullName}</div>
-                <div className="text-[11px] font-mono text-[#8F8F8F]">{d.phone || '+251 911 000 000'}</div>
+                <div className="text-[11px] font-mono text-[#707070]">{d.phone || '+251 911 000 000'}</div>
                 <div className="text-[10px] text-[#8F8F8F] truncate">{d.companyName || 'Independent Driver'}</div>
               </div>
-              <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">
+              <span className="text-[9px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded border border-[#3ECF8E]/25 font-semibold">
                 ACTIVE
               </span>
             </div>
@@ -301,8 +301,8 @@ export default function FleetManagementTab() {
           ========================================================================= */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-[#2E2E2E] flex items-center justify-between bg-[#1C1C1C]">
+          <div className="bg-[#171717] border border-[#282828] rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div className="p-5 border-b border-[#242424] flex items-center justify-between bg-[#121212]">
               <div>
                 <h3 className="font-bold text-sm text-[#EDEDED] flex items-center gap-2">
                   <Truck size={16} className="text-[#3ECF8E]" />
@@ -331,7 +331,7 @@ export default function FleetManagementTab() {
                   placeholder="e.g. Scania R500 Flatbed Trailer"
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none"
+                  className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none"
                 />
               </div>
 
@@ -344,7 +344,7 @@ export default function FleetManagementTab() {
                   placeholder="e.g. 3-AA-98214 or 3-ET-74192"
                   value={plateNumber}
                   onChange={(e) => setPlateNumber(e.target.value)}
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs font-mono text-[#3ECF8E] uppercase focus:border-[#3ECF8E] outline-none placeholder:text-[#555]"
+                  className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs font-mono text-[#3ECF8E] uppercase focus:border-[#3ECF8E] outline-none placeholder:text-[#555]"
                 />
               </div>
 
@@ -361,7 +361,7 @@ export default function FleetManagementTab() {
                     step="0.5"
                     value={capacityTons}
                     onChange={(e) => setCapacityTons(e.target.value)}
-                    className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
+                    className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
                   />
                 </div>
                 <div>
@@ -371,7 +371,7 @@ export default function FleetManagementTab() {
                   <select
                     value={fuelType}
                     onChange={(e) => setFuelType(e.target.value)}
-                    className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
+                    className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
                   >
                     <option value="Diesel">Diesel</option>
                     <option value="Heavy Fuel Oil">Heavy Fuel Oil</option>
@@ -388,7 +388,7 @@ export default function FleetManagementTab() {
                   type="text"
                   value={insuranceDocUrl}
                   onChange={(e) => setInsuranceDocUrl(e.target.value)}
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
+                  className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
                 />
               </div>
 
@@ -400,22 +400,22 @@ export default function FleetManagementTab() {
                   type="text"
                   value={roadworthinessDocUrl}
                   onChange={(e) => setRoadworthinessDocUrl(e.target.value)}
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
+                  className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2E2E2E]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#242424]">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl bg-[#1C1C1C] hover:bg-[#2E2E2E] text-xs font-semibold text-[#8F8F8F]"
+                  className="px-4 py-2 rounded-lg bg-[#121212] hover:bg-[#1C1C1C] border border-[#242424] text-xs font-semibold text-[#8F8F8F]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingTruck}
-                  className="px-5 py-2 rounded-xl bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition flex items-center gap-2"
+                  className="px-5 py-2 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition shadow-[0_0_12px_rgba(62,207,142,0.18)] flex items-center gap-2 cursor-pointer"
                 >
                   {savingTruck ? (
                     <>
