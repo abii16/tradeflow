@@ -101,17 +101,8 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
   return (
     <aside className="w-64 bg-[#121212] border-r border-[#242424] flex flex-col justify-between shrink-0 h-screen select-none relative z-20">
       {/* Brand Header */}
-      <div className="h-16 border-b border-[#242424] flex items-center px-4 gap-3 bg-[#121212]/90 backdrop-blur-md sticky top-0 z-30">
-        <div className="relative group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3ECF8E]/25 via-[#3ECF8E]/10 to-transparent border border-[#3ECF8E]/30 flex items-center justify-center text-[#3ECF8E] shadow-[0_0_15px_rgba(62,207,142,0.15)] group-hover:shadow-[0_0_20px_rgba(62,207,142,0.25)] transition-all">
-            <Truck size={18} className="drop-shadow-[0_0_8px_rgba(62,207,142,0.6)]" />
-          </div>
-          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#3ECF8E] ring-2 ring-[#121212] animate-pulse"></div>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <span className="font-extrabold text-base text-[#EDEDED] tracking-tight">TradeFlow</span>
-        </div>
+      <div className="h-16 border-b border-[#242424] flex items-center px-5 bg-[#121212]/90 backdrop-blur-md sticky top-0 z-30">
+        <span className="font-extrabold text-lg text-[#EDEDED] tracking-tight">TradeFlow</span>
       </div>
 
       {/* Navigation Groups */}
