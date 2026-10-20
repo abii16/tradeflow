@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Package, 
+  Package,
   Search, 
   Filter, 
   MapPin, 
@@ -187,13 +187,9 @@ export default function LoadBoardTab() {
       {/* Header and SubTab Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2E2E2E]">
         <div>
-          <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2">
-            <Package size={22} className="text-[#3ECF8E]" />
-            Freight Marketplace & AI-Powered Bidding
+          <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight">
+            Load Board
           </h2>
-          <p className="text-xs text-[#8F8F8F] mt-0.5">
-            SRS FR-02 Real-time load matching with weighted cost, fuel-efficiency, and reliability scores
-          </p>
         </div>
 
         {/* Sub-tab pills */}
