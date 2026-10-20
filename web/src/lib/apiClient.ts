@@ -124,9 +124,9 @@ export async function apiClient<T = any>(endpoint: string, options: FetchOptions
   const { data, headers, ...customOptions } = options;
   const method = data ? 'POST' : (options.method || 'GET');
 
-  // Fetch the latest session securely from Supabase
+  // Prioritize verified backend session token (contains DB role), fallback to Supabase token
   const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token || getAuthToken();
+  const token = getAuthToken() || session?.access_token;
 
   const finalHeaders = {
     ...headers,
