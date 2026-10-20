@@ -460,19 +460,14 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-[#8F8F8F] flex items-center gap-1.5 font-mono mb-1.5">
-                    <MapPin size={12} className="text-[#3ECF8E]" />
-                    <span>{(h.origin as any)?.city || 'Djibouti'}</span>
-                    <span>→</span>
-                    <span>{(h.destination as any)?.city || 'Modjo'}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[10px] font-mono text-[#8F8F8F] mb-1.5 bg-[#171717] px-2 py-1 rounded border border-[#2A2A2A]">
-                    <span className="truncate max-w-[110px] text-[#EDEDED] flex items-center gap-1">
-                      <User size={10} className="text-[#3ECF8E]" />
-                      {h.driverName ? h.driverName.split(' ')[0] : 'Lead Driver'}
-                    </span>
-                    <span className="text-[#3ECF8E] font-bold text-[9px] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20">
+                  <div className="text-[11px] text-[#8F8F8F] flex items-center justify-between font-mono mb-1.5">
+                    <div className="flex items-center gap-1.5 truncate mr-2">
+                      <MapPin size={12} className="text-[#3ECF8E] shrink-0" />
+                      <span>{(h.origin as any)?.city || 'Djibouti'}</span>
+                      <span>→</span>
+                      <span>{(h.destination as any)?.city || 'Modjo'}</span>
+                    </div>
+                    <span className="text-[#3ECF8E] font-bold text-[9px] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20 shrink-0">
                       {h.truckPlate || 'No Plate'}
                     </span>
                   </div>
