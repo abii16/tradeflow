@@ -74,7 +74,7 @@ export default function UniversalTopBar() {
         {user?.role === 'ADMIN' && (
           <button
             onClick={() => window.location.href = '/admin'}
-            className="hidden sm:flex items-center gap-1.5 bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] border border-[#3ECF8E]/30 text-xs px-2.5 py-1 rounded-lg font-mono font-bold transition"
+            className="flex items-center gap-1.5 bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] border border-[#3ECF8E]/30 text-xs px-2.5 py-1 rounded-lg font-mono font-bold transition"
             title="Switch to Operations Control Tower"
           >
             <Shield size={12} /> Control Tower
