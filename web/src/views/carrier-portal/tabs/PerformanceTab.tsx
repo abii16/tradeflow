@@ -115,8 +115,8 @@ export default function PerformanceTab() {
                 TOP {(100 - percentile).toFixed(0)}% RANK
               </span>
             </div>
-            <p className="text-xs text-[#8F8F8F] mt-1 max-w-xl leading-relaxed">
-              Your fleet consistently outperforms the corridor average in on-time milestones and fuel conservation. Preferred carriers receive prioritized load matching and reduced platform commission fees.
+            <p className="text-xs text-[#8F8F8F] mt-0.5">
+              Prioritized load matching and reduced platform commission fees.
             </p>
           </div>
         </div>
