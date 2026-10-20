@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Truck,
-  MapPin,
   Clock,
   ShieldCheck,
   CheckCircle2,
@@ -457,7 +456,6 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   </div>
 
                   <div className="text-[11px] text-[#8F8F8F] flex items-center gap-1.5 font-mono mb-2">
-                    <MapPin size={12} className="text-[#3ECF8E]" />
                     <span>{(h.origin as any)?.city || 'Djibouti'}</span>
                     <span>→</span>
                     <span>{(h.destination as any)?.city || 'Modjo'}</span>
