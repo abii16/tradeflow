@@ -323,46 +323,48 @@ export default function LoadBoardTab() {
                 return (
                   <div
                     key={load.id}
-                    className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#262626] hover:border-[#383838] rounded-xl p-5 flex flex-col justify-between transition-all duration-200 group shadow-sm hover:shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
+                    className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-5 flex flex-col justify-between transition-all duration-200 group shadow-sm hover:shadow-[0_4px_24px_rgba(62,207,142,0.06)]"
                   >
                     <div>
-                      {/* Top Row: AI Match & Commodity Tag */}
+                      {/* Top Row: AI Match & Load Reference (Clean, no duplicate commodity label) */}
                       <div className="flex items-center justify-between gap-2 mb-3.5">
                         <span className="text-[11px] font-mono font-medium text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-[0_0_12px_rgba(62,207,142,0.06)]">
                           <Sparkles size={11} className="text-[#3ECF8E]" />
                           <span>{matchScore}% AI Match</span>
                         </span>
 
-                        <span className="text-[10px] font-mono text-[#A1A1A1] bg-[#121212] px-2.5 py-0.5 rounded border border-[#282828] uppercase tracking-wider">
-                          {load.cargoType || 'Dry Cargo'}
+                        <span className="text-[10px] font-mono text-[#8F8F8F] bg-[#121212] px-2.5 py-0.5 rounded-md border border-[#242424] tracking-wide">
+                          #LD-{load.id.slice(0, 6).toUpperCase()}
                         </span>
                       </div>
 
-                      {/* Clean Cargo Title (No redundant 'Freight:' prefix) */}
-                      <h3 className="text-sm font-bold text-[#EDEDED] leading-snug mb-2 group-hover:text-[#3ECF8E] transition-colors">
+                      {/* Clean Cargo Title */}
+                      <h3 className="text-[15px] font-bold text-white leading-snug mb-2 group-hover:text-[#3ECF8E] transition-colors">
                         {displayTitle}
                       </h3>
 
                       {/* Corridor Route Typography (Crisp, Supabase green arrow) */}
                       <div className="mb-4">
-                        <div className="flex items-center gap-2 text-xs font-mono">
-                          <span className="text-[#EDEDED] font-semibold">{originCity}</span>
+                        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#EDEDED]">
+                          <span>{originCity}</span>
                           <span className="text-[#3ECF8E] font-bold">→</span>
-                          <span className="text-[#EDEDED] font-semibold">{destCity}</span>
+                          <span>{destCity}</span>
                         </div>
-                        <div className="text-[11px] text-[#707070] font-mono mt-1">
-                          ~{corridor.totalKm} km corridor haul • {transitWindow}
+                        <div className="text-[11px] text-[#8F8F8F] font-mono mt-1 flex items-center gap-1.5">
+                          <span>~{corridor.totalKm} km corridor haul</span>
+                          <span className="text-[#555]">•</span>
+                          <span>{transitWindow}</span>
                         </div>
                       </div>
 
                       {/* Cargo Specifications Grid */}
-                      <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-[#121212] border border-[#262626] text-xs font-mono mb-4">
+                      <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-[#121212] border border-[#242424] text-xs font-mono mb-4">
                         <div>
-                          <span className="text-[9px] uppercase tracking-wider text-[#707070] block">WEIGHT</span>
+                          <span className="text-[9px] uppercase tracking-wider text-[#707070] block mb-0.5">WEIGHT</span>
                           <span className="font-semibold text-[#EDEDED] text-xs">{weightTons} Metric Tons</span>
                         </div>
                         <div>
-                          <span className="text-[9px] uppercase tracking-wider text-[#707070] block">POSTED BY</span>
+                          <span className="text-[9px] uppercase tracking-wider text-[#707070] block mb-0.5">POSTED BY</span>
                           <span className="font-semibold text-[#EDEDED] text-xs truncate block" title={shipper}>
                             {shipper}
                           </span>
@@ -371,14 +373,17 @@ export default function LoadBoardTab() {
                     </div>
 
                     {/* Bottom: Budget & Bid Action */}
-                    <div className="pt-3 border-t border-[#262626] flex items-center justify-between gap-3">
+                    <div className="pt-3.5 border-t border-[#242424] flex items-center justify-between gap-3">
                       <div>
-                        <span className="text-[9px] font-mono uppercase tracking-wider text-[#707070] block">
+                        <span className="text-[9px] font-mono uppercase tracking-wider text-[#707070] block mb-0.5">
                           Shipper Budget
                         </span>
-                        <span className="text-sm font-mono font-bold text-[#3ECF8E]">
-                          ETB {Number(load.budgetAmount || 0).toLocaleString()}
-                        </span>
+                        <div className="flex items-baseline gap-1 font-mono">
+                          <span className="text-[10px] text-[#707070]">ETB</span>
+                          <span className="text-sm font-bold text-white tracking-tight">
+                            {Number(load.budgetAmount || 0).toLocaleString()}
+                          </span>
+                        </div>
                       </div>
 
                       {load.hasBid ? (
@@ -389,7 +394,7 @@ export default function LoadBoardTab() {
                       ) : (
                         <button
                           onClick={() => handleOpenBidModal(load)}
-                          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-[0_0_12px_rgba(62,207,142,0.18)] hover:shadow-[0_0_18px_rgba(62,207,142,0.28)] flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-semibold px-4 py-1.5 rounded-lg transition shadow-[0_0_12px_rgba(62,207,142,0.18)] hover:shadow-[0_0_18px_rgba(62,207,142,0.28)] flex items-center gap-1.5 active:scale-95 cursor-pointer"
                         >
                           <Zap size={13} />
                           <span>Place AI Bid</span>
