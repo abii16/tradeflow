@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Wallet, 
-  DollarSign, 
   CheckCircle2, 
   Clock, 
   AlertTriangle, 
-  FileText, 
-  ArrowUpRight, 
   ShieldCheck, 
   X, 
   Loader2,
@@ -75,7 +72,7 @@ export default function EarningsLedgerTab() {
     setSubmittingDispute(true);
     try {
       await apiDisputePayment(disputePayment.id, disputeReason);
-      toast.success('Dispute ticket raised! Payout frozen pending platform admin review.');
+      toast.success('Dispute ticket raised for mediation review');
       setShowDisputeModal(false);
       await fetchPayouts(true);
     } catch (err: any) {
@@ -89,7 +86,7 @@ export default function EarningsLedgerTab() {
     return (
       <div className="h-96 flex flex-col items-center justify-center text-[#8F8F8F] gap-3">
         <Loader2 size={32} className="animate-spin text-[#3ECF8E]" />
-        <span className="text-xs font-mono">Loading TeleBirr transaction ledger & escrow accounts...</span>
+        <span className="text-xs font-mono">Loading settlement ledger &amp; escrow accounts...</span>
       </div>
     );
   }
@@ -99,9 +96,14 @@ export default function EarningsLedgerTab() {
   let totalCommissionETB = 0;
 
   for (const p of payouts) {
-    const net = Number(p.netPayoutAmount || p.amountInETB || 0);
-    const comm = Number(p.platformCommissionAmount || 0);
-    if (p.status === 'COMPLETED' || p.payoutStatus === 'COMPLETED') {
+    const gross = Number(p.amountInETB || p.amount || 0);
+    const commRate = Number(p.platformCommissionRate || 0.05);
+    const comm = Number(p.platformCommissionAmount) > 0 ? Number(p.platformCommissionAmount) : (gross * commRate);
+    const net = Number(p.netPayoutAmount) > 0 ? Number(p.netPayoutAmount) : (gross - comm);
+
+    const isCompleted = p.status === 'COMPLETED' || p.payoutStatus === 'COMPLETED';
+
+    if (isCompleted) {
       totalSettledETB += net;
       totalCommissionETB += comm;
     } else {
@@ -112,20 +114,16 @@ export default function EarningsLedgerTab() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2E2E2E]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#242424]">
         <div>
-          <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2">
-            <Wallet size={22} className="text-[#3ECF8E]" />
-            TeleBirr Settlements &amp; Financial Escrow
+          <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight">
+            TeleBirr Settlements
           </h2>
-          <p className="text-xs text-[#8F8F8F] mt-0.5">
-            SRS FR-10 Automated Multi-Sig Escrow, Platform Commission Calculation &amp; Payout Audit Trail
-          </p>
         </div>
 
         <button
           onClick={() => fetchPayouts(false)}
-          className="flex items-center gap-1.5 bg-[#232323] hover:bg-[#2E2E2E] text-xs font-semibold px-3 py-1.5 rounded-lg border border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] transition self-start sm:self-auto"
+          className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#1C1C1C] text-xs font-semibold px-3 py-1.5 rounded-lg border border-[#242424] text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer self-start sm:self-auto"
         >
           <RefreshCw size={13} /> Refresh Ledger
         </button>
@@ -134,105 +132,116 @@ export default function EarningsLedgerTab() {
       {/* KPI Financial Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Settled Net */}
-        <div className="p-5 rounded-2xl bg-[#232323] border border-[#2E2E2E] space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5">
-            <CheckCircle2 size={13} className="text-[#3ECF8E]" /> Total Settled Net Earnings
-          </span>
-          <div className="text-3xl font-mono font-bold text-[#3ECF8E]">
-            ETB {totalSettledETB.toLocaleString()}
+        <div className="p-5 rounded-xl bg-[#171717] border border-[#242424] hover:border-[#333] transition-colors space-y-2">
+          <div className="flex items-center justify-between text-[#8F8F8F] text-[10px] font-mono uppercase">
+            <span>Total Settled</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
           </div>
-          <span className="text-[10px] text-[#8F8F8F] font-mono">Disbursed to linked TeleBirr merchant account</span>
+          <div className="text-3xl font-mono font-bold text-[#3ECF8E]">
+            ETB {totalSettledETB.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          <p className="text-[11px] text-[#8F8F8F]">
+            Disbursed to linked TeleBirr merchant account
+          </p>
         </div>
 
         {/* Pending Escrow */}
-        <div className="p-5 rounded-2xl bg-[#232323] border border-[#2E2E2E] space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5">
-            <Clock size={13} className="text-amber-400" /> Locked in Transit Escrow
-          </span>
-          <div className="text-3xl font-mono font-bold text-amber-300">
-            ETB {totalEscrowETB.toLocaleString()}
+        <div className="p-5 rounded-xl bg-[#171717] border border-[#242424] hover:border-[#333] transition-colors space-y-2">
+          <div className="flex items-center justify-between text-[#8F8F8F] text-[10px] font-mono uppercase">
+            <span>Locked in Escrow</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
           </div>
-          <span className="text-[10px] text-[#8F8F8F] font-mono">Releases instantly upon e-PoD submission</span>
+          <div className="text-3xl font-mono font-bold text-[#EDEDED]">
+            ETB {totalEscrowETB.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          <p className="text-[11px] text-[#8F8F8F]">
+            Releases upon verified electronic proof-of-delivery
+          </p>
         </div>
 
-        {/* Platform Commission */}
-        <div className="p-5 rounded-2xl bg-[#232323] border border-[#2E2E2E] space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5">
-            <ShieldCheck size={13} className="text-blue-400" /> Platform Fee (5% Standard)
-          </span>
-          <div className="text-3xl font-mono font-bold text-[#EDEDED]">
-            ETB {totalCommissionETB.toLocaleString()}
+        {/* Platform Fee */}
+        <div className="p-5 rounded-xl bg-[#171717] border border-[#242424] hover:border-[#333] transition-colors space-y-2">
+          <div className="flex items-center justify-between text-[#8F8F8F] text-[10px] font-mono uppercase">
+            <span>Platform Fee (5%)</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#8F8F8F]" />
           </div>
-          <span className="text-[10px] text-[#8F8F8F] font-mono">TradeFlow corridor insurance &amp; mediation guarantee</span>
+          <div className="text-3xl font-mono font-bold text-[#EDEDED]">
+            ETB {totalCommissionETB.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          <p className="text-[11px] text-[#8F8F8F]">
+            TradeFlow cargo guarantee and dispute insurance
+          </p>
         </div>
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl overflow-hidden shadow-lg">
-        <div className="p-4 border-b border-[#2E2E2E] flex items-center justify-between">
+      <div className="bg-[#171717] border border-[#242424] rounded-xl overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-[#242424] flex items-center justify-between">
           <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F]">
-            Settlement Audit Ledger ({payouts.length} Transactions)
+            Settlement Ledger ({payouts.length} Transactions)
           </h3>
-          <span className="text-[10px] font-mono text-[#3ECF8E]">
-            INSA AES-256 Encrypted Ledger
+          <span className="text-[10px] font-mono text-[#8F8F8F] flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
+            Encrypted Multi-Sig Ledger
           </span>
         </div>
 
         {payouts.length === 0 ? (
-          <div className="p-12 text-center text-[#8F8F8F]">
-            <Wallet size={32} className="mx-auto mb-2 opacity-50" />
+          <div className="p-12 text-center text-[#8F8F8F] space-y-2">
+            <Wallet size={28} className="mx-auto opacity-40 text-[#8F8F8F]" />
             <p className="text-xs">No payment records found. Completed hauls will automatically log here.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-[#1C1C1C] border-b border-[#2E2E2E] text-[10px] text-[#8F8F8F] uppercase">
+              <thead className="bg-[#121212] border-b border-[#242424] text-[10px] text-[#8F8F8F] uppercase">
                 <tr>
-                  <th className="py-3 px-4">Transaction / OutTradeNo</th>
-                  <th className="py-3 px-4">Method</th>
-                  <th className="py-3 px-4">Gross Consignment</th>
-                  <th className="py-3 px-4">Commission (5%)</th>
-                  <th className="py-3 px-4">Net Carrier Payout</th>
-                  <th className="py-3 px-4">Escrow Status</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4 font-semibold">Transaction</th>
+                  <th className="py-3 px-4 font-semibold">Method</th>
+                  <th className="py-3 px-4 font-semibold">Gross Consignment</th>
+                  <th className="py-3 px-4 font-semibold">Commission (5%)</th>
+                  <th className="py-3 px-4 font-semibold">Net Carrier Payout</th>
+                  <th className="py-3 px-4 font-semibold">Escrow Status</th>
+                  <th className="py-3 px-4 font-semibold">Date</th>
+                  <th className="py-3 px-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2E2E2E] text-[#EDEDED]">
+              <tbody className="divide-y divide-[#242424] text-[#EDEDED]">
                 {payouts.map((p) => {
+                  const gross = Number(p.amountInETB || p.amount || 0);
+                  const commRate = Number(p.platformCommissionRate || 0.05);
+                  const comm = Number(p.platformCommissionAmount) > 0 ? Number(p.platformCommissionAmount) : (gross * commRate);
+                  const net = Number(p.netPayoutAmount) > 0 ? Number(p.netPayoutAmount) : (gross - comm);
                   const isCompleted = p.status === 'COMPLETED' || p.payoutStatus === 'COMPLETED';
 
                   return (
-                    <tr key={p.id} className="hover:bg-[#282828] transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-white max-w-[200px] truncate">
+                    <tr key={p.id} className="hover:bg-[#141414] transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-[#EDEDED] max-w-[200px] truncate">
                         <div className="truncate">{p.outTradeNo || p.id}</div>
                         {p.telebirrTxnId && (
-                          <div className="text-[10px] text-[#8F8F8F] truncate">Txn: {p.telebirrTxnId}</div>
+                          <div className="text-[10px] text-[#8F8F8F] font-normal truncate">Txn: {p.telebirrTxnId}</div>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-[#8F8F8F]">
-                        <span className="px-2 py-0.5 rounded bg-[#1C1C1C] border border-[#2E2E2E] text-[10px]">
+                        <span className="px-2 py-0.5 rounded bg-[#121212] border border-[#242424] text-[10px]">
                           {p.paymentMethod || 'TELEBIRR'}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-[#8F8F8F]">
-                        ETB {Number(p.amountInETB || p.amount).toLocaleString()}
+                        ETB {gross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="py-3.5 px-4 text-red-400 font-bold">
-                        -ETB {Number(p.platformCommissionAmount || 0).toLocaleString()}
+                      <td className="py-3.5 px-4 text-[#8F8F8F]">
+                        -ETB {comm.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3.5 px-4 text-[#3ECF8E] font-bold">
-                        ETB {Number(p.netPayoutAmount || p.amountInETB).toLocaleString()}
+                        ETB {net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span
-                          className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${
-                            isCompleted
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                          }`}
-                        >
-                          {isCompleted ? 'SETTLED' : p.status || 'ESCROW_HELD'}
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-[#121212] border border-[#242424]">
+                          <span className={`w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-[#3ECF8E]' : 'bg-amber-400'}`} />
+                          <span className={isCompleted ? 'text-[#3ECF8E]' : 'text-amber-400'}>
+                            {isCompleted ? 'Settled' : 'Escrow Held'}
+                          </span>
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-[#8F8F8F] text-[10px]">
@@ -241,7 +250,7 @@ export default function EarningsLedgerTab() {
                       <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => handleOpenDispute(p)}
-                          className="text-[#8F8F8F] hover:text-amber-400 text-[10px] hover:underline"
+                          className="text-[#8F8F8F] hover:text-amber-400 text-xs transition cursor-pointer"
                         >
                           Raise Dispute
                         </button>
@@ -255,75 +264,73 @@ export default function EarningsLedgerTab() {
         )}
       </div>
 
-      {/* =========================================================================
-          MODAL: RAISE PAYMENT DISPUTE (FR-10.3)
-          ========================================================================= */}
+      {/* Dispute Modal (SRS FR-10.3) */}
       {showDisputeModal && disputePayment && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-[#2E2E2E] flex items-center justify-between bg-[#1C1C1C]">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[#171717] border border-[#242424] rounded-xl w-full max-w-md overflow-hidden shadow-2xl space-y-0">
+            <div className="p-4 border-b border-[#242424] flex items-center justify-between bg-[#121212]">
               <div>
                 <h3 className="font-bold text-sm text-[#EDEDED] flex items-center gap-2">
-                  <AlertTriangle size={16} className="text-amber-400" />
-                  SRS FR-10.3 Flag Payment Dispute
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  Flag Payment Dispute
                 </h3>
                 <p className="text-[10px] font-mono text-[#8F8F8F] mt-0.5">
-                  Routed to Platform Administrator mediation desk
+                  Routed to platform administrator mediation desk
                 </p>
               </div>
               <button
                 onClick={() => setShowDisputeModal(false)}
-                className="text-[#8F8F8F] hover:text-[#EDEDED]"
+                className="text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             <form onSubmit={handleSubmitDispute} className="p-5 space-y-4">
-              <div className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] text-xs font-mono space-y-1">
-                <div className="text-[#8F8F8F]">Transaction OutTradeNo:</div>
-                <div className="text-white font-bold">{disputePayment.outTradeNo}</div>
+              <div className="p-3 rounded-lg bg-[#121212] border border-[#242424] text-xs font-mono space-y-1">
+                <div className="text-[#8F8F8F]">Transaction: <span className="text-[#EDEDED] font-bold">{disputePayment.outTradeNo}</span></div>
                 <div className="text-[#3ECF8E] font-bold">
-                  Consignment Value: ETB {Number(disputePayment.amountInETB || disputePayment.amount).toLocaleString()}
+                  Consignment: ETB {Number(disputePayment.amountInETB || disputePayment.amount).toLocaleString()}
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono uppercase text-[#8F8F8F] mb-1.5">
-                  Dispute Reason / Demurrage Claim Details *
+                <label className="block text-[10px] font-mono uppercase text-[#8F8F8F] mb-1.5">
+                  Dispute Reason / Demurrage Claim *
                 </label>
                 <textarea
                   rows={4}
                   required
                   value={disputeReason}
                   onChange={(e) => setDisputeReason(e.target.value)}
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2.5 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none resize-none"
+                  className="w-full bg-[#121212] border border-[#242424] rounded-lg px-3 py-2 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none resize-none transition"
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
-                Notice: Raising a dispute freezes automatic escrow release until administrator audit is concluded.
+              <div className="p-3 rounded-lg bg-[#121212] border border-[#242424] text-xs text-[#8F8F8F] flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                <span>Raising a dispute holds escrow release pending administrator review.</span>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2E2E2E]">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#242424]">
                 <button
                   type="button"
                   onClick={() => setShowDisputeModal(false)}
-                  className="px-4 py-2 rounded-xl bg-[#1C1C1C] hover:bg-[#2E2E2E] text-xs font-semibold text-[#8F8F8F]"
+                  className="px-3 py-1.5 rounded-lg bg-[#121212] hover:bg-[#1C1C1C] border border-[#242424] text-xs font-medium text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingDispute}
-                  className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-bold transition flex items-center gap-2"
+                  className="px-4 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-black text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
                 >
                   {submittingDispute ? (
                     <>
-                      <Loader2 size={14} className="animate-spin" /> Submitting Ticket...
+                      <Loader2 size={13} className="animate-spin" /> Submitting...
                     </>
                   ) : (
-                    'Transmit Dispute to Administrator'
+                    'Submit Dispute'
                   )}
                 </button>
               </div>
