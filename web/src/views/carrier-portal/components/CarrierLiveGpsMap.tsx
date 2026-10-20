@@ -257,7 +257,7 @@ export default function CarrierLiveGpsMap({
                 </div>
                 <div className="flex justify-between text-[#A1A1A1]">
                   <span>Speed:</span>
-                  <span className="text-emerald-400 font-bold">{isDelivered ? '0 km/h (Docked)' : '68 km/h • On Corridor'}</span>
+                  <span className="text-[#3ECF8E] font-bold">{isDelivered ? '0 km/h (Docked)' : '68 km/h • On Corridor'}</span>
                 </div>
                 <div className="flex justify-between text-[#A1A1A1]">
                   <span>Status:</span>
@@ -357,7 +357,7 @@ export default function CarrierLiveGpsMap({
                 <Radio size={13} className="text-[#3ECF8E]" /> LIVE GPS RADAR
               </span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+            <span className="text-[10px] font-mono text-[#3ECF8E] font-bold bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/25">
               {liveClock}
             </span>
           </div>
@@ -378,7 +378,7 @@ export default function CarrierLiveGpsMap({
               <Navigation size={11} className="text-[#3ECF8E]" />
               {truckPosition[0].toFixed(4)}°N, {truckPosition[1].toFixed(4)}°E
             </span>
-            <span className="text-emerald-400 font-bold">
+            <span className="text-[#3ECF8E] font-bold">
               {isDelivered ? 'Docked' : '68 km/h'}
             </span>
           </div>

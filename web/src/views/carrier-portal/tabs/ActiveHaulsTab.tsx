@@ -441,14 +441,14 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                 >
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <h4 className="font-bold text-xs text-[#EDEDED] truncate leading-tight">
-                      {h.loadTitle || 'Consolidated Freight Haul'}
+                      {(h.loadTitle || 'Consolidated Freight Haul').replace(/^Freight:\s*/i, '')}
                     </h4>
                     <span
                       className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${isDelivered
-                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
+                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/25'
                           : h.status === 'IN_TRANSIT'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                            ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25'
+                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/25'
                         }`}
                     >
                       {h.status}
@@ -481,7 +481,9 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
             {/* Top Bar of Active Haul */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3.5 border-b border-[#2E2E2E] gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-base font-bold text-[#EDEDED]">{activeHaul.loadTitle}</h3>
+                <h3 className="text-base font-bold text-[#EDEDED]">
+                  {(activeHaul.loadTitle || 'Consolidated Freight Haul').replace(/^Freight:\s*/i, '')}
+                </h3>
               </div>
 
               {/* Status Action Buttons */}
@@ -510,7 +512,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                       setPodHaul(activeHaul);
                       setShowPodModal(true);
                     }}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                    className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-[0_0_18px_rgba(62,207,142,0.25)] hover:shadow-[0_0_24px_rgba(62,207,142,0.35)] cursor-pointer"
                   >
                     <PenTool size={13} /> Complete & Submit e-PoD
                   </button>
@@ -538,10 +540,10 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   {/* AI Predicted ETA (SRS FR-03.2) */}
                   <div
                     className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${activeHaul.status === 'DELIVERED'
-                        ? 'bg-[#1C1C1C] border-emerald-500/30'
+                        ? 'bg-[#1C1C1C] border-[#2E2E2E]'
                         : etaError
                           ? 'bg-rose-500/10 border-rose-500/40'
-                          : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
+                          : 'bg-[#1C1C1C] border-[#2E2E2E] hover:border-[#383838]'
                       }`}
                   >
                     <div className="flex items-center justify-between">
