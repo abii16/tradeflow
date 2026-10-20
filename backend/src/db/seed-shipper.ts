@@ -2,7 +2,6 @@ import { db } from './index';
 import { users, loads, bids, shipments, contracts } from './schema';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import * as argon2 from 'argon2';
 
 async function seed() {
   console.log('Seeding data...');
