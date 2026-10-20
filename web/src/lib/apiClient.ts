@@ -421,7 +421,7 @@ export async function assignHaulDriver(haulId: string, data: { driverId?: string
   return apiClient(`/carrier/hauls/${haulId}/assign`, { method: 'PATCH', data });
 }
 
-export async function submitHaulCheckin(haulId: string, data: { lat: number; lng: number; speed?: number; waypointName?: string; notes?: string }) {
+export async function submitHaulCheckin(haulId: string, data: { lat: number; lng: number; speed?: number; waypointName?: string; notes?: string; fuelLiters?: number }) {
   return apiClient(`/carrier/hauls/${haulId}/checkin`, { method: 'POST', data });
 }
 
