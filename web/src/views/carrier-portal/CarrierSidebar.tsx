@@ -71,8 +71,7 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
       items: [
         {
           id: 'corridor_safety',
-          label: isAm ? 'የኮሪደር ደህንነት እና ነዳጅ' : 'Corridor Safety & Fuel',
-          sub: isAm ? 'አደጋ ቀጠናዎች እና ማደያዎች' : 'Hazards, Stations & Detours',
+          label: isAm ? 'የኮሪደር ደህንነት' : 'Corridor Safety',
           icon: ShieldAlert,
         },
         {

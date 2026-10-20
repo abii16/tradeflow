@@ -150,35 +150,31 @@ export default function CorridorSafetyTab() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2E2E2E]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#242424]">
         <div>
-          <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2">
-            <ShieldAlert size={22} className="text-[#3ECF8E]" />
-            Corridor Safety Radar & Fuel Stock Monitor
+          <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight">
+            Corridor Safety
           </h2>
-          <p className="text-xs text-[#8F8F8F] mt-0.5">
-            SRS FR-05 &amp; FR-08 Geofenced Hazard Zones, Highway Stock Levels &amp; Mid-Trip Detour Optimization
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleRunAiOptimizer}
             disabled={optimizingRoute}
-            className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5 disabled:opacity-50"
+            className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-semibold px-3.5 py-2 rounded-lg transition shadow-[0_0_12px_rgba(62,207,142,0.18)] flex items-center gap-1.5 disabled:opacity-50 cursor-pointer active:scale-95"
           >
             {optimizingRoute ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
-            Run AI Route Optimizer
+            Run AI Optimizer
           </button>
           <button
             onClick={() => setShowIncidentModal(true)}
-            className="bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5"
+            className="bg-[#171717] hover:bg-[#1C1C1C] text-[#EDEDED] border border-[#242424] hover:border-[#383838] text-xs font-semibold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus size={14} /> Report Hazard / Delay
+            <Plus size={14} className="text-[#3ECF8E]" /> Report Incident
           </button>
           <button
             onClick={() => fetchZones(false)}
-            className="bg-[#232323] hover:bg-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] p-2 rounded-xl border border-[#2E2E2E] transition"
+            className="bg-[#171717] hover:bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] p-2 rounded-lg border border-[#242424] transition cursor-pointer"
             title="Refresh Radar"
           >
             <RefreshCw size={14} />
@@ -186,31 +182,31 @@ export default function CorridorSafetyTab() {
         </div>
       </div>
 
-      {/* SRS FR-05.3 Mid-Trip Rerouting Proposal Banner */}
+      {/* Mid-Trip Rerouting Proposal Banner */}
       {showReroutePrompt && !rerouteAccepted && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in">
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#3ECF8E]/30 shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-              <Navigation size={18} />
+            <div className="w-9 h-9 rounded-lg bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25 flex items-center justify-center shrink-0 mt-0.5">
+              <Navigation size={17} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-amber-300">
-                  SRS FR-05.3 AI Mid-Trip Rerouting Recommendation
+                <span className="text-xs font-bold text-[#EDEDED]">
+                  AI Mid-Trip Rerouting Recommendation
                 </span>
-                <span className="text-[9px] font-mono bg-amber-500/20 text-amber-400 px-1.5 py-0.2 rounded font-bold">
+                <span className="text-[10px] font-mono bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25 px-2 py-0.5 rounded-full font-bold">
                   SAVES {aiRouteResult?.cost_savings_percentage ? `${aiRouteResult.cost_savings_percentage}% COST` : '42 MINS'}
                 </span>
               </div>
-              <p className="text-xs text-[#EDEDED] mt-0.5">
+              <p className="text-xs text-[#8F8F8F] mt-1 leading-relaxed">
                 {aiRouteResult ? (
                   <>
-                    AI Engine Metaheuristic optimizer recommends detour via <strong>{aiRouteResult.recommended_path.join(' → ')}</strong> to circumvent checkpoint congestion with <strong>{aiRouteResult.cost_savings_percentage}% fuel and operational savings</strong>.
+                    AI Engine recommends detour via <strong className="text-white">{aiRouteResult.recommended_path.join(' → ')}</strong> to circumvent checkpoint congestion with <strong className="text-[#3ECF8E]">{aiRouteResult.cost_savings_percentage}% fuel savings</strong>.
                   </>
                 ) : (
                   <>
-                    Heavy customs backlog detected at <strong>Mille Checkpoint (A1)</strong>. 
-                    Neural routing proposes detour via <strong>B51 Arterial Bypass</strong>: +14 km distance, but saves 42 minutes dwell and 11 liters diesel.
+                    Heavy customs backlog detected at <strong className="text-[#EDEDED]">Mille Checkpoint (A1)</strong>. 
+                    Neural routing proposes detour via <strong className="text-[#3ECF8E]">B51 Arterial Bypass</strong>: +14 km distance, but saves 42 minutes dwell and 11 liters diesel.
                   </>
                 )}
               </p>
@@ -220,13 +216,13 @@ export default function CorridorSafetyTab() {
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
             <button
               onClick={() => setShowReroutePrompt(false)}
-              className="px-3 py-1.5 rounded-lg bg-[#232323] hover:bg-[#2E2E2E] text-xs font-semibold text-[#8F8F8F]"
+              className="px-3 py-1.5 rounded-lg bg-[#121212] hover:bg-[#1C1C1C] text-xs font-semibold text-[#8F8F8F] border border-[#242424] transition cursor-pointer"
             >
               Decline & Stay on A1
             </button>
             <button
               onClick={handleAcceptReroute}
-              className="px-4 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-black text-xs font-bold transition shadow-md flex items-center gap-1.5"
+              className="px-4 py-1.5 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition shadow-[0_0_12px_rgba(62,207,142,0.2)] flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               <CheckCircle2 size={13} /> Confirm & Apply Detour
             </button>
@@ -246,13 +242,12 @@ export default function CorridorSafetyTab() {
       {/* Main Grid: Hazard Zones + Fuel Stocks */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Active Risk & Conflict Zones */}
-        <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F] flex items-center gap-2">
-              <Radio size={15} className="text-[#3ECF8E] animate-pulse" />
-              Active Corridor Hazards & Advisories ({riskZones.length})
+        <div className="bg-[#171717] border border-[#242424] rounded-xl p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#242424]">
+            <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F]">
+              Active Hazards ({riskZones.length})
             </h3>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded border border-[#3ECF8E]/25 font-bold">
               LIVE RADAR
             </span>
           </div>
@@ -265,29 +260,29 @@ export default function CorridorSafetyTab() {
               return (
                 <div
                   key={zone.id}
-                  className={`p-4 rounded-xl border transition ${
+                  className={`p-4 rounded-lg border transition-colors ${
                     isHigh
-                      ? 'bg-red-500/5 border-red-500/30'
+                      ? 'bg-rose-500/5 border-rose-500/30'
                       : isMed
                       ? 'bg-amber-500/5 border-amber-500/30'
-                      : 'bg-[#1C1C1C] border-[#2E2E2E]'
+                      : 'bg-[#121212] border-[#242424]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
                       <AlertTriangle
-                        size={15}
-                        className={isHigh ? 'text-red-400' : isMed ? 'text-amber-400' : 'text-blue-400'}
+                        size={14}
+                        className={isHigh ? 'text-rose-400' : isMed ? 'text-amber-400' : 'text-[#3ECF8E]'}
                       />
                       <h4 className="text-xs font-bold text-[#EDEDED]">{zone.title || zone.name}</h4>
                     </div>
                     <span
                       className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded uppercase ${
                         isHigh
-                          ? 'bg-red-500/20 text-red-400'
+                          ? 'bg-rose-500/20 text-rose-400'
                           : isMed
                           ? 'bg-amber-500/20 text-amber-400'
-                          : 'bg-blue-500/20 text-blue-400'
+                          : 'bg-[#3ECF8E]/20 text-[#3ECF8E]'
                       }`}
                     >
                       {zone.severity}
@@ -298,7 +293,7 @@ export default function CorridorSafetyTab() {
                     {zone.description}
                   </p>
 
-                  <div className="flex items-center justify-between text-[10px] font-mono text-[#8F8F8F] pt-2 border-t border-[#2E2E2E]/60">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#707070] pt-2 border-t border-[#242424]">
                     <span>GPS: {zone.lat}°N, {zone.lng}°E</span>
                     <span>Geofence: {(zone.radius / 1000).toFixed(0)} km buffer</span>
                   </div>
@@ -308,14 +303,13 @@ export default function CorridorSafetyTab() {
           </div>
         </div>
 
-        {/* Right: Fuel Stations Stock Monitor (FR-05.1) */}
-        <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F] flex items-center gap-2">
-              <Fuel size={15} className="text-[#3ECF8E]" />
-              Corridor Fuel Station Telemetry (FR-05.1)
+        {/* Right: Fuel Stations Stock Monitor */}
+        <div className="bg-[#171717] border border-[#242424] rounded-xl p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#242424]">
+            <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F]">
+              Fuel Station Telemetry
             </h3>
-            <span className="text-[10px] font-mono text-[#8F8F8F]">Diesel Stock Index</span>
+            <span className="text-[10px] font-mono text-[#707070]">Diesel Stock Index</span>
           </div>
 
           <div className="space-y-3">
@@ -326,22 +320,22 @@ export default function CorridorSafetyTab() {
               return (
                 <div
                   key={st.name}
-                  className="p-3.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] space-y-2"
+                  className="p-3.5 rounded-lg bg-[#121212] border border-[#242424] space-y-2 hover:border-[#333] transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-xs font-bold text-[#EDEDED]">{st.name}</div>
-                      <div className="text-[10px] font-mono text-[#8F8F8F]">
+                      <div className="text-[10px] font-mono text-[#707070] mt-0.5">
                         Corridor KM {st.distanceKm} • Current Tariff: {st.dieselPrice}
                       </div>
                     </div>
                     <span
                       className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded uppercase ${
                         isCrit
-                          ? 'bg-red-500/10 text-red-400 border border-red-500/30'
+                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
                           : isLim
                           ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                          : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/30'
                       }`}
                     >
                       {st.status} ({st.stockPercent}%)
@@ -349,10 +343,10 @@ export default function CorridorSafetyTab() {
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="w-full h-1.5 rounded-full bg-[#2E2E2E] overflow-hidden">
+                  <div className="w-full h-1.5 rounded-full bg-[#1C1C1C] border border-[#242424] overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        isCrit ? 'bg-red-500' : isLim ? 'bg-amber-400' : 'bg-[#3ECF8E]'
+                        isCrit ? 'bg-rose-500' : isLim ? 'bg-amber-400' : 'bg-[#3ECF8E]'
                       }`}
                       style={{ width: `${st.stockPercent}%` }}
                     />
@@ -362,8 +356,11 @@ export default function CorridorSafetyTab() {
             })}
           </div>
 
-          <div className="p-3 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] text-[11px] text-[#8F8F8F] font-mono">
-            💡 <strong>Route Optimizer Note:</strong> Refueling at Awash or Modjo is recommended for maximum fuel efficiency and avoidance of Galafi border retail surcharges.
+          <div className="p-3 rounded-lg bg-[#121212] border border-[#242424] text-[11px] text-[#8F8F8F] font-mono flex items-center gap-2.5">
+            <Fuel size={14} className="text-[#3ECF8E] shrink-0" />
+            <span>
+              <strong className="text-[#EDEDED]">Route Strategy:</strong> Refueling at Awash or Modjo is recommended for maximum fuel efficiency and avoidance of Galafi border retail surcharges.
+            </span>
           </div>
         </div>
       </div>
@@ -373,12 +370,12 @@ export default function CorridorSafetyTab() {
           ========================================================================= */}
       {showIncidentModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-[#2E2E2E] flex items-center justify-between bg-[#1C1C1C]">
+          <div className="bg-[#171717] border border-[#282828] rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div className="p-5 border-b border-[#242424] flex items-center justify-between bg-[#121212]">
               <div>
                 <h3 className="font-bold text-sm text-[#EDEDED] flex items-center gap-2">
-                  <AlertTriangle size={16} className="text-amber-400" />
-                  Log Corridor Incident (FR-05.2)
+                  <AlertTriangle size={16} className="text-[#3ECF8E]" />
+                  Log Corridor Incident
                 </h3>
                 <p className="text-[10px] font-mono text-[#8F8F8F] mt-0.5">
                   Updates central route optimization in near-real-time
@@ -400,7 +397,7 @@ export default function CorridorSafetyTab() {
                 <select
                   value={incidentType}
                   onChange={(e) => setIncidentType(e.target.value)}
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
+                  className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
                 >
                   <option value="CHECKPOINT_DELAY">Checkpoint / Customs Congestion Delay</option>
                   <option value="ACCIDENT">Road Accident / Vehicle Breakdown</option>
@@ -417,7 +414,7 @@ export default function CorridorSafetyTab() {
                 <select
                   value={severity}
                   onChange={(e) => setSeverity(e.target.value)}
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
+                  className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
                 >
                   <option value="LOW">Low (Informational delay &lt; 30 mins)</option>
                   <option value="MEDIUM">Medium (1-2 hour delay)</option>
@@ -437,7 +434,7 @@ export default function CorridorSafetyTab() {
                     required
                     value={incidentLat}
                     onChange={(e) => setIncidentLat(e.target.value)}
-                    className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
+                    className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
                   />
                 </div>
                 <div>
@@ -450,7 +447,7 @@ export default function CorridorSafetyTab() {
                     required
                     value={incidentLng}
                     onChange={(e) => setIncidentLng(e.target.value)}
-                    className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
+                    className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2.5 text-xs text-[#EDEDED] font-mono focus:border-[#3ECF8E] outline-none"
                   />
                 </div>
               </div>
@@ -465,22 +462,22 @@ export default function CorridorSafetyTab() {
                   placeholder="e.g. Overturned trailer blocking one lane near Mille bridge. Traffic moving slowly."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl px-3.5 py-2 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none resize-none"
+                  className="w-full bg-[#121212] border border-[#262626] rounded-lg px-3.5 py-2 text-xs text-[#EDEDED] focus:border-[#3ECF8E] outline-none resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2E2E2E]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#242424]">
                 <button
                   type="button"
                   onClick={() => setShowIncidentModal(false)}
-                  className="px-4 py-2 rounded-xl bg-[#1C1C1C] hover:bg-[#2E2E2E] text-xs font-semibold text-[#8F8F8F]"
+                  className="px-4 py-2 rounded-lg bg-[#121212] hover:bg-[#1C1C1C] border border-[#242424] text-xs font-semibold text-[#8F8F8F]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={reportingIncident}
-                  className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-bold transition flex items-center gap-2"
+                  className="px-5 py-2 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition shadow-[0_0_12px_rgba(62,207,142,0.18)] flex items-center gap-2 cursor-pointer"
                 >
                   {reportingIncident ? (
                     <>
