@@ -6,7 +6,6 @@ import {
   ShieldCheck,
   CheckCircle2,
   Upload,
-  Navigation,
   PenTool,
   AlertTriangle,
   Loader2,
@@ -672,23 +671,17 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
             {/* Live Corridor GPS Radar Map (SRS FR-03.1 / Admin-grade Google Hybrid Telematics) */}
             <div className="mt-4 pt-3.5 border-t border-[#2E2E2E] space-y-2.5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Navigation size={15} className="text-[#3ECF8E]" />
-                  <h4 className="text-xs font-bold text-[#EDEDED] tracking-wide uppercase font-mono">
-                    Live Corridor GPS Radar Tracking
-                  </h4>
-                  <span className="text-[9px] font-mono font-bold bg-[#3ECF8E]/10 text-[#3ECF8E] px-1.5 py-0.5 rounded border border-[#3ECF8E]/20">
-                    REAL-TIME SAT TELEMATICS
-                  </span>
-                </div>
+                <h4 className="text-xs font-bold text-[#EDEDED] tracking-wider uppercase font-mono">
+                  Live GPS Tracking
+                </h4>
 
                 <button
                   type="button"
                   onClick={() => setShowMap(!showMap)}
-                  className="flex items-center gap-1.5 text-[10px] font-mono bg-[#1C1C1C] hover:bg-[#2A2A2A] text-[#8F8F8F] hover:text-[#EDEDED] px-2.5 py-1 rounded-lg border border-[#2E2E2E] transition"
+                  className="flex items-center gap-1.5 text-[10px] font-mono bg-[#1C1C1C] hover:bg-[#2A2A2A] text-[#8F8F8F] hover:text-[#EDEDED] px-2.5 py-1 rounded-lg border border-[#2E2E2E] transition cursor-pointer"
                 >
                   {showMap ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  <span>{showMap ? 'Hide Radar Map' : 'Show Radar Map'}</span>
+                  <span>{showMap ? 'Hide Map' : 'Show Map'}</span>
                 </button>
               </div>
 
