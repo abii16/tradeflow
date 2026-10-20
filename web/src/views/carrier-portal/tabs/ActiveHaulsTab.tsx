@@ -580,30 +580,30 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     </div>
 
                     {activeHaul.status === 'DELIVERED' ? (
-                      <div className="flex items-baseline justify-between font-mono my-auto">
+                      <div className="flex items-baseline justify-center gap-6 sm:gap-8 font-mono my-auto">
                         <span className="text-xs font-bold text-[#3ECF8E]">Delivered</span>
                         <span className="text-xs font-semibold text-[#3ECF8E]">0h left</span>
                       </div>
                     ) : etaLoading ? (
-                      <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] my-auto">
+                      <div className="flex items-center justify-center gap-2 text-xs font-mono text-[#8F8F8F] my-auto">
                         <Loader2 size={12} className="animate-spin text-[#3ECF8E]" />
                         <span>Querying AI Engine...</span>
                       </div>
                     ) : etaError ? (
-                      <div className="my-auto">
+                      <div className="my-auto text-center">
                         <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline</div>
                       </div>
                     ) : etaData ? (
-                      <div className="flex items-baseline justify-between font-mono my-auto">
+                      <div className="flex items-baseline justify-center gap-6 sm:gap-8 font-mono my-auto">
                         <span className="text-xs font-bold text-[#3ECF8E] truncate">
                           {etaData.estimatedArrival}
                         </span>
-                        <span className="text-xs font-semibold text-[#3ECF8E] shrink-0 ml-2">
+                        <span className="text-xs font-semibold text-[#3ECF8E] shrink-0">
                           {etaData.predictedHours}h left
                         </span>
                       </div>
                     ) : (
-                      <div className="text-xs text-[#8F8F8F] my-auto">Awaiting dispatch</div>
+                      <div className="text-xs text-[#8F8F8F] my-auto text-center">Awaiting dispatch</div>
                     )}
                   </div>
 
@@ -620,7 +620,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                         Fuel Telemetry
                       </span>
                     </div>
-                    <div className="flex items-baseline justify-between font-mono my-auto">
+                    <div className="flex items-baseline justify-center gap-6 sm:gap-8 font-mono my-auto">
                       {activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 && activeHaul.estimatedFuelLiters ? (
                         <>
                           <span className="text-xs font-bold text-[#EDEDED]">
