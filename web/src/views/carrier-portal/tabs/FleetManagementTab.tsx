@@ -176,11 +176,8 @@ export default function FleetManagementTab() {
       <div className="bg-[#171717] border border-[#242424] rounded-xl overflow-hidden shadow-sm">
         <div className="p-4 border-b border-[#242424] flex items-center justify-between">
           <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F]">
-            Registered Heavy Vehicle Inventory ({vehicles.length})
+            Fleet Inventory ({vehicles.length})
           </h3>
-          <span className="text-[10px] font-mono text-[#3ECF8E]">
-            DB Persisted • Drizzle Schema
-          </span>
         </div>
 
         {vehicles.length === 0 ? (
