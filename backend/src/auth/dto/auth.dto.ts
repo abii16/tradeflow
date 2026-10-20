@@ -127,3 +127,18 @@ export type GoogleAuthRequestType = z.infer<typeof GoogleAuthDto>;
 export type RefreshTokenRequestType = z.infer<typeof RefreshTokenDto>;
 export type CompleteProfileRequestType = z.infer<typeof CompleteProfileDto>;
 
+export const UpdateProfileDto = z.object({
+  fullName: z.string().min(2, 'Full name must be at least 2 characters').max(255).optional(),
+  phone: z.string().min(5, 'Phone number is too short').max(50).optional(),
+  companyName: z.string().max(255).optional(),
+  tinNumber: z.string().max(50).optional(),
+  tradeLicense: z.string().max(100).optional(),
+  avatarUrl: z.string().optional(),
+  bio: z.string().max(500).optional(),
+  fleetName: z.string().max(255).optional(),
+  vehicleCapacity: z.string().max(100).optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
+export type UpdateProfileRequestType = z.infer<typeof UpdateProfileDto>;
+

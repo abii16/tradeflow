@@ -114,6 +114,7 @@ export const JwtAuthGuard = async (req: Request, res: Response, next: NextFuncti
       id: user.id,
       email: user.email,
       fullName: user.fullName,
+      phone: user.phone,
       role: user.role,
       createdAt: user.createdAt.toISOString(),
       isVerified: user.isVerified,
@@ -121,6 +122,10 @@ export const JwtAuthGuard = async (req: Request, res: Response, next: NextFuncti
       companyName: user.companyName,
       tinNumber: user.tinNumber,
       tradeLicense: user.tradeLicense,
+      fleetName: user.fleetName,
+      vehicleCapacity: user.vehicleCapacity,
+      avatarUrl: userMeta.avatarUrl || null,
+      metadata: userMeta,
     };
 
     next();

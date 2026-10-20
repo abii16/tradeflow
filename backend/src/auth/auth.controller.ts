@@ -1,12 +1,15 @@
 import { Router, Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, GoogleAuthDto, RefreshTokenDto, CompleteProfileDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, GoogleAuthDto, RefreshTokenDto, CompleteProfileDto, UpdateProfileDto } from './dto/auth.dto';
 import rateLimit from 'express-rate-limit';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { VerificationGuard } from './guards/verification.guard';
 import { z } from 'zod';
 import { auditMiddleware } from '../middleware/audit.middleware';
+import { db } from '../db';
+import { users } from '../db/schema/users';
+import { eq } from 'drizzle-orm';
 
 const router = Router();
 const authService = new AuthService();
@@ -123,6 +126,23 @@ router.post('/complete-profile', JwtAuthGuard, auditMiddleware('AUTH_COMPLETE_PR
 });
 
 /**
+ * Update authenticated user profile (Full Name, Phone, Company, Avatar, Bio, etc.)
+ */
+router.patch('/profile', JwtAuthGuard, auditMiddleware('AUTH_UPDATE_PROFILE'), async (req: Request, res: Response) => {
+  try {
+    const validatedData = UpdateProfileDto.parse(req.body);
+    const result = await authService.updateProfile(req.user!.id, validatedData);
+    res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: 'Validation failed', details: error.errors });
+    } else {
+      res.status(400).json({ error: error.message || 'Failed to update profile' });
+    }
+  }
+});
+
+/**
  * INSA Requirement: View and manage active user sessions
  */
 router.get('/sessions', JwtAuthGuard, async (req: Request, res: Response) => {
@@ -173,9 +193,35 @@ router.post('/logout', JwtAuthGuard, async (req: Request, res: Response) => {
 
 
 
-router.get('/me', JwtAuthGuard, (req: Request, res: Response) => {
-  // @CurrentUser() decorator equivalent in Express: using req.user
-  res.status(200).json({ user: req.user });
+router.get('/me', JwtAuthGuard, async (req: Request, res: Response) => {
+  try {
+    const [freshUser] = await db.select().from(users).where(eq(users.id, req.user!.id));
+    if (freshUser) {
+      const meta = typeof freshUser.metadata === 'object' && freshUser.metadata ? (freshUser.metadata as any) : {};
+      return res.status(200).json({
+        user: {
+          id: freshUser.id,
+          email: freshUser.email,
+          fullName: freshUser.fullName,
+          phone: freshUser.phone,
+          role: freshUser.role,
+          createdAt: freshUser.createdAt.toISOString(),
+          isVerified: freshUser.isVerified,
+          verificationStatus: freshUser.verificationStatus,
+          companyName: freshUser.companyName,
+          tinNumber: freshUser.tinNumber,
+          tradeLicense: freshUser.tradeLicense,
+          fleetName: freshUser.fleetName,
+          vehicleCapacity: freshUser.vehicleCapacity,
+          avatarUrl: meta.avatarUrl || null,
+          metadata: meta,
+        }
+      });
+    }
+    res.status(200).json({ user: req.user });
+  } catch (e) {
+    res.status(200).json({ user: req.user });
+  }
 });
 
 router.get('/admin-only', JwtAuthGuard, RolesGuard(['SYSTEM_ADMIN', 'FINANCE_ADMIN']), (req: Request, res: Response) => {

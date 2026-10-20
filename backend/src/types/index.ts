@@ -2,6 +2,7 @@ export interface UserProfile {
   id: string;
   email: string;
   fullName: string;
+  phone?: string | null;
   role: string;
   createdAt: string;
   isVerified?: boolean;
@@ -9,6 +10,10 @@ export interface UserProfile {
   companyName?: string | null;
   tinNumber?: string | null;
   tradeLicense?: string | null;
+  fleetName?: string | null;
+  vehicleCapacity?: string | null;
+  avatarUrl?: string | null;
+  metadata?: any;
 }
 
 export interface LoadItem {

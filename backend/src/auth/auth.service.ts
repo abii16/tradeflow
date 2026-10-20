@@ -1,4 +1,4 @@
-import { RegisterRequestType, LoginRequestType, GoogleAuthRequestType, RefreshTokenRequestType, CompleteProfileRequestType } from './dto/auth.dto';
+import { RegisterRequestType, LoginRequestType, GoogleAuthRequestType, RefreshTokenRequestType, CompleteProfileRequestType, UpdateProfileRequestType } from './dto/auth.dto';
 import { db } from '../db';
 import { users } from '../db/schema/users';
 import { verifications } from '../db/schema/verifications';
@@ -465,12 +465,17 @@ export class AuthService {
         id: userObj.id,
         email: userObj.email,
         fullName: userObj.fullName,
+        phone: userObj.phone,
         role: userObj.role,
         isVerified: userObj.isVerified,
         verificationStatus: userObj.verificationStatus,
         companyName: userObj.companyName,
         tinNumber: userObj.tinNumber,
         tradeLicense: userObj.tradeLicense,
+        fleetName: userObj.fleetName,
+        vehicleCapacity: userObj.vehicleCapacity,
+        avatarUrl: (userObj.metadata as any)?.avatarUrl || null,
+        metadata: userObj.metadata,
       },
       suspiciousLoginAlert: isSuspicious ? reasons.join('; ') : undefined,
     };
@@ -651,12 +656,17 @@ export class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        phone: user.phone,
         role: user.role,
         isVerified: user.isVerified,
         verificationStatus: user.verificationStatus,
         companyName: user.companyName,
         tinNumber: user.tinNumber,
         tradeLicense: user.tradeLicense,
+        fleetName: user.fleetName,
+        vehicleCapacity: user.vehicleCapacity,
+        avatarUrl: (user.metadata as any)?.avatarUrl || null,
+        metadata: user.metadata,
       }
     };
   }
@@ -850,6 +860,69 @@ export class AuthService {
     return {
       message: 'Profile and legal regulatory information submitted successfully',
       user: safeUser,
+    };
+  }
+
+  /**
+   * Update User Profile (Full Name, Phone, Avatar URL, Bio, Company, etc.)
+   */
+  async updateProfile(userId: string, data: UpdateProfileRequestType) {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const currentMetadata = typeof user.metadata === 'object' && user.metadata ? (user.metadata as any) : {};
+    const updatedMetadata = {
+      ...currentMetadata,
+      ...(data.metadata || {}),
+      ...(data.avatarUrl !== undefined ? { avatarUrl: data.avatarUrl } : {}),
+      ...(data.bio !== undefined ? { bio: data.bio } : {}),
+      profileUpdatedAt: new Date().toISOString(),
+    };
+
+    const updateFields: any = {
+      updatedAt: new Date(),
+      metadata: updatedMetadata,
+    };
+
+    if (data.fullName !== undefined) updateFields.fullName = data.fullName.trim();
+    if (data.phone !== undefined) updateFields.phone = data.phone.trim();
+    if (data.companyName !== undefined) updateFields.companyName = data.companyName.trim();
+    if (data.tinNumber !== undefined) updateFields.tinNumber = data.tinNumber.trim();
+    if (data.tradeLicense !== undefined) updateFields.tradeLicense = data.tradeLicense.trim();
+    if (data.fleetName !== undefined) updateFields.fleetName = data.fleetName.trim();
+    if (data.vehicleCapacity !== undefined) updateFields.vehicleCapacity = data.vehicleCapacity.trim();
+
+    let updatedUser: any;
+    try {
+      const res = await db.update(users).set(updateFields).where(eq(users.id, userId)).returning();
+      updatedUser = res[0];
+    } catch (e) {
+      await db.update(users).set(updateFields).where(eq(users.id, userId));
+      const [fetched] = await db.select().from(users).where(eq(users.id, userId));
+      updatedUser = fetched;
+    }
+
+    const { passwordHash, ...safeUser } = updatedUser || user;
+    return {
+      message: 'Profile updated successfully',
+      user: {
+        id: safeUser.id,
+        email: safeUser.email,
+        fullName: safeUser.fullName,
+        phone: safeUser.phone,
+        role: safeUser.role,
+        isVerified: safeUser.isVerified,
+        verificationStatus: safeUser.verificationStatus,
+        companyName: safeUser.companyName,
+        tinNumber: safeUser.tinNumber,
+        tradeLicense: safeUser.tradeLicense,
+        fleetName: safeUser.fleetName,
+        vehicleCapacity: safeUser.vehicleCapacity,
+        avatarUrl: updatedMetadata.avatarUrl || null,
+        metadata: updatedMetadata,
+      },
     };
   }
 

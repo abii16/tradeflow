@@ -7,12 +7,17 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
+  phone?: string;
+  avatarUrl?: string;
   role: 'SHIPPER' | 'TRANSPORTER' | 'FORWARDER' | 'CUSTOMS_OFFICER' | 'ADMIN';
   isVerified?: boolean;
   verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
   companyName?: string;
   tinNumber?: string;
   tradeLicense?: string;
+  fleetName?: string;
+  vehicleCapacity?: string;
+  metadata?: any;
   [key: string]: any;
 }
 
@@ -23,6 +28,7 @@ interface AuthContextType {
   login: (data: any) => Promise<void>;
   loginWithGoogle: (role?: string) => Promise<void>;
   register: (data: any) => Promise<void>;
+  updateProfile: (data: any) => Promise<any>;
   refreshUser: () => Promise<void>;
   logout: (options?: { allDevices?: boolean } | any) => Promise<void>;
 }
@@ -261,6 +267,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateProfile = async (data: any) => {
+    const res = await apiClient('/auth/profile', {
+      method: 'PATCH',
+      data,
+    });
+    if (res && res.user) {
+      setUser((prev) => {
+        const merged = { ...(prev || {}), ...res.user };
+        persistUser(merged);
+        return merged;
+      });
+      return res.user;
+    }
+    await refreshUser();
+    return res;
+  };
+
   const logout = async (options?: { allDevices?: boolean } | any) => {
     const allDevices = Boolean(options && typeof options === 'object' && options.allDevices === true);
     try {
@@ -292,7 +315,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, loginWithGoogle, register, refreshUser, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, loginWithGoogle, register, updateProfile, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,12 +4,14 @@ import { Bell, Globe, LogOut, User, Settings, ChevronDown, Shield, ShieldCheck, 
 import HeaderSearch from '@/components/common/HeaderSearch';
 import { useAuth } from '@/hooks/useAuth';
 import ActiveSessionsModal from '@/views/auth/ActiveSessionsModal';
+import UserProfileModal from '@/views/auth/UserProfileModal';
 
 export default function UniversalTopBar() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSessionsModalOpen, setIsSessionsModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -97,10 +99,10 @@ export default function UniversalTopBar() {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-1 focus:outline-none"
             >
-              <div className="w-8 h-8 rounded-full bg-[#2E2E2E] border-2 border-[#1C1C1C] shadow-sm overflow-hidden ring-1 ring-[#2E2E2E]">
+              <div className="w-8 h-8 rounded-full bg-[#2E2E2E] border-2 border-[#1C1C1C] shadow-sm overflow-hidden ring-1 ring-[#3ECF8E]/40 hover:ring-[#3ECF8E] transition-all">
                 <img 
-                  src={`https://i.pravatar.cc/150?u=${user.email}`} 
-                  alt="Profile" 
+                  src={user.avatarUrl || user.metadata?.avatarUrl || `https://i.pravatar.cc/150?u=${encodeURIComponent(user.email)}`} 
+                  alt={user.fullName || "Profile"} 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -124,8 +126,14 @@ export default function UniversalTopBar() {
                   </button>
                 )}
 
-                <button className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors">
-                  <User size={14} /> {t('my_profile')}
+                <button 
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    setIsProfileModalOpen(true);
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors"
+                >
+                  <User size={14} className="text-[#3ECF8E]" /> {t('my_profile')}
                 </button>
                 <button 
                   onClick={() => {
@@ -136,7 +144,13 @@ export default function UniversalTopBar() {
                 >
                   <Laptop size={14} className="text-[#3ECF8E]" /> Connected Devices
                 </button>
-                <button className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors">
+                <button 
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    setIsProfileModalOpen(true);
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs text-[#EDEDED] hover:bg-[#1C1C1C] hover:text-[#3ECF8E] flex items-center gap-2 transition-colors"
+                >
                   <Settings size={14} /> {t('account_settings')}
                 </button>
                 
@@ -171,6 +185,14 @@ export default function UniversalTopBar() {
 
       {isSessionsModalOpen && (
         <ActiveSessionsModal onClose={() => setIsSessionsModalOpen(false)} />
+      )}
+
+      {isProfileModalOpen && (
+        <UserProfileModal 
+          isOpen={isProfileModalOpen} 
+          onClose={() => setIsProfileModalOpen(false)} 
+          onOpenSessions={() => setIsSessionsModalOpen(true)}
+        />
       )}
     </header>
   );

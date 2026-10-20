@@ -550,4 +550,26 @@ export async function getForwarderAnalytics() {
   return apiClient('/forwarder/analytics', { method: 'GET' });
 }
 
+// ==========================================
+// USER PROFILE APIS
+// ==========================================
+
+export async function updateUserProfile(data: {
+  fullName?: string;
+  phone?: string;
+  companyName?: string;
+  tinNumber?: string;
+  tradeLicense?: string;
+  avatarUrl?: string;
+  bio?: string;
+  fleetName?: string;
+  vehicleCapacity?: string;
+  metadata?: any;
+}) {
+  return apiClient('/auth/profile', {
+    method: 'PATCH',
+    data,
+  });
+}
+
 
