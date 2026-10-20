@@ -188,21 +188,8 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
         ))}
       </div>
 
-      {/* Footer System Status & Operations */}
-      <div className="p-3 border-t border-[#242424] space-y-2 bg-[#141414] shrink-0">
-
-
-        {/* Quick Portal Switch */}
-        {onSwitchPortal && (
-          <button
-            onClick={onSwitchPortal}
-            className="w-full py-2 px-3 rounded-lg bg-[#1C1C1C] hover:bg-[#242424] text-xs font-semibold text-[#8F8F8F] hover:text-[#EDEDED] border border-[#282828] hover:border-[#3ECF8E]/30 flex items-center justify-between transition-all group"
-          >
-            <span className="group-hover:text-[#3ECF8E] transition-colors">{isAm ? 'ፋይናንስ እና ክርክሮች' : 'Finance & Disputes'}</span>
-            <ChevronRight size={14} className="text-[#8F8F8F] group-hover:text-[#3ECF8E] group-hover:translate-x-0.5 transition-all" />
-          </button>
-        )}
-
+      {/* Footer Operations */}
+      <div className="p-3 border-t border-[#242424] bg-[#141414] shrink-0">
         {/* Logout Button */}
         <button
           onClick={logout}
