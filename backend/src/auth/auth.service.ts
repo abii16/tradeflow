@@ -758,7 +758,7 @@ export class AuthService {
       throw new Error('User not found');
     }
 
-    const updatedRole = data.role && data.role !== 'ADMIN' ? data.role : user.role;
+    const updatedRole = user.role === 'ADMIN' ? 'ADMIN' : (data.role || user.role);
     const isCommercial = ['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(updatedRole);
 
     const updateData: any = {
