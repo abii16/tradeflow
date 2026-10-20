@@ -54,12 +54,13 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 function AppContent() {
   const [portal, setPortalState] = useState<PortalView>(getPortalFromPath);
   const [dismissedCompliance, setDismissedCompliance] = useState(() => {
-    return sessionStorage.getItem('tradeflow_dismissed_compliance') === 'true';
+    return localStorage.getItem('tradeflow_dismissed_compliance') === 'true' ||
+           sessionStorage.getItem('tradeflow_dismissed_compliance') === 'true';
   });
   const { isLoading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated && user && portal === 'selector') {
+    if (!isLoading && isAuthenticated && user && portal === 'selector') {
       const targetMap: Record<string, PortalView> = {
         'SHIPPER': 'shipper',
         'TRANSPORTER': 'carrier',
@@ -70,20 +71,10 @@ function AppContent() {
       };
       const target = targetMap[user?.role as string];
       if (target) {
-        setPortalState(target);
-        const paths: Record<PortalView, string> = {
-          selector: '/',
-          shipper: '/shipper',
-          carrier: '/carrier',
-          finance: '/finance',
-          admin: '/admin',
-          forwarder: '/forwarder',
-          customs: '/customs',
-        };
-        window.history.pushState({ portal: target }, '', paths[target]);
+        navigateToPortal(target);
       }
     }
-  }, [isAuthenticated, user, portal]);
+  }, [isLoading, isAuthenticated, user, portal]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -117,12 +108,14 @@ function AppContent() {
   const switchToShipper = () => navigateToPortal('shipper');
   const switchToCarrier = () => navigateToPortal('carrier');
 
+  // Prevent modal from automatically intercepting or blocking the UI on startup
   const needsProfileCompletion = Boolean(
     !isLoading &&
     isAuthenticated &&
     user &&
     user.role &&
     user.role !== 'ADMIN' &&
+    localStorage.getItem('tradeflow_auto_show_compliance') === 'true' &&
     (!user.tinNumber || !user.tradeLicense || user.tinNumber.trim() === '' || user.tradeLicense.trim() === '')
   );
 
@@ -186,10 +179,12 @@ function AppContent() {
         <CompleteProfileModal 
           onClose={() => {
             setDismissedCompliance(true);
+            localStorage.setItem('tradeflow_dismissed_compliance', 'true');
             sessionStorage.setItem('tradeflow_dismissed_compliance', 'true');
           }} 
           onSuccess={() => {
             setDismissedCompliance(true);
+            localStorage.setItem('tradeflow_dismissed_compliance', 'true');
             sessionStorage.setItem('tradeflow_dismissed_compliance', 'true');
           }} 
         />
