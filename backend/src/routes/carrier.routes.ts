@@ -396,11 +396,20 @@ const CORRIDOR_LOCATIONS: Record<string, { lat: number; lng: number }> = {
 };
 
 function resolvePlaceCoords(place: any, defaultLat: number, defaultLng: number) {
-  if (place && typeof place === 'object') {
-    if (place.lat && !isNaN(Number(place.lat))) {
-      return { lat: Number(place.lat), lng: Number(place.lng) };
+  if (!place) return { lat: defaultLat, lng: defaultLng };
+  let obj = place;
+  if (typeof place === 'string') {
+    try {
+      obj = JSON.parse(place);
+    } catch {
+      obj = { address: place, city: place };
     }
-    const text = `${place.city || ''} ${place.address || ''}`.toLowerCase();
+  }
+  if (obj && typeof obj === 'object') {
+    if (obj.lat && !isNaN(Number(obj.lat))) {
+      return { lat: Number(obj.lat), lng: Number(obj.lng) };
+    }
+    const text = `${obj.city || ''} ${obj.address || ''}`.toLowerCase();
     for (const [key, coords] of Object.entries(CORRIDOR_LOCATIONS)) {
       if (text.includes(key)) return coords;
     }

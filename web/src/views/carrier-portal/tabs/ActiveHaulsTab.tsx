@@ -70,7 +70,8 @@ export function getRouteCorridor(origin: any, destination: any) {
   const o = ((typeof origin === 'string' ? origin : origin?.city || origin?.address || '') + '').toLowerCase();
   const d = ((typeof destination === 'string' ? destination : destination?.city || destination?.address || '') + '').toLowerCase();
 
-  if (d.includes('addis') || (o.includes('modjo') && d.includes('addis'))) {
+  // 1. Modjo to Addis Ababa (Short inland haul: 74 km)
+  if (o.includes('modjo') && d.includes('addis')) {
     return {
       title: 'Modjo ➔ Addis Ababa Artery (74 km Artery)',
       totalKm: 74,
@@ -84,6 +85,7 @@ export function getRouteCorridor(origin: any, destination: any) {
     };
   }
 
+  // 2. Djibouti to Dire Dawa (Eastern rail/road artery: 380 km)
   if (d.includes('dire dawa') || o.includes('dire dawa')) {
     return {
       title: 'Djibouti ➔ Dire Dawa Artery (380 km Artery)',
@@ -98,6 +100,23 @@ export function getRouteCorridor(origin: any, destination: any) {
     };
   }
 
+  // 3. Djibouti to Addis Ababa (Full cross-border trunk corridor: 884 km)
+  if ((o.includes('djibouti') || o.includes('doraleh')) && d.includes('addis')) {
+    return {
+      title: 'Djibouti ➔ Addis Ababa Trunk Corridor (884 km Artery)',
+      totalKm: 884,
+      waypoints: [
+        { name: 'Doraleh Port (Djibouti)', km: 0, lat: 11.59, lng: 43.14 },
+        { name: 'Galafi Border Post', km: 190, lat: 11.71, lng: 41.83 },
+        { name: 'Mille / Semera Checkpoint', km: 380, lat: 11.43, lng: 40.80 },
+        { name: 'Awash Junction Hub', km: 590, lat: 8.98, lng: 40.16 },
+        { name: 'Modjo Dry Port Terminal', km: 810, lat: 8.59, lng: 39.12 },
+        { name: 'Addis Ababa Kality Terminal', km: 884, lat: 9.03, lng: 38.74 },
+      ],
+    };
+  }
+
+  // 4. Djibouti to Modjo (Standard port-to-dry-port corridor: 810 km)
   return {
     title: 'Djibouti ➔ Modjo Corridor (810 km Artery)',
     totalKm: 810,
@@ -612,11 +631,21 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
 
                   {/* Fuel Telematics (Live IoT Sensor) */}
                   {(() => {
-                    const rawActual = activeHaul.actualFuelLiters != null && activeHaul.actualFuelLiters > 0
+                    const corridor = getRouteCorridor(activeHaul.origin, activeHaul.destination);
+                    const weightTons = Math.max(2, Number(activeHaul.weightKg || 25000) / 1000);
+                    const consumptionRate = 32 + (weightTons / 40) * 6; // 32 - 38 L/100km
+                    const calculatedEstFuel = Math.round((corridor.totalKm / 100) * consumptionRate);
+
+                    const estFuel = (activeHaul.estimatedFuelLiters != null && Number(activeHaul.estimatedFuelLiters) > 0)
+                      ? Number(activeHaul.estimatedFuelLiters)
+                      : calculatedEstFuel;
+
+                    const rawActual = activeHaul.actualFuelLiters != null && Number(activeHaul.actualFuelLiters) > 0
                       ? Number(activeHaul.actualFuelLiters)
-                      : (activeHaul.status === 'DELIVERED' ? Number(activeHaul.estimatedFuelLiters || 28) : (activeHaul.status === 'IN_TRANSIT' ? 15.0 : 0));
-                    
-                    const estFuel = Number(activeHaul.estimatedFuelLiters) || 28.0;
+                      : (activeHaul.status === 'DELIVERED' 
+                          ? estFuel 
+                          : (activeHaul.status === 'IN_TRANSIT' ? Math.round(estFuel * 0.55) : 0));
+
                     const isLive = activeHaul.status === 'IN_TRANSIT';
                     const currentFuel = isLive 
                       ? Number((rawActual + liveFuelOffset).toFixed(2))
