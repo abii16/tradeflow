@@ -494,24 +494,20 @@ router.get('/hauls', async (req: Request, res: Response): Promise<void> => {
       const consumptionRate = 32 + (weightTons / 40) * 6; // 32 - 38 L/100km
       const estimatedFuel = Math.round((roadDistanceKm / 100) * consumptionRate);
       
-      let actualFuel = h.actualFuelLiters != null ? Number(h.actualFuelLiters) : null;
-      if (actualFuel == null || actualFuel === 0) {
-        if (h.status === 'DELIVERED') {
-          actualFuel = Math.round(estimatedFuel * 0.94); // eco-driving savings
-        } else if (h.status === 'IN_TRANSIT') {
-          actualFuel = Math.round(estimatedFuel * 0.45); // partial transit
-        } else {
-          actualFuel = 0;
-        }
-      }
+      const estimatedFuelLiters = (h.estimatedFuelLiters != null && Number(h.estimatedFuelLiters) > 0)
+        ? Number(h.estimatedFuelLiters)
+        : estimatedFuel;
+      const actualFuelLiters = (h.actualFuelLiters != null && Number(h.actualFuelLiters) > 0)
+        ? Number(h.actualFuelLiters)
+        : null;
 
       return {
         ...h,
         currentLat,
         currentLng,
         truckPlate: h.truckPlate || '3-AA-98214',
-        estimatedFuelLiters: h.estimatedFuelLiters != null ? Number(h.estimatedFuelLiters) : estimatedFuel,
-        actualFuelLiters: actualFuel,
+        estimatedFuelLiters,
+        actualFuelLiters,
       };
     });
 
@@ -747,7 +743,7 @@ router.patch('/hauls/:id/assign', auditMiddleware('CARRIER_ASSIGN_DRIVER'), asyn
 router.post('/hauls/:id/checkin', async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { lat, lng, speed, waypointName, notes } = req.body;
+    const { lat, lng, speed, waypointName, notes, fuelLiters } = req.body;
 
     if (!lat || !lng) {
       res.status(400).json({ error: 'Latitude and Longitude are required' });
@@ -765,6 +761,10 @@ router.post('/hauls/:id/checkin', async (req: Request, res: Response): Promise<v
       currentLng: lng,
       updatedAt: new Date(),
     };
+
+    if (fuelLiters != null && !isNaN(Number(fuelLiters))) {
+      updateFields.actualFuelLiters = Number(fuelLiters);
+    }
 
     if (shipment.status === 'DISPATCHED' || shipment.status === 'PICKED_UP') {
       updateFields.status = 'IN_TRANSIT';
