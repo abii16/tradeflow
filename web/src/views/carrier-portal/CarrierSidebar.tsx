@@ -61,8 +61,7 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
         },
         {
           id: 'fleet',
-          label: isAm ? 'የተሽከርካሪዎች አስተዳደር' : 'Fleet & Drivers',
-          sub: isAm ? 'የጭነት መኪኖች እና ማረጋገጫ' : 'Trucks & Verification',
+          label: isAm ? 'የተሽከርካሪዎች አስተዳደር' : 'Fleet Management',
           icon: Layers,
         },
       ],

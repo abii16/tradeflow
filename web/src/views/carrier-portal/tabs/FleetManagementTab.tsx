@@ -134,18 +134,14 @@ export default function FleetManagementTab() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2E2E2E]">
         <div>
-          <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2">
-            <Layers size={22} className="text-[#3ECF8E]" />
-            Fleet Management & Driver Verification
+          <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight">
+            Fleet Management
           </h2>
-          <p className="text-xs text-[#8F8F8F] mt-0.5">
-            SRS FR-01.2 Vehicle Registration, Roadworthiness Compliance, Capacity Tonnage & Driver Assignments
-          </p>
         </div>
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold px-4 py-2 rounded-xl transition shadow-md flex items-center gap-1.5 self-start sm:self-auto"
+          className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-semibold px-4 py-2 rounded-lg transition shadow-md flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
         >
           <Plus size={15} /> Register New Heavy Truck
         </button>
