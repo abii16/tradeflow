@@ -26,12 +26,26 @@ interface CarrierSidebarProps {
   onSwitchPortal?: () => void;
 }
 
+interface SidebarItem {
+  id: string;
+  label: string;
+  sub?: string;
+  icon: any;
+  badge?: string;
+  badgeType?: 'live' | 'ai' | 'offline' | 'neutral' | string;
+}
+
+interface MenuSection {
+  title: string;
+  items: SidebarItem[];
+}
+
 export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal }: CarrierSidebarProps) {
   const { t, i18n } = useTranslation();
   const { logout } = useAuth();
   const isAm = i18n.language === 'am';
 
-  const menuSections = [
+  const menuSections: MenuSection[] = [
     {
       title: isAm ? 'የስምሪት እና የገበያ ክፍል' : 'DISPATCH & CORRIDOR',
       items: [
@@ -42,11 +56,8 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
         },
         {
           id: 'load_board',
-          label: isAm ? 'የጭነት ገበያ እና AI ጨረታ' : 'Load Board & Bidding',
-          sub: isAm ? 'ክፍት ጭነቶች እና ተኳሃኝነት' : 'Marketplace & AI Match',
+          label: isAm ? 'ጭነቶች' : 'Loads',
           icon: Package,
-          badge: 'AI MATCH',
-          badgeType: 'ai',
         },
         {
           id: 'fleet',
