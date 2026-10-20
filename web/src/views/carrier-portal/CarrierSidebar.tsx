@@ -38,10 +38,7 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
         {
           id: 'operations',
           label: isAm ? 'ንቁ ጉዞዎች' : 'Active Hauls',
-          sub: isAm ? 'የቀጥታ ክትትል' : 'Live tracking',
           icon: Truck,
-          badge: 'LIVE',
-          badgeType: 'live',
         },
         {
           id: 'load_board',
@@ -163,9 +160,11 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
                         <div className={`text-xs font-semibold leading-tight truncate ${isActive ? 'text-white' : 'text-[#EDEDED]'}`}>
                           {item.label}
                         </div>
-                        <div className={`text-[10px] truncate mt-0.5 ${isActive ? 'text-[#3ECF8E]/80 font-medium' : 'text-[#737373] group-hover:text-[#8F8F8F]'}`}>
-                          {item.sub}
-                        </div>
+                        {item.sub && (
+                          <div className={`text-[10px] truncate mt-0.5 ${isActive ? 'text-[#3ECF8E]/80 font-medium' : 'text-[#737373] group-hover:text-[#8F8F8F]'}`}>
+                            {item.sub}
+                          </div>
+                        )}
                       </div>
                     </div>
 
