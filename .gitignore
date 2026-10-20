@@ -40,6 +40,8 @@ Thumbs.db
 
 # Documentation
 docs/*
+!docs/issues/
+!docs/issues/*
 
 # Gemini Agent Configurations
 .agents/
