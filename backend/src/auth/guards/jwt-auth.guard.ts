@@ -95,14 +95,8 @@ export const JwtAuthGuard = async (req: Request, res: Response, next: NextFuncti
     }
 
     if (!user) {
-      // Fallback for mock demo setups if allowed
-      const [demoShipper] = await db.select().from(users).where(eq(users.role, 'SHIPPER')).limit(1);
-      if (demoShipper) {
-        user = demoShipper;
-      } else {
-        res.status(401).json({ error: 'Unauthorized: User not found' });
-        return;
-      }
+      res.status(401).json({ error: 'Unauthorized: User not found' });
+      return;
     }
 
     // Check if user's sessions were revoked across all devices
