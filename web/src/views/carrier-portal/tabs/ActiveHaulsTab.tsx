@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Truck, 
-  MapPin, 
-  Clock, 
-  ShieldCheck, 
-  CheckCircle2, 
-  Upload, 
-  Navigation, 
-  PenTool, 
-  AlertTriangle, 
-  Loader2, 
+import {
+  Truck,
+  MapPin,
+  Clock,
+  ShieldCheck,
+  CheckCircle2,
+  Upload,
+  Navigation,
+  PenTool,
+  AlertTriangle,
+  Loader2,
   X,
   FileCheck,
   Eye,
@@ -21,11 +21,11 @@ import {
   User,
   Phone
 } from 'lucide-react';
-import { 
-  getCarrierHauls, 
-  updateHaulStatus, 
-  submitHaulCheckin, 
-  submitProofOfDelivery, 
+import {
+  getCarrierHauls,
+  updateHaulStatus,
+  submitHaulCheckin,
+  submitProofOfDelivery,
   getHaulEta,
   assignHaulDriver,
   getCarrierDrivers,
@@ -350,7 +350,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
     setSubmittingPod(true);
     try {
       const generatedSignature = `DATA_SIG:RECEIVER_${signName.toUpperCase().replace(/\s+/g, '_')}_TIMESTAMP_${Date.now()}`;
-      
+
       const res = await submitProofOfDelivery(podHaul.id, {
         podPhotoUrl: photoPreview,
         podSignatureUrl: generatedSignature,
@@ -385,7 +385,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
         </div>
         <h3 className="text-lg font-bold text-[#EDEDED] mb-2">No Active Hauls in Transit</h3>
         <p className="text-xs text-[#8F8F8F] mb-6 leading-relaxed">
-          Your fleet currently has no dispatched or in-transit cargo on the Djibouti-Modjo artery. 
+          Your fleet currently has no dispatched or in-transit cargo on the Djibouti-Modjo artery.
           Browse the real-time load board to bid on verified shipper consignments.
         </p>
         {onGoToLoadBoard && (
@@ -440,24 +440,22 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                 <div
                   key={h.id}
                   onClick={() => setSelectedHaul(h)}
-                  className={`p-3.5 rounded-xl border transition cursor-pointer ${
-                    isSelected
+                  className={`p-3.5 rounded-xl border transition cursor-pointer ${isSelected
                       ? 'bg-[#232323] border-[#3ECF8E] shadow-[0_0_15px_rgba(62,207,142,0.1)]'
                       : 'bg-[#1C1C1C] border-[#2E2E2E] hover:border-[#3E3E3E]'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <h4 className="font-bold text-xs text-[#EDEDED] truncate leading-tight">
                       {h.loadTitle || 'Consolidated Freight Haul'}
                     </h4>
                     <span
-                      className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
-                        isDelivered
+                      className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${isDelivered
                           ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
                           : h.status === 'IN_TRANSIT'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                      }`}
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                        }`}
                     >
                       {h.status}
                     </span>
@@ -556,13 +554,12 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
 
                   {/* AI Predicted ETA (SRS FR-03.2) */}
                   <div
-                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${
-                      activeHaul.status === 'DELIVERED'
+                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${activeHaul.status === 'DELIVERED'
                         ? 'bg-[#1C1C1C] border-emerald-500/30'
                         : etaError
-                        ? 'bg-rose-500/10 border-rose-500/40'
-                        : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
-                    }`}
+                          ? 'bg-rose-500/10 border-rose-500/40'
+                          : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className={`text-[10px] font-mono uppercase font-bold tracking-wider ${etaError ? 'text-rose-400' : 'text-[#EDEDED]'}`}>
@@ -609,15 +606,14 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
 
                   {/* Fuel Tracker */}
                   <div
-                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] ${
-                      activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0
+                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] ${activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0
                         ? 'bg-[#1C1C1C] border-[#2E2E2E]'
                         : 'bg-[#1C1C1C] border-amber-500/30'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-[#EDEDED]">
-                        Fuel Telemetry
+                        Fuel
                       </span>
                     </div>
                     <div className="flex items-baseline justify-between font-mono my-auto">
@@ -627,15 +623,15 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                             {activeHaul.actualFuelLiters} L
                           </span>
                           <span className="text-xs font-medium text-[#8F8F8F]">
-                            / {activeHaul.estimatedFuelLiters} L Target
+                            / {activeHaul.estimatedFuelLiters} L
                           </span>
                         </>
                       ) : activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 ? (
                         <span className="text-xs font-bold text-[#EDEDED]">
-                          {activeHaul.actualFuelLiters} L recorded
+                          {activeHaul.actualFuelLiters} L
                         </span>
                       ) : (
-                        <span className="text-xs text-amber-400 font-semibold">Sensor Disconnected</span>
+                        <span className="text-xs text-amber-400 font-semibold">Offline</span>
                       )}
                     </div>
                   </div>
@@ -643,28 +639,28 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   {/* Waypoint Check-in Action */}
                   <div className="px-5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase text-[#8F8F8F] font-bold">
-                        Corridor Waypoint
+                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-[#EDEDED]">
+                        Waypoint
                       </span>
-                      <span className="text-[9px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1 rounded border border-[#3ECF8E]/20">
+                      <span className="text-[9px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20 font-bold">
                         {currentWpIdx + 1}/{corridor.waypoints.length}
                       </span>
                     </div>
-                    <div className="text-xs font-mono font-bold text-[#EDEDED] truncate my-0.5 flex items-center justify-between">
+                    <div className="text-xs font-mono font-bold text-[#EDEDED] truncate my-auto flex items-center justify-between">
                       <span className="truncate">{currentWp.name}</span>
-                      <span className="text-[10px] text-[#8F8F8F] shrink-0 font-normal ml-1">({currentWp.km} km)</span>
+                      <span className="text-[10px] text-[#8F8F8F] shrink-0 font-normal ml-2">({currentWp.km} km)</span>
                     </div>
-                    {activeHaul.status === 'DELIVERED' ? (
-                      <p className="text-[9px] text-[#3ECF8E] font-mono truncate">
-                        ✓ Final delivery complete
-                      </p>
+                    {activeHaul.status === 'DELIVERED' || currentWpIdx >= corridor.waypoints.length - 1 ? (
+                      <div className="text-[10px] font-mono text-[#3ECF8E] font-bold">
+                        ✓ At Terminal
+                      </div>
                     ) : (
                       <button
                         onClick={() => handleSimulateWaypointCheckin(activeHaul)}
                         disabled={checkingIn}
-                        className="w-full py-1 px-2 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-[10px] font-mono font-bold text-[#EDEDED] hover:text-[#3ECF8E] rounded border border-[#3A3A3A] transition flex items-center justify-between cursor-pointer"
+                        className="w-full py-1 px-2.5 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-[10px] font-mono font-bold text-[#EDEDED] hover:text-[#3ECF8E] rounded-lg border border-[#3A3A3A] transition flex items-center justify-between cursor-pointer"
                       >
-                        <span>{checkingIn ? 'Recording in DB...' : `Ping: ${nextWp.name}`}</span>
+                        <span>{checkingIn ? 'Saving...' : 'Check-in'}</span>
                         <span className="text-[#3ECF8E]">+{nextWp.km - currentWp.km} km →</span>
                       </button>
                     )}
@@ -870,7 +866,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   TeleBirr Smart Settlement Terms
                 </div>
                 <p>
-                  Upon confirming this e-PoD submission, the load state is marked as <strong>DELIVERED</strong>. 
+                  Upon confirming this e-PoD submission, the load state is marked as <strong>DELIVERED</strong>.
                   The smart contract escrow scheduler immediately disburses <strong>ETB {Number(podHaul.budgetAmount).toLocaleString()}</strong> (minus 5% platform fee) to your verified TeleBirr account.
                 </p>
               </div>
