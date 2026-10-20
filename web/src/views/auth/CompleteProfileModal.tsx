@@ -127,11 +127,11 @@ export default function CompleteProfileModal({ onClose, onSuccess }: CompletePro
   ];
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-[#1C1C1C] rounded-2xl w-full max-w-2xl border border-[#2E2E2E] shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-hidden">
+      <div className="bg-[#1C1C1C] rounded-2xl w-full max-w-2xl border border-[#2E2E2E] shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="p-6 bg-[#232323] border-b border-[#2E2E2E] flex justify-between items-start">
+        <div className="p-5 sm:p-6 bg-[#232323] border-b border-[#2E2E2E] flex justify-between items-start shrink-0">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider font-bold bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/30">
@@ -152,6 +152,7 @@ export default function CompleteProfileModal({ onClose, onSuccess }: CompletePro
             <button 
               onClick={onClose} 
               className="text-[#8F8F8F] hover:text-[#EDEDED] p-1.5 rounded-lg hover:bg-[#2A2A2A] transition-colors"
+              title="Close modal"
             >
               <X size={18} />
             </button>
@@ -175,7 +176,7 @@ export default function CompleteProfileModal({ onClose, onSuccess }: CompletePro
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-6 flex-1 overflow-y-auto">
             {error && (
               <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs flex items-center gap-2.5">
                 <AlertCircle size={16} className="shrink-0 text-rose-400" />
@@ -386,27 +387,38 @@ export default function CompleteProfileModal({ onClose, onSuccess }: CompletePro
             )}
 
             {/* Modal Actions */}
-            <div className="pt-2 flex items-center justify-between border-t border-[#2E2E2E]">
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-between border-t border-[#2E2E2E] gap-3 shrink-0 sticky bottom-0 bg-[#1C1C1C] -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 px-5 sm:px-6 py-3.5 mt-4">
               <span className="text-[11px] text-[#8F8F8F] flex items-center gap-1.5">
                 <FileCheck size={14} className="text-[#3ECF8E]" />
                 Enforces Djibouti–Modjo corridor legal compliance
               </span>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-6 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin" /> Submitting Dossier...
-                  </>
-                ) : (
-                  <>
-                    Submit For Regulatory Verification <ArrowRight size={14} />
-                  </>
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                {onClose && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-2 rounded-xl border border-[#3A3A3A] text-xs font-semibold text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#252525] transition"
+                  >
+                    ለጊዜው ይለፉ (Skip)
+                  </button>
                 )}
-              </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" /> Submitting Dossier...
+                    </>
+                  ) : (
+                    <>
+                      Submit For Regulatory Verification <ArrowRight size={14} />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         )}
