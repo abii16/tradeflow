@@ -351,36 +351,24 @@ export default function CorridorSafetyTab() {
               return (
                 <div
                   key={zone.id}
-                  className={`p-4 rounded-lg border transition-colors ${
-                    isHigh
-                      ? 'bg-rose-500/5 border-rose-500/30'
-                      : isMed
-                      ? 'bg-amber-500/5 border-amber-500/30'
-                      : 'bg-[#121212] border-[#242424]'
-                  }`}
+                  className="p-4 rounded-lg bg-[#121212] border border-[#242424] hover:border-[#333] transition-colors space-y-2.5"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle
-                        size={14}
-                        className={isHigh ? 'text-rose-400' : isMed ? 'text-amber-400' : 'text-[#3ECF8E]'}
-                      />
+                      <AlertTriangle size={14} className="text-[#8F8F8F]" />
                       <h4 className="text-xs font-bold text-[#EDEDED]">{zone.title || zone.name}</h4>
                     </div>
-                    <span
-                      className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded uppercase ${
-                        isHigh
-                          ? 'bg-rose-500/20 text-rose-400'
-                          : isMed
-                          ? 'bg-amber-500/20 text-amber-400'
-                          : 'bg-[#3ECF8E]/20 text-[#3ECF8E]'
-                      }`}
-                    >
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#1C1C1C] border border-[#282828] text-[#EDEDED] flex items-center gap-1.5 font-bold uppercase shrink-0">
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          isHigh ? 'bg-rose-500' : isMed ? 'bg-amber-400' : 'bg-[#3ECF8E]'
+                        }`}
+                      />
                       {zone.severity}
                     </span>
                   </div>
 
-                  <p className="text-xs text-[#8F8F8F] leading-relaxed mb-3">
+                  <p className="text-xs text-[#8F8F8F] leading-relaxed">
                     {zone.description}
                   </p>
 
@@ -411,7 +399,7 @@ export default function CorridorSafetyTab() {
               return (
                 <div
                   key={st.name}
-                  className="p-3.5 rounded-lg bg-[#121212] border border-[#242424] space-y-2 hover:border-[#333] transition-colors"
+                  className="p-3.5 rounded-lg bg-[#121212] border border-[#242424] space-y-2.5 hover:border-[#333] transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -420,25 +408,20 @@ export default function CorridorSafetyTab() {
                         Corridor KM {st.distanceKm} • Current Tariff: {st.dieselPrice}
                       </div>
                     </div>
-                    <span
-                      className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded uppercase ${
-                        isCrit
-                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                          : isLim
-                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                          : 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/30'
-                      }`}
-                    >
-                      {st.status} ({st.stockPercent}%)
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#1C1C1C] border border-[#282828] text-[#EDEDED] flex items-center gap-1.5 font-bold uppercase shrink-0">
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          isCrit ? 'bg-rose-500' : isLim ? 'bg-amber-400' : 'bg-[#3ECF8E]'
+                        }`}
+                      />
+                      <span>{st.status} ({st.stockPercent}%)</span>
                     </span>
                   </div>
 
-                  {/* Progress Bar */}
+                  {/* Supabase Brand Signature Progress Bar */}
                   <div className="w-full h-1.5 rounded-full bg-[#1C1C1C] border border-[#242424] overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        isCrit ? 'bg-rose-500' : isLim ? 'bg-amber-400' : 'bg-[#3ECF8E]'
-                      }`}
+                      className="h-full rounded-full bg-[#3ECF8E] transition-all duration-500"
                       style={{ width: `${st.stockPercent}%` }}
                     />
                   </div>
