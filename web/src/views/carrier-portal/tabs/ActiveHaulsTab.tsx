@@ -6,7 +6,6 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Upload, 
-  Fuel, 
   Navigation, 
   PenTool, 
   AlertTriangle, 
@@ -18,7 +17,6 @@ import {
   ChevronDown,
   ChevronUp,
   RefreshCw,
-  Sparkles,
   AlertCircle,
   User,
   Phone
@@ -290,6 +288,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
     const currentIdx = getActiveWaypointIndex(haul, corridor.waypoints);
     const nextIdx = Math.min(corridor.waypoints.length - 1, currentIdx + 1);
     const nextWp = corridor.waypoints[nextIdx];
+    const fuelUsed = Math.round((nextWp.km / 100) * 35);
 
     setCheckingIn(true);
     try {
@@ -298,6 +297,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
         lng: nextWp.lng,
         speed: 68,
         waypointName: nextWp.name,
+        fuelLiters: fuelUsed,
         notes: `Driver check-in at ${nextWp.name} (${nextWp.km} KM)`,
       });
 
@@ -305,7 +305,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
       await fetchHauls(true);
       fetchEta(haul.id);
     } catch (err: any) {
-      toast.error('Failed to record checkpoint ping');
+      toast.error(err.response?.data?.error || 'Backend error: Failed to record checkpoint ping');
     } finally {
       setCheckingIn(false);
     }
@@ -317,6 +317,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
       toast(`Milestone "${wp.name}" was completed upon final delivery.`, { icon: '✅' });
       return;
     }
+    const fuelUsed = Math.round((wp.km / 100) * 35);
     setCheckingIn(true);
     try {
       await submitHaulCheckin(haul.id, {
@@ -324,13 +325,14 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
         lng: wp.lng,
         speed: 65,
         waypointName: wp.name,
+        fuelLiters: fuelUsed,
         notes: `Driver checkpoint ping at ${wp.name} (${wp.km} KM)`,
       });
       toast.success(`Checked in at ${wp.name} (${wp.km} KM)! GPS & AI ETA updated.`);
       await fetchHauls(true);
       fetchEta(haul.id);
     } catch (err: any) {
-      toast.error('Failed to record checkpoint ping');
+      toast.error(err.response?.data?.error || 'Backend error: Failed to record checkpoint ping');
     } finally {
       setCheckingIn(false);
     }
@@ -479,8 +481,12 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   </div>
 
                   <div className="flex items-center justify-between text-[10px] font-mono text-[#8F8F8F] pt-1.5 border-t border-[#2E2E2E]">
-                    <span className="text-[#8F8F8F]">Payout</span>
                     <span className="text-[#3ECF8E] font-bold">ETB {Number(h.budgetAmount || 0).toLocaleString()}</span>
+                    {isSelected && etaData && (
+                      <span className="text-amber-400 font-bold">
+                        {etaData.remainingDistanceKm} km to terminal
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -493,8 +499,20 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
           <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl p-5 relative overflow-hidden">
             {/* Top Bar of Active Haul */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3.5 border-b border-[#2E2E2E] gap-3">
-              <div>
+              <div className="flex flex-wrap items-center gap-3">
                 <h3 className="text-base font-bold text-[#EDEDED]">{activeHaul.loadTitle}</h3>
+                <div className="flex items-center gap-2 bg-[#1C1C1C] border border-[#2E2E2E] px-3 py-1.5 rounded-xl text-xs font-mono">
+                  <span className="text-[#3ECF8E] font-bold">ETB {Number(activeHaul.budgetAmount || 0).toLocaleString()}</span>
+                  {etaData && (
+                    <>
+                      <span className="text-[#444]">|</span>
+                      <span className="text-amber-400 font-bold flex items-center gap-1">
+                        <MapPin size={11} className="text-amber-400" />
+                        {etaData.remainingDistanceKm} km to terminal
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Status Action Buttons */}
@@ -538,135 +556,134 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
             </div>
 
             {/* Live Telematics & Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-4">
-              {/* Telemetry Stats: Live GPS */}
-              <div className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5 font-bold">
-                    <Navigation size={12} className="text-[#3ECF8E]" /> Live GPS
-                  </span>
-                  <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
-                    FR-03.1
-                  </span>
-                </div>
-                <div className="text-xs font-mono font-bold text-[#EDEDED] truncate my-0.5">
-                  {activeHaul.currentLat != null && activeHaul.currentLng != null ? (
-                    `${activeHaul.currentLat.toFixed(4)}°N, ${activeHaul.currentLng.toFixed(4)}°E`
-                  ) : (
-                    <span className="text-[#8F8F8F] italic font-normal">Awaiting Device GPS Ping</span>
-                  )}
-                </div>
-                <p className="text-[9px] text-[#8F8F8F] font-mono truncate">
-                  {activeHaul.status === 'DELIVERED'
-                    ? 'Delivered at Destination Terminal'
-                    : activeHaul.status === 'DISPATCHED'
-                    ? 'At Origin • Standby for Dispatch'
-                    : activeHaul.status === 'PICKED_UP'
-                    ? 'Terminal Gate • Pre-trip Clear'
-                    : '64 km/h • In-transit telematics'}
-                </p>
-              </div>
+            {(() => {
+              const corridor = getRouteCorridor(activeHaul.origin, activeHaul.destination);
+              const currentWpIdx = getActiveWaypointIndex(activeHaul, corridor.waypoints);
+              const currentWp = corridor.waypoints[currentWpIdx];
+              const nextWpIdx = Math.min(corridor.waypoints.length - 1, currentWpIdx + 1);
+              const nextWp = corridor.waypoints[nextWpIdx];
 
-              {/* AI Predicted ETA (SRS FR-03.2) */}
-              <div
-                className={`px-3.5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${
-                  activeHaul.status === 'DELIVERED'
-                    ? 'bg-[#1C1C1C] border-emerald-500/30'
-                    : etaError
-                    ? 'bg-rose-500/10 border-rose-500/30'
-                    : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase flex items-center gap-1.5 font-bold">
-                    <Sparkles size={12} className={etaError ? 'text-rose-400' : 'text-[#3ECF8E]'} />
-                    <span className={etaError ? 'text-rose-400' : 'text-[#EDEDED]'}>AI ETA</span>
-                  </span>
-                  <span className="text-[9px] font-mono px-1 rounded bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold">
-                    PyTorch
-                  </span>
-                </div>
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
 
-                {activeHaul.status === 'DELIVERED' ? (
-                  <div>
-                    <div className="text-xs font-mono font-bold text-[#3ECF8E] truncate my-0.5">
-                      Delivered (0h left)
+                  {/* AI Predicted ETA (SRS FR-03.2) */}
+                  <div
+                    className={`px-3.5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${
+                      activeHaul.status === 'DELIVERED'
+                        ? 'bg-[#1C1C1C] border-emerald-500/30'
+                        : etaError
+                        ? 'bg-rose-500/10 border-rose-500/40'
+                        : 'bg-[#1C1C1C] border-[#3ECF8E]/30 shadow-[0_0_12px_rgba(62,207,142,0.05)]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-mono uppercase font-bold tracking-wider ${etaError ? 'text-rose-400' : 'text-[#EDEDED]'}`}>
+                        AI ETA
+                      </span>
+                      {etaError && (
+                        <button
+                          type="button"
+                          onClick={() => fetchEta(activeHaul.id)}
+                          className="text-[9px] font-mono text-rose-400 hover:text-white underline cursor-pointer"
+                        >
+                          Retry
+                        </button>
+                      )}
                     </div>
-                    <p className="text-[9px] text-[#8F8F8F] font-mono truncate">
-                      0 km remaining • Milestone Complete
-                    </p>
+
+                    {activeHaul.status === 'DELIVERED' ? (
+                      <div className="flex items-baseline justify-between font-mono my-auto">
+                        <span className="text-xs font-bold text-[#3ECF8E]">Delivered</span>
+                        <span className="text-xs font-semibold text-[#3ECF8E]">0h left</span>
+                      </div>
+                    ) : etaLoading ? (
+                      <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] my-auto">
+                        <Loader2 size={12} className="animate-spin text-[#3ECF8E]" />
+                        <span>Querying AI Engine...</span>
+                      </div>
+                    ) : etaError ? (
+                      <div className="my-auto">
+                        <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline</div>
+                      </div>
+                    ) : etaData ? (
+                      <div className="flex items-baseline justify-between font-mono my-auto">
+                        <span className="text-xs font-bold text-[#3ECF8E] truncate">
+                          {etaData.estimatedArrival}
+                        </span>
+                        <span className="text-xs font-semibold text-[#3ECF8E] shrink-0 ml-2">
+                          {etaData.predictedHours}h left
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-[#8F8F8F] my-auto">Awaiting dispatch</div>
+                    )}
                   </div>
-                ) : etaLoading ? (
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] my-0.5">
-                    <Loader2 size={12} className="animate-spin text-[#3ECF8E]" />
-                    <span>Inferring model...</span>
-                  </div>
-                ) : etaError ? (
-                  <div>
-                    <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline</div>
-                    <p className="text-[9px] text-rose-400/80 truncate">
-                      Live ETA inference unavailable
-                    </p>
-                  </div>
-                ) : etaData ? (
-                  <div>
-                    <div className="text-xs font-mono font-bold text-[#3ECF8E] truncate my-0.5">
-                      {etaData.estimatedArrival} ({etaData.predictedHours}h left)
+
+                  {/* Fuel Tracker */}
+                  <div
+                    className={`px-3.5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] ${
+                      activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0
+                        ? 'bg-[#1C1C1C] border-[#2E2E2E]'
+                        : 'bg-[#1C1C1C] border-amber-500/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-[#EDEDED]">
+                        Fuel Telemetry
+                      </span>
                     </div>
-                    <p className="text-[9px] text-[#8F8F8F] font-mono truncate">
-                      {etaData.remainingDistanceKm} km to terminal
-                    </p>
+                    <div className="flex items-baseline justify-between font-mono my-auto">
+                      {activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 && activeHaul.estimatedFuelLiters ? (
+                        <>
+                          <span className="text-xs font-bold text-[#EDEDED]">
+                            {activeHaul.actualFuelLiters} L
+                          </span>
+                          <span className="text-xs font-medium text-[#8F8F8F]">
+                            / {activeHaul.estimatedFuelLiters} L Target
+                          </span>
+                        </>
+                      ) : activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 ? (
+                        <span className="text-xs font-bold text-[#EDEDED]">
+                          {activeHaul.actualFuelLiters} L recorded
+                        </span>
+                      ) : (
+                        <span className="text-xs text-amber-400 font-semibold">Sensor Disconnected</span>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-xs text-[#8F8F8F] my-0.5">Awaiting dispatch</div>
-                )}
-              </div>
 
-              {/* Fuel Tracker */}
-              <div className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase text-[#8F8F8F] flex items-center gap-1.5 font-bold">
-                    <Fuel size={12} className="text-[#3ECF8E]" /> Fuel Telemetry
-                  </span>
-                  <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
-                    FR-07
-                  </span>
+                  {/* Waypoint Check-in Action */}
+                  <div className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono uppercase text-[#8F8F8F] font-bold">
+                        Corridor Waypoint
+                      </span>
+                      <span className="text-[9px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1 rounded border border-[#3ECF8E]/20">
+                        {currentWpIdx + 1}/{corridor.waypoints.length}
+                      </span>
+                    </div>
+                    <div className="text-xs font-mono font-bold text-[#EDEDED] truncate my-0.5 flex items-center justify-between">
+                      <span className="truncate">{currentWp.name}</span>
+                      <span className="text-[10px] text-[#8F8F8F] shrink-0 font-normal ml-1">({currentWp.km} km)</span>
+                    </div>
+                    {activeHaul.status === 'DELIVERED' ? (
+                      <p className="text-[9px] text-[#3ECF8E] font-mono truncate">
+                        ✓ Final delivery complete
+                      </p>
+                    ) : (
+                      <button
+                        onClick={() => handleSimulateWaypointCheckin(activeHaul)}
+                        disabled={checkingIn}
+                        className="w-full py-1 px-2 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-[10px] font-mono font-bold text-[#EDEDED] hover:text-[#3ECF8E] rounded border border-[#3A3A3A] transition flex items-center justify-between cursor-pointer"
+                      >
+                        <span>{checkingIn ? 'Recording in DB...' : `Ping: ${nextWp.name}`}</span>
+                        <span className="text-[#3ECF8E]">+{nextWp.km - currentWp.km} km →</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="text-xs font-mono font-bold text-[#EDEDED] truncate my-0.5">
-                  {activeHaul.actualFuelLiters != null && activeHaul.estimatedFuelLiters != null ? (
-                    `${activeHaul.actualFuelLiters} L / ${activeHaul.estimatedFuelLiters} L Est.`
-                  ) : activeHaul.actualFuelLiters != null ? (
-                    `${activeHaul.actualFuelLiters} L consumed`
-                  ) : (
-                    <span className="text-[#8F8F8F] italic font-normal">Calibrating Flow Meter</span>
-                  )}
-                </div>
-                <p className="text-[9px] text-emerald-400 font-mono truncate">
-                  {activeHaul.actualFuelLiters && activeHaul.currentLat
-                    ? `${((activeHaul.actualFuelLiters / 600) * 100).toFixed(1)} L/100km (Eco-Grade)`
-                    : 'Telemetry sensor linked'}
-                </p>
-              </div>
-
-              {/* Waypoint Check-in Action */}
-              <div className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase text-[#8F8F8F] font-bold">
-                    Waypoint Ping
-                  </span>
-                  <span className="text-[9px] font-mono text-[#8F8F8F]">
-                    FR-03
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleSimulateWaypointCheckin(activeHaul)}
-                  disabled={checkingIn || activeHaul.status === 'DELIVERED'}
-                  className="w-full py-1.5 px-2 bg-[#2E2E2E] hover:bg-[#383838] disabled:opacity-50 text-[11px] font-mono font-bold text-[#EDEDED] hover:text-[#3ECF8E] rounded-lg transition truncate"
-                >
-                  {checkingIn ? 'Recording...' : 'Record Waypoint Check-In'}
-                </button>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Live Corridor GPS Radar Map (SRS FR-03.1 / Admin-grade Google Hybrid Telematics) */}
             <div className="mt-4 pt-3.5 border-t border-[#2E2E2E] space-y-2.5">
