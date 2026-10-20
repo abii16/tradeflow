@@ -91,11 +91,13 @@ const createWaypointMarker = (name: string, km: number, isPassed: boolean, isCur
 function MapBoundsController({ 
   bounds, 
   truckPos, 
-  recenterTrigger 
+  recenterTrigger,
+  truckMarkerRef
 }: { 
   bounds: L.LatLngBoundsExpression; 
   truckPos: [number, number]; 
   recenterTrigger: number;
+  truckMarkerRef?: React.RefObject<L.Marker | null>;
 }) {
   const map = useMap();
 
@@ -109,9 +111,12 @@ function MapBoundsController({
 
   useEffect(() => {
     if (recenterTrigger > 0 && truckPos) {
-      map.setView(truckPos, 13, { animate: true });
+      map.setView(truckPos, 14, { animate: true });
+      setTimeout(() => {
+        truckMarkerRef?.current?.openPopup();
+      }, 300);
     }
-  }, [recenterTrigger, truckPos, map]);
+  }, [recenterTrigger, truckPos, map, truckMarkerRef]);
 
   return null;
 }
@@ -133,6 +138,7 @@ export default function CarrierLiveGpsMap({
   const [mapStyle, setMapStyle] = useState<'satellite' | 'dark'>('satellite');
   const [recenterCount, setRecenterCount] = useState<number>(0);
   const [liveClock, setLiveClock] = useState<string>('');
+  const truckMarkerRef = React.useRef<L.Marker | null>(null);
 
   // Live EAT time updater
   useEffect(() => {
@@ -224,20 +230,50 @@ export default function CarrierLiveGpsMap({
 
         {/* Live Truck Position Marker */}
         <Marker
+          ref={truckMarkerRef}
           position={truckPosition}
           icon={createVehicleMarker(truckPlate, isDelivered)}
           zIndexOffset={1000}
         >
           <Popup className="carrier-haul-popup">
-            <div className="p-1 font-mono text-xs text-[#EDEDED] min-w-[200px] space-y-1.5">
-              <div className="flex items-center justify-between border-b border-[#333] pb-1">
-                <span className="text-[#3ECF8E] font-bold">TF-{haulId.substring(0, 8).toUpperCase()}</span>
-                <span className="text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-1 rounded">
+            <div className="p-2 font-mono text-xs text-[#EDEDED] min-w-[220px] space-y-2">
+              <div className="flex items-center justify-between border-b border-[#333] pb-1.5">
+                <span className="text-[#3ECF8E] font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-pulse"></span>
+                  TF-{haulId.substring(0, 8).toUpperCase()}
+                </span>
+                <span className="text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">
                   {truckPlate}
                 </span>
               </div>
-              <div className="font-bold text-[#EDEDED] truncate">{loadTitle}</div>
-              <div className="flex justify-between text-[11px] text-[#A1A1A1]">
+              <div className="font-bold text-[#EDEDED] text-xs truncate">{loadTitle}</div>
+              
+              <div className="bg-[#161616] rounded-lg p-2 border border-[#2A2A2A] space-y-1 text-[11px]">
+                <div className="flex justify-between text-[#A1A1A1]">
+                  <span>Live GPS:</span>
+                  <span className="text-[#3ECF8E] font-bold">
+                    {truckPosition[0].toFixed(4)}°N, {truckPosition[1].toFixed(4)}°E
+                  </span>
+                </div>
+                <div className="flex justify-between text-[#A1A1A1]">
+                  <span>Speed:</span>
+                  <span className="text-emerald-400 font-bold">{isDelivered ? '0 km/h (Docked)' : '68 km/h • On Corridor'}</span>
+                </div>
+                <div className="flex justify-between text-[#A1A1A1]">
+                  <span>Status:</span>
+                  <span className="text-white font-semibold">
+                    {isDelivered
+                      ? 'Delivered'
+                      : status === 'DISPATCHED'
+                      ? 'Standby for Dispatch'
+                      : status === 'PICKED_UP'
+                      ? 'Terminal Gate Clear'
+                      : 'In-Transit'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-between text-[11px] text-[#A1A1A1] pt-0.5">
                 <span>Driver:</span>
                 <span className="text-white font-semibold">{driverName || 'Lead Driver'}</span>
               </div>
@@ -247,16 +283,6 @@ export default function CarrierLiveGpsMap({
                   <span className="text-[#3ECF8E]">{driverPhone}</span>
                 </div>
               )}
-              <div className="flex justify-between text-[11px] text-[#A1A1A1]">
-                <span>GPS Fix:</span>
-                <span className="text-white">
-                  {truckPosition[0].toFixed(4)}°N, {truckPosition[1].toFixed(4)}°E
-                </span>
-              </div>
-              <div className="flex justify-between text-[11px] text-[#A1A1A1]">
-                <span>Corridor Speed:</span>
-                <span className="text-emerald-400 font-bold">{isDelivered ? '0 km/h (Docked)' : '68 km/h'}</span>
-              </div>
               {etaString && (
                 <div className="flex justify-between text-[11px] text-[#A1A1A1] border-t border-[#333] pt-1">
                   <span>AI ETA:</span>
@@ -314,6 +340,7 @@ export default function CarrierLiveGpsMap({
           bounds={bounds}
           truckPos={truckPosition}
           recenterTrigger={recenterCount}
+          truckMarkerRef={truckMarkerRef}
         />
       </MapContainer>
 
@@ -388,11 +415,11 @@ export default function CarrierLiveGpsMap({
         <button
           type="button"
           onClick={() => setRecenterCount((c) => c + 1)}
-          className="bg-[#121212]/90 hover:bg-[#222] backdrop-blur-md border border-[#2E2E2E] text-[#EDEDED] p-2 rounded-xl text-xs font-mono transition shadow-lg flex items-center gap-1.5"
-          title="Center on Truck Position"
+          className="bg-[#121212]/90 hover:bg-[#222] backdrop-blur-md border border-[#2E2E2E] hover:border-[#3ECF8E]/50 text-[#EDEDED] px-3 py-1.5 rounded-xl text-xs font-mono transition shadow-lg flex items-center gap-1.5 group cursor-pointer"
+          title="Center on Truck Position and View Live Status"
         >
-          <Truck size={14} className="text-[#3ECF8E]" />
-          <span className="hidden sm:inline text-[10px] font-bold">Track Truck</span>
+          <Truck size={14} className="text-[#3ECF8E] group-hover:scale-110 transition-transform" />
+          <span className="text-[10px] font-bold text-[#EDEDED]">Locate Truck (መኪናውን አሳይ)</span>
         </button>
       </div>
 
