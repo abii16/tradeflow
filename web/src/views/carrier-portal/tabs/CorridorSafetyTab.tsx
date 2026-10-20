@@ -418,10 +418,10 @@ export default function CorridorSafetyTab() {
                     </span>
                   </div>
 
-                  {/* Supabase Brand Signature Progress Bar */}
+                  {/* Supabase Neutral Metric Meter */}
                   <div className="w-full h-1.5 rounded-full bg-[#1C1C1C] border border-[#242424] overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-[#3ECF8E] transition-all duration-500"
+                      className="h-full rounded-full bg-[#EDEDED] transition-all duration-500"
                       style={{ width: `${st.stockPercent}%` }}
                     />
                   </div>
@@ -431,7 +431,7 @@ export default function CorridorSafetyTab() {
           </div>
 
           <div className="p-3 rounded-lg bg-[#121212] border border-[#242424] text-[11px] text-[#8F8F8F] font-mono flex items-center gap-2.5">
-            <Fuel size={14} className="text-[#3ECF8E] shrink-0" />
+            <Fuel size={14} className="text-[#8F8F8F] shrink-0" />
             <span>
               <strong className="text-[#EDEDED]">Route Strategy:</strong> Refueling at Awash or Modjo is recommended for maximum fuel efficiency and avoidance of Galafi border retail surcharges.
             </span>
