@@ -179,6 +179,33 @@ router.get('/available-loads', async (req: Request, res: Response): Promise<void
       const reqWeightTons = Math.max(1, Number(l.weightKg || 25000) / 1000);
       const proposedCost = Number(l.budgetAmount || 85000);
 
+      const parsePlace = (p: any): string => {
+        if (!p) return '';
+        if (typeof p === 'string') {
+          try {
+            const parsed = JSON.parse(p);
+            return (parsed.city || parsed.address || p) + '';
+          } catch {
+            return p;
+          }
+        }
+        return (p.city || p.address || '') + '';
+      };
+
+      const origCity = parsePlace(l.origin);
+      const destCity = parsePlace(l.destination);
+      const oStr = origCity.toLowerCase();
+      const dStr = destCity.toLowerCase();
+
+      let routeDistanceKm = 810;
+      if (oStr.includes('modjo') && dStr.includes('addis')) {
+        routeDistanceKm = 74;
+      } else if (dStr.includes('dire dawa') || oStr.includes('dire dawa')) {
+        routeDistanceKm = 380;
+      } else if ((oStr.includes('djibouti') || oStr.includes('doraleh')) && dStr.includes('addis')) {
+        routeDistanceKm = 884;
+      }
+
       // Call Python AI Microservice /predict-match
       let matchScore = 85.0;
       let matchAccepted = true;
@@ -188,7 +215,7 @@ router.get('/available-loads', async (req: Request, res: Response): Promise<void
           {
             required_weight_tons: reqWeightTons,
             transporter_capacity_tons: transporterCapacityTons,
-            trip_distance_km: 810,
+            trip_distance_km: routeDistanceKm,
             proximity_distance_km: 15,
             proposed_cost_etb: proposedCost,
             historical_reliability_score: 95,
@@ -221,8 +248,8 @@ router.get('/available-loads', async (req: Request, res: Response): Promise<void
         myBid: existingBid || null,
         aiMatchScore: matchScore,
         aiMatchAccepted: matchAccepted,
-        corridorLeg: `${(l.origin as any)?.city || (l.origin as any)?.address || 'Djibouti Port'} → ${(l.destination as any)?.city || (l.destination as any)?.address || 'Modjo Dry Port'}`,
-        distanceKm: 810,
+        corridorLeg: `${origCity || 'Djibouti Port'} → ${destCity || 'Modjo Dry Port'}`,
+        distanceKm: routeDistanceKm,
       };
     });
 
