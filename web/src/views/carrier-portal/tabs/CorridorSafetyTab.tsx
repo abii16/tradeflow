@@ -13,7 +13,8 @@ import {
   Loader2, 
   TrendingUp,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  ChevronDown
 } from 'lucide-react';
 import { getRiskZones, reportCarrierIncident, optimizeCarrierRoute } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
@@ -53,6 +54,7 @@ export default function CorridorSafetyTab() {
 
   // Reroute Proposal Confirmation State (SRS FR-05.3)
   const [showReroutePrompt, setShowReroutePrompt] = useState<boolean>(true);
+  const [showRerouteDetails, setShowRerouteDetails] = useState<boolean>(false);
   const [rerouteAccepted, setRerouteAccepted] = useState<boolean>(false);
   const [optimizingRoute, setOptimizingRoute] = useState<boolean>(false);
   const [aiRouteResult, setAiRouteResult] = useState<{
@@ -184,49 +186,70 @@ export default function CorridorSafetyTab() {
 
       {/* Mid-Trip Rerouting Proposal Banner */}
       {showReroutePrompt && !rerouteAccepted && (
-        <div className="p-4 rounded-xl bg-[#171717] border border-[#3ECF8E]/30 shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25 flex items-center justify-center shrink-0 mt-0.5">
-              <Navigation size={17} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-[#171717] border border-[#3ECF8E]/30 shadow-[0_4px_20px_rgba(0,0,0,0.3)] animate-in fade-in transition-all">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25 flex items-center justify-center shrink-0">
+                <Navigation size={15} />
+              </div>
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                 <span className="text-xs font-bold text-[#EDEDED]">
-                  AI Mid-Trip Rerouting Recommendation
+                  AI Detour Recommended
                 </span>
                 <span className="text-[10px] font-mono bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25 px-2 py-0.5 rounded-full font-bold">
-                  SAVES {aiRouteResult?.cost_savings_percentage ? `${aiRouteResult.cost_savings_percentage}% COST` : '42 MINS'}
+                  SAVES {aiRouteResult?.cost_savings_percentage ? `${aiRouteResult.cost_savings_percentage}%` : '42 MINS'}
                 </span>
+                <span className="text-xs text-[#8F8F8F] hidden sm:inline">•</span>
+                <span className="text-xs text-[#8F8F8F]">
+                  Bypass Mille Checkpoint via B51 (+14 km)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowRerouteDetails(!showRerouteDetails)}
+                  className="text-xs text-[#3ECF8E] hover:underline font-medium inline-flex items-center gap-0.5 cursor-pointer"
+                >
+                  {showRerouteDetails ? 'Less' : 'Details'}
+                  <ChevronDown
+                    size={13}
+                    className={`transition-transform duration-200 ${showRerouteDetails ? 'rotate-180' : ''}`}
+                  />
+                </button>
               </div>
-              <p className="text-xs text-[#8F8F8F] mt-1 leading-relaxed">
-                {aiRouteResult ? (
-                  <>
-                    AI Engine recommends detour via <strong className="text-white">{aiRouteResult.recommended_path.join(' → ')}</strong> to circumvent checkpoint congestion with <strong className="text-[#3ECF8E]">{aiRouteResult.cost_savings_percentage}% fuel savings</strong>.
-                  </>
-                ) : (
-                  <>
-                    Heavy customs backlog detected at <strong className="text-[#EDEDED]">Mille Checkpoint (A1)</strong>. 
-                    Neural routing proposes detour via <strong className="text-[#3ECF8E]">B51 Arterial Bypass</strong>: +14 km distance, but saves 42 minutes dwell and 11 liters diesel.
-                  </>
-                )}
-              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <button
+                onClick={() => setShowReroutePrompt(false)}
+                className="px-3 py-1.5 rounded-lg bg-[#121212] hover:bg-[#1C1C1C] text-xs font-medium text-[#8F8F8F] border border-[#242424] transition cursor-pointer"
+              >
+                Decline
+              </button>
+              <button
+                onClick={handleAcceptReroute}
+                className="px-3.5 py-1.5 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition shadow-[0_0_12px_rgba(62,207,142,0.2)] flex items-center gap-1.5 cursor-pointer active:scale-95"
+              >
+                <CheckCircle2 size={13} /> Apply Detour
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-            <button
-              onClick={() => setShowReroutePrompt(false)}
-              className="px-3 py-1.5 rounded-lg bg-[#121212] hover:bg-[#1C1C1C] text-xs font-semibold text-[#8F8F8F] border border-[#242424] transition cursor-pointer"
-            >
-              Decline & Stay on A1
-            </button>
-            <button
-              onClick={handleAcceptReroute}
-              className="px-4 py-1.5 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition shadow-[0_0_12px_rgba(62,207,142,0.2)] flex items-center gap-1.5 cursor-pointer active:scale-95"
-            >
-              <CheckCircle2 size={13} /> Confirm & Apply Detour
-            </button>
-          </div>
+          {/* Collapsible Details */}
+          {showRerouteDetails && (
+            <div className="mt-3 pt-3 border-t border-[#242424] text-xs text-[#8F8F8F] leading-relaxed animate-in fade-in">
+              {aiRouteResult ? (
+                <>
+                  TradeFlow AI Engine recommends an optimized detour via{' '}
+                  <strong className="text-[#EDEDED]">{aiRouteResult.recommended_path.join(' → ')}</strong> to circumvent heavy customs delay with{' '}
+                  <strong className="text-[#3ECF8E]">{aiRouteResult.cost_savings_percentage}% fuel and dwell savings</strong>.
+                </>
+              ) : (
+                <>
+                  Heavy customs backlog detected at <strong className="text-[#EDEDED]">Mille Checkpoint (A1)</strong>. 
+                  Neural routing proposes detour via <strong className="text-[#3ECF8E]">B51 Arterial Bypass</strong>: +14 km distance, but saves 42 minutes dwell time and 11 liters diesel fuel.
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
 
