@@ -421,9 +421,9 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
         {/* Haul Selector / Left List */}
-        <div className="xl:col-span-3 space-y-3">
+        <div className="xl:col-span-3 space-y-2.5 -mt-2">
           <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#8F8F8F] px-1 flex items-center justify-between">
-            <span>Fleet Dispatches ({hauls.length})</span>
+            <span>Dispatches ({hauls.length})</span>
           </div>
 
           <div className="space-y-2.5">
