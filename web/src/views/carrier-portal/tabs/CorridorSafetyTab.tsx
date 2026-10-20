@@ -418,10 +418,10 @@ export default function CorridorSafetyTab() {
                     </span>
                   </div>
 
-                  {/* Supabase Neutral Metric Meter */}
-                  <div className="w-full h-1.5 rounded-full bg-[#1C1C1C] border border-[#242424] overflow-hidden">
+                  {/* Muted Calm Metric Meter */}
+                  <div className="w-full h-1.5 rounded-full bg-[#161616] border border-[#242424] overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-[#EDEDED] transition-all duration-500"
+                      className="h-full rounded-full bg-[#4A4A4A] transition-all duration-500"
                       style={{ width: `${st.stockPercent}%` }}
                     />
                   </div>
