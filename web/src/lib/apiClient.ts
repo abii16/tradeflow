@@ -465,6 +465,10 @@ export async function getRiskZones() {
   return apiClient('/risk-zones', { method: 'GET' });
 }
 
+export async function getCarrierFuelTelemetry() {
+  return apiClient('/carrier/fuel-telemetry', { method: 'GET' });
+}
+
 export async function optimizeCarrierRoute(data: {
   currentLat: number;
   currentLng: number;
