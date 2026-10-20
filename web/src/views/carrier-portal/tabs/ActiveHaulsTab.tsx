@@ -172,6 +172,27 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
   // Waypoint Checkin State
   const [checkingIn, setCheckingIn] = useState<boolean>(false);
 
+  // Live IoT Fuel Telematics Simulation State
+  const [liveFuelOffset, setLiveFuelOffset] = useState<number>(0);
+
+  // Reset live fuel offset when selected haul changes or new server fuel received
+  useEffect(() => {
+    setLiveFuelOffset(0);
+  }, [selectedHaul?.id, selectedHaul?.actualFuelLiters]);
+
+  // Dynamic live fuel ticking when haul is in transit
+  useEffect(() => {
+    const currentStatus = selectedHaul?.status || (hauls.length > 0 ? hauls[0].status : null);
+    if (currentStatus !== 'IN_TRANSIT') return;
+
+    // Simulate real vehicle CAN-bus sensor consumption (e.g. ~0.02 L every 3.5 seconds at 68 km/h)
+    const timer = setInterval(() => {
+      setLiveFuelOffset((prev) => Number((prev + 0.02).toFixed(2)));
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [selectedHaul?.id, selectedHaul?.status, hauls]);
+
   // Driver & Truck Assignment State
   const [showAssignModal, setShowAssignModal] = useState<boolean>(false);
   const [availableDrivers, setAvailableDrivers] = useState<any[]>([]);
@@ -589,37 +610,70 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     )}
                   </div>
 
-                  {/* Fuel Tracker */}
-                  <div
-                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] ${activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0
-                        ? 'bg-[#1C1C1C] border-[#2E2E2E]'
-                        : 'bg-[#1C1C1C] border-amber-500/30'
-                      }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-[#EDEDED]">
-                        Fuel
-                      </span>
-                    </div>
-                    <div className="flex items-baseline justify-between font-mono my-auto">
-                      {activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 && activeHaul.estimatedFuelLiters ? (
-                        <>
-                          <span className="text-xs font-bold text-[#EDEDED]">
-                            {activeHaul.actualFuelLiters} L
+                  {/* Fuel Telematics (Live IoT Sensor) */}
+                  {(() => {
+                    const rawActual = activeHaul.actualFuelLiters != null && activeHaul.actualFuelLiters > 0
+                      ? Number(activeHaul.actualFuelLiters)
+                      : (activeHaul.status === 'DELIVERED' ? Number(activeHaul.estimatedFuelLiters || 28) : (activeHaul.status === 'IN_TRANSIT' ? 15.0 : 0));
+                    
+                    const estFuel = Number(activeHaul.estimatedFuelLiters) || 28.0;
+                    const isLive = activeHaul.status === 'IN_TRANSIT';
+                    const currentFuel = isLive 
+                      ? Number((rawActual + liveFuelOffset).toFixed(2))
+                      : Number(rawActual.toFixed(1));
+                    
+                    const burnPct = Math.min(100, Math.round((currentFuel / estFuel) * 100));
+
+                    return (
+                      <div
+                        className="px-5 py-2.5 rounded-xl border border-[#2E2E2E] hover:border-[#383838] bg-[#1C1C1C] flex flex-col justify-between min-h-[76px] transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-[#EDEDED]">
+                            Fuel
                           </span>
-                          <span className="text-xs font-medium text-[#8F8F8F]">
-                            / {activeHaul.estimatedFuelLiters} L
-                          </span>
-                        </>
-                      ) : activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 ? (
-                        <span className="text-xs font-bold text-[#EDEDED]">
-                          {activeHaul.actualFuelLiters} L
-                        </span>
-                      ) : (
-                        <span className="text-xs text-amber-400 font-semibold">Offline</span>
-                      )}
-                    </div>
-                  </div>
+                          {isLive ? (
+                            <span className="flex items-center gap-1 text-[9px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20 font-bold">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse"></span>
+                              LIVE SENSOR
+                            </span>
+                          ) : activeHaul.status === 'DELIVERED' ? (
+                            <span className="text-[9px] font-mono text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 font-bold">
+                              TRIP COMPLETE
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 font-bold">
+                              STANDBY
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="my-auto space-y-1">
+                          <div className="flex items-baseline justify-between font-mono">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-xs font-bold text-[#EDEDED]">
+                                {currentFuel.toFixed(1)} L
+                              </span>
+                              <span className="text-xs font-medium text-[#8F8F8F]">
+                                / {estFuel.toFixed(0)} L
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-[#3ECF8E] font-semibold font-mono">
+                              {burnPct}% burned
+                            </span>
+                          </div>
+
+                          {/* Live Consumption Progress Bar */}
+                          <div className="w-full bg-[#121212] h-1.5 rounded-full overflow-hidden border border-[#262626]">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-[#3ECF8E] to-emerald-400 transition-all duration-700 ease-out"
+                              style={{ width: `${burnPct}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Waypoint Check-in Action */}
                   <div className="px-5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
