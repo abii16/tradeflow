@@ -494,35 +494,6 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
             {/* Top Bar of Active Haul */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3.5 border-b border-[#2E2E2E] gap-3">
               <div>
-                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded border border-[#3ECF8E]/30 uppercase font-bold">
-                    Tracking ID: TF-{activeHaul.id.substring(0, 8).toUpperCase()}
-                  </span>
-
-                  {/* Assigned Driver Badge */}
-                  <div className="flex items-center gap-1.5 bg-[#181818] border border-[#2E2E2E] px-2 py-0.5 rounded text-[11px] font-mono">
-                    <User size={12} className="text-[#3ECF8E]" />
-                    <span className="text-[#8F8F8F]">Driver:</span>
-                    <span className="text-[#EDEDED] font-semibold">{activeHaul.driverName || 'Lead Fleet Driver'}</span>
-                    {activeHaul.driverPhone && (
-                      <span className="text-[#8F8F8F] text-[10px] flex items-center gap-1 ml-1 border-l border-[#333] pl-1.5">
-                        <Phone size={10} className="text-[#3ECF8E]" />
-                        {activeHaul.driverPhone}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Assigned Truck / Plate Badge */}
-                  <div className="flex items-center gap-1.5 bg-[#181818] border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-mono">
-                    <Truck size={12} className="text-amber-400" />
-                    <span className="text-[#8F8F8F]">Plate / ታርጋ:</span>
-                    <span className="text-amber-300 font-bold tracking-wider">
-                      {activeHaul.truckPlate || 'Unassigned'}
-                    </span>
-                  </div>
-
-
-                </div>
                 <h3 className="text-base font-bold text-[#EDEDED]">{activeHaul.loadTitle}</h3>
               </div>
 
@@ -739,6 +710,53 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   onWaypointCheckin={(wp, idx) => handleWaypointClick(activeHaul, wp, idx)}
                 />
               )}
+
+              {/* Haul Tracking & Fleet Telematics Badges (Below Map) */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[#2E2E2E]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded border border-[#3ECF8E]/30 uppercase font-bold">
+                    Tracking ID: TF-{activeHaul.id.substring(0, 8).toUpperCase()}
+                  </span>
+
+                  {/* Assigned Driver Badge */}
+                  <div className="flex items-center gap-1.5 bg-[#181818] border border-[#2E2E2E] px-2 py-0.5 rounded text-[11px] font-mono">
+                    <User size={12} className="text-[#3ECF8E]" />
+                    <span className="text-[#8F8F8F]">Driver:</span>
+                    <span className="text-[#EDEDED] font-semibold">{activeHaul.driverName || 'Lead Fleet Driver'}</span>
+                    {activeHaul.driverPhone && (
+                      <span className="text-[#8F8F8F] text-[10px] flex items-center gap-1 ml-1 border-l border-[#333] pl-1.5">
+                        <Phone size={10} className="text-[#3ECF8E]" />
+                        {activeHaul.driverPhone}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Assigned Truck / Plate Badge */}
+                  <div className="flex items-center gap-1.5 bg-[#181818] border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-mono">
+                    <Truck size={12} className="text-amber-400" />
+                    <span className="text-[#8F8F8F]">Plate / ታርጋ:</span>
+                    <span className="text-amber-300 font-bold tracking-wider">
+                      {activeHaul.truckPlate || 'Unassigned'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Reassign Driver & Truck Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDriverId(activeHaul.driverId || '');
+                    setSelectedTruckPlate(activeHaul.truckPlate || '');
+                    loadFleetResources();
+                    setShowAssignModal(true);
+                  }}
+                  className="text-[10px] font-mono bg-[#2E2E2E] hover:bg-[#383838] text-[#3ECF8E] px-2.5 py-1 rounded-lg border border-[#3ECF8E]/30 transition flex items-center gap-1.5 font-semibold"
+                  title="Assign or change driver and truck plate"
+                >
+                  <PenTool size={11} className="text-[#3ECF8E]" />
+                  <span>Assign Driver / Truck</span>
+                </button>
+              </div>
             </div>
 
             {/* Proof of Delivery Details (if already delivered) */}
