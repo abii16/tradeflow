@@ -654,12 +654,12 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                               <span className="text-xs font-bold text-[#EDEDED]">
                                 {currentFuel.toFixed(1)} L
                               </span>
-                              <span className="text-xs font-medium text-[#8F8F8F]">
-                                / {estFuel.toFixed(0)} L
+                              <span className="text-[10px] text-[#8F8F8F]">
+                                / {estFuel.toFixed(0)} L budget
                               </span>
                             </div>
                             <span className="text-[10px] text-[#3ECF8E] font-semibold font-mono">
-                              {burnPct}% burned
+                              {burnPct}%
                             </span>
                           </div>
 
