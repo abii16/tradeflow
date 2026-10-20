@@ -152,13 +152,11 @@ export default function FleetManagementTab() {
         <div className="p-4 rounded-xl bg-[#171717] border border-[#242424] space-y-1">
           <span className="text-[10px] font-mono uppercase tracking-wider text-[#707070]">Total Active Fleet</span>
           <div className="text-2xl font-mono font-bold text-[#EDEDED]">{vehicles.length} Trucks</div>
-          <span className="text-[10px] text-[#3ECF8E] font-mono">Corridor certified heavy haulers</span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#171717] border border-[#242424] space-y-1">
           <span className="text-[10px] font-mono uppercase tracking-wider text-[#707070]">Total Fleet Capacity</span>
           <div className="text-2xl font-mono font-bold text-[#EDEDED]">{totalCapacity.toFixed(1)} Tons</div>
-          <span className="text-[10px] text-[#707070] font-mono">Payload capacity on principal corridor</span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#171717] border border-[#242424] space-y-1">
@@ -166,13 +164,11 @@ export default function FleetManagementTab() {
           <div className="text-2xl font-mono font-bold text-[#3ECF8E]">
             {verifiedCount}/{vehicles.length} Verified
           </div>
-          <span className="text-[10px] text-[#707070] font-mono">Federal Transport Authority certified</span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#171717] border border-[#242424] space-y-1">
           <span className="text-[10px] font-mono uppercase tracking-wider text-[#707070]">Assigned Drivers</span>
           <div className="text-2xl font-mono font-bold text-[#EDEDED]">{drivers.length} Drivers</div>
-          <span className="text-[10px] text-[#3ECF8E] font-mono">Active on Djibouti-Modjo artery</span>
         </div>
       </div>
 
