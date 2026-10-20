@@ -501,17 +501,8 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
             <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3.5 border-b border-[#2E2E2E] gap-3">
               <div className="flex flex-wrap items-center gap-3">
                 <h3 className="text-base font-bold text-[#EDEDED]">{activeHaul.loadTitle}</h3>
-                <div className="flex items-center gap-2 bg-[#1C1C1C] border border-[#2E2E2E] px-3 py-1.5 rounded-xl text-xs font-mono">
+                <div className="flex items-center bg-[#1C1C1C] border border-[#2E2E2E] px-3 py-1.5 rounded-xl text-xs font-mono">
                   <span className="text-[#3ECF8E] font-bold">ETB {Number(activeHaul.budgetAmount || 0).toLocaleString()}</span>
-                  {etaData && (
-                    <>
-                      <span className="text-[#444]">|</span>
-                      <span className="text-amber-400 font-bold flex items-center gap-1">
-                        <MapPin size={11} className="text-amber-400" />
-                        {etaData.remainingDistanceKm} km to terminal
-                      </span>
-                    </>
-                  )}
                 </div>
               </div>
 
