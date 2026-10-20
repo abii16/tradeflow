@@ -409,9 +409,6 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
           <h2 className="text-xl font-bold text-[#EDEDED] tracking-tight">
             Active Hauls
           </h2>
-          <p className="text-xs text-[#8F8F8F] mt-0.5">
-            Real-time corridor tracking
-          </p>
         </div>
 
         <button
