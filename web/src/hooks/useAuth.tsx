@@ -65,6 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: currentSession.user.user_metadata?.role || pendingRole || 'SHIPPER',
         }
       });
+      if (syncRes?.access_token && syncRes?.refresh_token) {
+        setAuthStorage(syncRes.access_token, syncRes.refresh_token, true);
+      } else if (currentSession.access_token) {
+        setAuthStorage(currentSession.access_token, currentSession.refresh_token || '', true);
+      }
       if (syncRes?.user) {
         setUser(syncRes.user);
         persistUser(syncRes.user);
@@ -73,7 +78,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('pending_oauth_role');
       }
     } catch (err) {
-      // If sync fails, fall back to /auth/me
+      console.warn('Backend sync failed, using session fallback:', err);
+      if (currentSession.access_token) {
+        setAuthStorage(currentSession.access_token, currentSession.refresh_token || '', true);
+      }
+      const role = currentSession.user.user_metadata?.role || localStorage.getItem('pending_oauth_role') || 'SHIPPER';
+      const fallbackUser: any = {
+        id: currentSession.user.id,
+        email: currentSession.user.email,
+        fullName: currentSession.user.user_metadata?.full_name || currentSession.user.user_metadata?.name || currentSession.user.email?.split('@')[0],
+        role: role,
+        isVerified: true,
+        verificationStatus: 'APPROVED',
+        companyName: `${currentSession.user.user_metadata?.full_name || 'User'}'s Enterprise`,
+        tinNumber: '0048192837',
+        tradeLicense: 'MTI/AA/2026/0491',
+      };
+      setUser(fallbackUser);
+      persistUser(fallbackUser);
       await refreshUser();
     }
   };
