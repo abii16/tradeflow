@@ -76,11 +76,8 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
         },
         {
           id: 'performance',
-          label: isAm ? 'የአፈጻጸም ዳሽቦርድ' : 'Corridor Benchmarks',
-          sub: isAm ? 'የኮሪደር ንጽጽር እና OTD' : 'OTD, Fuel & Ratings',
+          label: isAm ? 'የኮሪደር አፈጻጸም' : 'Corridor Performance',
           icon: Award,
-          badge: 'FR-09',
-          badgeType: 'neutral',
         },
         {
           id: 'driver_console',
