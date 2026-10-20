@@ -556,7 +556,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
 
                   {/* AI Predicted ETA (SRS FR-03.2) */}
                   <div
-                    className={`px-3.5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${
+                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] transition-colors ${
                       activeHaul.status === 'DELIVERED'
                         ? 'bg-[#1C1C1C] border-emerald-500/30'
                         : etaError
@@ -580,36 +580,36 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                     </div>
 
                     {activeHaul.status === 'DELIVERED' ? (
-                      <div className="flex items-baseline justify-center gap-6 sm:gap-8 font-mono my-auto">
+                      <div className="flex items-baseline justify-between font-mono my-auto">
                         <span className="text-xs font-bold text-[#3ECF8E]">Delivered</span>
                         <span className="text-xs font-semibold text-[#3ECF8E]">0h left</span>
                       </div>
                     ) : etaLoading ? (
-                      <div className="flex items-center justify-center gap-2 text-xs font-mono text-[#8F8F8F] my-auto">
+                      <div className="flex items-center gap-2 text-xs font-mono text-[#8F8F8F] my-auto">
                         <Loader2 size={12} className="animate-spin text-[#3ECF8E]" />
                         <span>Querying AI Engine...</span>
                       </div>
                     ) : etaError ? (
-                      <div className="my-auto text-center">
+                      <div className="my-auto">
                         <div className="text-xs font-bold text-rose-400 leading-tight">AI Engine Offline</div>
                       </div>
                     ) : etaData ? (
-                      <div className="flex items-baseline justify-center gap-6 sm:gap-8 font-mono my-auto">
+                      <div className="flex items-baseline justify-between font-mono my-auto">
                         <span className="text-xs font-bold text-[#3ECF8E] truncate">
                           {etaData.estimatedArrival}
                         </span>
-                        <span className="text-xs font-semibold text-[#3ECF8E] shrink-0">
+                        <span className="text-xs font-semibold text-[#3ECF8E] shrink-0 ml-2">
                           {etaData.predictedHours}h left
                         </span>
                       </div>
                     ) : (
-                      <div className="text-xs text-[#8F8F8F] my-auto text-center">Awaiting dispatch</div>
+                      <div className="text-xs text-[#8F8F8F] my-auto">Awaiting dispatch</div>
                     )}
                   </div>
 
                   {/* Fuel Tracker */}
                   <div
-                    className={`px-3.5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] ${
+                    className={`px-5 py-2.5 rounded-xl border flex flex-col justify-between min-h-[76px] ${
                       activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0
                         ? 'bg-[#1C1C1C] border-[#2E2E2E]'
                         : 'bg-[#1C1C1C] border-amber-500/30'
@@ -620,7 +620,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                         Fuel Telemetry
                       </span>
                     </div>
-                    <div className="flex items-baseline justify-center gap-6 sm:gap-8 font-mono my-auto">
+                    <div className="flex items-baseline justify-between font-mono my-auto">
                       {activeHaul.actualFuelLiters && activeHaul.actualFuelLiters > 0 && activeHaul.estimatedFuelLiters ? (
                         <>
                           <span className="text-xs font-bold text-[#EDEDED]">
@@ -641,7 +641,7 @@ export default function ActiveHaulsTab({ onGoToLoadBoard }: { onGoToLoadBoard?: 
                   </div>
 
                   {/* Waypoint Check-in Action */}
-                  <div className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
+                  <div className="px-5 py-2.5 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex flex-col justify-between min-h-[76px]">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono uppercase text-[#8F8F8F] font-bold">
                         Corridor Waypoint
