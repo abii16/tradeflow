@@ -16,6 +16,13 @@ import {
 import { getCarrierPerformance } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
+interface RecommendationItem {
+  id: string;
+  title: string;
+  description: string;
+  tag?: string;
+}
+
 interface PerformanceData {
   transporter: {
     onTimeDeliveryRate: number;
@@ -33,6 +40,7 @@ interface PerformanceData {
     averageTransitHours: number;
   };
   rankPercentile: number;
+  recommendations?: RecommendationItem[];
 }
 
 export default function PerformanceTab() {
@@ -67,11 +75,11 @@ export default function PerformanceTab() {
 
   const tData = perf?.transporter || {
     onTimeDeliveryRate: 96.4,
-    incidentRate: 1.8,
+    incidentRate: 0,
     fuelEfficiencyLPer100Km: 32.8,
     customerRating: 4.9,
-    totalCompletedTrips: 18,
-    tonsDelivered: 710,
+    totalCompletedTrips: 1,
+    tonsDelivered: 38.5,
   };
 
   const cData = perf?.corridorAverage || {
@@ -83,6 +91,29 @@ export default function PerformanceTab() {
   };
 
   const percentile = perf?.rankPercentile || 94.2;
+
+  const activeRecommendations: RecommendationItem[] = (perf?.recommendations && perf.recommendations.length > 0)
+    ? perf.recommendations
+    : [
+        {
+          id: 'rec-1',
+          title: 'Optimal Cruise Speed (Awash - Modjo)',
+          description: 'Telemetry models show maintaining 62-65 km/h on the expressway incline saves an estimated 8.4 liters of diesel compared to fluctuating acceleration.',
+          tag: 'Telemetry AI',
+        },
+        {
+          id: 'rec-2',
+          title: 'Galafi Customs Crossing Window',
+          description: 'Arriving at Galafi border between 05:30 AM and 07:00 AM reduces average clearance dwell by 1.8 hours, avoiding afternoon heat idle consumption.',
+          tag: 'Customs Dwell',
+        },
+        {
+          id: 'rec-3',
+          title: 'Preventive Tire & Axle Check',
+          description: 'Hot asphalt temperatures between Mille and Awash during mid-day trigger 12% tire pressure expansion. Ensure morning cold inflation calibrates strictly to 110 PSI.',
+          tag: 'Preventive Check',
+        },
+      ];
 
   return (
     <div className="space-y-6">
@@ -213,7 +244,7 @@ export default function PerformanceTab() {
               <span className="text-[#EDEDED] font-semibold">{cData.incidentRate}%</span>
             </div>
             <div className="text-[10px] font-mono text-[#3ECF8E] flex items-center gap-1 font-bold">
-              <CheckCircle2 size={11} /> 57% fewer delay &amp; damage claims
+              <CheckCircle2 size={11} /> {tData.incidentRate === 0 ? 'Zero safety incidents logged' : `${tData.incidentRate}% corridor safety variance`}
             </div>
           </div>
         </div>
@@ -236,7 +267,7 @@ export default function PerformanceTab() {
               <span className="text-[#EDEDED] font-semibold">{cData.customerRating} / 5.0</span>
             </div>
             <div className="text-[10px] font-mono text-[#3ECF8E] flex items-center gap-1 font-bold">
-              ★ Top-rated carrier on last 10 hauls
+              ★ Rated {tData.customerRating} / 5.0 on corridor loads
             </div>
           </div>
         </div>
@@ -244,40 +275,38 @@ export default function PerformanceTab() {
 
       {/* Driving & Route Recommendations */}
       <div className="bg-[#171717] border border-[#242424] rounded-xl p-5 shadow-sm space-y-4">
-        <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F]">
-          Driving &amp; Route Recommendations
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F]">
+            Driving &amp; Route Recommendations
+          </h3>
+          <span className="text-[10px] font-mono text-[#3ECF8E] flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse" />
+            AI Telemetry Engine Active
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg bg-[#121212] border border-[#242424] hover:border-[#333] transition-colors space-y-2">
-            <div className="text-xs font-bold text-[#EDEDED] flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
-              Optimal Cruise Speed (Awash - Modjo)
+          {activeRecommendations.map((rec) => (
+            <div
+              key={rec.id}
+              className="p-4 rounded-lg bg-[#121212] border border-[#242424] hover:border-[#333] transition-colors space-y-2 flex flex-col justify-between"
+            >
+              <div className="space-y-1.5">
+                <div className="text-xs font-bold text-[#EDEDED] flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] shrink-0" />
+                  <span>{rec.title}</span>
+                </div>
+                {rec.tag && (
+                  <span className="inline-block text-[9px] font-mono font-semibold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-1.5 py-0.5 rounded">
+                    {rec.tag}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#8F8F8F] leading-relaxed">
+                {rec.description}
+              </p>
             </div>
-            <p className="text-xs text-[#8F8F8F] leading-relaxed">
-              Telemetry models show maintaining <strong className="text-[#EDEDED]">62-65 km/h</strong> on the expressway incline saves an estimated <strong className="text-[#3ECF8E]">8.4 liters</strong> of diesel compared to fluctuating acceleration.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-lg bg-[#121212] border border-[#242424] hover:border-[#333] transition-colors space-y-2">
-            <div className="text-xs font-bold text-[#EDEDED] flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
-              Galafi Customs Crossing Window
-            </div>
-            <p className="text-xs text-[#8F8F8F] leading-relaxed">
-              Arriving at Galafi border between <strong className="text-[#EDEDED]">05:30 AM and 07:00 AM</strong> reduces average clearance dwell by <strong className="text-[#3ECF8E]">1.8 hours</strong>, avoiding afternoon heat idle consumption.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-lg bg-[#121212] border border-[#242424] hover:border-[#333] transition-colors space-y-2">
-            <div className="text-xs font-bold text-[#EDEDED] flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
-              Preventive Tire &amp; Axle Check
-            </div>
-            <p className="text-xs text-[#8F8F8F] leading-relaxed">
-              Hot asphalt temperatures between Mille and Awash during mid-day trigger 12% tire pressure expansion. Ensure morning cold inflation calibrates strictly to <strong className="text-[#EDEDED]">110 PSI</strong>.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
     </div>
