@@ -81,11 +81,8 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
         },
         {
           id: 'driver_console',
-          label: isAm ? 'የአሽከርካሪ ሞድ (ኦፍላይን)' : 'Driver Console (Offline)',
-          sub: isAm ? 'በበረሃ ጉዞ ወቅት የሚሰራ' : 'Cab simulation & sync queue',
+          label: isAm ? 'የሹፌር ኮንሶል' : 'Driver Console',
           icon: Smartphone,
-          badge: 'OFFLINE',
-          badgeType: 'offline',
         },
       ],
     },
@@ -94,11 +91,8 @@ export default function CarrierSidebar({ activeTab, setActiveTab, onSwitchPortal
       items: [
         {
           id: 'earnings',
-          label: isAm ? 'የቴሌብር ክፍያ እና ገቢ' : 'TeleBirr Settlements',
-          sub: isAm ? 'ኢስክሮው እና የተጣራ ገቢ' : 'Escrow & Net Payouts',
+          label: isAm ? 'ቴሌብር ክፍያዎች' : 'TeleBirr Settlements',
           icon: Wallet,
-          badge: 'ESCROW',
-          badgeType: 'neutral',
         },
       ],
     },
