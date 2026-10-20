@@ -266,9 +266,8 @@ export default function FleetManagementTab() {
 
       {/* Driver Roster Panel */}
       <div className="bg-[#171717] border border-[#242424] rounded-xl p-5 shadow-sm">
-        <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F] mb-3 flex items-center gap-2">
-          <UserCheck size={15} className="text-[#3ECF8E]" />
-          Corridor Driver Roster & Telematics Sync
+        <h3 className="text-xs font-mono font-bold uppercase text-[#8F8F8F] mb-3">
+          Driver Roster ({drivers.length})
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {drivers.map((d) => (
