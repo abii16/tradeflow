@@ -5,7 +5,7 @@ import { shipments } from '../db/schema/shipments';
 import { users } from '../db/schema/users';
 import { loads } from '../db/schema/loads';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 
 
 const router = Router();
@@ -77,7 +77,14 @@ router.get('/live-assets', JwtAuthGuard, async (req: Request, res: Response): Pr
     .from(shipments)
     .leftJoin(users, eq(shipments.driverId, users.id))
     .leftJoin(loads, eq(shipments.loadId, loads.id))
-    .where(eq(shipments.status, 'IN_TRANSIT'));
+    .where(
+      or(
+        eq(shipments.status, 'IN_TRANSIT'),
+        eq(shipments.status, 'DISPATCHED'),
+        eq(shipments.status, 'PICKED_UP'),
+        eq(shipments.status, 'IN_CUSTOMS')
+      )
+    );
 
     // Fetch the latest log for each shipment
     const trucks = await Promise.all(activeShipments.map(async (s, i) => {

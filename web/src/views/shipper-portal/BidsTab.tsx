@@ -6,6 +6,7 @@ import { Star, ChevronDown, Sparkles, MapPin, ArrowRight, ShieldCheck, Activity,
 type FilterStatus = 'all' | 'open' | 'transit' | 'completed';
 
 import { getShipperLoads, acceptBidEscrow, triggerAiMatching } from '@/lib/apiClient';
+import toast from 'react-hot-toast';
 
 const FILTER_OPTIONS: { value: FilterStatus; label: string; icon: React.ReactNode }[] = [
   { value: 'all', label: 'All Loads', icon: <PackageOpen size={14} /> },
@@ -51,9 +52,12 @@ export default function BidsTab() {
     try {
       await triggerAiMatching(loadId);
       await fetchLoads();
+      toast.success('AI Freight Matching Engine generated candidate bids!');
     } catch (err: any) {
       console.error('Failed to trigger AI matches:', err);
-      setAiErrorMessage(err.message || 'AI Freight Matching Engine is offline on port 8000.');
+      const msg = err.message || 'AI Freight Matching Engine is offline on port 8000.';
+      setAiErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setMatchingLoadId(null);
     }
@@ -64,11 +68,13 @@ export default function BidsTab() {
       setLoading(true);
       await acceptBidEscrow(bidId);
       setLoads(prev => prev.map(l => l.bids?.some((b: any) => b.id === bidId) ? { ...l, status: 'IN_TRANSIT' } : l));
-      alert('Bid accepted and locked into escrow successfully!');
-      window.location.href = '/shipper/telematics';
-    } catch (error) {
+      toast.success('Bid accepted and locked into TeleBirr Escrow successfully!');
+      window.dispatchEvent(new Event('shipper:load_posted'));
+      window.history.pushState({ tab: 'telematics' }, '', '/shipper/telematics');
+      window.dispatchEvent(new Event('popstate'));
+    } catch (error: any) {
       console.error(error);
-      alert('Failed to accept bid');
+      toast.error(error?.message || 'Failed to accept bid');
       setLoading(false);
     }
   };
@@ -97,10 +103,12 @@ export default function BidsTab() {
       {/* Header Section */}
       <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-[#2E2E2E]/80 gap-4">
         <div className="relative z-10">
-
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-slate-600 tracking-tight capitalize">
+          <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight">
             {t('bids_exchange')}
           </h1>
+          <p className="text-xs text-[#8F8F8F] mt-1">
+            Real-time reverse auction & automated machine learning match shortlist (FR-02)
+          </p>
         </div>
 
         {/* Filter Segmented Control */}
@@ -167,8 +175,8 @@ export default function BidsTab() {
                 key={load.id} 
                 className={`group bg-[#232323] rounded-xl overflow-hidden transition-all duration-300 ${
                   isExpanded 
-                    ? 'ring-1 ring-[#3ECF8E]/20 shadow-lg shadow-blue-900/5 border-transparent' 
-                    : 'border border-[#2E2E2E] hover:border-blue-300/60 hover:shadow-md'
+                    ? 'ring-1 ring-[#3ECF8E]/30 shadow-lg shadow-black/40 border-transparent' 
+                    : 'border border-[#2E2E2E] hover:border-[#3ECF8E]/40 hover:shadow-md'
                 }`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
@@ -217,7 +225,7 @@ export default function BidsTab() {
                       </div>
                       
                       <div className="flex flex-col items-center justify-center px-1 shrink-0">
-                        <div className="w-12 h-px bg-slate-200 relative flex items-center justify-center">
+                        <div className="w-12 h-px bg-[#2E2E2E] relative flex items-center justify-center">
                           <ArrowRight size={14} className="text-[#8F8F8F] absolute bg-[#232323] px-0.5" />
                         </div>
                       </div>
@@ -320,14 +328,14 @@ export default function BidsTab() {
                               <TableRow key={bid.id || i} className={`border-[#2E2E2E] transition-colors ${i === 0 ? 'bg-[#3ECF8E]/10/30 hover:bg-[#3ECF8E]/10/50' : 'bg-[#232323] hover:bg-[#1C1C1C]'}`}>
                                 <TableCell className="font-medium">
                                   <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-[#2E2E2E] flex items-center justify-center text-[#EDEDED] font-bold text-xs">
+                                    <div className="w-8 h-8 rounded-full bg-[#1C1C1C] border border-[#2E2E2E] flex items-center justify-center text-[#3ECF8E] font-bold text-xs">
                                       {(bid.transporterName || bid.transporter || 'U')[0].toUpperCase()}
                                     </div>
                                     <div>
                                       <div className="text-sm font-bold text-[#EDEDED] flex items-center gap-2">
                                         {bid.transporterName || bid.transporter || 'Unknown Transporter'}
                                         {i === 0 && (
-                                          <span className="bg-amber-100 text-amber-700 text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider">Top Pick</span>
+                                          <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider">Top Pick</span>
                                         )}
                                         {bid.aiMatchScore && (
                                           <span className="bg-[#3ECF8E]/15 text-[#3ECF8E] border border-[#3ECF8E]/30 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
@@ -336,7 +344,7 @@ export default function BidsTab() {
                                         )}
                                       </div>
                                       <span className="text-[10px] text-[#8F8F8F] font-mono flex items-center gap-1 mt-0.5">
-                                        <ShieldCheck size={10} className="text-green-500" /> {bid.transporterCompany ? `${bid.transporterCompany} · ` : ''}Verified Carrier
+                                        <ShieldCheck size={10} className="text-[#3ECF8E]" /> {bid.transporterCompany ? `${bid.transporterCompany} · ` : ''}Verified Carrier
                                       </span>
                                     </div>
                                   </div>
@@ -355,11 +363,11 @@ export default function BidsTab() {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex flex-col">
-                                    <span className={`text-sm font-black font-mono tracking-tight ${i === 0 ? 'text-green-600' : 'text-[#EDEDED]'}`}>
+                                    <span className={`text-sm font-black font-mono tracking-tight ${i === 0 ? 'text-[#3ECF8E]' : 'text-[#EDEDED]'}`}>
                                       {Number(bid.amount || bid.bidAmount).toLocaleString()} <span className="text-[10px] font-bold text-[#8F8F8F]">{bid.currency || 'ETB'}</span>
                                     </span>
                                     {i > 0 && sortedArr[0] && (
-                                      <span className="text-[10px] text-zinc-400 font-mono">
+                                      <span className="text-[10px] text-[#8F8F8F] font-mono">
                                         {Number(bid.amount) >= Number(sortedArr[0].amount) ? '+' : ''}
                                         {(Number(bid.amount) - Number(sortedArr[0].amount)).toLocaleString()} diff
                                       </span>
@@ -373,8 +381,8 @@ export default function BidsTab() {
                                     disabled={loading || (load.status !== 'POSTED' && load.status !== 'OPEN_FOR_BIDDING' && load.status !== 'MATCHED') || bid.status === 'REJECTED'}
                                     className={`relative overflow-hidden group text-xs px-4 py-2 rounded-lg font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                                       bid.status === 'ACCEPTED'
-                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                        : 'bg-gradient-to-r from-slate-900 to-slate-800 text-white hover:shadow-md hover:-translate-y-px'
+                                        ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/30'
+                                        : 'bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] hover:shadow-[0_0_12px_rgba(62,207,142,0.3)] hover:-translate-y-px'
                                     }`}
                                   >
                                     <span className="relative z-10 flex items-center gap-1.5">
