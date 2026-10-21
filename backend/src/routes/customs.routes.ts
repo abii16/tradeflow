@@ -3,6 +3,7 @@ import multer from 'multer';
 import { randomUUID } from 'crypto';
 import { db } from '../db';
 import { customsDocuments } from '../db/schema/customs';
+import { shipments } from '../db/schema/shipments';
 import { JwtAuthGuard as requireAuth } from '../auth/guards/jwt-auth.guard';
 // Assuming supabase client is exported from this path as requested
 import { supabase } from '../db/supabase';
@@ -13,7 +14,7 @@ import {
   validateCustomsDocuments,
 } from '../modules/customs/customs.parser';
 import { auditMiddleware } from '../middleware/audit.middleware';
-import { eq, inArray, desc } from 'drizzle-orm';
+import { eq, inArray, desc, or } from 'drizzle-orm';
 import { loads } from '../db/schema/loads';
 
 const router = Router();
@@ -160,9 +161,28 @@ router.get('/shipments/:shipmentId/documents', requireAuth, async (req: Request,
   try {
     const { shipmentId } = req.params;
 
-    // In our schema, customs documents are tied to loadId.
-    // Assuming shipmentId maps directly to loadId in frontend logic, or we query appropriately.
-    const docs = await db.select().from(customsDocuments).where(eq(customsDocuments.loadId, shipmentId));
+    if (shipmentId === 'all' || shipmentId === 'my-documents') {
+      const docs = await db.select().from(customsDocuments)
+        .where(eq(customsDocuments.uploadedBy, req.user!.id))
+        .orderBy(desc(customsDocuments.createdAt));
+      res.status(200).json({ documents: docs });
+      return;
+    }
+
+    let targetLoadId = shipmentId;
+    const [shipment] = await db.select({ loadId: shipments.loadId }).from(shipments).where(eq(shipments.id, shipmentId));
+    if (shipment && shipment.loadId) {
+      targetLoadId = shipment.loadId;
+    }
+
+    const docs = await db.select().from(customsDocuments)
+      .where(
+        or(
+          eq(customsDocuments.loadId, targetLoadId),
+          eq(customsDocuments.loadId, shipmentId)
+        )
+      )
+      .orderBy(desc(customsDocuments.createdAt));
 
     res.status(200).json({ documents: docs });
   } catch (error) {
