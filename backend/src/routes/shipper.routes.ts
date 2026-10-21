@@ -5,6 +5,7 @@ import { bids } from '../db/schema/bids';
 import { shipments } from '../db/schema/shipments';
 import { contracts } from '../db/schema/contracts';
 import { users } from '../db/schema/users';
+import { telemetryLogs } from '../db/schema/telemetry_logs';
 import { payments } from '../db/schema/payments';
 import { eq, desc, and, or } from 'drizzle-orm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -57,6 +58,18 @@ router.get('/shipments/active', async (req: Request, res: Response): Promise<voi
     const item = activeShipments[0];
     const trackingNumber = `SHP-${item.shipment.id.substring(0, 8).toUpperCase()}-DJM`;
 
+    let latestTelemetry = null;
+    try {
+      const [tel] = await db.select()
+        .from(telemetryLogs)
+        .where(eq(telemetryLogs.shipmentId, item.shipment.id))
+        .orderBy(desc(telemetryLogs.timestamp))
+        .limit(1);
+      if (tel) latestTelemetry = tel;
+    } catch (e) {
+      // quiet
+    }
+
     res.status(200).json({
       shipment: {
         ...item.shipment,
@@ -64,6 +77,14 @@ router.get('/shipments/active', async (req: Request, res: Response): Promise<voi
         load: item.load,
         transporter: item.transporter,
         driver: item.transporter,
+        latestTelemetry,
+        shipper: {
+          id: req.user!.id,
+          fullName: req.user!.fullName,
+          companyName: req.user!.companyName,
+          phone: req.user!.phone,
+          email: req.user!.email,
+        }
       }
     });
   } catch (error) {
