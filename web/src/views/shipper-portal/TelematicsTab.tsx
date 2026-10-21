@@ -9,49 +9,62 @@ import {
   Truck, 
   MapPin, 
   ArrowRight, 
-  ShieldCheck, 
   Cpu, 
   Gauge, 
   Navigation,
-  CheckCircle2
+  Search,
+  Crosshair,
+  Compass,
+  CheckCircle2,
+  Clock,
+  Layers,
+  Activity,
+  ShieldCheck
 } from 'lucide-react';
 import { fetchRiskZones } from '@/lib/apiClient';
 import { useLiveTelemetry, TruckTelemetry } from '@/hooks/useLiveTelemetry';
 import L from 'leaflet';
 
-function MapController({ center }: { center?: [number, number] }) {
+function MapController({ center, zoom }: { center?: [number, number]; zoom?: number }) {
   const map = useMap();
   useEffect(() => {
     if (center && !isNaN(center[0]) && !isNaN(center[1])) {
-      map.flyTo(center, Math.max(map.getZoom(), 8), { duration: 1.2 });
+      map.flyTo(center, zoom || Math.max(map.getZoom(), 8), { duration: 1.2 });
     }
-  }, [center, map]);
+  }, [center, zoom, map]);
   return null;
 }
 
-const createTruckIcon = (status?: string, isSelected?: boolean) => {
-  const isBreach = status === 'GEOFENCE_BREACH';
-  const color = isBreach ? '#F59E0B' : '#3ECF8E';
-  const ring = isSelected ? 'scale-125 ring-2 ring-white shadow-[0_0_12px_rgba(255,255,255,0.8)]' : '';
-  
+const createTruckIcon = (truck: TruckTelemetry, isSelected: boolean) => {
+  const isBreach = truck.status === 'GEOFENCE_BREACH';
+  const isSpeeding = truck.status === 'SPEEDING';
+  const color = isBreach ? '#F59E0B' : isSpeeding ? '#EF4444' : '#3ECF8E';
+  const pulseClass = isBreach || isSpeeding ? 'animate-ping' : '';
+  const selectedRing = isSelected ? 'scale-110 ring-2 ring-white shadow-[0_0_15px_rgba(62,207,142,0.9)]' : '';
+
   return L.divIcon({
     className: 'custom-truck-marker',
     html: `
-      <div class="relative flex items-center justify-center ${ring} transition-all duration-300">
-        <div class="absolute w-7 h-7 rounded-full animate-ping opacity-40" style="background-color: ${color}"></div>
-        <div class="w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-[#121212]" style="background-color: ${color}">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="1" y="3" width="15" height="13"></rect>
-            <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
-            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-          </svg>
+      <div class="relative flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${selectedRing}">
+        <div class="relative flex items-center justify-center">
+          <div class="absolute -inset-1 rounded-full ${pulseClass} opacity-40" style="background-color: ${color}"></div>
+          <div class="w-6 h-6 rounded-full flex items-center justify-center shadow-xl border-2 border-[#121212] transition-transform hover:scale-110" style="background-color: ${color}">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+          </div>
+        </div>
+        <div class="mt-0.5 bg-[#121212]/95 border border-[#242424] px-1 py-0.2 rounded shadow text-[9px] font-mono font-bold text-[#EDEDED] whitespace-nowrap pointer-events-none">
+          ${truck.id}
         </div>
       </div>
     `,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -14],
+    iconSize: [36, 40],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -18],
   });
 };
 
@@ -59,13 +72,13 @@ const createWaypointIcon = (label: string) => {
   return L.divIcon({
     className: 'custom-waypoint-marker',
     html: `
-      <div class="flex items-center gap-1 bg-[#121212]/90 border border-[#2E2E2E] px-2 py-0.5 rounded shadow text-[10px] text-[#EDEDED] font-mono whitespace-nowrap">
-        <div class="w-2 h-2 rounded-full bg-[#3ECF8E]"></div>
-        <span>${label}</span>
+      <div class="flex items-center gap-1.5 bg-[#121212]/95 border border-[#2E2E2E] px-2 py-0.5 rounded-md shadow-lg text-[10px] text-[#EDEDED] font-mono whitespace-nowrap">
+        <div class="w-2 h-2 rounded-full bg-[#3ECF8E] shadow-[0_0_6px_rgba(62,207,142,0.8)]"></div>
+        <span class="font-semibold">${label}</span>
       </div>
     `,
-    iconSize: [90, 24],
-    iconAnchor: [45, 12],
+    iconSize: [95, 24],
+    iconAnchor: [48, 12],
   });
 };
 
@@ -75,6 +88,8 @@ export default function TelematicsTab() {
   const [riskZones, setRiskZones] = useState<any[]>([]);
   const [selectedTruckId, setSelectedTruckId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'SAFE' | 'BREACH'>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mapTarget, setMapTarget] = useState<{ center: [number, number]; zoom: number } | null>(null);
 
   useEffect(() => {
     async function loadZones() {
@@ -100,14 +115,25 @@ export default function TelematicsTab() {
   const corridorPolyline = useMemo(() => waypoints.map(w => w.pos), [waypoints]);
 
   const filteredTrucks = useMemo(() => {
-    if (statusFilter === 'SAFE') {
-      return telemetry.trucks.filter(t => t.status === 'SAFE');
-    }
-    if (statusFilter === 'BREACH') {
-      return telemetry.trucks.filter(t => t.status === 'GEOFENCE_BREACH' || t.status === 'SPEEDING');
-    }
-    return telemetry.trucks;
-  }, [telemetry.trucks, statusFilter]);
+    return telemetry.trucks.filter(t => {
+      // Filter by status
+      if (statusFilter === 'SAFE' && t.status !== 'SAFE') return false;
+      if (statusFilter === 'BREACH' && t.status !== 'GEOFENCE_BREACH' && t.status !== 'SPEEDING') return false;
+      
+      // Filter by search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchId = t.id.toLowerCase().includes(q);
+        const matchCargo = (t.cargo || '').toLowerCase().includes(q);
+        const matchDriver = (t.driver || '').toLowerCase().includes(q);
+        const matchPlate = (t.plate || '').toLowerCase().includes(q);
+        const matchOrigin = (t.origin || '').toLowerCase().includes(q);
+        const matchDest = (t.destination || '').toLowerCase().includes(q);
+        return matchId || matchCargo || matchDriver || matchPlate || matchOrigin || matchDest;
+      }
+      return true;
+    });
+  }, [telemetry.trucks, statusFilter, searchQuery]);
 
   const selectedTruck = useMemo(() => {
     return telemetry.trucks.find(t => t.id === selectedTruckId) || null;
@@ -121,31 +147,60 @@ export default function TelematicsTab() {
     return telemetry.trucks.filter(t => t.status === 'SAFE').length;
   }, [telemetry.trucks]);
 
+  const handleSelectTruck = (truck: TruckTelemetry) => {
+    setSelectedTruckId(truck.id);
+    setMapTarget({ center: [truck.lat, truck.lng], zoom: 9 });
+  };
+
+  const handleSectorJump = (pos: [number, number], zoom: number) => {
+    setMapTarget({ center: pos, zoom });
+  };
+
   return (
-    <div className="max-w-[1360px] mx-auto h-[calc(100vh-8rem)] flex flex-col space-y-4">
-      {/* Header */}
-      <div className="pb-3 border-b border-[#242424] shrink-0 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
+    <div className="max-w-[1360px] mx-auto h-[calc(100vh-8rem)] flex flex-col space-y-3.5">
+      {/* Dark Leaflet Popup Overrides */}
+      <style>{`
+        .leaflet-popup-content-wrapper {
+          background: #171717 !important;
+          color: #EDEDED !important;
+          border: 1px solid #282828 !important;
+          border-radius: 12px !important;
+          box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7) !important;
+          padding: 3px !important;
+        }
+        .leaflet-popup-tip {
+          background: #171717 !important;
+          border: 1px solid #282828 !important;
+        }
+        .leaflet-popup-close-button {
+          color: #707070 !important;
+          padding: 6px !important;
+        }
+        .leaflet-popup-close-button:hover {
+          color: #EDEDED !important;
+        }
+      `}</style>
+
+      {/* Header - Clean, No Subtitle */}
+      <div className="pb-3 border-b border-[#242424] shrink-0 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-[#EDEDED] tracking-tight">
             {t('telematics_title', 'Live Telematics')}
           </h1>
-          <p className="text-xs text-[#8F8F8F] font-mono mt-0.5">
-            {t('telematics_subtitle', 'Corridor GPS tracking & AI ETA.')}
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={refreshTelemetry}
-            className="p-1.5 rounded-lg bg-[#121212] border border-[#242424] hover:border-[#3ECF8E]/40 text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer flex items-center gap-1.5 text-xs font-mono"
-            title="Force refresh live telematics & recalculate PyTorch ETAs"
+            className="px-2.5 py-1.5 rounded-lg bg-[#121212] border border-[#242424] hover:border-[#3ECF8E]/40 text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer flex items-center gap-1.5 text-xs font-mono active:scale-95"
+            title="Sync live telematics & recalculate PyTorch ETAs"
           >
             <RefreshCw size={13} className={loading ? 'animate-spin text-[#3ECF8E]' : ''} />
             <span>Sync</span>
           </button>
 
-          <div className="flex items-center gap-2 bg-[#121212] px-2.5 py-1.5 rounded-lg border border-[#242424]">
+          <div className="flex items-center gap-2 bg-[#121212] px-3 py-1.5 rounded-lg border border-[#242424]">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[#3ECF8E] animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]' : 'bg-rose-500'}`}></div>
             <span className="text-xs font-medium text-[#8F8F8F] font-mono">
               {isConnected ? 'Live Socket Connected' : 'Reconnecting...'}
@@ -154,27 +209,29 @@ export default function TelematicsTab() {
         </div>
       </div>
       
-      {/* Main Grid: Map & Fleet Telematics Feed */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-5 overflow-hidden">
+      {/* Main Grid: Control Tower Map & Fleet Telematics Feed */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-4 overflow-hidden min-h-0">
         {/* Interactive Satellite Radar Map */}
-        <div className="lg:col-span-3 rounded-xl overflow-hidden border border-[#242424] bg-[#121212] relative z-0 h-[calc(100vh-16rem)] min-h-[420px] shadow-sm">
+        <div className="lg:col-span-3 rounded-xl overflow-hidden border border-[#242424] bg-[#121212] relative z-0 h-[calc(100vh-14rem)] min-h-[440px] shadow-sm flex flex-col">
           <MapContainer center={[10.3, 41.2]} zoom={7} className="w-full h-full z-0">
             <TileLayer
               attribution="&copy; Google Satellite Hybrid"
               url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
             />
 
-            <MapController center={selectedTruck ? [selectedTruck.lat, selectedTruck.lng] : undefined} />
+            <MapController center={mapTarget?.center} zoom={mapTarget?.zoom} />
 
             {/* Corridor Artery Polyline */}
-            <Polyline positions={corridorPolyline} color="#3ECF8E" weight={2.5} opacity={0.6} dashArray="6, 6" />
+            <Polyline positions={corridorPolyline} color="#3ECF8E" weight={2.5} opacity={0.65} dashArray="6, 6" />
 
             {/* Corridor Waypoint Indicators */}
             {waypoints.map(wp => (
               <Marker key={wp.name} position={wp.pos} icon={createWaypointIcon(wp.name)}>
                 <Popup>
-                  <div className="font-mono text-xs font-bold text-[#EDEDED]">{wp.name}</div>
-                  <div className="text-[10px] text-[#8F8F8F]">Major TradeFlow Corridor Checkpoint</div>
+                  <div className="font-mono text-xs p-1">
+                    <div className="font-bold text-[#EDEDED]">{wp.name}</div>
+                    <div className="text-[10px] text-[#8F8F8F] mt-0.5">Corridor Strategic Checkpoint</div>
+                  </div>
                 </Popup>
               </Marker>
             ))}
@@ -212,7 +269,7 @@ export default function TelematicsTab() {
                 );
               }
 
-              // Fallback circle if polygon is not provided
+              // Fallback polygon if direct coordinates
               if (zone.lat && zone.lng) {
                 return (
                   <Polygon 
@@ -227,7 +284,7 @@ export default function TelematicsTab() {
                   >
                     <Popup>
                       <div className="font-bold text-[#EDEDED] font-mono text-xs">{zone.name || zone.title}</div>
-                      <div className="text-[10px] text-amber-400 font-bold mt-1">GEOFENCED ALERT ZONE</div>
+                      <div className="text-[10px] text-amber-400 font-bold mt-1">GEOFENCED HAZARD ZONE</div>
                       <div className="text-[10px] text-[#8F8F8F] mt-0.5">{zone.description}</div>
                     </Popup>
                   </Polygon>
@@ -241,29 +298,53 @@ export default function TelematicsTab() {
               <Marker 
                 key={truck.id} 
                 position={[truck.lat, truck.lng]}
-                icon={createTruckIcon(truck.status, selectedTruckId === truck.id)}
+                icon={createTruckIcon(truck, selectedTruckId === truck.id)}
                 eventHandlers={{
-                  click: () => setSelectedTruckId(truck.id),
+                  click: () => handleSelectTruck(truck),
                 }}
               >
                 <Popup>
-                  <div className="p-1 font-mono text-xs text-[#121212] min-w-[200px]">
-                    <div className="flex justify-between items-center border-b pb-1 mb-1">
-                      <span className="font-bold text-sm text-[#121212]">{truck.id}</span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
-                        truck.status === 'SAFE' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                  <div className="font-mono text-xs text-[#EDEDED] min-w-[240px] p-1.5">
+                    <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#282828]">
+                      <div className="flex items-center gap-1.5">
+                        <Truck size={13} className={truck.status === 'SAFE' ? 'text-[#3ECF8E]' : 'text-amber-400'} />
+                        <span className="font-bold text-sm text-[#EDEDED]">{truck.id}</span>
+                        {truck.plate && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#202020] text-[#8F8F8F] border border-[#2E2E2E]">
+                            {truck.plate}
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
+                        truck.status === 'SAFE' 
+                          ? 'bg-[#3ECF8E]/15 text-[#3ECF8E] border border-[#3ECF8E]/30' 
+                          : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
                       }`}>
                         {truck.status || 'SAFE'}
                       </span>
                     </div>
-                    <div className="font-medium text-[#121212]">{truck.cargo}</div>
-                    <div className="text-[11px] text-slate-600">Driver: {truck.driver} • {truck.speed} km/h</div>
-                    <div className="text-[11px] text-slate-600 mt-0.5">
-                      {truck.origin || 'Corridor'} → {truck.destination || 'Modjo'}
+
+                    <div className="text-xs font-semibold text-[#EDEDED] mb-1 truncate">{truck.cargo}</div>
+                    <div className="text-[11px] text-[#8F8F8F] mb-2 flex items-center gap-1 truncate">
+                      <span className="text-[#EDEDED]">{truck.origin || 'Djibouti'}</span>
+                      <ArrowRight size={10} className="text-[#3ECF8E] shrink-0" />
+                      <span className="text-[#EDEDED]">{truck.destination || 'Modjo'}</span>
                     </div>
-                    <div className="mt-1.5 pt-1 border-t text-[11px] flex justify-between font-bold text-emerald-700">
-                      <span>PyTorch ETA:</span>
-                      <span>{truck.eta} ({truck.estimatedArrival})</span>
+
+                    <div className="grid grid-cols-2 gap-1.5 bg-[#121212] p-2 rounded-lg border border-[#242424] text-[11px] mb-2">
+                      <div>
+                        <span className="text-[9px] text-[#707070] block">Speed</span>
+                        <span className="font-bold text-[#EDEDED]">{truck.speed} km/h</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-[#707070] block">Remaining</span>
+                        <span className="font-bold text-[#EDEDED]">{truck.remainingDistanceKm || 0} km</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-1.5 border-t border-[#242424] flex items-center justify-between text-[11px]">
+                      <span className="text-[#707070]">PyTorch ETA:</span>
+                      <span className="font-bold text-[#3ECF8E]">{truck.eta} ({truck.estimatedArrival})</span>
                     </div>
                   </div>
                 </Popup>
@@ -271,17 +352,67 @@ export default function TelematicsTab() {
             ))}
           </MapContainer>
 
-          {/* Map Overlay Badge */}
-          <div className="absolute top-3 left-12 z-[1000] bg-[#121212]/90 backdrop-blur border border-[#242424] px-3 py-1.5 rounded-lg text-xs font-mono text-[#EDEDED] shadow-lg flex items-center gap-2 pointer-events-none">
+          {/* Top-Left HUD Badge: AI Engine */}
+          <div className="absolute top-3 left-12 z-[1000] bg-[#121212]/90 backdrop-blur-md border border-[#242424] px-3 py-1.5 rounded-lg text-xs font-mono text-[#EDEDED] shadow-xl flex items-center gap-2 pointer-events-none">
             <Cpu size={14} className="text-[#3ECF8E]" />
-            <span>AI ETA Model: <strong className="text-[#3ECF8E]">Deep PyTorch (v1_deep_learning)</strong></span>
+            <span>AI ETA: <strong className="text-[#3ECF8E]">PyTorch Deep Model</strong></span>
+          </div>
+
+          {/* Top-Right Quick Jump Buttons */}
+          <div className="absolute top-3 right-3 z-[1000] hidden sm:flex items-center gap-1 bg-[#121212]/90 backdrop-blur-md border border-[#242424] p-1 rounded-lg text-[10px] font-mono shadow-xl">
+            <button
+              type="button"
+              onClick={() => handleSectorJump([10.3, 41.2], 7)}
+              className="px-2 py-1 rounded hover:bg-[#202020] text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer"
+            >
+              Corridor
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSectorJump([11.589, 43.145], 10)}
+              className="px-2 py-1 rounded hover:bg-[#202020] text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer"
+            >
+              Djibouti
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSectorJump([11.720, 41.833], 10)}
+              className="px-2 py-1 rounded hover:bg-[#202020] text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer"
+            >
+              Galafi
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSectorJump([8.586, 39.121], 10)}
+              className="px-2 py-1 rounded hover:bg-[#202020] text-[#8F8F8F] hover:text-[#EDEDED] transition cursor-pointer"
+            >
+              Modjo
+            </button>
+          </div>
+
+          {/* Bottom-Left Live Telemetry Stats Pill */}
+          <div className="absolute bottom-3 left-3 z-[1000] bg-[#121212]/90 backdrop-blur-md border border-[#242424] px-2.5 py-1 rounded-lg text-[10px] font-mono text-[#8F8F8F] shadow-lg flex items-center gap-2 pointer-events-none">
+            <Activity size={12} className="text-[#3ECF8E]" />
+            <span>{telemetry.trucks.length} Active Fleet Transponders</span>
           </div>
         </div>
 
-        {/* Side Panel: Live Fleet Telemetry Stream */}
-        <div className="lg:col-span-2 relative h-full flex flex-col min-h-0 bg-[#171717] border border-[#242424] rounded-xl p-3 shadow-sm">
-          {/* Filter Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[#242424] shrink-0 gap-1 text-xs">
+        {/* Side Panel: Live Fleet Control Tower Feed */}
+        <div className="lg:col-span-2 relative h-[calc(100vh-14rem)] min-h-[440px] flex flex-col min-h-0 bg-[#171717] border border-[#242424] rounded-xl p-3 shadow-sm">
+          {/* Search Input */}
+          <div className="relative mb-2.5 shrink-0">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#707070]" />
+            <input
+              type="text"
+              placeholder="Search truck ID, plate, or driver..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#121212] border border-[#242424] rounded-lg text-[#EDEDED] placeholder-[#707070] font-mono focus:outline-none focus:border-[#3ECF8E] transition"
+            />
+          </div>
+
+          {/* Filter Bar */}
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#242424] shrink-0 gap-1 text-xs">
             <div className="flex items-center gap-1 font-mono">
               <button
                 type="button"
@@ -315,12 +446,12 @@ export default function TelematicsTab() {
             </div>
             
             <span className="text-[11px] text-[#707070] font-mono">
-              {filteredTrucks.length} Active
+              {filteredTrucks.length} Units
             </span>
           </div>
 
-          {/* Active List */}
-          <div className="flex-1 space-y-2.5 overflow-y-auto min-h-0 pt-3 pr-1 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#282828] [&::-webkit-scrollbar-track]:bg-transparent">
+          {/* Fleet Stream Cards */}
+          <div className="flex-1 space-y-2.5 overflow-y-auto min-h-0 pt-2.5 pr-1 pb-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#282828] [&::-webkit-scrollbar-track]:bg-transparent">
             {/* Critical Incident Alerts */}
             {telemetry.alerts.map(alert => (
               <div key={alert.id} className="bg-rose-500/10 border-l-4 border-l-rose-500 border-y border-r border-[#242424] rounded-lg p-2.5 animate-in fade-in">
@@ -339,7 +470,7 @@ export default function TelematicsTab() {
                 <div className="w-10 h-10 rounded-full bg-[#121212] border border-[#242424] flex items-center justify-center mb-2.5">
                   <Radar size={20} className="text-[#8F8F8F]" />
                 </div>
-                <h3 className="text-xs font-bold text-[#EDEDED] font-mono mb-1">No active shipments matching filter</h3>
+                <h3 className="text-xs font-bold text-[#EDEDED] font-mono mb-1">No active vehicles found</h3>
                 <p className="text-[11px] text-[#707070] leading-relaxed max-w-[220px]">
                   All active GPS transponders report nominal status.
                 </p>
@@ -353,10 +484,10 @@ export default function TelematicsTab() {
               return (
                 <div 
                   key={truck.id}
-                  onClick={() => setSelectedTruckId(truck.id)}
+                  onClick={() => handleSelectTruck(truck)}
                   className={`border rounded-xl p-3 transition-all duration-200 cursor-pointer ${
                     isSelected 
-                      ? 'bg-[#1D1D1D] border-[#3ECF8E] shadow-[0_0_15px_rgba(62,207,142,0.12)]' 
+                      ? 'bg-[#1C1C1C] border-[#3ECF8E] shadow-[0_0_18px_rgba(62,207,142,0.15)]' 
                       : 'bg-[#121212] border-[#242424] hover:border-[#383838] hover:bg-[#161616]'
                   }`}
                 >
@@ -368,7 +499,7 @@ export default function TelematicsTab() {
                         <span>{truck.id}</span>
                       </div>
                       {truck.plate && (
-                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#1C1C1C] border border-[#282828] text-[#8F8F8F] font-mono">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#1C1C1C] border border-[#282828] text-[#8F8F8F] font-mono">
                           {truck.plate}
                         </span>
                       )}
@@ -392,14 +523,14 @@ export default function TelematicsTab() {
                   <div className="text-[11px] text-[#8F8F8F] font-mono flex items-center gap-1 mb-2.5 truncate">
                     <span>{truck.driver}</span>
                     <span className="text-[#3A3A3A]">•</span>
-                    <span className="text-[#EDEDED]">{truck.origin || 'Corridor'}</span>
+                    <span className="text-[#EDEDED]">{truck.origin || 'Djibouti'}</span>
                     <ArrowRight size={10} className="text-[#3ECF8E] shrink-0" />
                     <span className="text-[#EDEDED]">{truck.destination || 'Modjo'}</span>
                   </div>
 
                   {/* Hazard Note if Breach */}
                   {truck.hazardNote && (
-                    <div className="bg-amber-500/10 border border-amber-500/25 rounded-md px-2 py-1 mb-2.5 text-[10px] text-amber-300 font-mono flex items-center gap-1.5">
+                    <div className="bg-amber-500/10 border border-amber-500/25 rounded-md px-2 py-1 mb-2 text-[10px] text-amber-300 font-mono flex items-center gap-1.5">
                       <AlertTriangle size={11} className="text-amber-400 shrink-0" />
                       <span className="truncate">{truck.hazardNote}</span>
                     </div>
@@ -452,6 +583,20 @@ export default function TelematicsTab() {
                       <span className="text-[#EDEDED] font-semibold">{truck.estimatedArrival}</span>
                     </div>
                   )}
+
+                  {/* Expanded Telemetry Details on Selection */}
+                  {isSelected && (
+                    <div className="mt-2.5 pt-2 border-t border-[#242424] flex items-center justify-between text-[10px] font-mono animate-in fade-in">
+                      <div className="flex items-center gap-1 text-[#8F8F8F]">
+                        <Compass size={11} className="text-[#3ECF8E]" />
+                        <span>{truck.lat.toFixed(3)}° N, {truck.lng.toFixed(3)}° E</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-[#3ECF8E]">
+                        <Crosshair size={11} />
+                        <span>Focused on Radar</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -461,4 +606,5 @@ export default function TelematicsTab() {
     </div>
   );
 }
+
 
