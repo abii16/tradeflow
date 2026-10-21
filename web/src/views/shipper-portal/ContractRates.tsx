@@ -335,7 +335,6 @@ export default function ContractRates() {
                 <CheckCircle2 size={12} className="text-[#3ECF8E]" /> Guaranteed
               </span>
             </div>
-            <p className="text-[10px] text-[#707070] font-mono mt-1">Multi-corridor locked volume</p>
           </div>
           <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
             <ShieldCheck size={20} />
@@ -354,7 +353,6 @@ export default function ContractRates() {
                 {totalLockedVolume > 0 ? (totalLockedVolume / 1000).toFixed(0) + 'k' : '0'}
               </span>
             </div>
-            <p className="text-[10px] text-[#707070] font-mono mt-1">Total hedged freight SLA value</p>
           </div>
           <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
             <DollarSign size={20} />
@@ -382,7 +380,6 @@ export default function ContractRates() {
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-[#707070] font-mono mt-1">Per SRS Section 3.4 (FR-04.2)</p>
           </div>
           <div className="w-11 h-11 rounded-lg bg-[#121212] border border-[#242424] flex items-center justify-center text-[#8F8F8F] shrink-0 shadow-sm">
             <AlertTriangle size={20} className={reviewCount > 0 ? "text-amber-400/80" : "text-[#707070]"} />
@@ -403,7 +400,6 @@ export default function ContractRates() {
                 <TrendingUp size={12} /> Spot Delta
               </span>
             </div>
-            <p className="text-[10px] text-[#707070] font-mono mt-1">Protection vs spot market swings</p>
           </div>
           <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
             <Scale size={20} />
