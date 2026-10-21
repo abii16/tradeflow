@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { MapPin, Scale, Package, ChevronDown, Clock, Lock, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { 
+  MapPin, 
+  Scale, 
+  Package, 
+  ChevronDown, 
+  Clock, 
+  Lock, 
+  ShieldAlert, 
+  CheckCircle2, 
+  Truck, 
+  Box, 
+  Calendar, 
+  Sparkles, 
+  Info,
+  ShieldCheck,
+  AlertTriangle
+} from 'lucide-react';
 import { postLoad, calculateSpotRate } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -19,23 +33,67 @@ export default function FreightOrderForm({
 }: FreightOrderFormProps) {
   const { t } = useTranslation();
   const [quoteGenerated, setQuoteGenerated] = useState(false);
-  const [leadTime, setLeadTime] = useState('24h');
   const [loading, setLoading] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
-  const [formData, setFormData] = useState({
-    origin: '',
-    cargoType: '',
-    destination: '',
-    weightKg: ''
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
   const [quoteDetails, setQuoteDetails] = useState<any>(null);
   const [aiError, setAiError] = useState<string | null>(null);
 
+  // Form State adhering to SRS Section 3.2 (FR-02.1) & Section 3.4 (FR-04.1)
+  const [origin, setOrigin] = useState('Djibouti Port / Doraleh Container Terminal (DCT)');
+  const [destination, setDestination] = useState('Modjo Dry Port & Terminal, Ethiopia');
+  const [cargoCategory, setCargoCategory] = useState<'dry' | 'bulk' | 'refrigerated' | 'hazmat' | 'fragile' | 'oversized'>('dry');
+  const [cargoDescription, setCargoDescription] = useState('20ft Standard Dry Container (FCL) - Commercial Merchandise');
+  const [weightKg, setWeightKg] = useState('28000');
+  const [volumeM3, setVolumeM3] = useState('33');
+  const [truckType, setTruckType] = useState('FLATBED');
+  const [urgencyTier, setUrgencyTier] = useState<'standard' | 'high' | 'low'>('standard');
+  const [earliestPickup, setEarliestPickup] = useState('');
+  const [specialInstructions, setSpecialInstructions] = useState('Tarpaulin Covered & Customs Sealed');
+
+  // Helper to extract canonical corridor city for AI Spot Model
+  const extractCity = (str: string, fallback: string): string => {
+    const s = (str || '').toLowerCase();
+    if (s.includes('djibouti')) return 'Djibouti';
+    if (s.includes('galafi')) return 'Galafi';
+    if (s.includes('semera')) return 'Semera';
+    if (s.includes('kombolcha')) return 'Kombolcha';
+    if (s.includes('dire')) return 'Dire Dawa';
+    if (s.includes('hawassa')) return 'Hawassa';
+    if (s.includes('modjo')) return 'Modjo';
+    if (s.includes('adama') || s.includes('nazret')) return 'Adama';
+    if (s.includes('mekelle')) return 'Mekelle';
+    if (s.includes('addis') || s.includes('kality')) return 'Addis Ababa';
+    return fallback;
+  };
+
+  // Sync recommended truck type when cargo category changes
+  const handleCategoryChange = (cat: 'dry' | 'bulk' | 'refrigerated' | 'hazmat' | 'fragile' | 'oversized') => {
+    setCargoCategory(cat);
+    if (cat === 'refrigerated') setTruckType('REEFER');
+    else if (cat === 'bulk') setTruckType('SIDE_WALL');
+    else if (cat === 'hazmat') setTruckType('TANKER');
+    else if (cat === 'oversized') setTruckType('LOWBED');
+    else setTruckType('FLATBED');
+  };
+
+  // Preset volume helper
+  const handleContainerPreset = (preset: '20ft' | '40ft' | '40hc' | 'bulk') => {
+    if (preset === '20ft') {
+      setVolumeM3('33');
+      setWeightKg('24000');
+    } else if (preset === '40ft') {
+      setVolumeM3('67');
+      setWeightKg('28000');
+    } else if (preset === '40hc') {
+      setVolumeM3('76');
+      setWeightKg('30000');
+    } else if (preset === 'bulk') {
+      setVolumeM3('50');
+      setWeightKg('40000');
+    }
+  };
+
+  // Request AI Spot Rate from FastAPI AI Engine
   const handleRequestQuote = async (e?: React.FormEvent) => {
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
@@ -44,56 +102,27 @@ export default function FreightOrderForm({
     try {
       setLoading(true);
 
-      const cLower = (formData.cargoType || '').toLowerCase();
-      const mappedCargoType: 'dry' | 'bulk' | 'fragile' | 'hazmat' | 'perishable' | 'refrigerated' | 'general' =
-        cLower.includes('reefer') || cLower.includes('refrigerat') || cLower.includes('pharma') ? 'refrigerated' :
-        cLower.includes('bulk') || cLower.includes('agricultural') ? 'bulk' :
-        cLower.includes('fuel') || cLower.includes('petroleum') || cLower.includes('tanker') ? 'hazmat' :
-        cLower.includes('perish') ? 'perishable' :
-        'dry';
-
-      const mappedTruckType =
-        cLower.includes('reefer') ? 'REEFER' :
-        cLower.includes('tanker') ? 'TANKER' :
-        cLower.includes('box') ? 'SIDE_WALL' :
-        'FLATBED';
-
-      const extractCity = (str: string, fallback: string) => {
-        const s = (str || '').toLowerCase();
-        if (s.includes('djibouti')) return 'Djibouti';
-        if (s.includes('galafi')) return 'Galafi';
-        if (s.includes('semera')) return 'Semera';
-        if (s.includes('kombolcha')) return 'Kombolcha';
-        if (s.includes('dire')) return 'Dire Dawa';
-        if (s.includes('hawassa')) return 'Hawassa';
-        if (s.includes('modjo')) return 'Modjo';
-        if (s.includes('adama') || s.includes('nazret')) return 'Adama';
-        if (s.includes('mekelle')) return 'Mekelle';
-        if (s.includes('addis') || s.includes('kality')) return 'Addis Ababa';
-        return fallback;
-      };
-
-      const lt = (leadTime || '24h').toLowerCase();
-      const is12 = lt.includes('12') || lt.includes('express');
-      const is48 = lt.includes('48') || lt.includes('flexible') || lt.includes('economy');
-      const urgency: 'high' | 'low' | 'standard' = is12 ? 'high' : (is48 ? 'low' : 'standard');
-      const pickupWindowHours = is12 ? 12 : (is48 ? 48 : 24);
+      const originCity = extractCity(origin, 'Djibouti');
+      const destinationCity = extractCity(destination, 'Modjo');
+      const pickupWindowHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
 
       const payload = {
         origin: {
-          name: formData.origin,
-          city: extractCity(formData.origin, 'Djibouti')
+          name: origin,
+          city: originCity
         },
         destination: {
-          name: formData.destination,
-          city: extractCity(formData.destination, 'Addis Ababa')
+          name: destination,
+          city: destinationCity
         },
-        cargoType: mappedCargoType,
-        truckType: mappedTruckType,
-        weightKg: Number(formData.weightKg) || 0,
-        urgency,
-        isUrgent: is12,
-        pickupWindowHours,
+        cargoType: cargoCategory,
+        truckType: truckType,
+        weightKg: Number(weightKg) || 1000,
+        volumeM3: volumeM3 ? Number(volumeM3) : undefined,
+        urgency: urgencyTier,
+        isUrgent: urgencyTier === 'high',
+        pickupWindowHours: pickupWindowHours,
+        currency: 'ETB',
       };
 
       const response = await calculateSpotRate(payload);
@@ -102,6 +131,7 @@ export default function FreightOrderForm({
       setQuoteDetails(response);
       setQuoteGenerated(true);
       setAiError(null);
+      toast.success('Dynamic AI Spot Quote calculated with LightGBM ML model!');
     } catch (error: any) {
       console.error(error);
       const errMsg = error.response?.data?.error || error.message || 'AI Spot Pricing Engine is currently offline.';
@@ -114,16 +144,7 @@ export default function FreightOrderForm({
     }
   };
 
-  // Dynamically recalculate if a quote was already active and the user adjusts any parameter
-  useEffect(() => {
-    if (quoteGenerated && formData.origin && formData.destination && formData.weightKg) {
-      const timer = setTimeout(() => {
-        handleRequestQuote();
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [leadTime, formData.cargoType, formData.weightKg, formData.origin, formData.destination]);
-
+  // Broadcast Load to Transporter Marketplace (SRS FR-01 & FR-02)
   const handleConfirmBroadcast = async () => {
     if (!isVerified) {
       toast.error(`Posting Restricted: Your shipper account is in ${verificationStatus} status. Per SRS Section 3.1 (FR-01), admin approval is required before loads can be broadcast to the transporter marketplace.`);
@@ -132,22 +153,28 @@ export default function FreightOrderForm({
 
     try {
       setLoading(true);
+      const originCity = extractCity(origin, 'Djibouti');
+      const destinationCity = extractCity(destination, 'Modjo');
+      const expiryHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
+
       await postLoad({
-        title: `Freight: ${formData.cargoType}`,
-        description: `Deliver ${formData.cargoType} from ${formData.origin} to ${formData.destination}`,
-        origin: { address: formData.origin, city: formData.origin.toLowerCase().includes('djibouti') ? 'Djibouti' : 'Modjo' },
-        destination: { address: formData.destination, city: formData.destination.toLowerCase().includes('modjo') ? 'Modjo' : 'Addis Ababa' },
-        weightKg: Number(formData.weightKg),
-        cargoType: formData.cargoType,
+        title: `${cargoCategory.toUpperCase()}: ${cargoDescription || 'Commercial Freight'}`,
+        description: `Corridor haul: ${cargoDescription || cargoCategory}. Equipment: ${truckType}. Earliest Pickup: ${earliestPickup || 'Immediate'}. Special Instructions: ${specialInstructions || 'Standard Corridor Haul'}.`,
+        origin: { address: origin, city: originCity },
+        destination: { address: destination, city: destinationCity },
+        weightKg: Number(weightKg),
+        volumeM3: volumeM3 ? Number(volumeM3) : undefined,
+        cargoType: cargoCategory,
         budgetAmount: calculatedPrice,
         currency: 'ETB',
-        expiryHours: leadTime === '12h' ? 12 : leadTime === '24h' ? 24 : 48
+        expiryHours: expiryHours,
       });
-      toast.success('Order posted successfully to the freight marketplace!');
+
+      toast.success('Order broadcast successfully to the transporter marketplace!');
       setQuoteGenerated(false);
       setQuoteDetails(null);
 
-      // Navigate to Bids Exchange tab
+      // Trigger load refresh and navigate to Bids Exchange tab
       window.dispatchEvent(new Event('shipper:load_posted'));
       localStorage.setItem('tradeflow_load_posted', Date.now().toString());
       window.history.pushState({ tab: 'bids' }, '', '/shipper/bids');
@@ -161,130 +188,333 @@ export default function FreightOrderForm({
     }
   };
 
+  const weightNum = Number(weightKg) || 0;
+  const weightTons = (weightNum / 1000).toFixed(1);
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-in fade-in duration-300">
       <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl shadow-lg shadow-black/40 overflow-hidden">
-        <div className="bg-[#1C1C1C]/50 border-b border-[#2E2E2E] px-5 py-4 flex items-center justify-between flex-wrap gap-2">
-          <h2 className="text-base font-bold text-[#EDEDED]">{t('post_new_freight_order')}</h2>
+        {/* Card Header */}
+        <div className="bg-[#1C1C1C] border-b border-[#2E2E2E] px-6 py-4 flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="text-base font-bold text-[#EDEDED] flex items-center gap-2">
+              <Package size={18} className="text-[#3ECF8E]" />
+              {t('post_new_freight_order', 'Post New Freight Order (SRS FR-02.1)')}
+            </h2>
+            <p className="text-[11px] text-[#8F8F8F] mt-0.5">
+              Input corridor shipment specifications for automated AI spot pricing and carrier matching
+            </p>
+          </div>
           {!isVerified && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <Lock size={11} /> Broadcast Locked (Pending Admin Approval)
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <Lock size={12} /> Broadcast Locked (Pending Admin Verification)
             </span>
           )}
         </div>
 
-        <form id="quote-form" onSubmit={handleRequestQuote} className="p-5 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#EDEDED]">{t('origin')}</Label>
-              <div className="relative">
-                <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
-                <input type="text" list="origin-list" name="origin" value={formData.origin} onChange={handleChange} required className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:bg-[#232323] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-all appearance-none" placeholder={t('origin')} />
-                <datalist id="origin-list">
-                  <option value="Djibouti Port / Doraleh Container Terminal (DCT)" />
-                  <option value="Djibouti Free Trade Zone (DFTZ)" />
-                  <option value="Galafi Border Terminal (Inbound)" />
-                  <option value="Modjo Dry Port & Terminal (Outbound Export)" />
-                  <option value="Addis Ababa / Kality Customs Branch" />
-                  <option value="Dire Dawa Dry Port" />
-                  <option value="Semera Logistics Hub" />
-                  <option value="Kombolcha Dry Port" />
-                  <option value="Hawassa Industrial Park Terminal" />
-                </datalist>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
-              </div>
+        {/* Input Form */}
+        <form id="quote-form" onSubmit={handleRequestQuote} className="p-6 space-y-6">
+          {/* Section 1: Route & Terminals */}
+          <div className="space-y-3">
+            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
+              <MapPin size={13} className="text-[#3ECF8E]" />
+              <span>1. Corridor Route & Terminals</span>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#EDEDED]">{t('cargo_details')}</Label>
-              <div className="relative">
-                <Package size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
-                <input type="text" list="cargo-list" name="cargoType" value={formData.cargoType} onChange={handleChange} required className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:bg-[#232323] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-all appearance-none" placeholder={t('cargo_details')} />
-                <datalist id="cargo-list">
-                  <option value="30T Construction Rebar (Flatbed)" />
-                  <option value="20ft Standard Dry Container (FCL)" />
-                  <option value="40ft High Cube Container (FCL)" />
-                  <option value="40T Bulk Agricultural / Coffee Beans (High-Side)" />
-                  <option value="Heavy Machinery / Industrial Equipment (Lowbed)" />
-                  <option value="Refrigerated Perishables / Pharma (Reefer)" />
-                  <option value="Bulk Petroleum / Fuel Tanker" />
-                  <option value="General Palletized Merchandise (Box Truck)" />
-                </datalist>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Origin */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-[#EDEDED]">{t('origin', 'Origin Terminal / Port')}</label>
+                  <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
+                    City: {extractCity(origin, 'Djibouti')}
+                  </span>
+                </div>
+                <div className="relative">
+                  <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
+                  <input
+                    type="text"
+                    list="origin-corridor-list"
+                    name="origin"
+                    value={origin}
+                    onChange={(e) => setOrigin(e.target.value)}
+                    required
+                    className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
+                    placeholder="Search corridor terminal..."
+                  />
+                  <datalist id="origin-corridor-list">
+                    <option value="Djibouti Port / Doraleh Container Terminal (DCT)" />
+                    <option value="Djibouti Free Trade Zone (DFTZ)" />
+                    <option value="Galafi Border Clearance Terminal" />
+                    <option value="Semera Logistics Hub" />
+                    <option value="Kombolcha Dry Port & Terminal" />
+                    <option value="Dire Dawa Free Trade Zone" />
+                    <option value="Hawassa Industrial Park Terminal" />
+                    <option value="Modjo Dry Port & Terminal (Outbound Export)" />
+                    <option value="Adama Industrial Hub" />
+                    <option value="Addis Ababa / Kality Customs Clearance Branch" />
+                    <option value="Mekelle Freight Terminal" />
+                  </datalist>
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#EDEDED]">{t('destination')}</Label>
-              <div className="relative">
-                <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
-                <input type="text" list="destination-list" name="destination" value={formData.destination} onChange={handleChange} required className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:bg-[#232323] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-all appearance-none" placeholder={t('destination')} />
-                <datalist id="destination-list">
-                  <option value="Modjo Dry Port & Terminal, Ethiopia" />
-                  <option value="Addis Ababa / Kality Customs Clearance Center" />
-                  <option value="Djibouti Container Terminal (Export Exit)" />
-                  <option value="Dire Dawa Free Trade Zone" />
-                  <option value="Semera Freight Hub" />
-                  <option value="Kombolcha Dry Port" />
-                  <option value="Hawassa Industrial Park" />
-                  <option value="Mekelle Hub" />
-                  <option value="Adama Industrial Hub" />
-                </datalist>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#EDEDED]">{t('weight_volume')}</Label>
-              <div className="relative flex items-center">
-                <Scale size={15} className="absolute left-3 text-[#8F8F8F]" />
-                <Input type="number" name="weightKg" value={formData.weightKg} onChange={handleChange} required className="pl-9 pr-10 bg-[#1C1C1C] border border-[#2E2E2E] h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:bg-[#232323] focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-all" placeholder="Weight" />
-                <span className="absolute right-3 text-xs font-medium text-[#8F8F8F] pointer-events-none">kg</span>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#EDEDED]">{t('lead_time_window')}</Label>
-              <div className="relative">
-                <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
-                <select
-                  name="leadTime"
-                  value={leadTime}
-                  onChange={(e) => setLeadTime(e.target.value)}
-                  required
-                  className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:bg-[#232323] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-all appearance-none cursor-pointer"
-                >
-                  <option value="12h">12h - {t('express_12h', 'Express Dispatch')}</option>
-                  <option value="24h">24h - {t('standard_24h', 'Standard Dispatch')}</option>
-                  <option value="48h">48h - {t('flexible_48h', 'Flexible Economy Dispatch')}</option>
-                </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
+              {/* Destination */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-[#EDEDED]">{t('destination', 'Destination Dry Port / Facility')}</label>
+                  <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
+                    City: {extractCity(destination, 'Modjo')}
+                  </span>
+                </div>
+                <div className="relative">
+                  <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
+                  <input
+                    type="text"
+                    list="destination-corridor-list"
+                    name="destination"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    required
+                    className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
+                    placeholder="Search corridor destination..."
+                  />
+                  <datalist id="destination-corridor-list">
+                    <option value="Modjo Dry Port & Terminal, Ethiopia" />
+                    <option value="Addis Ababa / Kality Customs Clearance Center" />
+                    <option value="Djibouti Container Terminal (Export Exit Port)" />
+                    <option value="Dire Dawa Free Trade Zone" />
+                    <option value="Semera Freight Hub" />
+                    <option value="Kombolcha Dry Port" />
+                    <option value="Hawassa Industrial Park" />
+                    <option value="Adama Industrial Hub" />
+                    <option value="Mekelle Hub" />
+                  </datalist>
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Section 2: Cargo Classification & Details */}
+          <div className="space-y-3 pt-2 border-t border-[#2E2E2E]">
+            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
+              <Package size={13} className="text-[#3ECF8E]" />
+              <span>2. Cargo Classification & Physical Specs (SRS FR-02.1)</span>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Category */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#EDEDED]">Cargo Category</label>
+                <div className="relative">
+                  <select
+                    value={cargoCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value as any)}
+                    className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="dry">Dry Cargo / General Merchandise (FCL/LCL)</option>
+                    <option value="bulk">Bulk Agricultural (Coffee, Grain, Oilseeds)</option>
+                    <option value="refrigerated">Refrigerated / Perishables / Pharmaceuticals</option>
+                    <option value="hazmat">Hazardous Materials / Fuel / Petroleum Tanker</option>
+                    <option value="fragile">Fragile Electronics / High-Value Goods</option>
+                    <option value="oversized">Oversized / Heavy Project Machinery</option>
+                  </select>
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
+                </div>
+              </div>
 
+              {/* Cargo Description */}
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-xs font-semibold text-[#EDEDED]">Itemized Cargo Description / Manifest Title</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={cargoDescription}
+                    onChange={(e) => setCargoDescription(e.target.value)}
+                    required
+                    className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
+                    placeholder="e.g. 500 Bags of Washed Yirgacheffe Arabica Coffee (Grade 1)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Weight & Volume Specs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 pt-1">
+              {/* Weight */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-[#EDEDED]">Gross Weight</label>
+                  <span className="text-[10px] font-mono text-[#8F8F8F]">
+                    ≈ {weightTons} Metric Tons
+                  </span>
+                </div>
+                <div className="relative flex items-center">
+                  <Scale size={15} className="absolute left-3 text-[#8F8F8F]" />
+                  <input
+                    type="number"
+                    min="100"
+                    step="100"
+                    value={weightKg}
+                    onChange={(e) => setWeightKg(e.target.value)}
+                    required
+                    className="w-full pl-9 pr-12 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
+                    placeholder="28000"
+                  />
+                  <span className="absolute right-3 text-xs font-mono font-bold text-[#8F8F8F] pointer-events-none">kg</span>
+                </div>
+              </div>
+
+              {/* Volume */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-[#EDEDED]">Cargo Volume</label>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleContainerPreset('20ft')}
+                      className="text-[9px] px-1 py-0.5 bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-[#2E2E2E] text-[#8F8F8F] rounded"
+                      title="20ft Container preset"
+                    >
+                      20ft
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleContainerPreset('40ft')}
+                      className="text-[9px] px-1 py-0.5 bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-[#2E2E2E] text-[#8F8F8F] rounded"
+                      title="40ft Container preset"
+                    >
+                      40ft
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleContainerPreset('40hc')}
+                      className="text-[9px] px-1 py-0.5 bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-[#2E2E2E] text-[#8F8F8F] rounded"
+                      title="40ft High Cube preset"
+                    >
+                      40HC
+                    </button>
+                  </div>
+                </div>
+                <div className="relative flex items-center">
+                  <Box size={15} className="absolute left-3 text-[#8F8F8F]" />
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={volumeM3}
+                    onChange={(e) => setVolumeM3(e.target.value)}
+                    required
+                    className="w-full pl-9 pr-12 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
+                    placeholder="33"
+                  />
+                  <span className="absolute right-3 text-xs font-mono font-bold text-[#8F8F8F] pointer-events-none">m³</span>
+                </div>
+              </div>
+
+              {/* Equipment Type */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#EDEDED]">Required Truck Equipment</label>
+                <div className="relative">
+                  <Truck size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
+                  <select
+                    value={truckType}
+                    onChange={(e) => setTruckType(e.target.value)}
+                    className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="FLATBED">Flatbed 40ft Multi-Axle Trailer</option>
+                    <option value="SIDE_WALL">Side-Wall / High-Side Open Box</option>
+                    <option value="REEFER">Refrigerated Reefer Trailer (-20°C)</option>
+                    <option value="TANKER">Petroleum / Liquid Fuel Tanker</option>
+                    <option value="LOWBED">Lowbed Multi-Axle Heavy Hauler</option>
+                  </select>
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Dispatch Urgency & Handling */}
+          <div className="space-y-3 pt-2 border-t border-[#2E2E2E]">
+            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
+              <Clock size={13} className="text-[#3ECF8E]" />
+              <span>3. Dispatch Window & Operational Handling (SRS FR-04.1)</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {/* Urgency */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#EDEDED]">Dispatch Window & Urgency</label>
+                <div className="relative">
+                  <select
+                    value={urgencyTier}
+                    onChange={(e) => setUrgencyTier(e.target.value as any)}
+                    className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="standard">24h — Standard Corridor Dispatch</option>
+                    <option value="high">12h — Express Hotshot (+15% Urgency Surcharge)</option>
+                    <option value="low">48h — Flexible Economy (-5% Backhaul Saver)</option>
+                  </select>
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Earliest Pickup Date */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup Window</label>
+                <div className="relative">
+                  <Calendar size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
+                  <input
+                    type="datetime-local"
+                    value={earliestPickup}
+                    onChange={(e) => setEarliestPickup(e.target.value)}
+                    className="w-full pl-9 pr-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Special Instructions */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#EDEDED]">Special Handling / Customs Seals</label>
+                <input
+                  type="text"
+                  value={specialInstructions}
+                  onChange={(e) => setSpecialInstructions(e.target.value)}
+                  className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
+                  placeholder="e.g. Tarpaulin Sealed, Fragile Glass"
+                />
+              </div>
+            </div>
+          </div>
         </form>
+
+        {/* Submit Quote Button Bar */}
+        <div className="p-5 bg-[#1C1C1C] border-t border-[#2E2E2E] flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2 text-xs text-[#8F8F8F]">
+            <Sparkles size={14} className="text-[#3ECF8E]" />
+            <span>FastAPI LightGBM Spot Engine calculates real-time corridor fuel, weight & distance multipliers</span>
+          </div>
+
+          <button
+            type="submit"
+            form="quote-form"
+            disabled={loading}
+            className="flex items-center gap-2 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] px-6 py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+          >
+            <Sparkles size={14} className={loading ? 'animate-spin' : ''} />
+            <span>{loading ? 'Evaluating Model...' : 'Generate Dynamic AI Spot Quote'}</span>
+          </button>
+        </div>
       </div>
 
-      <div className="flex items-center justify-end px-1 mt-2">
-        <button
-          type="submit"
-          form="quote-form"
-          disabled={loading}
-          className="bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
-        >
-          {t('generate_instant_spot_quote')}
-        </button>
-      </div>
-
+      {/* AI Error Notification */}
       {aiError && (
         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center justify-between gap-3 animate-in fade-in">
           <div className="flex items-center gap-2.5">
             <ShieldAlert size={16} className="text-red-400 shrink-0" />
             <div>
-              <span className="font-bold text-red-300">AI Pricing Engine Unavailable:</span>{' '}
+              <span className="font-bold text-red-300">AI Pricing Engine Error:</span>{' '}
               <span>{aiError}</span>
             </div>
           </div>
@@ -298,97 +528,120 @@ export default function FreightOrderForm({
         </div>
       )}
 
+      {/* Dynamic AI Spot Quote Card (SRS FR-04.1) */}
       {quoteGenerated && (
-        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-5 shadow-lg shadow-black/40 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="flex justify-between items-start">
+        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-6 shadow-xl shadow-black/50 space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-[#2E2E2E]">
             <div>
-              <span className="inline-block bg-[#181818] text-[#EDEDED] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-[#2E2E2E] mb-1.5">{t('dynamic_pricing_engine')}</span>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-[#3ECF8E]/15 text-[#3ECF8E] text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-[#3ECF8E]/30">
+                  ML Spot Rate Quote (FR-04.1)
+                </span>
+                <span className="text-[10px] font-mono text-[#8F8F8F]">
+                  Corridor: {quoteDetails?.corridor_matched || `${extractCity(origin, 'Djibouti')} — ${extractCity(destination, 'Modjo')}`}
+                </span>
+              </div>
+              <h3 className="text-sm font-bold text-[#EDEDED]">
+                Recommended Freight Spot Tariff
+              </h3>
             </div>
+
             <div className="text-right">
-              <span className="text-2xl font-black font-mono text-[#EDEDED] tracking-tight">{calculatedPrice.toLocaleString()} ETB</span>
-              <p className="text-[11px] font-medium text-[#8F8F8F]">~${Math.round(calculatedPrice / 118).toLocaleString()} USD</p>
+              <span className="text-3xl font-black font-mono text-[#EDEDED] tracking-tight">
+                {calculatedPrice.toLocaleString()} <span className="text-sm font-bold text-[#3ECF8E]">ETB</span>
+              </span>
+              <p className="text-xs font-mono font-medium text-[#8F8F8F]">
+                ≈ ${(Math.round(calculatedPrice / 118)).toLocaleString()} USD
+              </p>
             </div>
           </div>
 
+          {/* Breakdown Table */}
           {(() => {
             const b = quoteDetails?.breakdown;
             const baseTariff = b ? Math.round(b.base_corridor_rate) : Math.round(calculatedPrice * 0.7);
             const fuelCharge = b ? Math.round(baseTariff * Math.max(0.08, (b.fuel_multiplier || 1) - 1 + 0.12)) : Math.round(calculatedPrice * 0.15);
             const demandWeightFees = Math.max(0, calculatedPrice - baseTariff - fuelCharge);
+
             return (
-              <div className="space-y-2">
-                <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-lg p-3 text-xs font-mono flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2 flex-wrap text-[#8F8F8F] font-medium">
-                    <span>{t('base_fee')}: {baseTariff.toLocaleString()} ETB</span>
-                    <span className="text-[#8F8F8F]">+</span>
-                    <span>{t('fuel')}: {fuelCharge.toLocaleString()} ETB</span>
-                    <span className="text-[#8F8F8F]">+</span>
-                    <span>Weight & Demand: {demandWeightFees.toLocaleString()} ETB</span>
+              <div className="space-y-3">
+                <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-lg p-3.5 text-xs font-mono flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-2 flex-wrap text-[#8F8F8F]">
+                    <span>Base Distance: <strong className="text-[#EDEDED]">{baseTariff.toLocaleString()} ETB</strong></span>
+                    <span>+</span>
+                    <span>Diesel Fuel Index: <strong className="text-[#EDEDED]">{fuelCharge.toLocaleString()} ETB</strong></span>
+                    <span>+</span>
+                    <span>Weight & Demand: <strong className="text-[#EDEDED]">{demandWeightFees.toLocaleString()} ETB</strong></span>
                   </div>
                   <div className="flex items-center gap-2 ml-auto">
-                    <span className="text-[#8F8F8F]">=</span>
-                    <span className="text-[#EDEDED] font-bold whitespace-nowrap">{t('total')}: {calculatedPrice.toLocaleString()} ETB</span>
+                    <span>=</span>
+                    <span className="text-[#3ECF8E] font-bold text-sm whitespace-nowrap">Total: {calculatedPrice.toLocaleString()} ETB</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-[#8F8F8F] font-mono px-1">
+                <div className="flex items-center justify-between flex-wrap gap-2 text-xs text-[#8F8F8F] font-mono px-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[#3ECF8E] font-semibold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse"></span>
-                      ML Model Active (LightGBM R²: {quoteDetails?.model_confidence_r2 ? (quoteDetails.model_confidence_r2 * 100).toFixed(1) + '%' : '99.9%'})
+                    <span className="text-[#3ECF8E] font-semibold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-pulse" />
+                      LightGBM Active (R²: {quoteDetails?.model_confidence_r2 ? (quoteDetails.model_confidence_r2 * 100).toFixed(1) + '%' : '99.9%'})
                     </span>
                     <span>•</span>
-                    <span>Ref ID: {quoteDetails?.calculation_id || 'QTE-LIVE'}</span>
+                    <span>Ref ID: {quoteDetails?.calculation_id?.substring(0, 12) || 'QTE-LIVE'}</span>
                   </div>
                   {b?.rate_per_ton_km && (
                     <span className="text-zinc-400">
-                      Rate: {b.rate_per_ton_km} ETB/t·km ({b.distance_km} km)
+                      Index: {b.rate_per_ton_km} ETB/t·km ({b.distance_km} km corridor)
                     </span>
                   )}
                 </div>
 
                 {b?.is_clamped && (
-                  <div className="text-[10px] text-amber-400/90 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded font-mono">
-                    🛡️ SRS Volatility Band: {b.clamp_reason}
+                  <div className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg font-mono flex items-center gap-2">
+                    <AlertTriangle size={14} className="shrink-0" />
+                    <span>SRS FR-04.1 Volatility Protection: {b.clamp_reason}</span>
                   </div>
                 )}
               </div>
             );
           })()}
 
-          {!isVerified ? (
-            <div className="space-y-2 pt-1">
+          {/* Action Button: Broadcast to Transporter Marketplace */}
+          <div className="pt-2 border-t border-[#2E2E2E]">
+            {!isVerified ? (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  disabled={true}
+                  className="w-full bg-[#1C1C1C] text-[#8F8F8F] border border-amber-500/30 py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-not-allowed opacity-90 shadow-inner"
+                >
+                  <Lock size={15} className="text-amber-400" />
+                  <span>Marketplace Broadcast Locked (Account Pending Admin Verification)</span>
+                </button>
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 flex items-center justify-between gap-3">
+                  <span>SRS Section 3.1 (FR-01): Legal entity credentials must be verified by Platform Administration before freight orders can be dispatched to carriers.</span>
+                  {onRefreshVerification && (
+                    <button
+                      type="button"
+                      onClick={onRefreshVerification}
+                      className="shrink-0 px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-md font-semibold text-xs transition-colors"
+                    >
+                      Check Status
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
               <button
                 type="button"
-                disabled={true}
-                className="w-full bg-[#1C1C1C] text-[#8F8F8F] border border-amber-500/30 py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-not-allowed opacity-90 shadow-inner"
+                onClick={handleConfirmBroadcast}
+                disabled={loading}
+                className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] py-3 rounded-xl text-xs font-bold shadow-md hover:shadow-[0_0_20px_rgba(62,207,142,0.35)] hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Lock size={14} className="text-amber-400" />
-                <span>Broadcast Locked (Account Pending Admin Approval)</span>
+                <Truck size={16} />
+                <span>{loading ? 'Broadcasting Freight Order...' : 'Broadcast Freight Order & Solicit Carrier Bids (FR-02)'}</span>
               </button>
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 flex items-center justify-between gap-2">
-                <span>SRS FR-01: Freight orders cannot be broadcast to transporters until an Administrator verifies your legal entity credentials in the Verification Queue.</span>
-                {onRefreshVerification && (
-                  <button
-                    type="button"
-                    onClick={onRefreshVerification}
-                    className="shrink-0 px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded font-semibold text-[10px] transition-colors"
-                  >
-                    Check Status
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleConfirmBroadcast}
-              disabled={loading}
-              className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50"
-            >
-              {loading ? 'Posting...' : t('confirm_post_load')}
-            </button>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>
