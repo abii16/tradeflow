@@ -310,8 +310,12 @@ export async function createContractRate(data: any) {
   return apiClient('/shipper/contract-rates', { method: 'POST', data });
 }
 
-export async function renegotiateContract(id: string) {
-  return apiClient(`/shipper/contract-rates/${id}/renegotiate`, { method: 'POST' });
+export async function renegotiateContract(id: string, data?: { proposedRate?: number; notes?: string }) {
+  return apiClient(`/shipper/contract-rates/${id}/renegotiate`, { method: 'POST', data });
+}
+
+export async function settleContract(id: string, newRate: number) {
+  return apiClient(`/shipper/contract-rates/${id}/settle`, { method: 'POST', data: { newRate } });
 }
 
 export async function getCustomsDocuments(shipmentId: string) {
