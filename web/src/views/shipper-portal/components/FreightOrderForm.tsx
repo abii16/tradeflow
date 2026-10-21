@@ -39,20 +39,21 @@ export default function FreightOrderForm({
   const [aiError, setAiError] = useState<string | null>(null);
 
   // Form State adhering to SRS Section 3.2 (FR-02.1) & Section 3.4 (FR-04.1)
-  const [origin, setOrigin] = useState('Djibouti Port / Doraleh Container Terminal (DCT)');
-  const [destination, setDestination] = useState('Modjo Dry Port & Terminal, Ethiopia');
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
   const [cargoCategory, setCargoCategory] = useState<'dry' | 'bulk' | 'refrigerated' | 'hazmat' | 'fragile' | 'oversized'>('dry');
-  const [cargoDescription, setCargoDescription] = useState('20ft Standard Dry Container (FCL) - Commercial Merchandise');
-  const [weightKg, setWeightKg] = useState('28000');
-  const [volumeM3, setVolumeM3] = useState('33');
+  const [cargoDescription, setCargoDescription] = useState('');
+  const [weightKg, setWeightKg] = useState('');
+  const [volumeM3, setVolumeM3] = useState('');
   const [truckType, setTruckType] = useState('FLATBED');
   const [urgencyTier, setUrgencyTier] = useState<'standard' | 'high' | 'low'>('standard');
   const [earliestPickup, setEarliestPickup] = useState('');
-  const [specialInstructions, setSpecialInstructions] = useState('Tarpaulin Covered & Customs Sealed');
+  const [specialInstructions, setSpecialInstructions] = useState('');
 
   // Helper to extract canonical corridor city for AI Spot Model
-  const extractCity = (str: string, fallback: string): string => {
-    const s = (str || '').toLowerCase();
+  const extractCity = (str: string, fallback: string = ''): string => {
+    if (!str || !str.trim()) return '';
+    const s = str.toLowerCase();
     if (s.includes('djibouti')) return 'Djibouti';
     if (s.includes('galafi')) return 'Galafi';
     if (s.includes('semera')) return 'Semera';
@@ -63,7 +64,7 @@ export default function FreightOrderForm({
     if (s.includes('adama') || s.includes('nazret')) return 'Adama';
     if (s.includes('mekelle')) return 'Mekelle';
     if (s.includes('addis') || s.includes('kality')) return 'Addis Ababa';
-    return fallback;
+    return fallback || str.trim();
   };
 
   // Sync recommended truck type when cargo category changes
@@ -98,12 +99,24 @@ export default function FreightOrderForm({
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
     }
-    setAiError(null);
+    if (!origin.trim()) {
+      toast.error('Please enter or select an origin terminal');
+      return;
+    }
+    if (!destination.trim()) {
+      toast.error('Please enter or select a destination dry port');
+      return;
+    }
+    if (!weightKg || Number(weightKg) <= 0) {
+      toast.error('Please enter gross cargo weight in kg');
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const originCity = extractCity(origin, 'Djibouti');
-      const destinationCity = extractCity(destination, 'Modjo');
+      const originCity = extractCity(origin, 'Djibouti') || 'Djibouti';
+      const destinationCity = extractCity(destination, 'Modjo') || 'Modjo';
       const pickupWindowHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
 
       const payload = {
@@ -219,9 +232,11 @@ export default function FreightOrderForm({
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-[#EDEDED]">{t('origin', 'Origin Terminal / Port')}</label>
-                  <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
-                    City: {extractCity(origin, 'Djibouti')}
-                  </span>
+                  {origin.trim() && (
+                    <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
+                      City: {extractCity(origin, 'Djibouti')}
+                    </span>
+                  )}
                 </div>
                 <div className="relative">
                   <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
@@ -233,7 +248,7 @@ export default function FreightOrderForm({
                     onChange={(e) => setOrigin(e.target.value)}
                     required
                     className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
-                    placeholder="Search corridor terminal..."
+                    placeholder="Search or enter origin terminal (e.g. Djibouti DCT)..."
                   />
                   <datalist id="origin-corridor-list">
                     <option value="Djibouti Port / Doraleh Container Terminal (DCT)" />
@@ -256,9 +271,11 @@ export default function FreightOrderForm({
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-[#EDEDED]">{t('destination', 'Destination Dry Port / Facility')}</label>
-                  <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
-                    City: {extractCity(destination, 'Modjo')}
-                  </span>
+                  {destination.trim() && (
+                    <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
+                      City: {extractCity(destination, 'Modjo')}
+                    </span>
+                  )}
                 </div>
                 <div className="relative">
                   <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
@@ -270,7 +287,7 @@ export default function FreightOrderForm({
                     onChange={(e) => setDestination(e.target.value)}
                     required
                     className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
-                    placeholder="Search corridor destination..."
+                    placeholder="Search or enter destination dry port (e.g. Modjo Dry Port)..."
                   />
                   <datalist id="destination-corridor-list">
                     <option value="Modjo Dry Port & Terminal, Ethiopia" />
@@ -326,7 +343,7 @@ export default function FreightOrderForm({
                     onChange={(e) => setCargoDescription(e.target.value)}
                     required
                     className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                    placeholder="e.g. 500 Bags of Washed Yirgacheffe Arabica Coffee (Grade 1)"
+                    placeholder="e.g. 500 Bags of Washed Arabica Coffee, Grade 1..."
                   />
                 </div>
               </div>
@@ -338,9 +355,11 @@ export default function FreightOrderForm({
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-[#EDEDED]">Gross Weight</label>
-                  <span className="text-[10px] font-mono text-[#8F8F8F]">
-                    ≈ {weightTons} Metric Tons
-                  </span>
+                  {weightNum > 0 && (
+                    <span className="text-[10px] font-mono text-[#8F8F8F]">
+                      ≈ {weightTons} Metric Tons
+                    </span>
+                  )}
                 </div>
                 <div className="relative flex items-center">
                   <Scale size={15} className="absolute left-3 text-[#8F8F8F]" />
@@ -352,7 +371,7 @@ export default function FreightOrderForm({
                     onChange={(e) => setWeightKg(e.target.value)}
                     required
                     className="w-full pl-9 pr-12 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
-                    placeholder="28000"
+                    placeholder="e.g. 28000"
                   />
                   <span className="absolute right-3 text-xs font-mono font-bold text-[#8F8F8F] pointer-events-none">kg</span>
                 </div>
@@ -397,9 +416,8 @@ export default function FreightOrderForm({
                     step="1"
                     value={volumeM3}
                     onChange={(e) => setVolumeM3(e.target.value)}
-                    required
                     className="w-full pl-9 pr-12 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
-                    placeholder="33"
+                    placeholder="e.g. 33"
                   />
                   <span className="absolute right-3 text-xs font-mono font-bold text-[#8F8F8F] pointer-events-none">m³</span>
                 </div>
@@ -473,7 +491,7 @@ export default function FreightOrderForm({
                   value={specialInstructions}
                   onChange={(e) => setSpecialInstructions(e.target.value)}
                   className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                  placeholder="e.g. Tarpaulin Sealed, Fragile Glass"
+                  placeholder="Optional: e.g. Tarpaulin Covered, Fragile Glass, Customs E-Seals..."
                 />
               </div>
             </div>
