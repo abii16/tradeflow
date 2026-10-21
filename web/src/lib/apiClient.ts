@@ -286,6 +286,13 @@ export async function rateShipmentCarrier(shipmentId: string, rating: number, co
   });
 }
 
+export async function raiseShipmentDispute(shipmentId: string, data: { reason: string; evidenceUrl?: string }) {
+  return apiClient(`/shipper/shipments/${shipmentId}/dispute`, {
+    method: 'POST',
+    data
+  });
+}
+
 export async function getShipperLoads() {
   return apiClient('/shipper/loads', { method: 'GET' });
 }

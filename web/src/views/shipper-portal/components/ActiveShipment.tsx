@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Truck, Star, FileText, Download, ShieldCheck, Navigation } from 'lucide-react';
+import { Check, Truck, Star, FileText, Download, ShieldCheck, Navigation, Scale, AlertCircle } from 'lucide-react';
 import RatingModal from '@/components/modals/RatingModal';
+import DisputeFormModal from '@/components/modals/DisputeFormModal';
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getShipperActiveShipment, rateShipmentCarrier } from '@/lib/apiClient';
@@ -95,6 +96,7 @@ const createTruckRadarIcon = (plate: string, speedText: string) => {
 export default function ActiveShipment() {
   const { t } = useTranslation();
   const [showRatingModal, setShowRatingModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [shipment, setShipment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -103,6 +105,17 @@ export default function ActiveShipment() {
     shipment?.transporter?.fullName || 
     shipment?.driver?.fullName || 
     'Carrier Partner';
+
+  const loadShipment = async () => {
+    try {
+      const data = await getShipperActiveShipment();
+      setShipment(data.shipment);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRateSubmit = async (rating: number, comment: string) => {
     if (!shipment?.id) return;
@@ -116,16 +129,6 @@ export default function ActiveShipment() {
   };
 
   useEffect(() => {
-    async function loadShipment() {
-      try {
-        const data = await getShipperActiveShipment();
-        setShipment(data.shipment);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadShipment();
 
     const handleRefresh = () => loadShipment();
@@ -415,6 +418,8 @@ export default function ActiveShipment() {
   const speedKmh = shipment.latestTelemetry?.speed || (status === 'IN_TRANSIT' ? 58 : status === 'IN_CUSTOMS' ? 12 : 0);
   const speedText = `${speedKmh} km/h`;
 
+  const isDisputed = shipment?.payment?.status === 'DISPUTED';
+
   return (
     <div className="bg-[#232323] border border-[#2E2E2E] rounded-md shadow-lg shadow-black/40 overflow-hidden">
       {showRatingModal && (
@@ -423,6 +428,19 @@ export default function ActiveShipment() {
           shipmentId={shipment?.trackingNumber || shipment?.id || 'SHP-ACTIVE'}
           onClose={() => setShowRatingModal(false)}
           onSubmit={handleRateSubmit}
+        />
+      )}
+
+      {showDisputeModal && (
+        <DisputeFormModal
+          shipmentId={shipment?.id || 'SHP-ACTIVE'}
+          trackingNumber={shipment?.trackingNumber}
+          carrierName={resolvedTransporterName}
+          amountETB={shipment?.payment?.amount || shipment?.load?.budgetAmount}
+          onClose={() => setShowDisputeModal(false)}
+          onSuccess={() => {
+            loadShipment();
+          }}
         />
       )}
 
@@ -438,6 +456,23 @@ export default function ActiveShipment() {
           </h2>
         </div>
         <div className="flex items-center gap-2">
+          {isDisputed ? (
+            <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md" title="TeleBirr Escrow Frozen for Mediation">
+              <AlertCircle size={11} className="text-amber-400" />
+              <span>Disputed (Escrow Frozen)</span>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowDisputeModal(true)}
+              className="flex items-center gap-1 text-[11px] font-medium text-[#8F8F8F] hover:text-amber-400 bg-[#181818] hover:bg-amber-500/10 border border-[#2E2E2E] hover:border-amber-500/30 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+              title="Raise Escrow Dispute / Cargo Incident (SRS FR-10.3)"
+            >
+              <Scale size={11} />
+              <span>{t('dispute_escrow', 'Dispute Escrow')}</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setShowRatingModal(true)}

@@ -77,10 +77,12 @@ The audit verifies that all 5 core operational tabs are fully functional, operat
 
 While the portal is 100% operational and meets all MVP criteria, the following items from the SRS are identified for post-MVP refinement:
 
-### 🔴 GAP-01 (Priority: High) — Shipper One-Click Escrow Dispute Modal on Active Shipment
+### ✅ GAP-01 (Priority: High) — Shipper One-Click Escrow Dispute Modal on Active Shipment [RESOLVED]
 * **SRS Reference:** Section 3.10 (FR-10.3): *"Provide a dispute-flagging workflow for payment discrepancies, routed to platform administrators."*
-* **Current State:** Backend supports dispute registration (`POST /api/v1/payments/:id/dispute`), and `DisputeFormModal.tsx` exists in the codebase. However, `ActiveShipment.tsx` only exposes "Rate Carrier" and "Download Waybill".
-* **Proposed Enhancement:** Add a dedicated **"Report Issue / Dispute Escrow"** button in `ActiveShipment.tsx` header/action bar to allow shippers to flag cargo damage, missing containers, or transit delays, automatically freezing the TeleBirr escrow payout.
+* **Implementation Summary:**
+  - Added `POST /api/v1/shipper/shipments/:id/dispute` in `backend/src/routes/shipper.routes.ts`, utilizing `disputeService.raiseDispute` to lock transaction rows, record disputes in `paymentDisputes`, and freeze TeleBirr escrow payout.
+  - Modernized [`DisputeFormModal.tsx`](file:///c:/Users/Student/Desktop/tradeflow/web/src/components/modals/DisputeFormModal.tsx) with Supabase dark theme tokens (`#141414`, `#181818`, `#282828`, amber signal `#F59E0B`), multilingual support, and direct API submission.
+  - Integrated "Dispute Escrow" action button and dynamic `Disputed (Escrow Frozen)` indicator in [`ActiveShipment.tsx`](file:///c:/Users/Student/Desktop/tradeflow/web/src/views/shipper-portal/components/ActiveShipment.tsx).
 
 ### 🟡 GAP-02 (Priority: Medium) — Milestone SMS / External Notification Preferences
 * **SRS Reference:** Section 3.3 (FR-03.3): *"Shippers receive milestone notifications (departed origin, cleared customs, arrived destination) via app, SMS, or email per their preference."*
