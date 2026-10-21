@@ -347,6 +347,7 @@
   "crm_col_divergence": "ልዩነት",
   "crm_col_status": "ሁኔታ",
   "crm_col_actions": "እርምጃዎች",
+  "crm_search_placeholder": "ውሎችን ወይም አጓጓዦችን ፈልግ...",
   "crm_no_contracts": "ምንም ውል አልተገኘም።",
   "crm_valid_to": "የሚያበቃበት:",
   "crm_review_required": "ግምገማ ያስፈልገዋል",

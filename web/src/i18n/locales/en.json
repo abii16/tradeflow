@@ -346,6 +346,7 @@
   "crm_col_divergence": "Divergence",
   "crm_col_status": "Status",
   "crm_col_actions": "Actions",
+  "crm_search_placeholder": "Search contracts or carriers...",
   "crm_no_contracts": "No contracts found.",
   "crm_valid_to": "Valid to:",
   "crm_review_required": "REVIEW REQUIRED",

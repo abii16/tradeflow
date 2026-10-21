@@ -413,7 +413,7 @@ export default function ContractRates() {
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#707070]" />
           <input
             type="text"
-            placeholder="Search by corridor (Djibouti, Modjo...) or carrier partner..."
+            placeholder={t('crm_search_placeholder', 'Search contracts or carriers...')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-xs bg-[#121212] border border-[#242424] rounded-lg text-[#EDEDED] placeholder-[#707070] font-mono focus:outline-none focus:border-[#3ECF8E] transition"
