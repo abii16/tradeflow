@@ -31,7 +31,10 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
+import path from 'path';
+
 app.use(express.json());
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Global Rate Limiting: 100 requests per minute
 const globalLimiter = rateLimit({
