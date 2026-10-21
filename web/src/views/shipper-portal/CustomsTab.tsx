@@ -184,18 +184,22 @@ export default function CustomsTab() {
             type="button"
             onClick={() => fetchDocs(loadId || undefined)}
             disabled={loading}
-            className="p-2 bg-[#141414] hover:bg-[#1A1A1A] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#242424] rounded-lg transition cursor-pointer"
+            className="p-2 bg-[#141414] hover:bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#3ECF8E] border border-[#242424] hover:border-[#3ECF8E]/40 rounded-lg transition-all duration-200 hover:shadow-[0_0_12px_rgba(62,207,142,0.15)] cursor-pointer active:scale-95"
             title="Sync with ERCA Single Window"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin text-[#3ECF8E]' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin text-[#3ECF8E]' : 'transition-transform duration-300 hover:rotate-180'} />
           </button>
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-[#3ECF8E] text-[#121212] hover:bg-[#34b27b] font-bold px-3.5 py-2 rounded-lg text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+            title="Upload Regulatory Manifest (ERCA Single Window)"
+            className="group relative flex items-center gap-2 bg-[#3ECF8E] hover:bg-[#121212] text-[#0C0C0C] hover:text-[#3ECF8E] border border-[#3ECF8E] font-semibold px-3.5 py-2 rounded-lg text-xs shadow-sm hover:shadow-[0_0_20px_rgba(62,207,142,0.35)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer overflow-hidden"
           >
-            <UploadCloud size={15} /> 
-            <span>Upload Regulatory Manifest</span>
+            <UploadCloud 
+              size={14} 
+              className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-110 text-current" 
+            />
+            <span className="font-semibold tracking-tight">Upload Manifest</span>
           </button>
         </div>
       </div>
