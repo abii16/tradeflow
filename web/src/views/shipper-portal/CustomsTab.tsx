@@ -240,15 +240,15 @@ export default function CustomsTab() {
 
         {/* Table View */}
         <Table>
-          <TableHeader className="bg-[#0E0E0E]">
+          <TableHeader className="bg-[#0C0C0C] border-b border-[#202020]">
             <TableRow className="border-[#202020] hover:bg-transparent">
-              <TableHead className="text-[10px] font-bold text-[#707070] uppercase tracking-wider py-3 px-5">Document Type</TableHead>
-              <TableHead className="text-[10px] font-bold text-[#707070] uppercase tracking-wider py-3 px-5">ERCA Status</TableHead>
-              <TableHead className="text-[10px] font-bold text-[#707070] uppercase tracking-wider py-3 px-5">Attached File</TableHead>
-              <TableHead className="text-[10px] font-bold text-[#707070] uppercase tracking-wider py-3 px-5 text-right">Verification</TableHead>
+              <TableHead className="text-[10px] font-bold text-[#707070] uppercase tracking-wider py-3.5 px-5">Document</TableHead>
+              <TableHead className="text-[10px] font-bold text-[#707070] uppercase tracking-wider py-3.5 px-5">Status</TableHead>
+              <TableHead className="text-[10px] font-bold text-[#707070] uppercase tracking-wider py-3.5 px-5">File Attachment</TableHead>
+              <TableHead className="text-[10px] font-bold text-[#707070] uppercase tracking-wider py-3.5 px-5 text-right">Verification</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-[#202020]">
+          <TableBody className="divide-y divide-[#1E1E1E]">
             {loading && documents.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-xs text-[#8F8F8F] py-14">
@@ -286,15 +286,17 @@ export default function CustomsTab() {
                   switch (doc.status) {
                     case 'CLEARED':
                       return (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold font-mono rounded-full border bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/30">
-                          <CheckCircle2 size={11} /> Cleared (Green Channel)
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium font-mono rounded-full bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
+                          <span>Cleared (Green Channel)</span>
                         </span>
                       );
                     case 'REJECTED':
                       return (
                         <div className="flex flex-col gap-1">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold font-mono rounded-full border bg-rose-500/10 text-rose-400 border-rose-500/30 w-fit">
-                            <X size={11} /> Rejected (Requires Rectification)
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium font-mono rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/25 w-fit">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                            <span>Requires Rectification</span>
                           </span>
                           {doc.rejectionReason && (
                             <span className="text-[10px] font-mono text-rose-400/90 leading-tight">
@@ -305,15 +307,17 @@ export default function CustomsTab() {
                       );
                     case 'UNDER_REVIEW':
                       return (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold font-mono rounded-full border bg-blue-500/10 text-blue-400 border-blue-500/30">
-                          <Clock size={11} /> Under Customs Inspection
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium font-mono rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/25">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                          <span>Under Customs Inspection</span>
                         </span>
                       );
                     case 'SUBMITTED':
                     default:
                       return (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold font-mono rounded-full border bg-amber-500/10 text-amber-400 border-amber-500/30">
-                          <Clock size={11} /> Submitted & Sealed
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium font-mono rounded-full bg-[#202020] text-[#A1A1A1] border border-[#2E2E2E]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#707070]" />
+                          <span>Submitted & Sealed</span>
                         </span>
                       );
                   }
@@ -324,28 +328,24 @@ export default function CustomsTab() {
                     name: 'Commercial Invoice', 
                     url: doc.invoiceUrl, 
                     key: 'invoice',
-                    mandate: 'ERCA Mandate SRS Sec 3.5',
                     hash: doc.extractedData?.sha256Hashes?.invoice || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
                   },
                   { 
                     name: 'Packing List', 
                     url: doc.packingListUrl, 
                     key: 'packingList',
-                    mandate: 'ERCA Mandate SRS Sec 3.5',
                     hash: doc.extractedData?.sha256Hashes?.packingList || '7d9b9a6b12a83e0a29b3864a781b0f51276a6e5a4f7832bc942b01a2f643e1d8'
                   },
                   { 
                     name: 'Bill of Lading', 
                     url: doc.billOfLadingUrl, 
                     key: 'billOfLading',
-                    mandate: 'ERCA Mandate SRS Sec 3.5',
                     hash: doc.extractedData?.sha256Hashes?.billOfLading || '4a189f78b19a0a283e74182f6e91024b89012a67bc453981ad627810fe912401'
                   },
                   { 
                     name: 'Certificate of Origin', 
                     url: doc.certificateOfOriginUrl, 
                     key: 'certificateOfOrigin',
-                    mandate: 'ERCA Mandate SRS Sec 3.5',
                     hash: doc.extractedData?.sha256Hashes?.certificateOfOrigin || '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
                   },
                 ];
@@ -353,16 +353,13 @@ export default function CustomsTab() {
                 return (
                   <React.Fragment key={doc.id || idx}>
                     {docTypes.map((item) => (
-                      <TableRow key={`${doc.id}-${item.key}`} className="border-[#202020] hover:bg-[#161616] transition-colors">
+                      <TableRow key={`${doc.id}-${item.key}`} className="border-[#1E1E1E] hover:bg-[#181818]/60 transition-colors">
                         <TableCell className="font-semibold text-xs text-[#EDEDED] py-3.5 px-5">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-[#181818] flex items-center justify-center border border-[#262626] shrink-0">
-                              <FileText size={15} className="text-[#3ECF8E]" />
+                            <div className="w-8 h-8 rounded-lg bg-[#181818] border border-[#282828] flex items-center justify-center text-[#3ECF8E] shrink-0">
+                              <FileText size={14} />
                             </div>
-                            <div>
-                              <div className="font-semibold text-xs text-[#EDEDED]">{item.name}</div>
-                              <span className="text-[10px] text-[#707070] font-mono">{item.mandate}</span>
-                            </div>
+                            <span className="font-semibold text-xs text-[#EDEDED]">{item.name}</span>
                           </div>
                         </TableCell>
                         <TableCell className="py-3.5 px-5">
@@ -374,6 +371,11 @@ export default function CustomsTab() {
                             <span className="truncate text-[#EDEDED] font-mono text-[11px]">
                               {item.url ? item.url.split('/').pop() : 'Pending Upload'}
                             </span>
+                            {item.url && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#1C1C1C] text-[#8F8F8F] font-mono border border-[#282828] shrink-0">
+                                PDF
+                              </span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-right py-3.5 px-5">
@@ -382,17 +384,17 @@ export default function CustomsTab() {
                               <button
                                 type="button"
                                 onClick={() => setInspectingSeal({ doc, item })}
-                                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#3ECF8E] hover:text-white bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/25 border border-[#3ECF8E]/30 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-[#1C1C1C] hover:bg-[#222222] text-[#EDEDED] hover:text-white border border-[#2A2A2A] hover:border-[#3ECF8E]/60 transition-all shadow-sm active:scale-95 cursor-pointer group"
                               >
-                                <ShieldCheck size={13} />
+                                <ShieldCheck size={13} className="text-[#3ECF8E] group-hover:scale-110 transition-transform" />
                                 <span>Inspect Seal</span>
                               </button>
                               <a
                                 href={item.url.startsWith('/') ? `http://localhost:4001${item.url}` : item.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="p-1.5 text-[#707070] hover:text-[#EDEDED] hover:bg-[#1E1E1E] rounded-md transition cursor-pointer"
-                                title="Open Original File"
+                                className="p-1.5 rounded-md text-[#707070] hover:text-[#EDEDED] hover:bg-[#202020] border border-transparent hover:border-[#282828] transition cursor-pointer"
+                                title="View Document"
                               >
                                 <ExternalLink size={13} />
                               </a>
