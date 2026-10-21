@@ -323,11 +323,11 @@ export default function ContractRates() {
 
       {/* Top Executive KPI Metric Cards (Supabase Brand Design) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Active Framework SLAs */}
+        {/* Card 1: Active SLAs */}
         <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
-              {t('crm_kpi_active_contracts', 'Active Framework SLAs')}
+              {t('crm_kpi_active_contracts', 'Active SLAs')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5">
               <span className="text-2xl font-bold font-mono text-[#EDEDED]">{activeCount}</span>
@@ -341,11 +341,11 @@ export default function ContractRates() {
           </div>
         </div>
 
-        {/* Card 2: Locked Corridor Volume */}
+        {/* Card 2: Locked Volume */}
         <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
-              {t('crm_kpi_hedged_volume', 'Locked Corridor Volume')}
+              {t('crm_kpi_hedged_volume', 'Locked Volume')}
             </p>
             <div className="flex items-baseline gap-1 mt-1.5 font-mono">
               <span className="text-xs text-[#3ECF8E] font-bold">ETB</span>
@@ -359,11 +359,11 @@ export default function ContractRates() {
           </div>
         </div>
 
-        {/* Card 3: Divergence Alerts */}
+        {/* Card 3: Rate Alerts */}
         <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
-              {t('crm_kpi_divergence_alerts', 'Divergence Alerts (>15%)')}
+              {t('crm_kpi_divergence_alerts', 'Rate Alerts')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5 font-mono">
               <span className="text-2xl font-bold text-[#EDEDED]">
@@ -386,11 +386,11 @@ export default function ContractRates() {
           </div>
         </div>
 
-        {/* Card 4: Net Hedge Advantage */}
+        {/* Card 4: Hedge Advantage */}
         <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
-              {t('crm_kpi_hedge_benefit', 'Net Hedge Advantage')}
+              {t('crm_kpi_hedge_benefit', 'Hedge Advantage')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5 font-mono">
               <span className="text-2xl font-bold text-[#3ECF8E]">
