@@ -6,7 +6,6 @@ import {
   FileSignature,
   Radio,
   ShieldCheck,
-  Settings,
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -66,16 +65,6 @@ export default function ShipperSidebar({ activeTab, setActiveTab, onSwitchPortal
           id: 'customs_vault',
           label: isAm ? 'ዲጂታል ጉምሩክ ቮልት' : 'Digital Customs Vault',
           icon: ShieldCheck,
-        },
-      ],
-    },
-    {
-      title: isAm ? 'ድርጅት እና ቅንብሮች' : 'ORGANIZATION & SETTINGS',
-      items: [
-        {
-          id: 'settings',
-          label: isAm ? 'የድርጅት መረጃ' : 'Organization Settings',
-          icon: Settings,
         },
       ],
     },

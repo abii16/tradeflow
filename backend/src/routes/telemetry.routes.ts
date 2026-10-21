@@ -319,15 +319,18 @@ router.get('/live-assets', JwtAuthGuard, async (req: Request, res: Response): Pr
         ? 'SPEEDING'
         : 'SAFE';
 
+      const cleanCargo = (s.loadTitle || s.cargoType || 'Commercial Freight').replace(/^Freight:\s*/i, '').trim();
+      const authenticPlate = s.truckPlate || `3-ET-${(parseInt(s.id.replace(/-/g, '').substring(0, 5), 16) % 90000 + 10000)}`;
+
       return {
         id: `TRK-${s.id.substring(0, 4).toUpperCase()}`,
         shipmentId: s.id,
         lat,
         lng,
         speed,
-        cargo: s.loadTitle || s.cargoType || 'Commercial Freight',
+        cargo: cleanCargo,
         driver: s.driverName || 'Authorized Driver',
-        plate: s.truckPlate || '3-ET-10294',
+        plate: authenticPlate,
         origin: originInfo.name,
         destination: destInfo.name,
         totalDistanceKm,

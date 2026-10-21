@@ -14,6 +14,8 @@ import { auditMiddleware } from '../middleware/audit.middleware';
 import { aiMatchingService } from '../services/ai-matching.service';
 import { pricingService } from '../modules/pricing/pricing.service';
 
+import { disputeService } from '../modules/payments';
+
 const router = Router();
 
 // Middleware to ensure only SHIPPER can access these routes
@@ -71,6 +73,20 @@ router.get('/shipments/active', async (req: Request, res: Response): Promise<voi
       // quiet
     }
 
+    let paymentInfo: any = null;
+    try {
+      const [pay] = await db.select()
+        .from(payments)
+        .where(eq(payments.shipmentId, item.shipment.id))
+        .orderBy(desc(payments.createdAt))
+        .limit(1);
+      if (pay) {
+        paymentInfo = pay;
+      }
+    } catch (e) {
+      // quiet
+    }
+
     res.status(200).json({
       shipment: {
         ...item.shipment,
@@ -79,6 +95,7 @@ router.get('/shipments/active', async (req: Request, res: Response): Promise<voi
         transporter: item.transporter,
         driver: item.transporter,
         latestTelemetry,
+        payment: paymentInfo,
         shipper: {
           id: req.user!.id,
           fullName: req.user!.fullName,
@@ -155,6 +172,55 @@ router.post('/shipments/:id/rate', auditMiddleware('SHIPPER_RATE_TRANSPORTER'), 
   } catch (error: any) {
     console.error('Error submitting rating:', error);
     res.status(500).json({ error: error.message || 'Failed to submit rating' });
+  }
+});
+
+router.post('/shipments/:id/dispute', auditMiddleware('SHIPPER_RAISE_DISPUTE'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { reason, evidenceUrl } = req.body;
+
+    if (!reason || reason.trim().length < 5) {
+      res.status(400).json({ error: 'Dispute reason must be at least 5 characters.' });
+      return;
+    }
+
+    // 1. Verify shipment belongs to shipper
+    const [shipmentRecord] = await db.select({
+      shipment: shipments,
+      shipperId: loads.shipperId
+    })
+    .from(shipments)
+    .innerJoin(loads, eq(shipments.loadId, loads.id))
+    .where(and(eq(shipments.id, id), eq(loads.shipperId, req.user!.id)));
+
+    if (!shipmentRecord) {
+      res.status(404).json({ error: 'Shipment not found or unauthorized' });
+      return;
+    }
+
+    // 2. Find associated payment
+    const [paymentRecord] = await db.select().from(payments).where(eq(payments.shipmentId, id)).orderBy(desc(payments.createdAt)).limit(1);
+    if (!paymentRecord) {
+      res.status(404).json({ error: 'No associated escrow payment found for this shipment' });
+      return;
+    }
+
+    // 3. Raise dispute and freeze escrow
+    const dispute = await disputeService.raiseDispute(req.user!, {
+      paymentId: paymentRecord.id,
+      reason: reason.trim(),
+      evidenceUrl: evidenceUrl || undefined,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Dispute filed successfully. Associated TeleBirr escrow payout has been frozen for mediation (SRS FR-10.3).',
+      dispute,
+    });
+  } catch (error: any) {
+    console.error('Error raising shipment dispute:', error);
+    res.status(400).json({ error: error.message || 'Failed to raise dispute' });
   }
 });
 
