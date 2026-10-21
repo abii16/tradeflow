@@ -1,106 +1,163 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  BarChart3,
-  Map,
+  Truck,
+  Package,
+  FileSignature,
+  Radio,
+  ShieldCheck,
   Settings,
-  PackageSearch,
-  FileCheck,
-  PanelLeftClose,
-  PanelLeftOpen,
-  FileSignature
+  LogOut,
 } from 'lucide-react';
-
 import { useAuth } from '@/hooks/useAuth';
 
 interface ShipperSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onSwitchPortal?: () => void;
 }
 
-export default function ShipperSidebar({ activeTab, setActiveTab }: ShipperSidebarProps) {
-  const { t } = useTranslation();
-  const { logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+interface SidebarItem {
+  id: string;
+  label: string;
+  icon: any;
+}
 
-  const menuItems = [
-    { id: 'operations', name: t('operations'), icon: BarChart3 },
-    { id: 'bids', name: t('bids'), icon: PackageSearch },
-    { id: 'contract_rates', name: t('contract_rates'), icon: FileSignature },
-    { id: 'telematics', name: t('telematics'), icon: Map },
-    { id: 'customs_vault', name: t('customs_vault'), icon: FileCheck },
-    { id: 'settings', name: t('settings'), icon: Settings },
+interface MenuSection {
+  title: string;
+  items: SidebarItem[];
+}
+
+export default function ShipperSidebar({ activeTab, setActiveTab, onSwitchPortal }: ShipperSidebarProps) {
+  const { t, i18n } = useTranslation();
+  const { logout } = useAuth();
+  const isAm = i18n.language === 'am';
+
+  const menuSections: MenuSection[] = [
+    {
+      title: isAm ? 'የስምሪት እና የገበያ ክፍል' : 'DISPATCH & CORRIDOR',
+      items: [
+        {
+          id: 'operations',
+          label: isAm ? 'ንቁ ስምሪቶች' : 'Operations & Dispatch',
+          icon: Truck,
+        },
+        {
+          id: 'bids',
+          label: isAm ? 'የጭነት ገበያ እና ጨረታ' : 'Load Board & Bids',
+          icon: Package,
+        },
+        {
+          id: 'contract_rates',
+          label: isAm ? 'የኮንትራት ታሪፎች' : 'Contract Rates',
+          icon: FileSignature,
+        },
+      ],
+    },
+    {
+      title: isAm ? 'ኮሪደር እና ደህንነት' : 'CORRIDOR & SAFETY',
+      items: [
+        {
+          id: 'telematics',
+          label: isAm ? 'የቀጥታ ቴሌማቲክስ' : 'Live Telematics & ETA',
+          icon: Radio,
+        },
+        {
+          id: 'customs_vault',
+          label: isAm ? 'ዲጂታል ጉምሩክ ቮልት' : 'Digital Customs Vault',
+          icon: ShieldCheck,
+        },
+      ],
+    },
+    {
+      title: isAm ? 'ድርጅት እና ቅንብሮች' : 'ORGANIZATION & SETTINGS',
+      items: [
+        {
+          id: 'settings',
+          label: isAm ? 'የድርጅት መረጃ' : 'Organization Settings',
+          icon: Settings,
+        },
+      ],
+    },
   ];
 
   return (
-    <aside className={`${collapsed ? 'w-[52px]' : 'w-60'} bg-[#1C1C1C] h-screen flex flex-col shrink-0 border-r border-[#2E2E2E] transition-all duration-150`}>
-      {/* Header */}
-      <div className={`p-3 border-b border-[#2E2E2E] flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
-        {!collapsed && (
-          <div className="pl-1">
-            <div className="font-semibold text-sm text-[#EDEDED] tracking-tight">TradeFlow</div>
-            <div className="text-[11px] text-[#8F8F8F]">{t('shipper_portal_brand')}</div>
-          </div>
-        )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-[#8F8F8F] hover:text-[#EDEDED] p-1 rounded hover:bg-[#232323] transition-colors"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
-        </button>
+    <aside className="w-64 bg-[#121212] border-r border-[#242424] flex flex-col justify-between shrink-0 h-screen select-none relative z-20">
+      {/* Brand Header */}
+      <div className="h-16 border-b border-[#242424] flex items-center px-5 bg-[#121212]/90 backdrop-blur-md sticky top-0 z-30">
+        <span className="font-extrabold text-lg text-[#EDEDED] tracking-tight">TradeFlow</span>
       </div>
 
-      <nav className={`flex-1 ${collapsed ? 'p-1.5' : 'p-3'} space-y-1 overflow-y-auto`}>
-        {!collapsed && (
-          <button
-            onClick={() => setActiveTab('operations')}
-            className="w-full bg-[#3ECF8E]/10 text-[#3ECF8E] hover:bg-[#3ECF8E]/20 rounded py-2 px-3 mb-3 font-semibold text-xs transition-colors"
-          >
-            + {t('new_shipment')}
-          </button>
-        )}
+      {/* Navigation Groups */}
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-[#242424] [&::-webkit-scrollbar-thumb]:rounded-full">
+        {menuSections.map((section, sIdx) => (
+          <div key={sIdx} className="space-y-1">
+            {sIdx > 0 && <div className="h-px bg-[#242424]/50 my-2 mx-1" />}
 
-        {collapsed && (
-          <button
-            onClick={() => setActiveTab('operations')}
-            className="w-full flex items-center justify-center bg-[#3ECF8E]/10 text-[#3ECF8E] hover:bg-[#3ECF8E]/20 rounded p-2 mb-3 transition-colors text-xs font-bold"
-            title={t('new_shipment')}
-          >
-            +
-          </button>
-        )}
+            <div className="space-y-1">
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
 
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            title={collapsed ? item.name : undefined}
-            className={`w-full flex items-center ${collapsed ? 'justify-center px-0 py-2' : 'space-x-2.5 px-2.5 py-1.5'} rounded text-xs font-medium transition-colors ${
-              activeTab === item.id
-                ? 'bg-[#232323] text-[#EDEDED] font-semibold'
-                : 'text-[#8F8F8F] hover:bg-[#232323]/60 hover:text-[#EDEDED]'
-            }`}
-          >
-            <item.icon size={15} className={activeTab === item.id ? "text-[#EDEDED]" : "text-[#8F8F8F]"} />
-            {!collapsed && <span className="text-left">{item.name}</span>}
-          </button>
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full text-left px-3 py-2.5 rounded-xl transition-all duration-200 flex items-center justify-between group relative overflow-hidden cursor-pointer ${
+                      isActive
+                        ? 'bg-gradient-to-r from-[#3ECF8E]/15 via-[#3ECF8E]/8 to-[#3ECF8E]/0 text-white border border-[#3ECF8E]/30 shadow-[0_0_20px_rgba(62,207,142,0.08)]'
+                        : 'text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#1C1C1C] border border-transparent hover:border-white/[0.04]'
+                    }`}
+                  >
+                    {/* Active left indicator accent bar */}
+                    {isActive && (
+                      <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#3ECF8E] shadow-[0_0_10px_#3ECF8E]" />
+                    )}
+
+                    <div className="flex items-center gap-3 min-w-0 pl-0.5">
+                      <div
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isActive
+                            ? 'bg-[#3ECF8E]/20 text-[#3ECF8E]'
+                            : 'bg-[#1C1C1C] text-[#8F8F8F] group-hover:text-[#EDEDED] group-hover:bg-[#242424]'
+                        }`}
+                      >
+                        <Icon
+                          size={16}
+                          className={`transition-all duration-200 ${
+                            isActive
+                              ? 'text-[#3ECF8E] drop-shadow-[0_0_8px_rgba(62,207,142,0.5)]'
+                              : 'group-hover:scale-105'
+                          }`}
+                        />
+                      </div>
+
+                      <div className="truncate min-w-0">
+                        <div className={`text-xs font-semibold leading-tight truncate ${isActive ? 'text-white' : 'text-[#EDEDED]'}`}>
+                          {item.label}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         ))}
-      </nav>
+      </div>
 
-      <div className={`${collapsed ? 'p-1.5' : 'p-3'} border-t border-[#2E2E2E] text-xs space-y-1`}>
-        <button
-          title={collapsed ? t('support') : undefined}
-          className={`w-full flex items-center ${collapsed ? 'justify-center py-2' : 'space-x-2 py-1 px-2'} text-[#8F8F8F] hover:text-[#EDEDED] rounded hover:bg-[#232323]/60 transition-colors`}
-        >
-          {collapsed ? <span className="text-[11px]">?</span> : <span>{t('support')}</span>}
-        </button>
+      {/* Footer Operations */}
+      <div className="p-3 border-t border-[#242424] bg-[#141414] shrink-0">
         <button
           onClick={logout}
-          title={collapsed ? t('log_out') : undefined}
-          className={`w-full flex items-center ${collapsed ? 'justify-center py-2' : 'space-x-2 py-1 px-2'} text-red-400 hover:text-red-300 rounded hover:bg-red-950/40 transition-colors`}
+          className="w-full py-2 px-3 rounded-lg bg-rose-500/[0.06] hover:bg-rose-500/[0.12] text-xs font-medium text-rose-400 hover:text-rose-300 border border-rose-500/20 hover:border-rose-500/30 flex items-center justify-between transition-all cursor-pointer group"
+          title={isAm ? 'ውጣ (Logout)' : 'Log Out'}
         >
-          {collapsed ? <span className="text-[11px]">⏻</span> : <span>{t('log_out')}</span>}
+          <div className="flex items-center gap-2">
+            <LogOut size={13} className="text-rose-400 group-hover:text-rose-300 transition-colors" />
+            <span>{isAm ? 'ውጣ (Logout)' : 'Log Out'}</span>
+          </div>
+          <span className="text-[10px] font-mono text-rose-400/60 group-hover:text-rose-300">Exit</span>
         </button>
       </div>
     </aside>

@@ -26,11 +26,16 @@ export default function DynamicPricing() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loadingAudit, setLoadingAudit] = useState(false);
 
-  // Compute values real-time based on SRS FR-04.1
-  const base1 = 142000;
-  const base2 = 175000;
-  const dwellSurcharge = Math.round(18500 * demandMultiplier);
-  const fuelAdj = Math.round(20000 * (dieselIndex / 100));
+  const [serverSegments, setServerSegments] = useState<any[]>([]);
+
+  // Compute values real-time based on live AI Engine corridor benchmarks (SRS FR-04.1)
+  const seg1 = serverSegments[0] || null;
+  const seg2 = serverSegments[1] || null;
+
+  const base1 = seg1 ? Number(seg1.baseRate || 140000) : 140000;
+  const base2 = seg2 ? Number(seg2.baseRate || 175000) : 175000;
+  const dwellSurcharge = Math.round(base1 * (seg1?.congestionScore ? Number(seg1.congestionScore) : 0.10) * demandMultiplier);
+  const fuelAdj = Math.round(base2 * Math.max(0, (dieselIndex / 95.50 - 1) * 0.45));
   const computedSegment1 = base1 + dwellSurcharge;
   const computedSegment2 = base2 + fuelAdj;
   const computedTotal = computedSegment1 + computedSegment2;
@@ -46,6 +51,9 @@ export default function DynamicPricing() {
       setHistoricalTrend(data.historicalTrends);
       setAiConfidence(data.confidenceScore);
       setDivergingContracts(data.divergingContracts || []);
+      if (data.segments && Array.isArray(data.segments)) {
+        setServerSegments(data.segments);
+      }
     } catch (err) {
       toast.error(t('dp_err_load', 'Failed to load pricing governance'));
     } finally {

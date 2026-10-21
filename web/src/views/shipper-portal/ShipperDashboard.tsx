@@ -43,12 +43,9 @@ export default function ShipperDashboard() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#2E2E2E] gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-[#EDEDED] tracking-tight">
-            Shipper Operations & Freight Dispatch
+          <h1 className="text-xl font-bold text-[#EDEDED] tracking-tight">
+            Operations & Dispatch
           </h1>
-          <p className="text-xs text-[#8F8F8F] mt-0.5">
-            Djibouti Port — Modjo Dry Port — Regional Corridors
-          </p>
         </div>
 
         {/* Verification Status Pill in Header */}

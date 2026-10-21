@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, Truck, Briefcase, ChevronRight, CheckCircle2, 
   UploadCloud, X, Loader2, Eye, EyeOff, ShieldCheck, 
-  Clock, Lock, ShieldAlert, Award, FileText
+  Clock, Lock, ShieldAlert, Award, FileText, AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface RegistrationFlowProps {
   onClose: () => void;
+  onSwitchToLogin?: () => void;
 }
 
 const COMMON_WEAK_PASSWORDS = new Set([
@@ -18,12 +19,40 @@ const COMMON_WEAK_PASSWORDS = new Set([
   'addisababa1', 'changeme1', 'letmein123', 'pass@123',
 ]);
 
-export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
+export default function RegistrationFlow({ onClose, onSwitchToLogin }: RegistrationFlowProps) {
   const { register, loginWithGoogle } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleClose = () => {
+    sessionStorage.removeItem('tradeflow_auth_banner_error');
+    sessionStorage.removeItem('tradeflow_registration_blocked');
+    localStorage.removeItem('tradeflow_registration_blocked');
+    onClose();
+  };
+
+  const handleSwitchToLogin = () => {
+    sessionStorage.removeItem('tradeflow_auth_banner_error');
+    sessionStorage.removeItem('tradeflow_registration_blocked');
+    localStorage.removeItem('tradeflow_registration_blocked');
+    if (onSwitchToLogin) {
+      onSwitchToLogin();
+    }
+  };
+
+  useEffect(() => {
+    const bannerErr = sessionStorage.getItem('tradeflow_auth_banner_error');
+    if (bannerErr) {
+      setError(bannerErr);
+    }
+    const handleAuthErr = (e: any) => {
+      if (e.detail) setError(e.detail);
+    };
+    window.addEventListener('tradeflow_auth_error', handleAuthErr);
+    return () => window.removeEventListener('tradeflow_auth_error', handleAuthErr);
+  }, []);
 
   // Form State
   const [role, setRole] = useState<'shipper' | 'transporter' | 'forwarder' | 'customs_officer' | null>(null);
@@ -162,16 +191,40 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
         <p className="text-xs text-[#8F8F8F]">Step 1 of 3: Authorized contact profile on the TradeFlow corridor.</p>
       </div>
 
+      {error && (
+        <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl mb-4 text-xs text-red-300 flex items-start justify-between gap-3 animate-in fade-in duration-200">
+          <div className="flex items-start gap-2.5">
+            <ShieldAlert size={18} className="text-red-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-red-200 mb-0.5">
+                {error.toLowerCase().includes('already registered') ? 'Account Already Exists' : 'Registration Notice'}
+              </p>
+              <p className="text-red-300/90 leading-relaxed">{error}</p>
+            </div>
+          </div>
+          {onSwitchToLogin && error.toLowerCase().includes('already registered') && (
+            <button
+              type="button"
+              onClick={handleSwitchToLogin}
+              className="shrink-0 bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-3 py-1.5 rounded-lg font-bold text-xs transition"
+            >
+              Sign In
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Google Sign Up Button */}
       <button 
         type="button" 
         onClick={async () => {
           try {
+            setError(null);
             let mappedRole = 'SHIPPER';
             if (role === 'transporter') mappedRole = 'TRANSPORTER';
             if (role === 'forwarder') mappedRole = 'FORWARDER';
             if (role === 'customs_officer') mappedRole = 'CUSTOMS_OFFICER';
-            await loginWithGoogle(mappedRole);
+            await loginWithGoogle(mappedRole, 'signup');
           } catch(err: any) {
             setError(err.message || 'Google Sign Up failed');
           }
@@ -374,6 +427,23 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
           );
         })()}
       </div>
+
+      <div className="pt-4 text-center border-t border-[#2E2E2E]/60">
+        <p className="text-xs text-[#8F8F8F]">
+          Already registered on TradeFlow?{' '}
+          {onSwitchToLogin ? (
+            <button
+              type="button"
+              onClick={handleSwitchToLogin}
+              className="text-[#3ECF8E] hover:underline font-bold"
+            >
+              Sign In to Your Account
+            </button>
+          ) : (
+            <span className="text-[#3ECF8E] font-bold">Sign In</span>
+          )}
+        </p>
+      </div>
     </div>
   );
 
@@ -453,7 +523,25 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
         </p>
       </div>
       
-      {error && <div className="p-3 bg-red-500/10 text-red-400 text-xs rounded-xl border border-red-500/20">{error}</div>}
+      {error && (
+        <div className="p-3 bg-red-500/10 text-red-300 text-xs rounded-xl border border-red-500/20 flex items-start justify-between gap-3">
+          <div>
+            <p className="font-bold text-red-200 mb-0.5">
+              {error.toLowerCase().includes('already registered') ? 'Account Already Exists' : 'Registration Failed'}
+            </p>
+            <p className="text-red-300/90 leading-relaxed">{error}</p>
+          </div>
+          {onSwitchToLogin && error.toLowerCase().includes('already registered') && (
+            <button
+              type="button"
+              onClick={handleSwitchToLogin}
+              className="shrink-0 bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-3 py-1.5 rounded-lg font-bold text-xs transition"
+            >
+              Sign In
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
         
@@ -690,7 +778,25 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
         <p className="text-xs text-[#8F8F8F]">Mandatory under Ethiopian Transport Authority guidelines for corridor activation.</p>
       </div>
       
-      {error && <div className="p-3 bg-red-500/10 text-red-400 text-xs rounded-xl border border-red-500/20">{error}</div>}
+      {error && (
+        <div className="p-3 bg-red-500/10 text-red-300 text-xs rounded-xl border border-red-500/20 flex items-start justify-between gap-3">
+          <div>
+            <p className="font-bold text-red-200 mb-0.5">
+              {error.toLowerCase().includes('already registered') ? 'Account Already Exists' : 'Registration Failed'}
+            </p>
+            <p className="text-red-300/90 leading-relaxed">{error}</p>
+          </div>
+          {onSwitchToLogin && error.toLowerCase().includes('already registered') && (
+            <button
+              type="button"
+              onClick={handleSwitchToLogin}
+              className="shrink-0 bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-3 py-1.5 rounded-lg font-bold text-xs transition"
+            >
+              Sign In
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="space-y-3.5 max-h-[50vh] overflow-y-auto pr-1">
         <div>
@@ -846,7 +952,7 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
       </div>
 
       <button 
-        onClick={onClose} 
+        onClick={handleClose} 
         className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black px-8 py-2.5 rounded-xl text-xs font-bold w-full transition-all shadow-[0_0_15px_rgba(62,207,142,0.15)]"
       >
         Enter TradeFlow Platform
@@ -873,7 +979,7 @@ export default function RegistrationFlow({ onClose }: RegistrationFlowProps) {
                   SRS FR-01
                 </span>
               </div>
-              <button onClick={onClose} className="text-[#8F8F8F] hover:text-[#EDEDED] transition-colors p-1">
+              <button onClick={handleClose} className="text-[#8F8F8F] hover:text-[#EDEDED] transition-colors p-1">
                 <X size={18} />
               </button>
             </div>

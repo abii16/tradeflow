@@ -10,11 +10,11 @@ export const LocationSchema = z.object({
 export const SpotPricingRequestSchema = z.object({
   origin: LocationSchema,
   destination: LocationSchema,
-  cargoType: z.enum(['dry', 'bulk', 'fragile', 'hazmat', 'perishable', 'refrigerated', 'general', 'oversized']).default('dry'),
+  cargoType: z.string().default('dry'),
   weightKg: z.number().positive('Weight must be greater than 0'),
   volumeM3: z.number().positive().optional(),
   truckType: z.string().default('FLATBED_TRAILER'),
-  urgency: z.enum(['standard', 'high', 'low']).default('standard'),
+  urgency: z.string().default('standard'),
   isUrgent: z.boolean().default(false),
   pickupWindowHours: z.number().int().positive().default(24),
   customFuelPrice: z.number().positive().optional(),

@@ -46,3 +46,7 @@ docs/*
 # Gemini Agent Configurations
 .agents/
 web/src/views/landingpage.mp4
+
+# Cache & Scratch
+.turbo/
+scratch/
