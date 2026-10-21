@@ -360,20 +360,20 @@ export default function ContractRates() {
           </div>
         </div>
 
-        {/* Card 3: Rate Alerts (Amber/Yellow Indicator Signal) */}
-        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-amber-500/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm">
+        {/* Card 3: Rate Alerts (Subtle Indicator Signal) */}
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#333333] rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_divergence_alerts', 'Rate Alerts')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5 font-mono">
-              <span className={`text-2xl font-bold ${reviewCount > 0 ? 'text-amber-400' : 'text-[#EDEDED]'}`}>
+              <span className="text-2xl font-bold text-[#EDEDED]">
                 {reviewCount}
               </span>
               {reviewCount > 0 ? (
-                <span className="text-xs text-amber-400 font-medium flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  <span>Review Required</span>
+                <span className="text-xs text-[#8F8F8F] font-medium flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="text-amber-400 font-medium">Review Required</span>
                 </span>
               ) : (
                 <span className="text-xs text-[#8F8F8F] font-medium flex items-center gap-1.5">
@@ -383,8 +383,8 @@ export default function ContractRates() {
               )}
             </div>
           </div>
-          <div className={`w-10 h-10 rounded-lg ${reviewCount > 0 ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400' : 'bg-[#121212] border border-[#242424] text-[#8F8F8F]'} flex items-center justify-center shrink-0`}>
-            <AlertTriangle size={18} />
+          <div className="w-10 h-10 rounded-lg bg-[#121212] border border-[#242424] flex items-center justify-center text-[#8F8F8F] shrink-0">
+            <AlertTriangle size={18} className={reviewCount > 0 ? "text-amber-400" : "text-[#707070]"} />
           </div>
         </div>
 
@@ -446,7 +446,7 @@ export default function ContractRates() {
             type="button"
             onClick={() => setStatusFilter('REVIEW_REQUIRED')}
             className={`px-3 py-1.5 rounded-md font-semibold font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
-              statusFilter === 'REVIEW_REQUIRED' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/35 shadow-sm' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+              statusFilter === 'REVIEW_REQUIRED' ? 'bg-[#242424] text-[#EDEDED] border border-[#3A3A3A] shadow-sm' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
             }`}
           >
             {reviewCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />}
@@ -535,12 +535,12 @@ export default function ContractRates() {
                     {/* Divergence */}
                     <td className="px-3.5 py-3 font-mono">
                       {exceedsThreshold ? (
-                        <span className="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 px-2 py-0.5 rounded text-[11px] font-bold">
-                          <AlertTriangle size={11} className="text-amber-400 shrink-0" />
-                          <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
+                        <span className="inline-flex items-center gap-1.5 bg-[#121212] border border-[#282828] text-[#EDEDED] px-2 py-0.5 rounded text-[11px] font-mono">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                          <span className="text-amber-400 font-semibold">{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 px-2 py-0.5 rounded text-[11px] font-mono font-medium">
+                        <span className="inline-flex items-center gap-1.5 text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 px-2 py-0.5 rounded text-[11px] font-mono font-medium">
                           <CheckCircle2 size={11} className="text-[#3ECF8E] shrink-0" />
                           <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
                         </span>
@@ -549,17 +549,13 @@ export default function ContractRates() {
 
                     {/* Status */}
                     <td className="px-3.5 py-3 font-mono">
-                      <span className={`px-2 py-0.5 rounded-md text-[9px] border font-medium inline-flex items-center gap-1.5 ${
-                        contract.status === 'REVIEW_REQUIRED' || exceedsThreshold
-                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                          : 'bg-[#3ECF8E]/10 border-[#3ECF8E]/25 text-[#3ECF8E]'
-                      }`}>
+                      <span className="px-2 py-0.5 rounded-md text-[9px] border border-[#242424] bg-[#121212] font-medium font-mono inline-flex items-center gap-1.5">
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                           contract.status === 'REVIEW_REQUIRED' || exceedsThreshold
-                            ? 'bg-amber-400 animate-pulse'
+                            ? 'bg-amber-400'
                             : 'bg-[#3ECF8E]'
                         }`} />
-                        <span>
+                        <span className={contract.status === 'REVIEW_REQUIRED' || exceedsThreshold ? 'text-amber-400' : 'text-[#3ECF8E]'}>
                           {contract.status === 'REVIEW_REQUIRED' 
                             ? 'REVIEW' 
                             : exceedsThreshold 
@@ -583,15 +579,15 @@ export default function ContractRates() {
                           <span>Details</span>
                         </button>
 
-                        {/* Renegotiate Action (Amber Warning Signal - SRS FR-04.2) */}
+                        {/* Renegotiate Action (Sleek Dark Button with Indicator Dot) */}
                         {needsAction ? (
                           <button 
                             type="button"
                             onClick={() => openRenegotiateDialog(contract)} 
                             disabled={renegotiatingId === contract.id}
-                            className="bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-[#121212] border border-amber-500/30 hover:border-amber-400 px-2.5 py-1 rounded-md text-[11px] font-bold font-mono transition-all duration-200 shadow-[0_0_10px_rgba(245,158,11,0.12)] hover:shadow-[0_0_16px_rgba(245,158,11,0.25)] flex items-center gap-1 active:scale-95 cursor-pointer disabled:opacity-50 shrink-0 group"
+                            className="bg-[#141414] hover:bg-[#1E1E1E] text-[#EDEDED] hover:text-[#FFFFFF] border border-[#282828] hover:border-[#383838] px-2.5 py-1 rounded-md text-[11px] font-semibold font-mono transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer disabled:opacity-50 shrink-0"
                           >
-                            <Scale size={11} className="text-amber-400 group-hover:text-[#121212] transition-colors" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
                             <span>{renegotiatingId === contract.id ? 'Updating...' : t('crm_renegotiate', 'Renegotiate')}</span>
                           </button>
                         ) : (
