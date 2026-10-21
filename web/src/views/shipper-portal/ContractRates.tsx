@@ -313,54 +313,55 @@ export default function ContractRates() {
           <button 
             type="button"
             onClick={handleOpenNewModal} 
-            className="flex items-center gap-2 bg-[#3ECF8E] text-[#121212] hover:bg-[#34b27b] transition-all font-bold px-4 py-2.5 rounded-lg text-xs shadow-[0_0_15px_rgba(62,207,142,0.2)] hover:shadow-[0_0_22px_rgba(62,207,142,0.35)] hover:-translate-y-0.5 active:scale-[0.99] cursor-pointer"
+            className="flex items-center gap-2 bg-[#1C1C1C] hover:bg-[#252525] text-[#EDEDED] hover:text-[#3ECF8E] border border-[#2E2E2E] hover:border-[#3ECF8E]/40 transition-all font-semibold px-3.5 py-2 rounded-lg text-xs shadow-sm cursor-pointer active:scale-95"
           >
-            <Plus size={16} strokeWidth={2.5} />
+            <Plus size={15} className="text-[#3ECF8E]" />
             <span>{t('crm_btn_new', 'New Contract Rate')}</span>
           </button>
         </div>
       </div>
 
-      {/* Top Executive KPI Metric Cards (Supabase Brand Design) */}
+      {/* Top Executive KPI Metric Cards (Refined Supabase Aesthetic) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Active SLAs */}
-        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#333333] rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_active_contracts', 'Active SLAs')}
             </p>
-            <div className="flex items-baseline gap-2 mt-1.5">
-              <span className="text-2xl font-bold font-mono text-[#EDEDED]">{activeCount}</span>
-              <span className="text-xs text-[#3ECF8E] font-medium font-mono flex items-center gap-1">
-                <CheckCircle2 size={12} className="text-[#3ECF8E]" /> Guaranteed
+            <div className="flex items-baseline gap-2 mt-1.5 font-mono">
+              <span className="text-2xl font-bold text-[#EDEDED]">{activeCount}</span>
+              <span className="text-xs text-[#8F8F8F] font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
+                <span>Guaranteed</span>
               </span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
-            <ShieldCheck size={20} />
+          <div className="w-10 h-10 rounded-lg bg-[#121212] border border-[#242424] flex items-center justify-center text-[#8F8F8F] shrink-0">
+            <ShieldCheck size={18} />
           </div>
         </div>
 
         {/* Card 2: Locked Volume */}
-        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#333333] rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_hedged_volume', 'Locked Volume')}
             </p>
-            <div className="flex items-baseline gap-1 mt-1.5 font-mono">
-              <span className="text-xs text-[#3ECF8E] font-bold">ETB</span>
+            <div className="flex items-baseline gap-1.5 mt-1.5 font-mono">
+              <span className="text-xs text-[#707070]">ETB</span>
               <span className="text-2xl font-bold text-[#EDEDED] tracking-tight">
                 {totalLockedVolume > 0 ? (totalLockedVolume / 1000).toFixed(0) + 'k' : '0'}
               </span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
-            <DollarSign size={20} />
+          <div className="w-10 h-10 rounded-lg bg-[#121212] border border-[#242424] flex items-center justify-center text-[#8F8F8F] shrink-0">
+            <DollarSign size={18} />
           </div>
         </div>
 
         {/* Card 3: Rate Alerts */}
-        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#333333] rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_divergence_alerts', 'Rate Alerts')}
@@ -375,34 +376,35 @@ export default function ContractRates() {
                   <span>Review Required</span>
                 </span>
               ) : (
-                <span className="text-xs text-[#3ECF8E] font-medium flex items-center gap-1">
-                  <Check size={12} /> Aligned
+                <span className="text-xs text-[#8F8F8F] font-medium flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
+                  <span>Aligned</span>
                 </span>
               )}
             </div>
           </div>
-          <div className="w-11 h-11 rounded-lg bg-[#121212] border border-[#242424] flex items-center justify-center text-[#8F8F8F] shrink-0 shadow-sm">
-            <AlertTriangle size={20} className={reviewCount > 0 ? "text-amber-400/80" : "text-[#707070]"} />
+          <div className="w-10 h-10 rounded-lg bg-[#121212] border border-[#242424] flex items-center justify-center text-[#8F8F8F] shrink-0">
+            <AlertTriangle size={18} className={reviewCount > 0 ? "text-amber-400/80" : "text-[#707070]"} />
           </div>
         </div>
 
         {/* Card 4: Hedge Advantage */}
-        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#333333] rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_hedge_benefit', 'Hedge Advantage')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5 font-mono">
-              <span className="text-2xl font-bold text-[#3ECF8E]">
+              <span className="text-2xl font-bold text-[#EDEDED]">
                 {Number(avgDivergence) > 0 ? `+${avgDivergence}%` : `${avgDivergence}%`}
               </span>
-              <span className="text-xs text-[#3ECF8E]/80 font-medium flex items-center gap-1">
-                <TrendingUp size={12} /> Spot Delta
+              <span className="text-xs text-[#8F8F8F] font-medium flex items-center gap-1">
+                <TrendingUp size={12} className="text-[#3ECF8E]" /> Spot Delta
               </span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
-            <Scale size={20} />
+          <div className="w-10 h-10 rounded-lg bg-[#121212] border border-[#242424] flex items-center justify-center text-[#8F8F8F] shrink-0">
+            <Scale size={18} />
           </div>
         </div>
       </div>
@@ -416,7 +418,7 @@ export default function ContractRates() {
             placeholder={t('crm_search_placeholder', 'Search contracts or carriers...')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs bg-[#121212] border border-[#242424] rounded-lg text-[#EDEDED] placeholder-[#707070] font-mono focus:outline-none focus:border-[#3ECF8E] transition"
+            className="w-full pl-9 pr-3 py-2 text-xs bg-[#121212] border border-[#242424] rounded-lg text-[#EDEDED] placeholder-[#707070] font-mono focus:outline-none focus:border-[#3ECF8E]/60 transition"
           />
         </div>
 
@@ -433,11 +435,12 @@ export default function ContractRates() {
           <button
             type="button"
             onClick={() => setStatusFilter('ACTIVE')}
-            className={`px-3 py-1.5 rounded-md font-semibold font-mono transition-all cursor-pointer ${
-              statusFilter === 'ACTIVE' ? 'bg-[#3ECF8E] text-[#121212] shadow-sm' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+            className={`px-3 py-1.5 rounded-md font-semibold font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
+              statusFilter === 'ACTIVE' ? 'bg-[#242424] text-[#EDEDED] border border-[#3A3A3A] shadow-sm' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
             }`}
           >
-            Active SLAs ({activeCount})
+            {statusFilter === 'ACTIVE' && <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] shrink-0" />}
+            <span>Active SLAs ({activeCount})</span>
           </button>
           <button
             type="button"
@@ -509,12 +512,12 @@ export default function ContractRates() {
                     {/* Carrier & Route */}
                     <td className="px-3.5 py-3">
                       <div className="font-semibold text-[#EDEDED] flex items-center gap-1.5 truncate">
-                        <Truck size={12} className="text-[#3ECF8E] shrink-0" />
+                        <Truck size={12} className="text-[#707070] shrink-0" />
                         <span className="truncate">{contract.companyName || contract.transporterName || 'Authorized Carrier'}</span>
                       </div>
                       <div className="text-[11px] text-[#8F8F8F] font-mono mt-0.5 flex items-center gap-1.5 truncate">
                         <span className="text-[#EDEDED]">{contract.origin}</span>
-                        <ArrowRight size={10} className="text-[#3ECF8E] shrink-0" />
+                        <ArrowRight size={10} className="text-[#555555] shrink-0" />
                         <span className="text-[#EDEDED]">{contract.destination}</span>
                       </div>
                     </td>
@@ -526,7 +529,7 @@ export default function ContractRates() {
 
                     {/* Current Spot */}
                     <td className="px-3.5 py-3 font-mono">
-                      <div className="text-xs text-[#3ECF8E] font-semibold">ETB {currentSpot.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                      <div className="text-xs text-[#EDEDED] font-mono font-medium">ETB {currentSpot.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                     </td>
 
                     {/* Divergence */}
@@ -537,8 +540,7 @@ export default function ContractRates() {
                           <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 px-2 py-0.5 rounded text-[11px] font-bold">
-                          <CheckCircle2 size={11} className="shrink-0" />
+                        <span className="inline-flex items-center gap-1 text-[#A0A0A0] bg-[#121212] border border-[#242424] px-2 py-0.5 rounded text-[11px] font-mono font-medium">
                           <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
                         </span>
                       )}
@@ -549,14 +551,14 @@ export default function ContractRates() {
                       <span className={`px-2 py-0.5 rounded-md text-[9px] border font-medium inline-flex items-center gap-1.5 ${
                         contract.status === 'REVIEW_REQUIRED' || exceedsThreshold
                           ? 'bg-amber-500/10 border-amber-500/25 text-amber-400'
-                          : 'bg-[#3ECF8E]/10 border-[#3ECF8E]/25 text-[#3ECF8E]'
+                          : 'bg-[#121212] border-[#262626] text-[#A0A0A0]'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                           contract.status === 'REVIEW_REQUIRED' || exceedsThreshold
                             ? 'bg-amber-400'
                             : 'bg-[#3ECF8E]'
                         }`} />
-                        <span>
+                        <span className={contract.status === 'REVIEW_REQUIRED' || exceedsThreshold ? 'text-amber-400' : 'text-[#EDEDED]'}>
                           {contract.status === 'REVIEW_REQUIRED' 
                             ? 'REVIEW' 
                             : exceedsThreshold 
@@ -573,7 +575,7 @@ export default function ContractRates() {
                         <button
                           type="button"
                           onClick={() => setAuditContract(contract)}
-                          className="bg-[#121212] hover:bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#242424] hover:border-[#3ECF8E]/40 px-2.5 py-1 rounded-md text-[11px] font-semibold font-mono transition-all cursor-pointer flex items-center gap-1 active:scale-95 shrink-0"
+                          className="bg-[#121212] hover:bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#242424] hover:border-[#383838] px-2.5 py-1 rounded-md text-[11px] font-semibold font-mono transition-all cursor-pointer flex items-center gap-1 active:scale-95 shrink-0"
                           title="Audit calculation inputs & cryptographic trace"
                         >
                           <FileText size={11} className="text-[#8F8F8F]" />
@@ -586,14 +588,14 @@ export default function ContractRates() {
                             type="button"
                             onClick={() => openRenegotiateDialog(contract)} 
                             disabled={renegotiatingId === contract.id}
-                            className="bg-[#3ECF8E]/15 hover:bg-[#3ECF8E] text-[#3ECF8E] hover:text-[#121212] border border-[#3ECF8E]/40 hover:border-[#3ECF8E] px-2.5 py-1 rounded-md text-[11px] font-bold font-mono transition-all duration-200 shadow-[0_0_10px_rgba(62,207,142,0.12)] hover:shadow-[0_0_16px_rgba(62,207,142,0.25)] flex items-center gap-1 active:scale-95 cursor-pointer disabled:opacity-50 shrink-0 group"
+                            className="bg-[#141414] hover:bg-[#1E1E1E] text-[#EDEDED] hover:text-amber-300 border border-[#282828] hover:border-amber-500/40 px-2.5 py-1 rounded-md text-[11px] font-semibold font-mono transition-all flex items-center gap-1 active:scale-95 cursor-pointer disabled:opacity-50 shrink-0"
                           >
-                            <Scale size={11} className="text-[#3ECF8E] group-hover:text-[#121212] transition-colors" />
+                            <Scale size={11} className="text-[#8F8F8F]" />
                             <span>{renegotiatingId === contract.id ? 'Updating...' : t('crm_renegotiate', 'Renegotiate')}</span>
                           </button>
                         ) : (
-                          <span className="text-[11px] text-[#3ECF8E] font-medium font-mono px-2.5 py-1 rounded-md bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center gap-1 shrink-0">
-                            <CheckCircle2 size={11} className="text-[#3ECF8E]" />
+                          <span className="text-[11px] text-[#707070] font-mono px-2.5 py-1 rounded-md bg-[#121212] border border-[#222222] flex items-center gap-1 shrink-0">
+                            <Check size={11} className="text-[#606060]" />
                             <span>Compliant</span>
                           </span>
                         )}
