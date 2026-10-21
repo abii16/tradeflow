@@ -293,13 +293,15 @@ export default function ContractRates() {
   return (
     <div className="max-w-[1360px] mx-auto space-y-6 pb-16 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-[#2E2E2E] gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-[#242424] gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2.5">
-            <FileSignature size={24} className="text-[#3ECF8E]" />
-            {t('crm_title', 'Contract Rates Management')}
+            <div className="p-2 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E]">
+              <FileSignature size={20} />
+            </div>
+            <span>{t('crm_title', 'Contract Rates Management')}</span>
           </h1>
-          <p className="text-xs text-[#8F8F8F] mt-1">
+          <p className="text-xs text-[#8F8F8F] mt-1 font-mono">
             {t('crm_subtitle', 'Manage long-term locked rates and monitor spot market divergence (FR-04).')}
           </p>
         </div>
@@ -308,7 +310,7 @@ export default function ContractRates() {
             type="button"
             onClick={fetchContracts}
             disabled={loading}
-            className="p-2.5 bg-[#232323] hover:bg-[#2A2A2A] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#2E2E2E] rounded-lg transition-colors cursor-pointer"
+            className="p-2.5 bg-[#171717] hover:bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#242424] hover:border-[#3ECF8E]/40 rounded-lg transition-all cursor-pointer shadow-sm"
             title="Refresh contracts and AI spot divergence"
           >
             <RefreshCw size={15} className={loading ? 'animate-spin text-[#3ECF8E]' : ''} />
@@ -316,62 +318,62 @@ export default function ContractRates() {
           <button 
             type="button"
             onClick={handleOpenNewModal} 
-            className="flex items-center gap-2 bg-[#3ECF8E] text-[#1C1C1C] hover:bg-[#34b27b] transition-all font-bold px-4 py-2.5 rounded-lg text-xs shadow-md hover:shadow-[0_0_18px_rgba(62,207,142,0.35)] hover:-translate-y-0.5 active:scale-[0.99] cursor-pointer"
+            className="flex items-center gap-2 bg-[#3ECF8E] text-[#121212] hover:bg-[#34b27b] transition-all font-bold px-4 py-2.5 rounded-lg text-xs shadow-[0_0_15px_rgba(62,207,142,0.2)] hover:shadow-[0_0_22px_rgba(62,207,142,0.35)] hover:-translate-y-0.5 active:scale-[0.99] cursor-pointer"
           >
             <Plus size={16} strokeWidth={2.5} />
-            {t('crm_btn_new', 'New Contract Rate')}
+            <span>{t('crm_btn_new', 'New Contract Rate')}</span>
           </button>
         </div>
       </div>
 
-      {/* Top Executive KPI Metric Cards */}
+      {/* Top Executive KPI Metric Cards (Supabase Brand Design) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Active SLAs */}
-        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-4 flex items-center justify-between shadow-sm">
+        {/* Card 1: Active Framework SLAs */}
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
-            <p className="text-[11px] font-semibold text-[#8F8F8F] uppercase tracking-wider">
+            <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_active_contracts', 'Active Framework SLAs')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5">
               <span className="text-2xl font-bold font-mono text-[#EDEDED]">{activeCount}</span>
-              <span className="text-xs text-[#3ECF8E] font-medium flex items-center gap-1">
-                <CheckCircle2 size={12} /> Guaranteed
+              <span className="text-xs text-[#3ECF8E] font-medium font-mono flex items-center gap-1">
+                <CheckCircle2 size={12} className="text-[#3ECF8E]" /> Guaranteed
               </span>
             </div>
-            <p className="text-[10px] text-[#8F8F8F] mt-1">Multi-corridor locked volume</p>
+            <p className="text-[10px] text-[#707070] font-mono mt-1">Multi-corridor locked volume</p>
           </div>
-          <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 flex items-center justify-center text-[#3ECF8E] shrink-0">
-            <ShieldCheck size={22} />
+          <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
+            <ShieldCheck size={20} />
           </div>
         </div>
 
-        {/* Card 2: Locked Corridor Value */}
-        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-4 flex items-center justify-between shadow-sm">
+        {/* Card 2: Locked Corridor Volume */}
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
-            <p className="text-[11px] font-semibold text-[#8F8F8F] uppercase tracking-wider">
+            <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_hedged_volume', 'Locked Corridor Volume')}
             </p>
-            <div className="flex items-baseline gap-1 mt-1.5">
-              <span className="text-xs font-mono text-[#8F8F8F]">ETB</span>
-              <span className="text-xl font-bold font-mono text-[#EDEDED]">
+            <div className="flex items-baseline gap-1 mt-1.5 font-mono">
+              <span className="text-xs text-[#3ECF8E] font-bold">ETB</span>
+              <span className="text-2xl font-bold text-[#EDEDED] tracking-tight">
                 {totalLockedVolume > 0 ? (totalLockedVolume / 1000).toFixed(0) + 'k' : '0'}
               </span>
             </div>
-            <p className="text-[10px] text-[#8F8F8F] mt-1">Total hedged freight SLA value</p>
+            <p className="text-[10px] text-[#707070] font-mono mt-1">Total hedged freight SLA value</p>
           </div>
-          <div className="w-11 h-11 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
-            <DollarSign size={22} />
+          <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
+            <DollarSign size={20} />
           </div>
         </div>
 
         {/* Card 3: Divergence Alerts */}
-        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
-            <p className="text-[11px] font-semibold text-[#8F8F8F] uppercase tracking-wider">
+            <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_divergence_alerts', 'Divergence Alerts (>15%)')}
             </p>
-            <div className="flex items-baseline gap-2 mt-1.5">
-              <span className={`text-2xl font-bold font-mono ${reviewCount > 0 ? 'text-amber-400' : 'text-[#EDEDED]'}`}>
+            <div className="flex items-baseline gap-2 mt-1.5 font-mono">
+              <span className={`text-2xl font-bold ${reviewCount > 0 ? 'text-amber-400' : 'text-[#EDEDED]'}`}>
                 {reviewCount}
               </span>
               {reviewCount > 0 ? (
@@ -384,58 +386,58 @@ export default function ContractRates() {
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-[#8F8F8F] mt-1">Per SRS Section 3.4 (FR-04.2)</p>
+            <p className="text-[10px] text-[#707070] font-mono mt-1">Per SRS Section 3.4 (FR-04.2)</p>
           </div>
           <div className={`w-11 h-11 rounded-lg flex items-center justify-center shrink-0 ${
             reviewCount > 0 
-              ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400' 
-              : 'bg-[#2A2A2A] border border-[#333] text-[#8F8F8F]'
+              ? 'bg-amber-500/10 border border-amber-500/25 text-amber-400' 
+              : 'bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E]'
           }`}>
-            <AlertTriangle size={22} />
+            <AlertTriangle size={20} />
           </div>
         </div>
 
         {/* Card 4: Net Hedge Advantage */}
-        <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
-            <p className="text-[11px] font-semibold text-[#8F8F8F] uppercase tracking-wider">
+            <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
               {t('crm_kpi_hedge_benefit', 'Net Hedge Advantage')}
             </p>
-            <div className="flex items-baseline gap-2 mt-1.5">
-              <span className="text-2xl font-bold font-mono text-[#EDEDED]">
+            <div className="flex items-baseline gap-2 mt-1.5 font-mono">
+              <span className="text-2xl font-bold text-[#3ECF8E]">
                 {Number(avgDivergence) > 0 ? `+${avgDivergence}%` : `${avgDivergence}%`}
               </span>
-              <span className="text-xs text-purple-400 font-medium flex items-center gap-1">
+              <span className="text-xs text-[#3ECF8E]/80 font-medium flex items-center gap-1">
                 <TrendingUp size={12} /> Spot Delta
               </span>
             </div>
-            <p className="text-[10px] text-[#8F8F8F] mt-1">Protection vs spot market swings</p>
+            <p className="text-[10px] text-[#707070] font-mono mt-1">Protection vs spot market swings</p>
           </div>
-          <div className="w-11 h-11 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
-            <Scale size={22} />
+          <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
+            <Scale size={20} />
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#232323] p-3 rounded-xl border border-[#2E2E2E]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#171717] p-3 rounded-xl border border-[#242424]">
         <div className="relative flex-1 max-w-md">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#707070]" />
           <input
             type="text"
             placeholder="Search by corridor (Djibouti, Modjo...) or carrier partner..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#1C1C1C] border border-[#2E2E2E] rounded-lg text-[#EDEDED] placeholder-[#666] focus:outline-none focus:border-[#3ECF8E]"
+            className="w-full pl-9 pr-3 py-2 text-xs bg-[#121212] border border-[#242424] rounded-lg text-[#EDEDED] placeholder-[#707070] font-mono focus:outline-none focus:border-[#3ECF8E] transition"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 bg-[#1C1C1C] p-1 rounded-lg border border-[#2E2E2E] self-start sm:self-auto text-xs">
+        <div className="flex items-center gap-1.5 bg-[#121212] p-1 rounded-lg border border-[#242424] self-start sm:self-auto text-xs">
           <button
             type="button"
             onClick={() => setStatusFilter('ALL')}
-            className={`px-3 py-1 rounded font-medium transition-colors cursor-pointer ${
-              statusFilter === 'ALL' ? 'bg-[#2E2E2E] text-[#EDEDED]' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+            className={`px-3 py-1.5 rounded-md font-semibold font-mono transition-all cursor-pointer ${
+              statusFilter === 'ALL' ? 'bg-[#242424] text-[#EDEDED] shadow-sm' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
             }`}
           >
             All Agreements ({contracts.length})
@@ -443,8 +445,8 @@ export default function ContractRates() {
           <button
             type="button"
             onClick={() => setStatusFilter('ACTIVE')}
-            className={`px-3 py-1 rounded font-medium transition-colors cursor-pointer ${
-              statusFilter === 'ACTIVE' ? 'bg-[#3ECF8E]/20 text-[#3ECF8E]' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+            className={`px-3 py-1.5 rounded-md font-semibold font-mono transition-all cursor-pointer ${
+              statusFilter === 'ACTIVE' ? 'bg-[#3ECF8E] text-[#121212] shadow-sm' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
             }`}
           >
             Active SLAs ({activeCount})
@@ -452,8 +454,8 @@ export default function ContractRates() {
           <button
             type="button"
             onClick={() => setStatusFilter('REVIEW_REQUIRED')}
-            className={`px-3 py-1 rounded font-medium transition-colors cursor-pointer ${
-              statusFilter === 'REVIEW_REQUIRED' ? 'bg-amber-500/20 text-amber-400' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+            className={`px-3 py-1.5 rounded-md font-semibold font-mono transition-all cursor-pointer ${
+              statusFilter === 'REVIEW_REQUIRED' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
             }`}
           >
             Review Required ({reviewCount})
@@ -462,10 +464,10 @@ export default function ContractRates() {
       </div>
 
       {/* Contracts Table */}
-      <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl overflow-hidden shadow-lg shadow-black/40">
+      <div className="bg-[#171717] border border-[#242424] rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#1C1C1C] uppercase border-b border-[#2E2E2E] tracking-wider">
+            <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#121212] uppercase border-b border-[#242424] tracking-wider font-mono">
               <tr>
                 <th className="px-5 py-3.5 font-semibold">{t('crm_col_id', 'Contract ID')}</th>
                 <th className="px-5 py-3.5 font-semibold">{t('crm_col_carrier', 'Carrier & Route')}</th>
@@ -476,7 +478,7 @@ export default function ContractRates() {
                 <th className="px-5 py-3.5 font-semibold text-right">{t('crm_col_actions', 'Actions')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2E2E2E] text-xs font-mono text-[#EDEDED] bg-[#232323]">
+            <tbody className="divide-y divide-[#242424] text-xs font-mono text-[#EDEDED] bg-[#171717]">
               {loading && contracts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-[#8F8F8F]">
@@ -505,78 +507,78 @@ export default function ContractRates() {
                   const isFlagged = contract.isFlagged || Math.abs(divergence) >= 15.0;
 
                   return (
-                    <tr key={contract.id} className="hover:bg-[#1C1C1C]/50 transition-colors">
+                    <tr key={contract.id} className="hover:bg-[#1C1C1C] transition-colors">
                       {/* Contract ID */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs font-bold text-[#EDEDED]">CT-{contract.id.substring(0, 6).toUpperCase()}</span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#1C1C1C] border border-[#2E2E2E] text-[#8F8F8F]">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#121212] border border-[#242424] text-[#8F8F8F] font-mono">
                             SLA
                           </span>
                         </div>
-                        <div className="text-[11px] text-[#8F8F8F] font-sans mt-0.5 flex items-center gap-1">
-                          <Calendar size={11} className="text-[#666]" />
+                        <div className="text-[11px] text-[#8F8F8F] font-mono mt-0.5 flex items-center gap-1">
+                          <Calendar size={11} className="text-[#707070]" />
                           {t('crm_valid_to', 'Valid to:')} {new Date(contract.validUntil).toLocaleDateString()}
                         </div>
                       </td>
 
                       {/* Carrier & Route */}
                       <td className="px-5 py-4">
-                        <div className="font-semibold text-[#EDEDED] font-sans flex items-center gap-1.5">
+                        <div className="font-semibold text-[#EDEDED] flex items-center gap-1.5">
                           <Truck size={13} className="text-[#3ECF8E]" />
                           <span>{contract.companyName || contract.transporterName || 'Authorized Carrier'}</span>
-                          <span className="text-[9px] px-1.5 py-0.5 bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] rounded font-mono font-bold">
+                          <span className="text-[9px] px-1.5 py-0.5 bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E] rounded font-mono font-bold">
                             CARRIER
                           </span>
                         </div>
                         {contract.transporterName && contract.companyName && contract.transporterName !== contract.companyName && (
-                          <div className="text-[11px] text-[#8F8F8F] font-sans mt-0.5">
+                          <div className="text-[11px] text-[#8F8F8F] font-mono mt-0.5">
                             Driver / Lead: {contract.transporterName}
                           </div>
                         )}
-                        <div className="text-xs text-[#8F8F8F] font-sans mt-1 flex items-center gap-1">
-                          <span className="text-[#CCCCCC]">{contract.origin}</span>
+                        <div className="text-xs text-[#8F8F8F] font-mono mt-1 flex items-center gap-1.5">
+                          <span className="text-[#EDEDED]">{contract.origin}</span>
                           <ArrowRight size={11} className="text-[#3ECF8E]" />
-                          <span className="text-[#CCCCCC]">{contract.destination}</span>
+                          <span className="text-[#EDEDED]">{contract.destination}</span>
                         </div>
                       </td>
 
                       {/* Locked Rate */}
                       <td className="px-5 py-4 font-mono font-bold text-[#EDEDED]">
                         <div className="text-sm">ETB {Number(contract.lockedRate).toLocaleString()}</div>
-                        <div className="text-[10px] text-[#8F8F8F] font-sans font-normal">Guaranteed Collar</div>
+                        <div className="text-[10px] text-[#707070] font-mono font-normal">Guaranteed Collar</div>
                       </td>
 
                       {/* Current Spot */}
                       <td className="px-5 py-4 font-mono">
-                        <div className="text-sm text-[#CCCCCC]">ETB {currentSpot.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-                        <div className="text-[10px] text-[#8F8F8F] font-sans">ML Spot Benchmark</div>
+                        <div className="text-sm text-[#3ECF8E] font-semibold">ETB {currentSpot.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                        <div className="text-[10px] text-[#707070] font-mono">ML Spot Benchmark</div>
                       </td>
 
                       {/* Divergence */}
                       <td className="px-5 py-4">
                         {isFlagged ? (
                           <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-1.5 text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded text-xs font-bold w-fit font-mono">
+                            <div className="flex items-center gap-1.5 text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded text-xs font-bold w-fit font-mono">
                               <AlertTriangle size={12} className="shrink-0 text-amber-400" />
                               <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
                             </div>
-                            <span className="text-[9px] text-amber-400/80 font-sans font-semibold">Exceeds 15% threshold</span>
+                            <span className="text-[9px] text-amber-400/80 font-mono font-medium">Exceeds 15% threshold</span>
                           </div>
                         ) : (
                           <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-1.5 text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 px-2 py-1 rounded text-xs font-bold w-fit font-mono">
+                            <div className="flex items-center gap-1.5 text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 px-2 py-0.5 rounded text-xs font-bold w-fit font-mono">
                               <CheckCircle2 size={12} className="shrink-0 text-[#3ECF8E]" />
                               <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
                             </div>
-                            <span className="text-[9px] text-[#8F8F8F] font-sans">Compliant (within ±15%)</span>
+                            <span className="text-[9px] text-[#707070] font-mono">Compliant (within ±15%)</span>
                           </div>
                         )}
                       </td>
 
                       {/* Status */}
                       <td className="px-5 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] border font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] border font-bold font-mono uppercase tracking-wider inline-flex items-center gap-1 ${
                           contract.status === 'REVIEW_REQUIRED' || isFlagged
                             ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                             : 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/30'
@@ -607,28 +609,29 @@ export default function ContractRates() {
                           <button
                             type="button"
                             onClick={() => setAuditContract(contract)}
-                            className="bg-[#1C1C1C] hover:bg-[#2A2A2A] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#2E2E2E] px-2.5 py-1.5 rounded-lg text-xs font-semibold font-sans transition-colors cursor-pointer flex items-center gap-1"
+                            className="bg-[#121212] hover:bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#242424] hover:border-[#3ECF8E]/40 px-3 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                             title="Audit calculation inputs & cryptographic trace (FR-04.3)"
                           >
-                            <FileText size={12} />
-                            {t('crm_view_details', 'Audit')}
+                            <FileText size={12} className="text-[#8F8F8F]" />
+                            <span>{t('crm_view_details', 'View Details')}</span>
                           </button>
 
                           {/* Renegotiate Action (SRS FR-04.2) */}
-                          {isFlagged && (
+                          {isFlagged ? (
                             <button 
                               type="button"
                               onClick={() => openRenegotiateDialog(contract)} 
                               disabled={renegotiatingId === contract.id}
-                              className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold font-sans transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1"
+                              className="bg-[#3ECF8E]/15 hover:bg-[#3ECF8E] text-[#3ECF8E] hover:text-[#121212] border border-[#3ECF8E]/40 hover:border-[#3ECF8E] px-3.5 py-1.5 rounded-lg text-xs font-bold font-mono transition-all duration-200 shadow-[0_0_12px_rgba(62,207,142,0.12)] hover:shadow-[0_0_18px_rgba(62,207,142,0.25)] flex items-center gap-1.5 active:scale-95 cursor-pointer disabled:opacity-50 group"
                             >
-                              <Scale size={12} />
-                              {renegotiatingId === contract.id ? 'Updating...' : t('crm_renegotiate', 'Renegotiate')}
+                              <Scale size={13} className="text-[#3ECF8E] group-hover:text-[#121212] transition-colors" />
+                              <span>{renegotiatingId === contract.id ? 'Updating...' : t('crm_renegotiate', 'Renegotiate')}</span>
                             </button>
-                          )}
-
-                          {!isFlagged && (
-                            <span className="text-xs text-[#8F8F8F] font-medium font-sans px-2">Compliant</span>
+                          ) : (
+                            <span className="text-xs text-[#3ECF8E] font-medium font-mono px-2 flex items-center gap-1">
+                              <CheckCircle2 size={12} className="text-[#3ECF8E]" />
+                              <span>Compliant</span>
+                            </span>
                           )}
                         </div>
                       </td>
@@ -643,23 +646,27 @@ export default function ContractRates() {
 
       {/* Modal: New Contract Rate */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-[#171717] border border-[#282828] rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex justify-between items-center p-5 border-b border-[#2E2E2E] bg-[#1C1C1C]">
-              <div>
-                <h2 className="text-base font-bold text-[#EDEDED] flex items-center gap-2">
-                  <FileSignature size={18} className="text-[#3ECF8E]" />
-                  {t('crm_modal_title', 'New Contract Rate')}
-                </h2>
-                <p className="text-[11px] text-[#8F8F8F] mt-0.5">
-                  Establish guaranteed corridor tariff agreements with verified carriers (FR-04.2).
-                </p>
+            <div className="flex justify-between items-center p-5 border-b border-[#242424] bg-[#121212]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E]">
+                  <FileSignature size={18} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-[#EDEDED]">
+                    {t('crm_modal_title', 'New Contract Rate')}
+                  </h2>
+                  <p className="text-[11px] text-[#8F8F8F] font-mono mt-0.5">
+                    Establish guaranteed corridor tariff agreements with verified carriers (FR-04.2).
+                  </p>
+                </div>
               </div>
               <button 
                 type="button"
                 onClick={() => setIsModalOpen(false)} 
-                className="text-[#8F8F8F] hover:text-[#EDEDED] p-1 rounded-md transition-colors cursor-pointer"
+                className="text-[#8F8F8F] hover:text-[#EDEDED] p-1.5 rounded-lg hover:bg-[#202020] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -667,7 +674,7 @@ export default function ContractRates() {
 
             {/* Strategic Corridor Presets */}
             <div className="px-5 pt-4">
-              <label className="block text-[11px] font-semibold text-[#8F8F8F] uppercase tracking-wider mb-2">
+              <label className="block text-[11px] font-semibold text-[#8F8F8F] uppercase font-mono tracking-wider mb-2">
                 {t('crm_quick_corridors', 'Strategic Corridor Presets')}
               </label>
               <div className="flex flex-wrap gap-2">
@@ -676,10 +683,10 @@ export default function ContractRates() {
                     key={idx}
                     type="button"
                     onClick={() => handleCorridorPreset(preset)}
-                    className="text-[11px] px-2.5 py-1 rounded-md bg-[#1C1C1C] border border-[#2E2E2E] text-[#CCCCCC] hover:border-[#3ECF8E] hover:text-[#3ECF8E] transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="text-[11px] px-2.5 py-1 rounded-md bg-[#121212] border border-[#242424] text-[#EDEDED] hover:border-[#3ECF8E] hover:text-[#3ECF8E] font-mono transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <span>{preset.origin.split(' ')[0]} → {preset.destination.split(' ')[0]}</span>
-                    <span className="text-[#666] font-mono text-[10px]">({preset.distance})</span>
+                    <span className="text-[#707070] text-[10px]">({preset.distance})</span>
                   </button>
                 ))}
               </div>
@@ -688,7 +695,7 @@ export default function ContractRates() {
             <form onSubmit={submitNewContract} className="p-5 space-y-4">
               {/* Carrier Selection */}
               <div>
-                <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">
+                <label className="block text-xs font-semibold text-[#EDEDED] font-mono mb-1.5">
                   {t('crm_transporter_id', 'Carrier Enterprise')}
                 </label>
                 {transporters.length > 0 ? (
@@ -696,7 +703,7 @@ export default function ContractRates() {
                     required
                     value={newContractForm.transporterId}
                     onChange={e => setNewContractForm({ ...newContractForm, transporterId: e.target.value })}
-                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] bg-[#1C1C1C] text-[#EDEDED] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] transition-all cursor-pointer font-medium"
+                    className="w-full px-3 py-2 text-xs border border-[#242424] bg-[#121212] text-[#EDEDED] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#3ECF8E] focus:border-[#3ECF8E] transition-all cursor-pointer font-mono font-medium"
                   >
                     {transporters.map(t => (
                       <option key={t.id} value={t.id}>
@@ -710,7 +717,7 @@ export default function ContractRates() {
                     required
                     value={newContractForm.transporterId}
                     onChange={e => setNewContractForm({ ...newContractForm, transporterId: e.target.value })}
-                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] bg-[#1C1C1C] text-[#EDEDED] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E]"
+                    className="w-full px-3 py-2 text-xs border border-[#242424] bg-[#121212] text-[#EDEDED] rounded-lg focus:outline-none focus:border-[#3ECF8E] font-mono"
                     placeholder="Carrier Partner ID"
                   />
                 )}
@@ -719,7 +726,7 @@ export default function ContractRates() {
               {/* Origin & Destination */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">
+                  <label className="block text-xs font-semibold text-[#EDEDED] font-mono mb-1.5">
                     {t('origin', 'Origin Terminal')}
                   </label>
                   <input
@@ -731,11 +738,11 @@ export default function ContractRates() {
                       setNewContractForm({ ...newContractForm, origin: val });
                       updateModalSpotBenchmark(val, newContractForm.destination);
                     }}
-                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] rounded-lg bg-[#1C1C1C] text-[#EDEDED] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] font-medium"
+                    className="w-full px-3 py-2 text-xs border border-[#242424] rounded-lg bg-[#121212] text-[#EDEDED] focus:outline-none focus:border-[#3ECF8E] font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">
+                  <label className="block text-xs font-semibold text-[#EDEDED] font-mono mb-1.5">
                     {t('destination', 'Destination Dry Port')}
                   </label>
                   <input
@@ -747,26 +754,28 @@ export default function ContractRates() {
                       setNewContractForm({ ...newContractForm, destination: val });
                       updateModalSpotBenchmark(newContractForm.origin, val);
                     }}
-                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] rounded-lg bg-[#1C1C1C] text-[#EDEDED] focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] font-medium"
+                    className="w-full px-3 py-2 text-xs border border-[#242424] rounded-lg bg-[#121212] text-[#EDEDED] focus:outline-none focus:border-[#3ECF8E] font-mono"
                   />
                 </div>
               </div>
 
               {/* Live Spot Benchmark Preview (SRS FR-04.1) */}
-              <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Scale size={16} className="text-[#3ECF8E]" />
+              <div className="bg-[#121212] border border-[#242424] rounded-xl p-3.5 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-md bg-[#3ECF8E]/10 text-[#3ECF8E]">
+                    <Scale size={16} />
+                  </div>
                   <div>
-                    <span className="text-[11px] font-semibold text-[#EDEDED]">
+                    <span className="text-[11px] font-semibold text-[#EDEDED] font-mono">
                       {t('crm_live_benchmark', 'Live AI Spot Benchmark')}
                     </span>
-                    <p className="text-[10px] text-[#8F8F8F]">Prevailing ML market rate on this corridor</p>
+                    <p className="text-[10px] text-[#707070] font-mono">Prevailing ML market rate on this corridor</p>
                   </div>
                 </div>
                 <div className="text-right">
                   {liveBenchmark.loading ? (
                     <span className="text-xs text-[#8F8F8F] flex items-center gap-1 font-mono">
-                      <RefreshCw size={11} className="animate-spin" /> Estimating...
+                      <RefreshCw size={11} className="animate-spin text-[#3ECF8E]" /> Estimating...
                     </span>
                   ) : liveBenchmark.spotPrice ? (
                     <div className="font-mono text-sm font-bold text-[#3ECF8E]">
@@ -781,7 +790,7 @@ export default function ContractRates() {
               {/* Locked Rate & Validity */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">
+                  <label className="block text-xs font-semibold text-[#EDEDED] font-mono mb-1.5">
                     {t('crm_col_locked', 'Guaranteed SLA Rate')} (ETB)
                   </label>
                   <input
@@ -791,11 +800,11 @@ export default function ContractRates() {
                     step={1000}
                     value={newContractForm.lockedRate}
                     onChange={e => setNewContractForm({ ...newContractForm, lockedRate: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] bg-[#1C1C1C] text-[#EDEDED] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] font-mono font-bold"
+                    className="w-full px-3 py-2 text-xs border border-[#242424] bg-[#121212] text-[#EDEDED] rounded-lg focus:outline-none focus:border-[#3ECF8E] font-mono font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">
+                  <label className="block text-xs font-semibold text-[#EDEDED] font-mono mb-1.5">
                     {t('crm_valid_to', 'Agreement Expiry Date')}
                   </label>
                   <input
@@ -803,50 +812,50 @@ export default function ContractRates() {
                     required
                     value={newContractForm.validUntil}
                     onChange={e => setNewContractForm({ ...newContractForm, validUntil: e.target.value })}
-                    className="w-full px-3 py-2 text-xs border border-[#2E2E2E] bg-[#1C1C1C] text-[#EDEDED] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3ECF8E]/20 focus:border-[#3ECF8E] font-medium"
+                    className="w-full px-3 py-2 text-xs border border-[#242424] bg-[#121212] text-[#EDEDED] rounded-lg focus:outline-none focus:border-[#3ECF8E] font-mono"
                   />
                 </div>
               </div>
 
               {/* Quick Validity Chips */}
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-[#8F8F8F]">Quick Duration:</span>
+                <span className="text-[10px] text-[#707070] font-mono">Quick Duration:</span>
                 <button
                   type="button"
                   onClick={() => handleDurationPreset(90)}
-                  className="text-[10px] px-2 py-0.5 rounded bg-[#1C1C1C] border border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] cursor-pointer"
+                  className="text-[10px] px-2.5 py-0.5 rounded bg-[#121212] border border-[#242424] text-[#8F8F8F] hover:text-[#EDEDED] hover:border-[#3ECF8E]/30 font-mono transition cursor-pointer"
                 >
                   3 Months
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDurationPreset(180)}
-                  className="text-[10px] px-2 py-0.5 rounded bg-[#1C1C1C] border border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] cursor-pointer"
+                  className="text-[10px] px-2.5 py-0.5 rounded bg-[#121212] border border-[#242424] text-[#8F8F8F] hover:text-[#EDEDED] hover:border-[#3ECF8E]/30 font-mono transition cursor-pointer"
                 >
                   6 Months
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDurationPreset(365)}
-                  className="text-[10px] px-2 py-0.5 rounded bg-[#1C1C1C] border border-[#2E2E2E] text-[#8F8F8F] hover:text-[#EDEDED] cursor-pointer"
+                  className="text-[10px] px-2.5 py-0.5 rounded bg-[#121212] border border-[#242424] text-[#8F8F8F] hover:text-[#EDEDED] hover:border-[#3ECF8E]/30 font-mono transition cursor-pointer"
                 >
                   1 Year
                 </button>
               </div>
 
               {/* Footer */}
-              <div className="pt-3 border-t border-[#2E2E2E] flex justify-end gap-3">
+              <div className="pt-3 border-t border-[#242424] flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-[#2E2E2E] bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 border border-[#242424] bg-[#121212] text-[#8F8F8F] hover:text-[#EDEDED] rounded-lg text-xs font-semibold font-mono transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] font-bold px-5 py-2 rounded-lg transition-all text-xs shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] disabled:opacity-50 cursor-pointer"
+                  className="bg-[#3ECF8E] hover:bg-[#34b27b] text-[#121212] font-bold px-5 py-2 rounded-lg transition-all text-xs shadow-[0_0_12px_rgba(62,207,142,0.2)] hover:shadow-[0_0_18px_rgba(62,207,142,0.3)] disabled:opacity-50 cursor-pointer font-mono"
                 >
                   {submitting ? 'Creating Contract...' : t('crm_btn_submit', 'Create Contract Rate')}
                 </button>
@@ -858,22 +867,26 @@ export default function ContractRates() {
 
       {/* Modal: Renegotiation Dialog (SRS FR-04.2) */}
       {renegotiateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-[#232323] border border-amber-500/30 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-5 border-b border-[#2E2E2E] bg-[#1C1C1C]">
-              <div>
-                <h2 className="text-base font-bold text-amber-400 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-[#171717] border border-[#3ECF8E]/30 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-5 border-b border-[#242424] bg-[#121212]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E]">
                   <Scale size={18} />
-                  {t('crm_renegotiate_title', 'Initiate SLA Rate Renegotiation')}
-                </h2>
-                <p className="text-[11px] text-[#8F8F8F] mt-0.5">
-                  {t('crm_renegotiate_desc', 'Material divergence (>15%) detected against live spot market benchmark (SRS FR-04.2).')}
-                </p>
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-[#EDEDED]">
+                    {t('crm_renegotiate_title', 'Initiate SLA Rate Renegotiation')}
+                  </h2>
+                  <p className="text-[11px] text-[#8F8F8F] font-mono mt-0.5">
+                    {t('crm_renegotiate_desc', 'Material divergence (>15%) detected against live spot market benchmark (SRS FR-04.2).')}
+                  </p>
+                </div>
               </div>
               <button 
                 type="button"
                 onClick={() => setRenegotiateModal(null)} 
-                className="text-[#8F8F8F] hover:text-[#EDEDED] p-1 rounded-md transition-colors cursor-pointer"
+                className="text-[#8F8F8F] hover:text-[#EDEDED] p-1.5 rounded-lg hover:bg-[#202020] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -881,24 +894,24 @@ export default function ContractRates() {
 
             <div className="p-5 space-y-4">
               {/* Divergence Metrics Box */}
-              <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl p-3.5 space-y-2">
+              <div className="bg-[#121212] border border-[#242424] rounded-xl p-3.5 space-y-2 font-mono">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-[#8F8F8F]">Corridor Route:</span>
                   <span className="font-semibold text-[#EDEDED]">{renegotiateModal.contract.origin} → {renegotiateModal.contract.destination}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-[#8F8F8F]">Current Locked Tariff:</span>
-                  <span className="font-mono font-bold text-[#EDEDED]">ETB {Number(renegotiateModal.contract.lockedRate).toLocaleString()}</span>
+                  <span className="font-bold text-[#EDEDED]">ETB {Number(renegotiateModal.contract.lockedRate).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-[#8F8F8F]">Prevailing Spot Market:</span>
-                  <span className="font-mono font-bold text-[#3ECF8E]">
+                  <span className="font-bold text-[#3ECF8E]">
                     ETB {Number(renegotiateModal.contract.currentSpotRate || 0).toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-xs pt-1.5 border-t border-[#2E2E2E]">
+                <div className="flex justify-between items-center text-xs pt-1.5 border-t border-[#242424]">
                   <span className="text-[#8F8F8F]">Spot Divergence Delta:</span>
-                  <span className="font-mono font-bold text-amber-400">
+                  <span className="font-bold text-amber-400">
                     {renegotiateModal.contract.divergencePercent 
                       ? (renegotiateModal.contract.divergencePercent > 0 ? `+${renegotiateModal.contract.divergencePercent.toFixed(1)}%` : `${renegotiateModal.contract.divergencePercent.toFixed(1)}%`)
                       : '+18.8%'} (Threshold: 15.0%)
@@ -908,7 +921,7 @@ export default function ContractRates() {
 
               {/* Proposed New Tariff */}
               <div>
-                <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">
+                <label className="block text-xs font-semibold text-[#EDEDED] font-mono mb-1.5">
                   {t('crm_proposed_rate', 'Proposed New Tariff (ETB)')}
                 </label>
                 <input
@@ -916,37 +929,37 @@ export default function ContractRates() {
                   step={1000}
                   value={renegotiateModal.proposedRate}
                   onChange={e => setRenegotiateModal({ ...renegotiateModal, proposedRate: Number(e.target.value) })}
-                  className="w-full px-3 py-2 text-xs border border-[#2E2E2E] bg-[#1C1C1C] text-[#EDEDED] rounded-lg focus:outline-none focus:border-amber-400 font-mono font-bold"
+                  className="w-full px-3 py-2 text-xs border border-[#242424] bg-[#121212] text-[#EDEDED] rounded-lg focus:outline-none focus:border-[#3ECF8E] font-mono font-bold"
                 />
               </div>
 
               {/* Justification Notes */}
               <div>
-                <label className="block text-xs font-semibold text-[#EDEDED] mb-1.5">
+                <label className="block text-xs font-semibold text-[#EDEDED] font-mono mb-1.5">
                   {t('crm_renegotiate_notes', 'Renegotiation Justification / Fuel Index Note')}
                 </label>
                 <textarea
                   rows={3}
                   value={renegotiateModal.notes}
                   onChange={e => setRenegotiateModal({ ...renegotiateModal, notes: e.target.value })}
-                  className="w-full px-3 py-2 text-xs border border-[#2E2E2E] bg-[#1C1C1C] text-[#EDEDED] rounded-lg focus:outline-none focus:border-amber-400 resize-none font-medium"
+                  className="w-full px-3 py-2 text-xs border border-[#242424] bg-[#121212] text-[#EDEDED] rounded-lg focus:outline-none focus:border-[#3ECF8E] resize-none font-mono"
                 />
               </div>
 
               {/* Footer */}
-              <div className="pt-3 border-t border-[#2E2E2E] flex justify-between items-center gap-3">
+              <div className="pt-3 border-t border-[#242424] flex justify-between items-center gap-3">
                 <button
                   type="button"
                   onClick={() => handleSettleTariff(renegotiateModal.contract.id, renegotiateModal.proposedRate)}
-                  className="px-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-[#3ECF8E] border border-emerald-500/30 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                  className="px-3.5 py-2 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#121212] font-bold rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(62,207,142,0.18)]"
                 >
-                  <Check size={12} /> Settle & Lock Rate
+                  <Check size={13} /> Settle & Lock Rate
                 </button>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setRenegotiateModal(null)}
-                    className="px-4 py-2 border border-[#2E2E2E] bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                    className="px-4 py-2 border border-[#242424] bg-[#121212] text-[#8F8F8F] hover:text-[#EDEDED] rounded-lg text-xs font-semibold font-mono transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -954,7 +967,7 @@ export default function ContractRates() {
                     type="button"
                     onClick={handleConfirmRenegotiate}
                     disabled={renegotiatingId === renegotiateModal.contract.id}
-                    className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-4 py-2 rounded-lg transition-all text-xs shadow-md disabled:opacity-50 cursor-pointer"
+                    className="bg-[#1C2C24] hover:bg-[#3ECF8E] text-[#3ECF8E] hover:text-[#121212] border border-[#3ECF8E]/40 hover:border-[#3ECF8E] font-bold px-4 py-2 rounded-lg transition-all text-xs font-mono disabled:opacity-50 cursor-pointer"
                   >
                     {renegotiatingId === renegotiateModal.contract.id ? 'Dispatching...' : 'Dispatch Notice'}
                   </button>
@@ -967,60 +980,64 @@ export default function ContractRates() {
 
       {/* Modal: Audit & Divergence Details (SRS FR-04.3) */}
       {auditContract && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-[#232323] border border-[#2E2E2E] rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-[#171717] border border-[#282828] rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex justify-between items-center p-5 border-b border-[#2E2E2E] bg-[#1C1C1C]">
-              <div>
-                <h2 className="text-base font-bold text-[#EDEDED] flex items-center gap-2">
-                  <FileText size={18} className="text-[#3ECF8E]" />
-                  {t('crm_audit_title', 'FR-04.3 Spot Divergence Audit Trail')}
-                </h2>
-                <p className="text-[11px] text-[#8F8F8F] mt-0.5">
-                  Immutable price calculation inputs and dispute resolution audit verification.
-                </p>
+            <div className="flex justify-between items-center p-5 border-b border-[#242424] bg-[#121212]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E]">
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-[#EDEDED]">
+                    {t('crm_audit_title', 'FR-04.3 Spot Divergence Audit Trail')}
+                  </h2>
+                  <p className="text-[11px] text-[#8F8F8F] font-mono mt-0.5">
+                    Immutable price calculation inputs and dispute resolution audit verification.
+                  </p>
+                </div>
               </div>
               <button 
                 type="button"
                 onClick={() => setAuditContract(null)} 
-                className="text-[#8F8F8F] hover:text-[#EDEDED] p-1 rounded-md transition-colors cursor-pointer"
+                className="text-[#8F8F8F] hover:text-[#EDEDED] p-1.5 rounded-lg hover:bg-[#202020] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="p-5 space-y-4 text-xs font-sans">
+            <div className="p-5 space-y-4 text-xs font-mono">
               {/* Audit Badge & Hash */}
-              <div className="flex items-center justify-between p-3 bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl font-mono">
+              <div className="flex items-center justify-between p-3.5 bg-[#121212] border border-[#242424] rounded-xl font-mono">
                 <div>
-                  <span className="text-[10px] text-[#8F8F8F] uppercase block">Audit Verification ID</span>
+                  <span className="text-[10px] text-[#707070] uppercase block">Audit Verification ID</span>
                   <span className="text-xs font-bold text-[#3ECF8E]">
                     {auditContract.auditId || `AUDIT-PRC-${auditContract.id.slice(0, 10).toUpperCase()}`}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-[#8F8F8F] uppercase block">Compliance Status</span>
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                  <span className="text-[10px] text-[#707070] uppercase block">Compliance Status</span>
+                  <span className="text-[10px] font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded border border-[#3ECF8E]/25">
                     SRS FR-04.3 VERIFIED
                   </span>
                 </div>
               </div>
 
               {/* Mathematical Divergence Formula */}
-              <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl p-3.5 space-y-2">
+              <div className="bg-[#121212] border border-[#242424] rounded-xl p-3.5 space-y-2">
                 <span className="text-[11px] font-semibold text-[#EDEDED] block">
                   Divergence Formula (SRS Section 3.4 / FR-04.2)
                 </span>
-                <div className="p-2.5 bg-[#232323] rounded-lg font-mono text-center text-xs text-[#3ECF8E] border border-[#2E2E2E]">
+                <div className="p-2.5 bg-[#171717] rounded-lg font-mono text-center text-xs text-[#3ECF8E] border border-[#242424]">
                   Divergence = ((Prevailing Spot - Contract Rate) / Contract Rate) × 100%
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-1 font-mono text-[11px]">
-                  <div className="bg-[#232323] p-2 rounded border border-[#2E2E2E]">
-                    <span className="text-[#8F8F8F] block text-[10px]">Locked SLA Rate:</span>
+                  <div className="bg-[#171717] p-2.5 rounded-lg border border-[#242424]">
+                    <span className="text-[#707070] block text-[10px]">Locked SLA Rate:</span>
                     <span className="text-[#EDEDED] font-bold">ETB {Number(auditContract.lockedRate).toLocaleString()}</span>
                   </div>
-                  <div className="bg-[#232323] p-2 rounded border border-[#2E2E2E]">
-                    <span className="text-[#8F8F8F] block text-[10px]">Live Spot Benchmark:</span>
+                  <div className="bg-[#171717] p-2.5 rounded-lg border border-[#242424]">
+                    <span className="text-[#707070] block text-[10px]">Live Spot Benchmark:</span>
                     <span className="text-[#3ECF8E] font-bold">
                       ETB {Number(auditContract.currentSpotRate || 0).toLocaleString()}
                     </span>
@@ -1033,13 +1050,13 @@ export default function ContractRates() {
                 <span className="text-[11px] font-semibold text-[#8F8F8F] uppercase tracking-wider block">
                   Corridor Market Features
                 </span>
-                <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl divide-y divide-[#2E2E2E] text-xs">
+                <div className="bg-[#121212] border border-[#242424] rounded-xl divide-y divide-[#242424] text-xs">
                   <div className="flex justify-between py-2 px-3">
                     <span className="text-[#8F8F8F]">Corridor Route:</span>
                     <span className="font-semibold text-[#EDEDED]">{auditContract.origin} → {auditContract.destination}</span>
                   </div>
                   <div className="flex justify-between py-2 px-3">
-                    <span className="text-[#8F8F8F]">Authorized Transporter:</span>
+                    <span className="text-[#8F8F8F]">Authorized Carrier:</span>
                     <span className="font-semibold text-[#EDEDED]">{auditContract.companyName || auditContract.transporterName}</span>
                   </div>
                   <div className="flex justify-between py-2 px-3">
@@ -1056,14 +1073,14 @@ export default function ContractRates() {
                   </div>
                   <div className="flex justify-between py-2 px-3">
                     <span className="text-[#8F8F8F]">AI Volatility Protection Clamp:</span>
-                    <span className="text-emerald-400 font-mono">Bound Enforced (-15% to +45%)</span>
+                    <span className="text-[#3ECF8E] font-mono">Bound Enforced (-15% to +45%)</span>
                   </div>
                 </div>
               </div>
 
               {/* Explanation Note */}
               {auditContract.evaluationMessage && (
-                <div className="p-3 bg-[#1C1C1C] border border-amber-500/20 rounded-xl text-[11px] text-[#CCCCCC] leading-relaxed">
+                <div className="p-3 bg-[#121212] border border-amber-500/25 rounded-xl text-[11px] text-[#CCCCCC] leading-relaxed">
                   <div className="flex items-center gap-1.5 text-amber-400 font-semibold mb-1">
                     <Info size={13} />
                     <span>Evaluation Rationale:</span>
@@ -1073,11 +1090,11 @@ export default function ContractRates() {
               )}
 
               {/* Footer */}
-              <div className="pt-3 border-t border-[#2E2E2E] flex justify-end">
+              <div className="pt-3 border-t border-[#242424] flex justify-end">
                 <button
                   type="button"
                   onClick={() => setAuditContract(null)}
-                  className="px-5 py-2 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] rounded-lg text-xs font-bold transition-all cursor-pointer shadow-md"
+                  className="px-5 py-2 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#121212] rounded-lg text-xs font-bold transition-all cursor-pointer shadow-[0_0_12px_rgba(62,207,142,0.2)]"
                 >
                   Close Audit View
                 </button>
