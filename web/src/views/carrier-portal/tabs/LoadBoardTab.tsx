@@ -155,7 +155,25 @@ export default function LoadBoardTab() {
     // Suggest 95% of shipper's budget as competitive AI recommendation
     const suggested = Math.round(Number(load.budgetAmount || 300000) * 0.96);
     setBidAmount(suggested.toString());
+    setDeliveryEta('');
     setBidNotes('Equipped with certified heavy-duty trailer and GPS tracking unit.');
+    setShowBidModal(true);
+  };
+
+  const handleOpenManageBidModal = (load: LoadItem) => {
+    setSelectedLoad(load);
+    if (load.myBid) {
+      setBidAmount(Math.round(Number(load.myBid.bidAmount || 0)).toString());
+      setDeliveryEta(
+        load.myBid.deliveryEta ? new Date(load.myBid.deliveryEta).toISOString().slice(0, 16) : ''
+      );
+      setBidNotes(load.myBid.notes || 'Equipped with certified heavy-duty trailer and GPS tracking unit.');
+    } else {
+      const suggested = Math.round(Number(load.budgetAmount || 300000) * 0.96);
+      setBidAmount(suggested.toString());
+      setDeliveryEta('');
+      setBidNotes('Equipped with certified heavy-duty trailer and GPS tracking unit.');
+    }
     setShowBidModal(true);
   };
 
@@ -172,7 +190,7 @@ export default function LoadBoardTab() {
         notes: bidNotes,
       });
 
-      toast.success('Bid placed successfully! Awaiting shipper selection.');
+      toast.success(selectedLoad.hasBid ? 'Bid revised and updated successfully!' : 'Bid placed successfully! Awaiting shipper selection.');
       setShowBidModal(false);
       await fetchData(true);
       setActiveSubTab('my_bids');
@@ -387,12 +405,18 @@ export default function LoadBoardTab() {
                       </div>
 
                       {load.hasBid ? (
-                        <div className="text-[11px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 shadow-[0_0_10px_rgba(62,207,142,0.06)]">
-                          <CheckCircle2 size={13} className="text-[#3ECF8E]" />
+                        <button
+                          type="button"
+                          onClick={() => handleOpenManageBidModal(load)}
+                          className="text-[11px] font-mono text-[#3ECF8E] hover:text-white bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/25 border border-[#3ECF8E]/40 hover:border-[#3ECF8E] px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all shadow-[0_0_12px_rgba(62,207,142,0.12)] active:scale-95 cursor-pointer group"
+                          title="Click to view submitted bid details, revise your offer, or withdraw"
+                        >
+                          <CheckCircle2 size={13} className="text-[#3ECF8E] group-hover:scale-110 transition-transform" />
                           <span>Bid Submitted</span>
-                        </div>
+                        </button>
                       ) : (
                         <button
+                          type="button"
                           onClick={() => handleOpenBidModal(load)}
                           className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-semibold px-4 py-1.5 rounded-lg transition shadow-[0_0_12px_rgba(62,207,142,0.18)] hover:shadow-[0_0_18px_rgba(62,207,142,0.28)] flex items-center gap-1.5 active:scale-95 cursor-pointer"
                         >
@@ -509,21 +533,38 @@ export default function LoadBoardTab() {
               <div>
                 <h3 className="font-bold text-sm text-[#EDEDED] flex items-center gap-2">
                   <Zap size={16} className="text-[#3ECF8E]" />
-                  Submit AI-Assisted Freight Bid
+                  {selectedLoad.hasBid ? 'Manage Submitted Freight Bid' : 'Submit AI-Assisted Freight Bid'}
                 </h3>
                 <p className="text-[10px] font-mono text-[#8F8F8F] mt-0.5">
-                  SRS FR-02 Bidding Engine • Instant Shipper Evaluation
+                  {selectedLoad.hasBid
+                    ? 'SRS FR-02 Bidding Engine • View, Revise or Withdraw Active Bid'
+                    : 'SRS FR-02 Bidding Engine • Instant Shipper Evaluation'}
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowBidModal(false)}
-                className="text-[#8F8F8F] hover:text-[#EDEDED]"
+                className="text-[#8F8F8F] hover:text-[#EDEDED] cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleSubmitBid} className="p-5 space-y-4">
+              {/* If already bid, show active status banner */}
+              {selectedLoad.hasBid && (
+                <div className="p-3 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-between text-xs font-mono">
+                  <div className="flex items-center gap-2 text-[#EDEDED]">
+                    <CheckCircle2 size={14} className="text-[#3ECF8E]" />
+                    <span>Your Submitted Bid:</span>
+                    <strong className="text-[#3ECF8E] font-bold">ETB {Number(selectedLoad.myBid?.bidAmount || bidAmount).toLocaleString()}</strong>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#3ECF8E]/20 text-[#3ECF8E] uppercase">
+                    {selectedLoad.myBid?.status || 'PENDING'}
+                  </span>
+                </div>
+              )}
+
               {/* Load Snapshot Card */}
               <div className="p-3.5 rounded-lg bg-[#121212] border border-[#262626] space-y-1.5 text-xs">
                 <div className="font-bold text-[#EDEDED]">{formatCargoTitle(selectedLoad.title, selectedLoad.cargoType)}</div>
@@ -541,7 +582,7 @@ export default function LoadBoardTab() {
               {/* Bid Amount Input */}
               <div>
                 <label className="block text-[11px] font-mono uppercase text-[#8F8F8F] mb-1.5">
-                  Proposed Transport Cost (ETB) *
+                  {selectedLoad.hasBid ? 'Revise Proposed Transport Cost (ETB) *' : 'Proposed Transport Cost (ETB) *'}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#8F8F8F]">
@@ -589,27 +630,45 @@ export default function LoadBoardTab() {
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#262626]">
-                <button
-                  type="button"
-                  onClick={() => setShowBidModal(false)}
-                  className="px-4 py-2 rounded-lg bg-[#121212] hover:bg-[#1C1C1C] border border-[#262626] text-xs font-semibold text-[#8F8F8F]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingBid}
-                  className="px-5 py-2 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition shadow-[0_0_12px_rgba(62,207,142,0.18)] flex items-center gap-2"
-                >
-                  {submittingBid ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" /> Transmitting Bid...
-                    </>
-                  ) : (
-                    'Confirm & Broadcast Bid'
-                  )}
-                </button>
+              <div className="flex items-center justify-between pt-3 border-t border-[#262626]">
+                {selectedLoad.hasBid && selectedLoad.myBid ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setShowBidModal(false);
+                      await handleWithdrawBid(selectedLoad.myBid.id);
+                    }}
+                    className="px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-semibold transition cursor-pointer"
+                  >
+                    Withdraw Bid
+                  </button>
+                ) : (
+                  <div />
+                )}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowBidModal(false)}
+                    className="px-4 py-2 rounded-lg bg-[#121212] hover:bg-[#1C1C1C] border border-[#262626] text-xs font-semibold text-[#8F8F8F] cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingBid}
+                    className="px-5 py-2 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black text-xs font-bold transition shadow-[0_0_12px_rgba(62,207,142,0.18)] flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {submittingBid ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" /> Transmitting...
+                      </>
+                    ) : selectedLoad.hasBid ? (
+                      'Update / Revise Bid'
+                    ) : (
+                      'Confirm & Broadcast Bid'
+                    )}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

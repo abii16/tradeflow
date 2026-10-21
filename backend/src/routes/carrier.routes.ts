@@ -346,7 +346,18 @@ router.post('/bids', auditMiddleware('TRANSPORTER_CREATE_BID'), async (req: Requ
       .where(and(eq(bids.loadId, loadId), eq(bids.transporterId, userId)));
 
     if (existing && existing.status === 'PENDING') {
-      res.status(400).json({ error: 'You already have an active pending bid on this load' });
+      const [updatedBid] = await db
+        .update(bids)
+        .set({
+          bidAmount: bidAmount.toString(),
+          deliveryEta: deliveryEta ? new Date(deliveryEta) : existing.deliveryEta,
+          notes: notes !== undefined ? notes : existing.notes,
+          updatedAt: new Date(),
+        })
+        .where(eq(bids.id, existing.id))
+        .returning();
+
+      res.status(200).json({ message: 'Bid revised and updated successfully', bid: updatedBid });
       return;
     }
 
