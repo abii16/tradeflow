@@ -34,12 +34,17 @@ export default function FreightOrderForm({
   // Form State adhering to SRS Section 3.2 (FR-02.1) & Section 3.4 (FR-04.1)
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [cargoCategory, setCargoCategory] = useState<'dry' | 'bulk' | 'refrigerated' | 'hazmat' | 'fragile' | 'oversized'>('dry');
+  const [cargoCategory, setCargoCategory] = useState<string>('dry');
+  const [customCategory, setCustomCategory] = useState<string>('');
+  const [isCustomCategory, setIsCustomCategory] = useState<boolean>(false);
   const [cargoDescription, setCargoDescription] = useState('');
   const [weightKg, setWeightKg] = useState('');
   const [volumeM3, setVolumeM3] = useState('');
-  const [truckType, setTruckType] = useState('FLATBED');
-  const [urgencyTier, setUrgencyTier] = useState<'standard' | 'high' | 'low'>('standard');
+  const [truckType, setTruckType] = useState<string>('FLATBED');
+  const [customTruckType, setCustomTruckType] = useState<string>('');
+  const [isCustomTruckType, setIsCustomTruckType] = useState<boolean>(false);
+  const [urgencyTier, setUrgencyTier] = useState<string>('standard');
+  const [customUrgencyHours, setCustomUrgencyHours] = useState<string>('24');
   const [earliestPickup, setEarliestPickup] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
 
@@ -61,13 +66,38 @@ export default function FreightOrderForm({
   };
 
   // Sync recommended truck type when cargo category changes
-  const handleCategoryChange = (cat: 'dry' | 'bulk' | 'refrigerated' | 'hazmat' | 'fragile' | 'oversized') => {
+  const handleCategoryChange = (cat: string) => {
     setCargoCategory(cat);
-    if (cat === 'refrigerated') setTruckType('REEFER');
-    else if (cat === 'bulk') setTruckType('SIDE_WALL');
-    else if (cat === 'hazmat') setTruckType('TANKER');
-    else if (cat === 'oversized') setTruckType('LOWBED');
-    else setTruckType('FLATBED');
+    if (cat === 'CUSTOM') {
+      setIsCustomCategory(true);
+      return;
+    }
+    setIsCustomCategory(false);
+    if (cat === 'refrigerated') {
+      setTruckType('REEFER');
+      setIsCustomTruckType(false);
+    } else if (cat === 'bulk') {
+      setTruckType('SIDE_WALL');
+      setIsCustomTruckType(false);
+    } else if (cat === 'hazmat') {
+      setTruckType('TANKER');
+      setIsCustomTruckType(false);
+    } else if (cat === 'oversized') {
+      setTruckType('LOWBED');
+      setIsCustomTruckType(false);
+    } else {
+      setTruckType('FLATBED');
+      setIsCustomTruckType(false);
+    }
+  };
+
+  const handleTruckTypeChange = (type: string) => {
+    setTruckType(type);
+    if (type === 'CUSTOM') {
+      setIsCustomTruckType(true);
+    } else {
+      setIsCustomTruckType(false);
+    }
   };
 
   // Preset volume helper
@@ -110,7 +140,13 @@ export default function FreightOrderForm({
 
       const originCity = extractCity(origin, 'Djibouti') || 'Djibouti';
       const destinationCity = extractCity(destination, 'Modjo') || 'Modjo';
-      const pickupWindowHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
+      const effectiveCategory = (cargoCategory === 'CUSTOM' || isCustomCategory)
+        ? (customCategory.trim() || 'General Cargo')
+        : cargoCategory;
+      const effectiveTruckType = (truckType === 'CUSTOM' || isCustomTruckType)
+        ? (customTruckType.trim() || 'CUSTOM_TRUCK')
+        : truckType;
+      const pickupWindowHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : urgencyTier === 'custom' ? (Number(customUrgencyHours) || 24) : 24;
 
       const payload = {
         origin: {
@@ -121,11 +157,11 @@ export default function FreightOrderForm({
           name: destination,
           city: destinationCity
         },
-        cargoType: cargoCategory,
-        truckType: truckType,
+        cargoType: effectiveCategory,
+        truckType: effectiveTruckType,
         weightKg: Number(weightKg) || 1000,
         volumeM3: volumeM3 ? Number(volumeM3) : undefined,
-        urgency: urgencyTier,
+        urgency: urgencyTier === 'high' ? 'high' : urgencyTier === 'low' ? 'low' : 'standard',
         isUrgent: urgencyTier === 'high',
         pickupWindowHours: pickupWindowHours,
         currency: 'ETB',
@@ -161,16 +197,22 @@ export default function FreightOrderForm({
       setLoading(true);
       const originCity = extractCity(origin, 'Djibouti');
       const destinationCity = extractCity(destination, 'Modjo');
-      const expiryHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
+      const effectiveCategory = (cargoCategory === 'CUSTOM' || isCustomCategory)
+        ? (customCategory.trim() || 'General Cargo')
+        : cargoCategory;
+      const effectiveTruckType = (truckType === 'CUSTOM' || isCustomTruckType)
+        ? (customTruckType.trim() || 'CUSTOM_TRUCK')
+        : truckType;
+      const expiryHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : urgencyTier === 'custom' ? (Number(customUrgencyHours) || 24) : 24;
 
       await postLoad({
-        title: `${cargoCategory.toUpperCase()}: ${cargoDescription || 'Commercial Freight'}`,
-        description: `Corridor haul: ${cargoDescription || cargoCategory}. Equipment: ${truckType}. Earliest Pickup: ${earliestPickup || 'Immediate'}. Special Instructions: ${specialInstructions || 'Standard Corridor Haul'}.`,
+        title: `${effectiveCategory.toUpperCase()}: ${cargoDescription || 'Commercial Freight'}`,
+        description: `Corridor haul: ${cargoDescription || effectiveCategory}. Equipment: ${effectiveTruckType}. Earliest Pickup: ${earliestPickup || 'Immediate'}. Special Instructions: ${specialInstructions || 'Standard Corridor Haul'}.`,
         origin: { address: origin, city: originCity },
         destination: { address: destination, city: destinationCity },
         weightKg: Number(weightKg),
         volumeM3: volumeM3 ? Number(volumeM3) : undefined,
-        cargoType: cargoCategory,
+        cargoType: effectiveCategory,
         budgetAmount: calculatedPrice,
         currency: 'ETB',
         expiryHours: expiryHours,
@@ -308,11 +350,28 @@ export default function FreightOrderForm({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Category */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Category</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-[#EDEDED]">Category</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isCustomCategory || cargoCategory === 'CUSTOM') {
+                        setIsCustomCategory(false);
+                        setCargoCategory('dry');
+                      } else {
+                        setIsCustomCategory(true);
+                        setCargoCategory('CUSTOM');
+                      }
+                    }}
+                    className="text-[10px] font-mono text-[#3ECF8E] hover:underline cursor-pointer"
+                  >
+                    {isCustomCategory || cargoCategory === 'CUSTOM' ? 'Standard Options' : '+ Custom (በራስዎ መጻፍ)'}
+                  </button>
+                </div>
                 <div className="relative">
                   <select
                     value={cargoCategory}
-                    onChange={(e) => handleCategoryChange(e.target.value as any)}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
                     className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
                   >
                     <option value="dry">Dry Cargo</option>
@@ -321,9 +380,22 @@ export default function FreightOrderForm({
                     <option value="hazmat">Hazardous</option>
                     <option value="fragile">Fragile</option>
                     <option value="oversized">Oversized</option>
+                    <option value="CUSTOM">Other / ሌላ (በራስዎ ያስገቡ)...</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
                 </div>
+                {(isCustomCategory || cargoCategory === 'CUSTOM') && (
+                  <div className="pt-1 animate-in fade-in slide-in-from-top-1">
+                    <input
+                      type="text"
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      required={isCustomCategory || cargoCategory === 'CUSTOM'}
+                      className="w-full px-3 bg-[#1C1C1C] border border-[#3ECF8E]/50 h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
+                      placeholder="የጭነቱን አይነት ያስገቡ (e.g. Livestock, Coffee, Minerals, Machinery...)"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Description */}
@@ -416,11 +488,28 @@ export default function FreightOrderForm({
 
               {/* Equipment */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Equipment</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-[#EDEDED]">Equipment</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isCustomTruckType || truckType === 'CUSTOM') {
+                        setIsCustomTruckType(false);
+                        setTruckType('FLATBED');
+                      } else {
+                        setIsCustomTruckType(true);
+                        setTruckType('CUSTOM');
+                      }
+                    }}
+                    className="text-[10px] font-mono text-[#3ECF8E] hover:underline cursor-pointer"
+                  >
+                    {isCustomTruckType || truckType === 'CUSTOM' ? 'Standard Options' : '+ Custom (በራስዎ መጻፍ)'}
+                  </button>
+                </div>
                 <div className="relative">
                   <select
                     value={truckType}
-                    onChange={(e) => setTruckType(e.target.value)}
+                    onChange={(e) => handleTruckTypeChange(e.target.value)}
                     className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
                   >
                     <option value="FLATBED">Flatbed (40ft)</option>
@@ -428,9 +517,22 @@ export default function FreightOrderForm({
                     <option value="REEFER">Reefer (-20°C)</option>
                     <option value="TANKER">Tanker (Fuel)</option>
                     <option value="LOWBED">Lowbed (Heavy)</option>
+                    <option value="CUSTOM">Other / ሌላ ተሽከርካሪ (በራስዎ ያስገቡ)...</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
                 </div>
+                {(isCustomTruckType || truckType === 'CUSTOM') && (
+                  <div className="pt-1 animate-in fade-in slide-in-from-top-1">
+                    <input
+                      type="text"
+                      value={customTruckType}
+                      onChange={(e) => setCustomTruckType(e.target.value)}
+                      required={isCustomTruckType || truckType === 'CUSTOM'}
+                      className="w-full px-3 bg-[#1C1C1C] border border-[#3ECF8E]/50 h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
+                      placeholder="የተሽከርካሪ ዓይነት (e.g. Isuzu NPR, Sino Truck, Car Carrier, Box Van...)"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -444,19 +546,40 @@ export default function FreightOrderForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {/* Urgency */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Urgency</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-[#EDEDED]">Urgency</label>
+                  {urgencyTier === 'custom' && (
+                    <span className="text-[10px] font-mono text-[#3ECF8E]">
+                      {customUrgencyHours}h Window
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <select
                     value={urgencyTier}
-                    onChange={(e) => setUrgencyTier(e.target.value as any)}
+                    onChange={(e) => setUrgencyTier(e.target.value)}
                     className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
                   >
                     <option value="standard">Standard (24h)</option>
                     <option value="high">Express (+15%)</option>
                     <option value="low">Economy (-5%)</option>
+                    <option value="custom">Custom Hours (በራስዎ ሰዓት ይወስኑ)...</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
                 </div>
+                {urgencyTier === 'custom' && (
+                  <div className="pt-1 animate-in fade-in slide-in-from-top-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="720"
+                      value={customUrgencyHours}
+                      onChange={(e) => setCustomUrgencyHours(e.target.value)}
+                      className="w-full px-3 bg-[#1C1C1C] border border-[#3ECF8E]/50 h-9 text-xs font-mono rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
+                      placeholder="የመጫኛ ሰዓት ገደብ (Hours, e.g. 18, 36, 72)"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Earliest Pickup Date (Ethiopian Calendar) */}

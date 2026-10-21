@@ -51,6 +51,8 @@ export default function EthiopianDatePicker({
   const [selectedEth, setSelectedEth] = useState<EthiopianDate>(getInitialEth);
   const [viewYear, setViewYear] = useState<number>(getInitialEth().year);
   const [viewMonth, setViewMonth] = useState<number>(getInitialEth().month);
+  const [entryMode, setEntryMode] = useState<'calendar' | 'manual'>('calendar');
+  const [manualDateText, setManualDateText] = useState<string>('');
 
   // Sync when value prop changes externally
   useEffect(() => {
@@ -61,6 +63,7 @@ export default function EthiopianDatePicker({
         setSelectedEth(eth);
         setViewYear(eth.year);
         setViewMonth(eth.month);
+        setManualDateText(`${String(eth.day).padStart(2, '0')}/${String(eth.month).padStart(2, '0')}/${eth.year}`);
       }
     }
   }, [value]);
@@ -109,11 +112,63 @@ export default function EthiopianDatePicker({
       day,
     };
     setSelectedEth(updated);
+    setManualDateText(`${String(day).padStart(2, '0')}/${String(viewMonth).padStart(2, '0')}/${viewYear}`);
 
     // Convert to ISO string and trigger onChange
     const gDate = toGregorian(updated.year, updated.month, updated.day, updated.hour, updated.minute);
     const isoStr = formatToInputIso(gDate);
     onChange(isoStr);
+  };
+
+  const handleManualFieldChange = (field: 'day' | 'month' | 'year', val: number) => {
+    let year = field === 'year' ? val : selectedEth.year;
+    let month = field === 'month' ? val : selectedEth.month;
+    let day = field === 'day' ? val : selectedEth.day;
+
+    const maxDays = getDaysInEthiopianMonth(year, month);
+    if (day > maxDays) day = maxDays;
+    if (day < 1) day = 1;
+
+    const updated: EthiopianDate = {
+      ...selectedEth,
+      year,
+      month,
+      day,
+    };
+    setSelectedEth(updated);
+    setViewYear(year);
+    setViewMonth(month);
+    setManualDateText(`${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`);
+
+    const gDate = toGregorian(updated.year, updated.month, updated.day, updated.hour, updated.minute);
+    const isoStr = formatToInputIso(gDate);
+    onChange(isoStr);
+  };
+
+  const handleManualTextChange = (txt: string) => {
+    setManualDateText(txt);
+    // Parse formats like DD/MM/YYYY or DD-MM-YYYY
+    const parts = txt.trim().split(/[\/\-\.\s]+/);
+    if (parts.length === 3) {
+      const d = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      const y = parseInt(parts[2], 10);
+      if (!isNaN(d) && !isNaN(m) && !isNaN(y) && m >= 1 && m <= 13 && y >= 1990 && y <= 2050) {
+        const maxDays = getDaysInEthiopianMonth(y, m);
+        const validDay = Math.min(Math.max(1, d), maxDays);
+        const updated: EthiopianDate = {
+          ...selectedEth,
+          year: y,
+          month: m,
+          day: validDay,
+        };
+        setSelectedEth(updated);
+        setViewYear(y);
+        setViewMonth(m);
+        const gDate = toGregorian(updated.year, updated.month, updated.day, updated.hour, updated.minute);
+        onChange(formatToInputIso(gDate));
+      }
+    }
   };
 
   const handleTimeChange = (type: 'hour' | 'minute', val: number) => {
@@ -138,6 +193,7 @@ export default function EthiopianDatePicker({
     setSelectedEth(eth);
     setViewYear(eth.year);
     setViewMonth(eth.month);
+    setManualDateText(`${String(eth.day).padStart(2, '0')}/${String(eth.month).padStart(2, '0')}/${eth.year}`);
 
     const isoStr = formatToInputIso(d);
     onChange(isoStr);
@@ -200,129 +256,226 @@ export default function EthiopianDatePicker({
       {/* Ethiopian Calendar Dropdown Picker */}
       {isOpen && (
         <div className="absolute z-50 mt-1.5 left-0 w-80 bg-[#1E1E1E] border border-[#2E2E2E] rounded-xl shadow-2xl shadow-black/80 p-4 space-y-3.5 animate-in fade-in zoom-in-95 duration-150">
-          {/* Header: Month & Year Selector with Navigation */}
-          <div className="flex items-center justify-between gap-1 pb-2 border-b border-[#2E2E2E]">
+          {/* Mode Switcher: Calendar vs Manual Entry */}
+          <div className="flex items-center p-0.5 bg-[#141414] rounded-lg border border-[#2E2E2E]">
             <button
               type="button"
-              onClick={handlePrevMonth}
-              className="p-1 rounded-md text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#2A2A2A] transition-colors"
-              title="ያለፈው ወር"
+              onClick={() => setEntryMode('calendar')}
+              className={`flex-1 py-1 rounded text-[11px] font-semibold transition-all ${
+                entryMode === 'calendar'
+                  ? 'bg-[#2A2A2A] text-[#3ECF8E] font-bold shadow-sm'
+                  : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+              }`}
             >
-              <ChevronLeft size={16} />
+              ቀን መቁጠሪያ (Calendar)
             </button>
-
-            <div className="flex items-center gap-1.5">
-              {/* Month Select */}
-              <select
-                value={viewMonth}
-                onChange={(e) => setViewMonth(Number(e.target.value))}
-                className="bg-[#2A2A2A] border border-[#3E3E3E] rounded px-2 py-1 text-xs font-bold text-[#EDEDED] focus:outline-none focus:border-[#3ECF8E] cursor-pointer"
-              >
-                {ETHIOPIAN_MONTHS.map((name, idx) => (
-                  <option key={name} value={idx + 1}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-
-              {/* Year Select */}
-              <select
-                value={viewYear}
-                onChange={(e) => setViewYear(Number(e.target.value))}
-                className="bg-[#2A2A2A] border border-[#3E3E3E] rounded px-2 py-1 text-xs font-mono font-bold text-[#EDEDED] focus:outline-none focus:border-[#3ECF8E] cursor-pointer"
-              >
-                {[viewYear - 2, viewYear - 1, viewYear, viewYear + 1, viewYear + 2].map((y) => (
-                  <option key={y} value={y}>
-                    {y} ዓ.ም.
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <button
               type="button"
-              onClick={handleNextMonth}
-              className="p-1 rounded-md text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#2A2A2A] transition-colors"
-              title="ቀጣይ ወር"
+              onClick={() => setEntryMode('manual')}
+              className={`flex-1 py-1 rounded text-[11px] font-semibold transition-all ${
+                entryMode === 'manual'
+                  ? 'bg-[#2A2A2A] text-[#3ECF8E] font-bold shadow-sm'
+                  : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+              }`}
             >
-              <ChevronRight size={16} />
+              በእጅ ማስገባት (Custom)
             </button>
           </div>
 
-          {/* Quick Shortcuts */}
-          <div className="flex items-center gap-1.5 justify-between">
-            <button
-              type="button"
-              onClick={() => handlePresetQuick('today')}
-              className="flex-1 py-1 px-2 rounded text-[11px] font-semibold bg-[#262626] hover:bg-[#333333] text-[#EDEDED] border border-[#333333] transition-colors text-center"
-            >
-              ዛሬ
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetQuick('tomorrow')}
-              className="flex-1 py-1 px-2 rounded text-[11px] font-semibold bg-[#262626] hover:bg-[#333333] text-[#EDEDED] border border-[#333333] transition-colors text-center"
-            >
-              ነገ
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetQuick('in2days')}
-              className="flex-1 py-1 px-2 rounded text-[11px] font-semibold bg-[#262626] hover:bg-[#333333] text-[#EDEDED] border border-[#333333] transition-colors text-center"
-            >
-              በ48 ሰዓት
-            </button>
-          </div>
-
-          {/* Days of Week Header */}
-          <div className="grid grid-cols-7 gap-1 text-center">
-            {ETHIOPIAN_DAYS_SHORT.map((d, i) => (
-              <span
-                key={d}
-                className={`text-[10px] font-bold py-0.5 ${i === 0 ? 'text-amber-400/80' : 'text-[#8F8F8F]'}`}
-              >
-                {d}
-              </span>
-            ))}
-          </div>
-
-          {/* Month Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {/* Empty offset spaces before 1st day of month */}
-            {Array.from({ length: startDayOfWeek }).map((_, i) => (
-              <div key={`empty-${i}`} className="h-7 w-7" />
-            ))}
-
-            {/* Days 1 to 30 (or 5/6 for Pagume) */}
-            {Array.from({ length: totalDaysInMonth }).map((_, i) => {
-              const day = i + 1;
-              const isSelected =
-                selectedEth.day === day &&
-                selectedEth.month === viewMonth &&
-                selectedEth.year === viewYear;
-              const isToday =
-                todayEth.day === day &&
-                todayEth.month === viewMonth &&
-                todayEth.year === viewYear;
-
-              return (
+          {entryMode === 'calendar' ? (
+            <>
+              {/* Header: Month & Year Selector with Navigation */}
+              <div className="flex items-center justify-between gap-1 pb-2 border-b border-[#2E2E2E]">
                 <button
-                  key={day}
                   type="button"
-                  onClick={() => handleSelectDay(day)}
-                  className={`h-7 w-7 rounded-lg text-xs font-mono font-medium flex items-center justify-center transition-all ${
-                    isSelected
-                      ? 'bg-[#3ECF8E] text-[#1C1C1C] font-bold shadow-md shadow-[#3ECF8E]/30 scale-105'
-                      : isToday
-                      ? 'border border-[#3ECF8E] text-[#3ECF8E] hover:bg-[#2A2A2A]'
-                      : 'text-[#EDEDED] hover:bg-[#2A2A2A] hover:text-white'
-                  }`}
+                  onClick={handlePrevMonth}
+                  className="p-1 rounded-md text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#2A2A2A] transition-colors"
+                  title="ያለፈው ወር"
                 >
-                  {day}
+                  <ChevronLeft size={16} />
                 </button>
-              );
-            })}
-          </div>
+
+                <div className="flex items-center gap-1.5">
+                  {/* Month Select */}
+                  <select
+                    value={viewMonth}
+                    onChange={(e) => setViewMonth(Number(e.target.value))}
+                    className="bg-[#2A2A2A] border border-[#3E3E3E] rounded px-2 py-1 text-xs font-bold text-[#EDEDED] focus:outline-none focus:border-[#3ECF8E] cursor-pointer"
+                  >
+                    {ETHIOPIAN_MONTHS.map((name, idx) => (
+                      <option key={name} value={idx + 1}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Year Select */}
+                  <select
+                    value={viewYear}
+                    onChange={(e) => setViewYear(Number(e.target.value))}
+                    className="bg-[#2A2A2A] border border-[#3E3E3E] rounded px-2 py-1 text-xs font-mono font-bold text-[#EDEDED] focus:outline-none focus:border-[#3ECF8E] cursor-pointer"
+                  >
+                    {[viewYear - 2, viewYear - 1, viewYear, viewYear + 1, viewYear + 2].map((y) => (
+                      <option key={y} value={y}>
+                        {y} ዓ.ም.
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  className="p-1 rounded-md text-[#8F8F8F] hover:text-[#EDEDED] hover:bg-[#2A2A2A] transition-colors"
+                  title="ቀጣይ ወር"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+
+              {/* Quick Shortcuts */}
+              <div className="flex items-center gap-1.5 justify-between">
+                <button
+                  type="button"
+                  onClick={() => handlePresetQuick('today')}
+                  className="flex-1 py-1 px-2 rounded text-[11px] font-semibold bg-[#262626] hover:bg-[#333333] text-[#EDEDED] border border-[#333333] transition-colors text-center"
+                >
+                  ዛሬ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePresetQuick('tomorrow')}
+                  className="flex-1 py-1 px-2 rounded text-[11px] font-semibold bg-[#262626] hover:bg-[#333333] text-[#EDEDED] border border-[#333333] transition-colors text-center"
+                >
+                  ነገ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePresetQuick('in2days')}
+                  className="flex-1 py-1 px-2 rounded text-[11px] font-semibold bg-[#262626] hover:bg-[#333333] text-[#EDEDED] border border-[#333333] transition-colors text-center"
+                >
+                  በ48 ሰዓት
+                </button>
+              </div>
+
+              {/* Days of Week Header */}
+              <div className="grid grid-cols-7 gap-1 text-center">
+                {ETHIOPIAN_DAYS_SHORT.map((d, i) => (
+                  <span
+                    key={d}
+                    className={`text-[10px] font-bold py-0.5 ${i === 0 ? 'text-amber-400/80' : 'text-[#8F8F8F]'}`}
+                  >
+                    {d}
+                  </span>
+                ))}
+              </div>
+
+              {/* Month Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {/* Empty offset spaces before 1st day of month */}
+                {Array.from({ length: startDayOfWeek }).map((_, i) => (
+                  <div key={`empty-${i}`} className="h-7 w-7" />
+                ))}
+
+                {/* Days 1 to 30 (or 5/6 for Pagume) */}
+                {Array.from({ length: totalDaysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const isSelected =
+                    selectedEth.day === day &&
+                    selectedEth.month === viewMonth &&
+                    selectedEth.year === viewYear;
+                  const isToday =
+                    todayEth.day === day &&
+                    todayEth.month === viewMonth &&
+                    todayEth.year === viewYear;
+
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => handleSelectDay(day)}
+                      className={`h-7 w-7 rounded-lg text-xs font-mono font-medium flex items-center justify-center transition-all ${
+                        isSelected
+                          ? 'bg-[#3ECF8E] text-[#1C1C1C] font-bold shadow-md shadow-[#3ECF8E]/30 scale-105'
+                          : isToday
+                          ? 'border border-[#3ECF8E] text-[#3ECF8E] hover:bg-[#2A2A2A]'
+                          : 'text-[#EDEDED] hover:bg-[#2A2A2A] hover:text-white'
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            /* Manual / Custom Entry View */
+            <div className="space-y-3.5 py-1">
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-[#8F8F8F]">
+                  በቀጥታ ቀን ይጻፉ (ቀን/ወር/ዓ.ም):
+                </label>
+                <input
+                  type="text"
+                  value={manualDateText}
+                  onChange={(e) => handleManualTextChange(e.target.value)}
+                  placeholder="e.g. 11/02/2017"
+                  className="w-full px-3 bg-[#141414] border border-[#2E2E2E] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E] h-9 text-xs font-mono rounded-lg text-[#EDEDED]"
+                />
+              </div>
+
+              {/* Individual Date Fields */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-[#8F8F8F]">ቀን (Day)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={totalDaysInMonth}
+                    value={selectedEth.day}
+                    onChange={(e) => handleManualFieldChange('day', Number(e.target.value))}
+                    className="w-full px-2 bg-[#2A2A2A] border border-[#3E3E3E] rounded h-8 text-xs font-mono text-[#EDEDED] text-center"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-[#8F8F8F]">ወር (Month)</label>
+                  <select
+                    value={selectedEth.month}
+                    onChange={(e) => handleManualFieldChange('month', Number(e.target.value))}
+                    className="w-full px-1.5 bg-[#2A2A2A] border border-[#3E3E3E] rounded h-8 text-xs font-medium text-[#EDEDED]"
+                  >
+                    {ETHIOPIAN_MONTHS.map((name, idx) => (
+                      <option key={name} value={idx + 1}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-[#8F8F8F]">ዓ.ም (Year)</label>
+                  <input
+                    type="number"
+                    min="1990"
+                    max="2050"
+                    value={selectedEth.year}
+                    onChange={(e) => handleManualFieldChange('year', Number(e.target.value))}
+                    className="w-full px-2 bg-[#2A2A2A] border border-[#3E3E3E] rounded h-8 text-xs font-mono text-[#EDEDED] text-center"
+                  />
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-[#161616] border border-[#2A2A2A] space-y-1 text-xs">
+                <div className="text-[11px] font-bold text-[#3ECF8E]">
+                  የተመረጠው ቀን: {formatEthiopian(selectedEth, { includeTime: false, amharic: true })}
+                </div>
+                <div className="text-[10px] font-mono text-[#8F8F8F]">
+                  ማስታወሻ: ቀኑን በቀጥታ በመቀየር ወይም በሰሌዳው በመጫን ማስተካከል ይችላሉ።
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Time Picker Bar */}
           <div className="pt-2 border-t border-[#2E2E2E] space-y-2">
