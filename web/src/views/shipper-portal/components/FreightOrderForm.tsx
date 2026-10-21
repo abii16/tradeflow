@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  MapPin, 
-  Scale, 
-  Package, 
   ChevronDown, 
-  Clock, 
   Lock, 
   ShieldAlert, 
-  CheckCircle2, 
   Truck, 
-  Box, 
   Calendar, 
   Sparkles, 
-  Info,
-  ShieldCheck,
   AlertTriangle
 } from 'lucide-react';
 import { postLoad, calculateSpotRate } from '@/lib/apiClient';
@@ -201,6 +193,8 @@ export default function FreightOrderForm({
     }
   };
 
+  const originCity = extractCity(origin);
+  const destCity = extractCity(destination);
   const weightNum = Number(weightKg) || 0;
   const weightTons = (weightNum / 1000).toFixed(1);
 
@@ -221,25 +215,24 @@ export default function FreightOrderForm({
 
         {/* Input Form */}
         <form id="quote-form" onSubmit={handleRequestQuote} className="p-6 space-y-6">
-          {/* Section 1: Route & Terminals */}
+          {/* Section 1: Route */}
           <div className="space-y-3">
             <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider">
-              <span>Route & Terminals</span>
+              <span>Route</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Origin */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-[#EDEDED]">{t('origin', 'Origin Terminal / Port')}</label>
-                  {origin.trim() && (
+                  <label className="text-xs font-semibold text-[#EDEDED]">{t('origin', 'Origin')}</label>
+                  {originCity && (
                     <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
-                      City: {extractCity(origin, 'Djibouti')}
+                      {originCity}
                     </span>
                   )}
                 </div>
                 <div className="relative">
-                  <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
                   <input
                     type="text"
                     list="origin-corridor-list"
@@ -247,8 +240,8 @@ export default function FreightOrderForm({
                     value={origin}
                     onChange={(e) => setOrigin(e.target.value)}
                     required
-                    className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
-                    placeholder="Search or enter origin terminal (e.g. Djibouti DCT)..."
+                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
+                    placeholder="e.g. Djibouti DCT"
                   />
                   <datalist id="origin-corridor-list">
                     <option value="Djibouti Port / Doraleh Container Terminal (DCT)" />
@@ -270,15 +263,14 @@ export default function FreightOrderForm({
               {/* Destination */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-[#EDEDED]">{t('destination', 'Destination Dry Port / Facility')}</label>
-                  {destination.trim() && (
+                  <label className="text-xs font-semibold text-[#EDEDED]">{t('destination', 'Destination')}</label>
+                  {destCity && (
                     <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
-                      City: {extractCity(destination, 'Modjo')}
+                      {destCity}
                     </span>
                   )}
                 </div>
                 <div className="relative">
-                  <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
                   <input
                     type="text"
                     list="destination-corridor-list"
@@ -286,8 +278,8 @@ export default function FreightOrderForm({
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
                     required
-                    className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
-                    placeholder="Search or enter destination dry port (e.g. Modjo Dry Port)..."
+                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
+                    placeholder="e.g. Modjo Port"
                   />
                   <datalist id="destination-corridor-list">
                     <option value="Modjo Dry Port & Terminal, Ethiopia" />
@@ -306,36 +298,36 @@ export default function FreightOrderForm({
             </div>
           </div>
 
-          {/* Section 2: Cargo Classification & Details */}
+          {/* Section 2: Cargo */}
           <div className="space-y-3 pt-2 border-t border-[#2E2E2E]">
             <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider">
-              <span>Cargo Details</span>
+              <span>Cargo</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Category */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Cargo Category</label>
+                <label className="text-xs font-semibold text-[#EDEDED]">Category</label>
                 <div className="relative">
                   <select
                     value={cargoCategory}
                     onChange={(e) => handleCategoryChange(e.target.value as any)}
-                    className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
+                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
                   >
-                    <option value="dry">Dry Cargo / General Merchandise (FCL/LCL)</option>
-                    <option value="bulk">Bulk Agricultural (Coffee, Grain, Oilseeds)</option>
-                    <option value="refrigerated">Refrigerated / Perishables / Pharmaceuticals</option>
-                    <option value="hazmat">Hazardous Materials / Fuel / Petroleum Tanker</option>
-                    <option value="fragile">Fragile Electronics / High-Value Goods</option>
-                    <option value="oversized">Oversized / Heavy Project Machinery</option>
+                    <option value="dry">Dry Cargo</option>
+                    <option value="bulk">Bulk Agri</option>
+                    <option value="refrigerated">Refrigerated</option>
+                    <option value="hazmat">Hazardous</option>
+                    <option value="fragile">Fragile</option>
+                    <option value="oversized">Oversized</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
                 </div>
               </div>
 
-              {/* Cargo Description */}
+              {/* Description */}
               <div className="space-y-1.5 md:col-span-2">
-                <label className="text-xs font-semibold text-[#EDEDED]">Itemized Cargo Description / Manifest Title</label>
+                <label className="text-xs font-semibold text-[#EDEDED]">Description</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -343,7 +335,7 @@ export default function FreightOrderForm({
                     onChange={(e) => setCargoDescription(e.target.value)}
                     required
                     className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                    placeholder="e.g. 500 Bags of Washed Arabica Coffee, Grade 1..."
+                    placeholder="e.g. Coffee, Textiles"
                   />
                 </div>
               </div>
@@ -357,12 +349,11 @@ export default function FreightOrderForm({
                   <label className="text-xs font-semibold text-[#EDEDED]">Gross Weight</label>
                   {weightNum > 0 && (
                     <span className="text-[10px] font-mono text-[#8F8F8F]">
-                      ≈ {weightTons} Metric Tons
+                      ≈ {weightTons} Tons
                     </span>
                   )}
                 </div>
                 <div className="relative flex items-center">
-                  <Scale size={15} className="absolute left-3 text-[#8F8F8F]" />
                   <input
                     type="number"
                     min="100"
@@ -370,8 +361,8 @@ export default function FreightOrderForm({
                     value={weightKg}
                     onChange={(e) => setWeightKg(e.target.value)}
                     required
-                    className="w-full pl-9 pr-12 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
-                    placeholder="e.g. 28000"
+                    className="w-full px-3 pr-10 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
+                    placeholder="28000"
                   />
                   <span className="absolute right-3 text-xs font-mono font-bold text-[#8F8F8F] pointer-events-none">kg</span>
                 </div>
@@ -380,7 +371,7 @@ export default function FreightOrderForm({
               {/* Volume */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-[#EDEDED]">Cargo Volume</label>
+                  <label className="text-xs font-semibold text-[#EDEDED]">Volume</label>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
@@ -409,35 +400,33 @@ export default function FreightOrderForm({
                   </div>
                 </div>
                 <div className="relative flex items-center">
-                  <Box size={15} className="absolute left-3 text-[#8F8F8F]" />
                   <input
                     type="number"
                     min="1"
                     step="1"
                     value={volumeM3}
                     onChange={(e) => setVolumeM3(e.target.value)}
-                    className="w-full pl-9 pr-12 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
-                    placeholder="e.g. 33"
+                    className="w-full px-3 pr-10 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
+                    placeholder="33"
                   />
                   <span className="absolute right-3 text-xs font-mono font-bold text-[#8F8F8F] pointer-events-none">m³</span>
                 </div>
               </div>
 
-              {/* Equipment Type */}
+              {/* Equipment */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Required Truck Equipment</label>
+                <label className="text-xs font-semibold text-[#EDEDED]">Equipment</label>
                 <div className="relative">
-                  <Truck size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
                   <select
                     value={truckType}
                     onChange={(e) => setTruckType(e.target.value)}
-                    className="w-full pl-9 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
+                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
                   >
-                    <option value="FLATBED">Flatbed 40ft Multi-Axle Trailer</option>
-                    <option value="SIDE_WALL">Side-Wall / High-Side Open Box</option>
-                    <option value="REEFER">Refrigerated Reefer Trailer (-20°C)</option>
-                    <option value="TANKER">Petroleum / Liquid Fuel Tanker</option>
-                    <option value="LOWBED">Lowbed Multi-Axle Heavy Hauler</option>
+                    <option value="FLATBED">Flatbed (40ft)</option>
+                    <option value="SIDE_WALL">Side-Wall Box</option>
+                    <option value="REEFER">Reefer (-20°C)</option>
+                    <option value="TANKER">Tanker (Fuel)</option>
+                    <option value="LOWBED">Lowbed (Heavy)</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
                 </div>
@@ -445,25 +434,25 @@ export default function FreightOrderForm({
             </div>
           </div>
 
-          {/* Section 3: Dispatch Urgency & Handling */}
+          {/* Section 3: Dispatch */}
           <div className="space-y-3 pt-2 border-t border-[#2E2E2E]">
             <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider">
-              <span>Dispatch Window</span>
+              <span>Dispatch</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {/* Urgency */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Dispatch Window & Urgency</label>
+                <label className="text-xs font-semibold text-[#EDEDED]">Urgency</label>
                 <div className="relative">
                   <select
                     value={urgencyTier}
                     onChange={(e) => setUrgencyTier(e.target.value as any)}
-                    className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
+                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
                   >
-                    <option value="standard">24h — Standard Corridor Dispatch</option>
-                    <option value="high">12h — Express Hotshot (+15% Urgency Surcharge)</option>
-                    <option value="low">48h — Flexible Economy (-5% Backhaul Saver)</option>
+                    <option value="standard">Standard (24h)</option>
+                    <option value="high">Express (+15%)</option>
+                    <option value="low">Economy (-5%)</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
                 </div>
@@ -471,7 +460,7 @@ export default function FreightOrderForm({
 
               {/* Earliest Pickup Date */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup Window</label>
+                <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup</label>
                 <div className="relative">
                   <Calendar size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
                   <input
@@ -483,15 +472,15 @@ export default function FreightOrderForm({
                 </div>
               </div>
 
-              {/* Special Instructions */}
+              {/* Special Handling */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Special Handling / Customs Seals</label>
+                <label className="text-xs font-semibold text-[#EDEDED]">Special Handling</label>
                 <input
                   type="text"
                   value={specialInstructions}
                   onChange={(e) => setSpecialInstructions(e.target.value)}
                   className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                  placeholder="Optional: e.g. Tarpaulin Covered, Fragile Glass, Customs E-Seals..."
+                  placeholder="e.g. Tarpaulin, Fragile"
                 />
               </div>
             </div>
@@ -502,7 +491,7 @@ export default function FreightOrderForm({
         <div className="p-5 bg-[#1C1C1C] border-t border-[#2E2E2E] flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs text-[#8F8F8F]">
             <Sparkles size={14} className="text-[#3ECF8E]" />
-            <span>FastAPI LightGBM Spot Engine calculates real-time corridor fuel, weight & distance multipliers</span>
+            <span>AI Spot Engine calculates real-time corridor rates</span>
           </div>
 
           <button
@@ -512,7 +501,7 @@ export default function FreightOrderForm({
             className="flex items-center gap-2 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] px-6 py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer"
           >
             <Sparkles size={14} className={loading ? 'animate-spin' : ''} />
-            <span>{loading ? 'Evaluating Model...' : 'Generate Dynamic AI Spot Quote'}</span>
+            <span>{loading ? 'Evaluating Model...' : 'Get AI Spot Quote'}</span>
           </button>
         </div>
       </div>
