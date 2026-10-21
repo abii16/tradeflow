@@ -525,10 +525,15 @@ export default function ContractRates() {
                         <div className="font-semibold text-[#EDEDED] font-sans flex items-center gap-1.5">
                           <Truck size={13} className="text-[#3ECF8E]" />
                           <span>{contract.companyName || contract.transporterName || 'Authorized Carrier'}</span>
-                          <span className="text-[9px] px-1.5 py-0.2 bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] rounded font-mono">
-                            VERIFIED
+                          <span className="text-[9px] px-1.5 py-0.5 bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] rounded font-mono font-bold">
+                            CARRIER
                           </span>
                         </div>
+                        {contract.transporterName && contract.companyName && contract.transporterName !== contract.companyName && (
+                          <div className="text-[11px] text-[#8F8F8F] font-sans mt-0.5">
+                            Driver / Lead: {contract.transporterName}
+                          </div>
+                        )}
                         <div className="text-xs text-[#8F8F8F] font-sans mt-1 flex items-center gap-1">
                           <span className="text-[#CCCCCC]">{contract.origin}</span>
                           <ArrowRight size={11} className="text-[#3ECF8E]" />
@@ -695,7 +700,7 @@ export default function ContractRates() {
                   >
                     {transporters.map(t => (
                       <option key={t.id} value={t.id}>
-                        {t.companyName || t.fullName} {t.phone ? `(${t.phone})` : ''} — {t.verificationStatus || 'VERIFIED'}
+                        🚚 [Carrier] {t.companyName || t.fullName} {t.fullName && t.companyName && t.fullName !== t.companyName ? `(Driver: ${t.fullName})` : ''} {t.phone ? `• ${t.phone}` : ''}
                       </option>
                     ))}
                   </select>
