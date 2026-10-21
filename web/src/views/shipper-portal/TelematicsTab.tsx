@@ -19,7 +19,9 @@ import {
   Clock,
   Layers,
   Activity,
-  ShieldCheck
+  ShieldCheck,
+  User,
+  Sparkles
 } from 'lucide-react';
 import { fetchRiskZones } from '@/lib/apiClient';
 import { useLiveTelemetry, TruckTelemetry } from '@/hooks/useLiveTelemetry';
@@ -304,18 +306,22 @@ export default function TelematicsTab() {
                 }}
               >
                 <Popup>
-                  <div className="font-mono text-xs text-[#EDEDED] min-w-[240px] p-1.5">
+                  <div className="font-sans text-xs text-[#EDEDED] min-w-[245px] p-1">
                     <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#282828]">
                       <div className="flex items-center gap-1.5">
-                        <Truck size={13} className={truck.status === 'SAFE' ? 'text-[#3ECF8E]' : 'text-amber-400'} />
-                        <span className="font-bold text-sm text-[#EDEDED]">{truck.id}</span>
+                        <div className={`w-5 h-5 rounded flex items-center justify-center border ${
+                          truck.status === 'SAFE' ? 'bg-[#3ECF8E]/10 border-[#3ECF8E]/30 text-[#3ECF8E]' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                        }`}>
+                          <Truck size={11} />
+                        </div>
+                        <span className="font-bold text-xs font-mono text-[#EDEDED]">{truck.id}</span>
                         {truck.plate && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#202020] text-[#8F8F8F] border border-[#2E2E2E]">
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#202020] text-[#9E9E9E] font-mono border border-[#2E2E2E]">
                             {truck.plate}
                           </span>
                         )}
                       </div>
-                      <span className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
+                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold font-mono uppercase tracking-wider ${
                         truck.status === 'SAFE' 
                           ? 'bg-[#3ECF8E]/15 text-[#3ECF8E] border border-[#3ECF8E]/30' 
                           : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
@@ -324,14 +330,19 @@ export default function TelematicsTab() {
                       </span>
                     </div>
 
-                    <div className="text-xs font-semibold text-[#EDEDED] mb-1 truncate">{truck.cargo}</div>
-                    <div className="text-[11px] text-[#8F8F8F] mb-2 flex items-center gap-1 truncate">
-                      <span className="text-[#EDEDED]">{truck.origin || 'Djibouti'}</span>
-                      <ArrowRight size={10} className="text-[#3ECF8E] shrink-0" />
-                      <span className="text-[#EDEDED]">{truck.destination || 'Modjo'}</span>
+                    <div className="text-xs font-semibold text-[#EDEDED] mb-1 truncate">
+                      {(truck.cargo || 'General Freight').replace(/^Freight:\s*/i, '')}
+                    </div>
+                    <div className="text-[11px] text-[#8F8F8F] mb-2 flex items-center justify-between">
+                      <span className="text-[#A1A1A1] truncate max-w-[120px]">{truck.driver}</span>
+                      <div className="flex items-center gap-1 font-mono text-[10px] shrink-0">
+                        <span className="text-[#C0C0C0]">{truck.origin || 'Djibouti'}</span>
+                        <ArrowRight size={10} className="text-[#3ECF8E]" />
+                        <span className="text-[#EDEDED] font-medium">{truck.destination || 'Modjo'}</span>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1.5 bg-[#121212] p-2 rounded-lg border border-[#242424] text-[11px] mb-2">
+                    <div className="grid grid-cols-3 gap-1.5 bg-[#101010] p-2 rounded-lg border border-[#242424] text-[10px] font-mono mb-2">
                       <div>
                         <span className="text-[9px] text-[#707070] block">Speed</span>
                         <span className="font-bold text-[#EDEDED]">{truck.speed} km/h</span>
@@ -340,11 +351,15 @@ export default function TelematicsTab() {
                         <span className="text-[9px] text-[#707070] block">Remaining</span>
                         <span className="font-bold text-[#EDEDED]">{truck.remainingDistanceKm || 0} km</span>
                       </div>
+                      <div>
+                        <span className="text-[9px] text-[#3ECF8E]/80 block">AI ETA</span>
+                        <span className="font-bold text-[#3ECF8E]">{truck.eta}</span>
+                      </div>
                     </div>
 
-                    <div className="pt-1.5 border-t border-[#242424] flex items-center justify-between text-[11px]">
-                      <span className="text-[#707070]">PyTorch ETA:</span>
-                      <span className="font-bold text-[#3ECF8E]">{truck.eta} ({truck.estimatedArrival})</span>
+                    <div className="pt-1.5 border-t border-[#242424] flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-[#707070]">Est. Arrival:</span>
+                      <span className="font-bold text-[#EDEDED]">{truck.estimatedArrival || 'N/A'}</span>
                     </div>
                   </div>
                 </Popup>
@@ -353,13 +368,13 @@ export default function TelematicsTab() {
           </MapContainer>
 
           {/* Top-Left HUD Badge: AI Engine */}
-          <div className="absolute top-3 left-12 z-[1000] bg-[#121212]/90 backdrop-blur-md border border-[#242424] px-3 py-1.5 rounded-lg text-xs font-mono text-[#EDEDED] shadow-xl flex items-center gap-2 pointer-events-none">
-            <Cpu size={14} className="text-[#3ECF8E]" />
+          <div className="absolute top-3 left-12 z-[1000] bg-[#121212]/92 backdrop-blur-md border border-[#262626] px-3 py-1.5 rounded-lg text-xs font-mono text-[#EDEDED] shadow-xl flex items-center gap-2 pointer-events-none">
+            <Cpu size={13} className="text-[#3ECF8E]" />
             <span>AI ETA: <strong className="text-[#3ECF8E]">PyTorch Deep Model</strong></span>
           </div>
 
           {/* Top-Right Quick Jump Buttons */}
-          <div className="absolute top-3 right-3 z-[1000] hidden sm:flex items-center gap-1 bg-[#121212]/90 backdrop-blur-md border border-[#242424] p-1 rounded-lg text-[10px] font-mono shadow-xl">
+          <div className="absolute top-3 right-3 z-[1000] hidden sm:flex items-center gap-1 bg-[#121212]/92 backdrop-blur-md border border-[#262626] p-1 rounded-lg text-[10px] font-mono shadow-xl">
             <button
               type="button"
               onClick={() => handleSectorJump([10.3, 41.2], 7)}
@@ -391,34 +406,49 @@ export default function TelematicsTab() {
           </div>
 
           {/* Bottom-Left Live Telemetry Stats Pill */}
-          <div className="absolute bottom-3 left-3 z-[1000] bg-[#121212]/90 backdrop-blur-md border border-[#242424] px-2.5 py-1 rounded-lg text-[10px] font-mono text-[#8F8F8F] shadow-lg flex items-center gap-2 pointer-events-none">
-            <Activity size={12} className="text-[#3ECF8E]" />
+          <div className="absolute bottom-3 left-3 z-[1000] bg-[#121212]/92 backdrop-blur-md border border-[#262626] px-2.5 py-1 rounded-lg text-[10px] font-mono text-[#8F8F8F] shadow-lg flex items-center gap-2 pointer-events-none">
+            <Activity size={12} className="text-[#3ECF8E] animate-pulse" />
             <span>{telemetry.trucks.length} Active Fleet Transponders</span>
           </div>
         </div>
 
         {/* Side Panel: Live Fleet Control Tower Feed */}
-        <div className="lg:col-span-2 relative h-[calc(100vh-14rem)] min-h-[440px] flex flex-col min-h-0 bg-[#171717] border border-[#242424] rounded-xl p-3 shadow-sm">
+        <div className="lg:col-span-2 relative h-[calc(100vh-14rem)] min-h-[440px] flex flex-col min-h-0 bg-[#141414] border border-[#222222] rounded-xl p-3 shadow-sm">
           {/* Search Input */}
           <div className="relative mb-2.5 shrink-0">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#707070]" />
             <input
               type="text"
-              placeholder="Search truck ID, plate, or driver..."
+              placeholder="Search ID, plate, cargo, or driver..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#121212] border border-[#242424] rounded-lg text-[#EDEDED] placeholder-[#707070] font-mono focus:outline-none focus:border-[#3ECF8E] transition"
+              className="w-full pl-8 pr-12 py-1.5 text-xs bg-[#0E0E0E] border border-[#262626] rounded-lg text-[#EDEDED] placeholder-[#707070] font-sans focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 transition"
             />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#707070] hover:text-[#EDEDED] transition cursor-pointer"
+              >
+                Clear
+              </button>
+            ) : (
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-mono px-1 py-0.2 rounded bg-[#1C1C1C] text-[#606060] border border-[#262626]">
+                /
+              </span>
+            )}
           </div>
 
           {/* Filter Bar */}
-          <div className="flex items-center justify-between pb-2.5 border-b border-[#242424] shrink-0 gap-1 text-xs">
-            <div className="flex items-center gap-1 font-mono">
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#222222] shrink-0 gap-1.5 text-xs">
+            <div className="flex items-center p-0.5 rounded-lg bg-[#0E0E0E] border border-[#222222] text-xs">
               <button
                 type="button"
                 onClick={() => setStatusFilter('ALL')}
                 className={`px-2.5 py-1 rounded-md font-semibold transition cursor-pointer ${
-                  statusFilter === 'ALL' ? 'bg-[#242424] text-[#EDEDED]' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+                  statusFilter === 'ALL'
+                    ? 'bg-[#222222] text-[#EDEDED] shadow-sm'
+                    : 'text-[#8F8F8F] hover:text-[#EDEDED]'
                 }`}
               >
                 All ({telemetry.trucks.length})
@@ -426,8 +456,10 @@ export default function TelematicsTab() {
               <button
                 type="button"
                 onClick={() => setStatusFilter('SAFE')}
-                className={`px-2.5 py-1 rounded-md font-semibold transition cursor-pointer flex items-center gap-1 ${
-                  statusFilter === 'SAFE' ? 'bg-[#3ECF8E]/20 text-[#3ECF8E] border border-[#3ECF8E]/30' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+                className={`px-2.5 py-1 rounded-md font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                  statusFilter === 'SAFE'
+                    ? 'bg-[#3ECF8E]/15 text-[#3ECF8E] border border-[#3ECF8E]/30 shadow-sm'
+                    : 'text-[#8F8F8F] hover:text-[#EDEDED]'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]" />
@@ -436,8 +468,10 @@ export default function TelematicsTab() {
               <button
                 type="button"
                 onClick={() => setStatusFilter('BREACH')}
-                className={`px-2.5 py-1 rounded-md font-semibold transition cursor-pointer flex items-center gap-1 ${
-                  statusFilter === 'BREACH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+                className={`px-2.5 py-1 rounded-md font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                  statusFilter === 'BREACH'
+                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm'
+                    : 'text-[#8F8F8F] hover:text-[#EDEDED]'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
@@ -445,13 +479,13 @@ export default function TelematicsTab() {
               </button>
             </div>
             
-            <span className="text-[11px] text-[#707070] font-mono">
+            <span className="text-[11px] text-[#707070] font-mono tracking-tight font-medium">
               {filteredTrucks.length} Units
             </span>
           </div>
 
           {/* Fleet Stream Cards */}
-          <div className="flex-1 space-y-2.5 overflow-y-auto min-h-0 pt-2.5 pr-1 pb-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#282828] [&::-webkit-scrollbar-track]:bg-transparent">
+          <div className="flex-1 space-y-2.5 overflow-y-auto min-h-0 pt-2.5 pr-1 pb-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#262626] [&::-webkit-scrollbar-track]:bg-transparent">
             {/* Critical Incident Alerts */}
             {telemetry.alerts.map(alert => (
               <div key={alert.id} className="bg-rose-500/10 border-l-4 border-l-rose-500 border-y border-r border-[#242424] rounded-lg p-2.5 animate-in fade-in">
@@ -480,118 +514,155 @@ export default function TelematicsTab() {
             {filteredTrucks.map(truck => {
               const isSelected = selectedTruckId === truck.id;
               const isBreach = truck.status === 'GEOFENCE_BREACH' || truck.status === 'SPEEDING';
+              const cleanCargo = (truck.cargo || 'General Freight').replace(/^Freight:\s*/i, '');
 
               return (
                 <div 
                   key={truck.id}
                   onClick={() => handleSelectTruck(truck)}
-                  className={`border rounded-xl p-3 transition-all duration-200 cursor-pointer ${
+                  className={`relative rounded-xl p-3 transition-all duration-200 cursor-pointer overflow-hidden border ${
                     isSelected 
-                      ? 'bg-[#1C1C1C] border-[#3ECF8E] shadow-[0_0_18px_rgba(62,207,142,0.15)]' 
-                      : 'bg-[#121212] border-[#242424] hover:border-[#383838] hover:bg-[#161616]'
+                      ? 'bg-[#181818] border-[#3ECF8E] shadow-[0_0_20px_rgba(62,207,142,0.12)] ring-1 ring-[#3ECF8E]/40' 
+                      : 'bg-[#101010] border-[#222222] hover:border-[#333333] hover:bg-[#141414]'
                   }`}
                 >
+                  {/* Subtle status indicator strip */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                    isBreach 
+                      ? 'bg-amber-400' 
+                      : isSelected 
+                      ? 'bg-[#3ECF8E]' 
+                      : 'bg-transparent'
+                  }`} />
+
                   {/* Top Bar: Truck ID & Status Pill */}
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="font-bold text-xs font-mono text-[#EDEDED] flex items-center gap-1.5">
-                        <Truck size={13} className={isBreach ? 'text-amber-400' : 'text-[#3ECF8E]'} />
-                        <span>{truck.id}</span>
+                  <div className="flex justify-between items-center mb-2 pl-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 border ${
+                        isBreach 
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' 
+                          : 'bg-[#3ECF8E]/10 border-[#3ECF8E]/30 text-[#3ECF8E]'
+                      }`}>
+                        <Truck size={12} />
                       </div>
+                      <span className="font-bold text-xs font-mono text-[#EDEDED] tracking-tight">
+                        {truck.id}
+                      </span>
                       {truck.plate && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#1C1C1C] border border-[#282828] text-[#8F8F8F] font-mono">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#1A1A1A] border border-[#282828] text-[#9E9E9E] font-mono tracking-wider shrink-0">
                           {truck.plate}
                         </span>
                       )}
                     </div>
 
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider border flex items-center gap-1 ${
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-mono tracking-wider border shrink-0 flex items-center gap-1.5 ${
                       isBreach 
                         ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' 
                         : 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/30'
                     }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isBreach ? 'bg-amber-400' : 'bg-[#3ECF8E]'}`} />
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isBreach ? 'bg-amber-400 animate-pulse' : 'bg-[#3ECF8E]'}`} />
                       <span>{truck.status || 'SAFE'}</span>
                     </span>
                   </div>
 
-                  {/* Freight & Driver Info */}
-                  <div className="text-xs text-[#EDEDED] font-medium truncate mb-1">
-                    {truck.cargo}
+                  {/* Freight Title */}
+                  <div className="text-[13px] font-semibold text-[#EDEDED] tracking-tight truncate mb-1 pl-1 font-sans">
+                    {cleanCargo}
                   </div>
 
-                  <div className="text-[11px] text-[#8F8F8F] font-mono flex items-center gap-1 mb-2.5 truncate">
-                    <span>{truck.driver}</span>
-                    <span className="text-[#3A3A3A]">•</span>
-                    <span className="text-[#EDEDED]">{truck.origin || 'Djibouti'}</span>
-                    <ArrowRight size={10} className="text-[#3ECF8E] shrink-0" />
-                    <span className="text-[#EDEDED]">{truck.destination || 'Modjo'}</span>
+                  {/* Driver & Route Info */}
+                  <div className="flex items-center justify-between text-[11px] gap-2 mb-2.5 pl-1">
+                    <div className="flex items-center gap-1.5 text-[#8F8F8F] min-w-0 truncate">
+                      <User size={11} className="text-[#606060] shrink-0" />
+                      <span className="truncate">{truck.driver || 'Assigned Driver'}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] font-mono shrink-0">
+                      <span className="text-[#A1A1A1]">{truck.origin || 'Djibouti'}</span>
+                      <ArrowRight size={10} className="text-[#3ECF8E] shrink-0" />
+                      <span className="text-[#EDEDED] font-medium">{truck.destination || 'Modjo'}</span>
+                    </div>
                   </div>
 
                   {/* Hazard Note if Breach */}
                   {truck.hazardNote && (
-                    <div className="bg-amber-500/10 border border-amber-500/25 rounded-md px-2 py-1 mb-2 text-[10px] text-amber-300 font-mono flex items-center gap-1.5">
-                      <AlertTriangle size={11} className="text-amber-400 shrink-0" />
-                      <span className="truncate">{truck.hazardNote}</span>
+                    <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1.5 mb-2.5 text-[11px] text-amber-300 font-mono flex items-center gap-2">
+                      <AlertTriangle size={12} className="text-amber-400 shrink-0" />
+                      <span className="truncate font-medium">{truck.hazardNote}</span>
                     </div>
                   )}
 
                   {/* Telemetry Metrics Grid */}
-                  <div className="grid grid-cols-3 gap-2 bg-[#171717] p-2 rounded-lg border border-[#242424] text-[11px] font-mono mb-2.5">
+                  <div className="grid grid-cols-3 gap-2 bg-[#0A0A0A] p-2 rounded-lg border border-[#202020] mb-2.5">
                     <div>
-                      <span className="text-[#707070] text-[9px] block">Speed</span>
-                      <span className="font-bold text-[#EDEDED] flex items-center gap-1 mt-0.5">
-                        <Gauge size={10} className="text-[#8F8F8F]" />
-                        {truck.speed} km/h
-                      </span>
+                      <div className="flex items-center gap-1 text-[9px] text-[#707070] font-mono uppercase tracking-wider mb-0.5">
+                        <Gauge size={10} className="text-[#606060]" />
+                        <span>Speed</span>
+                      </div>
+                      <div className="font-mono font-bold text-xs text-[#EDEDED]">
+                        {truck.speed} <span className="text-[9px] font-normal text-[#707070]">km/h</span>
+                      </div>
                     </div>
 
                     <div>
-                      <span className="text-[#707070] text-[9px] block">Remaining</span>
-                      <span className="font-bold text-[#EDEDED] flex items-center gap-1 mt-0.5">
-                        <Navigation size={10} className="text-[#8F8F8F]" />
-                        {truck.remainingDistanceKm || 0} km
-                      </span>
+                      <div className="flex items-center gap-1 text-[9px] text-[#707070] font-mono uppercase tracking-wider mb-0.5">
+                        <Navigation size={10} className="text-[#606060]" />
+                        <span>Remaining</span>
+                      </div>
+                      <div className="font-mono font-bold text-xs text-[#EDEDED]">
+                        {truck.remainingDistanceKm || 0} <span className="text-[9px] font-normal text-[#707070]">km</span>
+                      </div>
                     </div>
 
                     <div>
-                      <span className="text-[#707070] text-[9px] block">PyTorch ETA</span>
-                      <span className="font-bold text-[#3ECF8E] flex items-center gap-1 mt-0.5">
+                      <div className="flex items-center gap-1 text-[9px] text-[#3ECF8E]/80 font-mono uppercase tracking-wider mb-0.5">
+                        <Sparkles size={10} className="text-[#3ECF8E]" />
+                        <span>PyTorch ETA</span>
+                      </div>
+                      <div className="font-mono font-bold text-xs text-[#3ECF8E]">
                         {truck.eta}
-                      </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Real GPS Progress Bar */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] font-mono text-[#707070]">
-                      <span>Corridor Progress</span>
+                  <div className="space-y-1 pl-1">
+                    <div className="flex justify-between items-center text-[10px] font-mono">
+                      <span className="text-[#707070] uppercase tracking-wider text-[9px]">Corridor Progress</span>
                       <span className="text-[#EDEDED] font-bold">{truck.progressPercent || 0}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-[#1C1C1C] rounded-full overflow-hidden border border-[#242424]">
+                    <div className="h-1.5 w-full bg-[#181818] rounded-full overflow-hidden border border-[#222222]">
                       <div 
-                        className={`h-full transition-all duration-500 ${isBreach ? 'bg-amber-400' : 'bg-[#3ECF8E]'}`} 
-                        style={{ width: `${Math.max(5, Math.min(100, truck.progressPercent || 0))}%` }}
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isBreach 
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-400' 
+                            : 'bg-gradient-to-r from-[#10B981] to-[#3ECF8E] shadow-[0_0_8px_rgba(62,207,142,0.4)]'
+                        }`} 
+                        style={{ width: `${Math.max(4, Math.min(100, truck.progressPercent || 0))}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Arrival Time Footer */}
                   {truck.estimatedArrival && (
-                    <div className="mt-2 pt-1.5 border-t border-[#1C1C1C] flex justify-between items-center text-[10px] font-mono text-[#707070]">
-                      <span>Expected Arrival:</span>
-                      <span className="text-[#EDEDED] font-semibold">{truck.estimatedArrival}</span>
+                    <div className="mt-2.5 pt-2 border-t border-[#1C1C1C] flex justify-between items-center text-[10px] font-mono pl-1">
+                      <div className="flex items-center gap-1.5 text-[#707070]">
+                        <Clock size={10} className="text-[#606060]" />
+                        <span>Expected Arrival:</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded bg-[#181818] border border-[#262626] text-[#EDEDED] font-semibold">
+                        {truck.estimatedArrival}
+                      </span>
                     </div>
                   )}
 
                   {/* Expanded Telemetry Details on Selection */}
                   {isSelected && (
-                    <div className="mt-2.5 pt-2 border-t border-[#242424] flex items-center justify-between text-[10px] font-mono animate-in fade-in">
+                    <div className="mt-2 pt-2 border-t border-[#242424] flex items-center justify-between text-[10px] font-mono pl-1 animate-in fade-in">
                       <div className="flex items-center gap-1 text-[#8F8F8F]">
                         <Compass size={11} className="text-[#3ECF8E]" />
                         <span>{truck.lat.toFixed(3)}° N, {truck.lng.toFixed(3)}° E</span>
                       </div>
-                      <div className="flex items-center gap-1 text-[#3ECF8E]">
+                      <div className="flex items-center gap-1 text-[#3ECF8E] font-medium">
                         <Crosshair size={11} />
                         <span>Focused on Radar</span>
                       </div>
