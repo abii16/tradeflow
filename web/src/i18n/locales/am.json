@@ -341,7 +341,7 @@
   "crm_subtitle": "የረጅም ጊዜ የውል ተመኖችን ያስተዳድሩ እና የቦታ ገበያ ልዩነትን ይከታተሉ (FR-04)።",
   "crm_btn_new": "አዲስ የውል ተመን",
   "crm_col_id": "የውል መታወቂያ",
-  "crm_col_carrier": "አጓጓዥ እና መስመር",
+  "crm_col_carrier": "አጓጓዥ ድርጅት እና መስመር",
   "crm_col_locked": "የተቆለፈ ዋጋ",
   "crm_col_spot": "የአሁኑ የቦታ ዋጋ",
   "crm_col_divergence": "ልዩነት",

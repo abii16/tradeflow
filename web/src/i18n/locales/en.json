@@ -340,7 +340,7 @@
   "crm_subtitle": "Manage long-term locked rates and monitor spot market divergence (FR-04).",
   "crm_btn_new": "New Contract Rate",
   "crm_col_id": "Contract ID",
-  "crm_col_carrier": "Carrier & Route",
+  "crm_col_carrier": "Carrier Enterprise & Route",
   "crm_col_locked": "Locked Rate",
   "crm_col_spot": "Current Spot",
   "crm_col_divergence": "Divergence",
