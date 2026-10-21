@@ -174,20 +174,12 @@ export default function CustomsTab() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-[#222222] gap-3">
         <div>
-          <h1 className="text-xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2.5">
-            <Fingerprint size={22} className="text-[#3ECF8E]" />
-            <span>{t('customs_vault', 'Digital Customs Vault')}</span>
+          <h1 className="text-xl font-bold text-[#EDEDED] tracking-tight">
+            {t('customs_vault', 'Digital Customs Vault')}
           </h1>
-          <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2.5 py-0.5 rounded-full border border-[#3ECF8E]/25">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse" />
-              ERCA Synced (Single Window)
-            </span>
-            <span className="text-[11px] text-[#8F8F8F] font-mono flex items-center gap-1.5">
-              <ShieldCheck size={12} className="text-[#3ECF8E]" />
-              SHA-256 Tamper-Proof Cryptographic Hashing
-            </span>
-          </div>
+          <p className="text-xs text-[#8F8F8F] mt-1 font-mono">
+            ERCA Single Window &bull; SHA-256 Verified
+          </p>
         </div>
 
         <div className="flex items-center gap-2.5">
