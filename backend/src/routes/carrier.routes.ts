@@ -155,15 +155,18 @@ router.get('/available-loads', async (req: Request, res: Response): Promise<void
       .where(eq(loads.status, 'POSTED'))
       .orderBy(desc(loads.createdAt));
 
-    // Get transporter's existing bids to flag if already bid
+    // Get transporter's active/pending bids to flag if already bid (excluding WITHDRAWN)
     const userBids = await db
       .select()
       .from(bids)
-      .where(eq(bids.transporterId, userId));
+      .where(and(eq(bids.transporterId, userId), ne(bids.status, 'WITHDRAWN')))
+      .orderBy(desc(bids.createdAt));
 
     const bidMap = new Map<string, any>();
     for (const b of userBids) {
-      bidMap.set(b.loadId, b);
+      if (!bidMap.has(b.loadId)) {
+        bidMap.set(b.loadId, b);
+      }
     }
 
     // Transporter fleet capacity for AI matching
@@ -339,13 +342,15 @@ router.post('/bids', auditMiddleware('TRANSPORTER_CREATE_BID'), async (req: Requ
       return;
     }
 
-    // Check if duplicate bid already exists
+    // Check if duplicate active pending bid already exists
     const [existing] = await db
       .select()
       .from(bids)
-      .where(and(eq(bids.loadId, loadId), eq(bids.transporterId, userId)));
+      .where(and(eq(bids.loadId, loadId), eq(bids.transporterId, userId), eq(bids.status, 'PENDING')))
+      .orderBy(desc(bids.createdAt))
+      .limit(1);
 
-    if (existing && existing.status === 'PENDING') {
+    if (existing) {
       const [updatedBid] = await db
         .update(bids)
         .set({
