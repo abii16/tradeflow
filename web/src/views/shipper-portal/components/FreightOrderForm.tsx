@@ -195,16 +195,10 @@ export default function FreightOrderForm({
     <div className="space-y-5 animate-in fade-in duration-300">
       <div className="bg-[#232323] border border-[#2E2E2E] rounded-xl shadow-lg shadow-black/40 overflow-hidden">
         {/* Card Header */}
-        <div className="bg-[#1C1C1C] border-b border-[#2E2E2E] px-6 py-4 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h2 className="text-base font-bold text-[#EDEDED] flex items-center gap-2">
-              <Package size={18} className="text-[#3ECF8E]" />
-              {t('post_new_freight_order', 'Post New Freight Order (SRS FR-02.1)')}
-            </h2>
-            <p className="text-[11px] text-[#8F8F8F] mt-0.5">
-              Input corridor shipment specifications for automated AI spot pricing and carrier matching
-            </p>
-          </div>
+        <div className="bg-[#1C1C1C] border-b border-[#2E2E2E] px-6 py-3.5 flex items-center justify-between flex-wrap gap-3">
+          <h2 className="text-base font-bold text-[#EDEDED]">
+            {t('post_new_freight_order', 'Post New Freight Order')}
+          </h2>
           {!isVerified && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <Lock size={12} /> Broadcast Locked (Pending Admin Verification)
