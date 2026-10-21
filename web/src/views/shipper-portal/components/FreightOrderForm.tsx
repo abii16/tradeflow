@@ -210,9 +210,8 @@ export default function FreightOrderForm({
         <form id="quote-form" onSubmit={handleRequestQuote} className="p-6 space-y-6">
           {/* Section 1: Route & Terminals */}
           <div className="space-y-3">
-            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
-              <MapPin size={13} className="text-[#3ECF8E]" />
-              <span>1. Route & Terminals</span>
+            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider">
+              <span>Route & Terminals</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -292,9 +291,8 @@ export default function FreightOrderForm({
 
           {/* Section 2: Cargo Classification & Details */}
           <div className="space-y-3 pt-2 border-t border-[#2E2E2E]">
-            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
-              <Package size={13} className="text-[#3ECF8E]" />
-              <span>2. Cargo Details</span>
+            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider">
+              <span>Cargo Details</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -431,9 +429,8 @@ export default function FreightOrderForm({
 
           {/* Section 3: Dispatch Urgency & Handling */}
           <div className="space-y-3 pt-2 border-t border-[#2E2E2E]">
-            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
-              <Clock size={13} className="text-[#3ECF8E]" />
-              <span>3. Dispatch Window</span>
+            <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider">
+              <span>Dispatch Window</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
