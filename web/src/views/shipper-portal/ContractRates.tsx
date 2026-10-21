@@ -296,14 +296,11 @@ export default function ContractRates() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-[#242424] gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E]">
-              <FileSignature size={20} />
-            </div>
-            <span>{t('crm_title', 'Contract Rates Management')}</span>
+          <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight">
+            {t('crm_title', 'Contract Rates')}
           </h1>
           <p className="text-xs text-[#8F8F8F] mt-1 font-mono">
-            {t('crm_subtitle', 'Manage long-term locked rates and monitor spot market divergence (FR-04).')}
+            {t('crm_subtitle', 'Manage locked rates & monitor spot divergence.')}
           </p>
         </div>
         <div className="flex items-center gap-3">
