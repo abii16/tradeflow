@@ -10,6 +10,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { postLoad, calculateSpotRate } from '@/lib/apiClient';
+import EthiopianDatePicker from '@/components/common/EthiopianDatePicker';
 import toast from 'react-hot-toast';
 
 interface FreightOrderFormProps {
@@ -458,18 +459,19 @@ export default function FreightOrderForm({
                 </div>
               </div>
 
-              {/* Earliest Pickup Date */}
+              {/* Earliest Pickup Date (Ethiopian Calendar) */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup</label>
-                <div className="relative">
-                  <Calendar size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8F8F8F]" />
-                  <input
-                    type="datetime-local"
-                    value={earliestPickup}
-                    onChange={(e) => setEarliestPickup(e.target.value)}
-                    className="w-full pl-9 pr-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
-                  />
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup</label>
+                  <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20">
+                    የኢትዮጵያ አቆጣጠር
+                  </span>
                 </div>
+                <EthiopianDatePicker
+                  value={earliestPickup}
+                  onChange={(iso) => setEarliestPickup(iso)}
+                  placeholder="ቀን ይምረጡ (e.g. ጥቅምት 11, 2017)"
+                />
               </div>
 
               {/* Special Handling */}
