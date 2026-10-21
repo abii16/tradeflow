@@ -23,21 +23,116 @@ router.use(JwtAuthGuard, RolesGuard(['SHIPPER']));
 
 router.get('/shipments/active', async (req: Request, res: Response): Promise<void> => {
   try {
-    const activeShipments = await db.select({ shipment: shipments }).from(shipments)
-      .innerJoin(loads, eq(shipments.loadId, loads.id))
-      .where(and(eq(loads.shipperId, req.user!.id), eq(shipments.status, 'IN_TRANSIT')))
-      .orderBy(desc(shipments.createdAt))
-      .limit(1);
+    const activeShipments = await db.select({
+      shipment: shipments,
+      load: loads,
+      transporter: {
+        id: users.id,
+        fullName: users.fullName,
+        companyName: users.companyName,
+        phone: users.phone,
+        metadata: users.metadata,
+      }
+    })
+    .from(shipments)
+    .innerJoin(loads, eq(shipments.loadId, loads.id))
+    .leftJoin(users, eq(shipments.transporterId, users.id))
+    .where(and(
+      eq(loads.shipperId, req.user!.id),
+      or(
+        eq(shipments.status, 'IN_TRANSIT'),
+        eq(shipments.status, 'DISPATCHED'),
+        eq(shipments.status, 'PICKED_UP'),
+        eq(shipments.status, 'IN_CUSTOMS')
+      )
+    ))
+    .orderBy(desc(shipments.createdAt))
+    .limit(1);
 
     if (activeShipments.length === 0) {
-       res.status(200).json({ shipment: null });
-       return;
+      res.status(200).json({ shipment: null });
+      return;
     }
 
-    res.status(200).json({ shipment: activeShipments[0].shipment });
+    const item = activeShipments[0];
+    const trackingNumber = `SHP-${item.shipment.id.substring(0, 8).toUpperCase()}-DJM`;
+
+    res.status(200).json({
+      shipment: {
+        ...item.shipment,
+        trackingNumber,
+        load: item.load,
+        transporter: item.transporter,
+        driver: item.transporter,
+      }
+    });
   } catch (error) {
     console.error('Error fetching active shipment:', error);
     res.status(500).json({ error: 'Failed to fetch active shipment' });
+  }
+});
+
+router.post('/shipments/:id/rate', auditMiddleware('SHIPPER_RATE_TRANSPORTER'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+    const numRating = Number(rating);
+
+    if (!numRating || numRating < 1 || numRating > 5) {
+      res.status(400).json({ error: 'Invalid rating. Must be between 1 and 5.' });
+      return;
+    }
+
+    const [shipmentRecord] = await db.select({
+      shipment: shipments,
+      shipperId: loads.shipperId,
+      transporterId: shipments.transporterId
+    })
+    .from(shipments)
+    .innerJoin(loads, eq(shipments.loadId, loads.id))
+    .where(and(eq(shipments.id, id), eq(loads.shipperId, req.user!.id)));
+
+    if (!shipmentRecord) {
+      res.status(404).json({ error: 'Shipment not found or unauthorized' });
+      return;
+    }
+
+    if (shipmentRecord.transporterId) {
+      const [transporter] = await db.select().from(users).where(eq(users.id, shipmentRecord.transporterId));
+      if (transporter) {
+        const meta = typeof transporter.metadata === 'object' && transporter.metadata ? { ...transporter.metadata as any } : {};
+        const prevRatingCount = Number(meta.ratingCount || 0);
+        const prevTotalScore = Number(meta.totalRatingScore || (prevRatingCount * 4.8));
+        const newRatingCount = prevRatingCount + 1;
+        const newTotalScore = prevTotalScore + numRating;
+        const newAverage = (newTotalScore / newRatingCount).toFixed(1);
+
+        const reviews = Array.isArray(meta.reviews) ? meta.reviews : [];
+        reviews.unshift({
+          shipmentId: id,
+          shipperName: req.user!.fullName || 'Verified Shipper',
+          rating: numRating,
+          comment: comment || '',
+          date: new Date().toISOString(),
+        });
+
+        await db.update(users).set({
+          metadata: {
+            ...meta,
+            rating: newAverage,
+            ratingCount: newRatingCount,
+            totalRatingScore: newTotalScore,
+            reviews: reviews.slice(0, 20),
+          },
+          updatedAt: new Date(),
+        }).where(eq(users.id, transporter.id));
+      }
+    }
+
+    res.status(200).json({ success: true, message: 'Rating and feedback submitted successfully' });
+  } catch (error: any) {
+    console.error('Error submitting rating:', error);
+    res.status(500).json({ error: error.message || 'Failed to submit rating' });
   }
 });
 
@@ -223,6 +318,28 @@ router.post('/bids/:bidId/accept-escrow', auditMiddleware('SHIPPER_ACCEPT_BID'),
 // ==========================================
 // TAB 3: CONTRACT RATES MANAGEMENT
 // ==========================================
+
+router.get('/transporters', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const carrierList = await db.select({
+      id: users.id,
+      fullName: users.fullName,
+      companyName: users.companyName,
+      phone: users.phone,
+      metadata: users.metadata,
+      verificationStatus: users.verificationStatus,
+    })
+    .from(users)
+    .where(eq(users.role, 'TRANSPORTER'))
+    .orderBy(desc(users.createdAt))
+    .limit(50);
+
+    res.status(200).json({ transporters: carrierList });
+  } catch (error) {
+    console.error('Error fetching transporters for shipper:', error);
+    res.status(500).json({ error: 'Failed to fetch transporters' });
+  }
+});
 
 router.get('/contract-rates', async (req: Request, res: Response): Promise<void> => {
   try {

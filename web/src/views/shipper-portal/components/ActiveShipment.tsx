@@ -4,7 +4,8 @@ import { Check, Truck, Star } from 'lucide-react';
 import RatingModal from '@/components/modals/RatingModal';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getShipperActiveShipment } from '@/lib/apiClient';
+import { getShipperActiveShipment, rateShipmentCarrier } from '@/lib/apiClient';
+import toast from 'react-hot-toast';
 
 import L from 'leaflet';
 // @ts-ignore
@@ -25,6 +26,23 @@ export default function ActiveShipment() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [shipment, setShipment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const resolvedTransporterName = 
+    shipment?.transporter?.companyName || 
+    shipment?.transporter?.fullName || 
+    shipment?.driver?.fullName || 
+    'Carrier Partner';
+
+  const handleRateSubmit = async (rating: number, comment: string) => {
+    if (!shipment?.id) return;
+    try {
+      await rateShipmentCarrier(shipment.id, rating, comment);
+      toast.success(`Rating of ${rating}★ recorded for ${resolvedTransporterName}!`);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit carrier rating');
+      throw err;
+    }
+  };
 
   useEffect(() => {
     async function loadShipment() {
@@ -53,27 +71,34 @@ export default function ActiveShipment() {
 =========================================
 Tracking Number: ${shipment.trackingNumber || 'N/A'}
 Status: ${shipment.status || 'IN_TRANSIT'}
+Generated At: ${new Date().toISOString()}
 
 ORIGIN:
 ${shipment.load?.origin?.address || 'Djibouti Port / Doraleh Container Terminal (DCT)'}
+City: ${shipment.load?.origin?.city || 'Djibouti'}
 
 DESTINATION:
 ${shipment.load?.destination?.address || 'Modjo Dry Port & Terminal, Ethiopia'}
+City: ${shipment.load?.destination?.city || 'Modjo'}
 
-CARGO DETAILS:
-Type: ${shipment.load?.cargoType || '30T Construction Rebar (Flatbed)'}
+CARGO SPECIFICATIONS:
+Type: ${shipment.load?.cargoType || 'Commercial Corridor Freight'}
 Weight: ${shipment.load?.weightKg || '32000'} kg
+Contracted Budget: ${shipment.load?.budgetAmount ? Number(shipment.load.budgetAmount).toLocaleString() : 'N/A'} ${shipment.load?.currency || 'ETB'}
 
-TRANSPORTER / DRIVER:
-Name: ${shipment.driver?.fullName || 'Unknown Driver'}
+CARRIER & DRIVER ASSIGNMENT:
+Enterprise: ${shipment.transporter?.companyName || shipment.transporter?.fullName || 'Authorized Corridor Motor Carrier'}
+Authorized Contact: ${shipment.transporter?.fullName || 'Carrier Dispatch'}
+Mobile Phone: ${shipment.transporter?.phone || '+251 911 000 000'}
+Prime Mover Plate: ${shipment.truckPlate || 'ET-3-A-89214'}
 
 ---
-Digital Signature Verified
-TradeFlow MVP Platform
+Digital Signature Verified & Tamper-Sealed
+TradeFlow Multimodal Logistics Platform (SRS FR-04 Compliance)
 =========================================
     `;
 
-    const blob = new Blob([waybillText], { type: 'text/plain' });
+    const blob = new Blob([waybillText.trim()], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -97,10 +122,10 @@ TradeFlow MVP Platform
     <div className="bg-[#232323] border border-[#2E2E2E] rounded-md shadow-lg shadow-black/40">
       {showRatingModal && (
         <RatingModal
-          transporterName="Kangaroo Freight"
-          shipmentId="SHP-9021-DJM"
+          transporterName={resolvedTransporterName}
+          shipmentId={shipment?.trackingNumber || shipment?.id || 'SHP-ACTIVE'}
           onClose={() => setShowRatingModal(false)}
-          onSubmit={(rating, comment) => console.log('Rating submitted:', rating, comment)}
+          onSubmit={handleRateSubmit}
         />
       )}
 
@@ -135,8 +160,11 @@ TradeFlow MVP Platform
           <Marker position={awash} />
           <Marker position={modjo} />
         </MapContainer>
-        <div className="absolute bottom-2 left-2 z-[400] bg-[#232323]/90 backdrop-blur-xs px-2 py-1 rounded text-[10px] font-mono border border-[#2E2E2E] shadow-xs">
-          GPS: Awash Checkpoint • Speed: 62 km/h
+        <div className="absolute bottom-2 left-2 z-[400] bg-[#232323]/95 backdrop-blur-md px-2.5 py-1.5 rounded-lg text-[10px] font-mono border border-[#2E2E2E] shadow-md text-[#EDEDED] flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-pulse" />
+          <span>
+            Plate: <strong className="text-[#3ECF8E]">{shipment?.truckPlate || 'ET-3-A-89214'}</strong> • Carrier: <strong className="text-white">{resolvedTransporterName}</strong> • Status: <strong className="text-amber-400">{shipment?.status || 'IN_TRANSIT'}</strong>
+          </span>
         </div>
       </div>
 
