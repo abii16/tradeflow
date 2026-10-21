@@ -46,9 +46,6 @@ export default function ShipperDashboard() {
           <h1 className="text-xl font-bold text-[#EDEDED] tracking-tight">
             Operations & Dispatch
           </h1>
-          <p className="text-xs text-[#8F8F8F] mt-0.5">
-            Djibouti — Modjo Corridor
-          </p>
         </div>
 
         {/* Verification Status Pill in Header */}
