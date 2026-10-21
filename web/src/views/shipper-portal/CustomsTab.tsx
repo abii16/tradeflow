@@ -177,9 +177,6 @@ export default function CustomsTab() {
           <h1 className="text-xl font-bold text-[#EDEDED] tracking-tight">
             {t('customs_vault', 'Digital Customs Vault')}
           </h1>
-          <p className="text-xs text-[#8F8F8F] mt-1 font-mono">
-            ERCA Single Window &bull; SHA-256 Verified
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -208,12 +205,11 @@ export default function CustomsTab() {
         {/* Top Control Bar */}
         <div className="px-5 py-3.5 border-b border-[#222222] bg-[#101010] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-xs font-bold text-[#EDEDED] uppercase tracking-wider flex items-center gap-2">
-              <FileCheck2 size={15} className="text-[#3ECF8E]" />
-              Active Consignment Regulatory Dossier
+            <h2 className="text-xs font-bold text-[#EDEDED] uppercase tracking-wider">
+              Consignment Dossier
             </h2>
             <div className="flex items-center gap-2 mt-1 text-[11px] text-[#707070]">
-              <span>Shipment Reference:</span>
+              <span>Shipment:</span>
               <span className="font-mono font-bold bg-[#181818] border border-[#262626] px-2 py-0.5 rounded text-[#EDEDED]">
                 {shipmentId ? `SHP-${shipmentId.substring(0, 8).toUpperCase()}-DJM` : 'Consignment Direct'}
               </span>
