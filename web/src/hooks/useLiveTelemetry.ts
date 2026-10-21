@@ -5,13 +5,25 @@ import { io, Socket } from 'socket.io-client';
 
 export interface TruckTelemetry {
   id: string;
+  shipmentId?: string;
   lat: number;
   lng: number;
   speed: number;
   cargo: string;
   driver: string;
+  plate?: string;
+  origin?: string;
+  destination?: string;
+  totalDistanceKm?: number;
+  remainingDistanceKm?: number;
+  progressPercent?: number;
   eta: string;
+  estimatedArrival?: string;
   status?: 'SAFE' | 'GEOFENCE_BREACH' | 'SPEEDING';
+  hazardNote?: string;
+  weightTons?: number;
+  aiConfidence?: string;
+  aiModel?: string;
 }
 
 export interface RiskAlert {
@@ -32,9 +44,23 @@ export interface TelemetryData {
 export function useLiveTelemetry() {
   const [telemetry, setTelemetry] = useState<TelemetryData>({ trucks: [], alerts: [] });
   const [isConnected, setIsConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   const socketRef = useRef<Socket | null>(null);
   const lastAlertTimeRef = useRef<number>(0);
+
+  const fetchLiveAssets = useCallback(async () => {
+    try {
+      const response = await apiClient('/telemetry/live-assets');
+      if (response && response.trucks) {
+        setTelemetry(prev => ({ ...prev, trucks: response.trucks }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch telemetry from server:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const connect = useCallback(() => {
     const token = getAuthToken();
@@ -59,15 +85,7 @@ export function useLiveTelemetry() {
       socket.on('connect', async () => {
         setIsConnected(true);
         socket.emit('join-room', 'general');
-        
-        try {
-          const response = await apiClient('/telemetry/live-assets');
-          if (response && response.trucks) {
-            setTelemetry(prev => ({ ...prev, trucks: response.trucks }));
-          }
-        } catch (error) {
-          console.error('Failed to fetch initial telemetry:', error);
-        }
+        await fetchLiveAssets();
       });
 
       socket.on('disconnect', () => {
@@ -75,23 +93,26 @@ export function useLiveTelemetry() {
       });
 
       socket.on('eta-updated', (data: any) => {
-        // Handle ETA updates from Node backend
-        setTelemetry(prev => {
-          // Just update the first truck as an example if we don't have truck IDs
-          const newTrucks = [...prev.trucks];
-          if (newTrucks.length > 0) {
-            newTrucks[0] = { 
-              ...newTrucks[0], 
-              eta: data.predicted_travel_hours ? `${data.predicted_travel_hours.toFixed(1)}h` : newTrucks[0].eta 
-            };
-          }
-          return { ...prev, trucks: newTrucks };
-        });
+        if (data.tripId || data.shipmentId) {
+          setTelemetry(prev => {
+            const newTrucks = prev.trucks.map(truck => {
+              if (truck.id === data.tripId || truck.shipmentId === data.shipmentId) {
+                return {
+                  ...truck,
+                  eta: data.predicted_travel_hours ? `${data.predicted_travel_hours.toFixed(1)}h` : truck.eta,
+                  estimatedArrival: data.estimatedArrival || truck.estimatedArrival,
+                };
+              }
+              return truck;
+            });
+            return { ...prev, trucks: newTrucks };
+          });
+        }
       });
 
       socket.on('telemetry-update', (data: TruckTelemetry) => {
         setTelemetry(prev => {
-          const existingIndex = prev.trucks.findIndex(t => t.id === data.id);
+          const existingIndex = prev.trucks.findIndex(t => t.id === data.id || t.shipmentId === data.shipmentId);
           const newTrucks = [...prev.trucks];
           
           if (existingIndex >= 0) {
@@ -105,7 +126,6 @@ export function useLiveTelemetry() {
       });
 
       socket.on('incident-alert', (data: any) => {
-        // Trigger alert for incident
         const now = Date.now();
         if (now - lastAlertTimeRef.current > 15000) {
           lastAlertTimeRef.current = now;
@@ -125,7 +145,7 @@ export function useLiveTelemetry() {
             console.warn("Audio alert failed", err);
           }
 
-          toast.error(`Incident Reported: ${data.incidentType}`, {
+          toast.error(`Corridor Incident: ${data.incidentType}`, {
             id: 'critical-geofence-alert',
             position: 'top-right',
             duration: 6000,
@@ -148,7 +168,7 @@ export function useLiveTelemetry() {
               { 
                 id: `inc-${Date.now()}`, 
                 title: data.incidentType, 
-                description: data.notes || 'Incident reported on route',
+                description: data.notes || 'Incident reported on corridor route',
                 lat: data.latitude || 11.5,
                 lng: data.longitude || 42.0,
                 radius: 5000
@@ -161,37 +181,25 @@ export function useLiveTelemetry() {
     } catch (err) {
       console.error("Failed to initialize Socket.io", err);
     }
-  }, []);
+  }, [fetchLiveAssets]);
 
   useEffect(() => {
     connect();
+    fetchLiveAssets();
+
+    // Periodic synchronization with real backend and PyTorch AI Engine (every 25 seconds)
+    const syncInterval = setInterval(() => {
+      fetchLiveAssets();
+    }, 25000);
 
     return () => {
+      clearInterval(syncInterval);
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
-  }, [connect]);
+  }, [connect, fetchLiveAssets]);
 
-  // Simulate live vehicle movement on the map
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTelemetry(prev => {
-        if (prev.trucks.length === 0) return prev;
-        
-        const newTrucks = prev.trucks.map(truck => ({
-          ...truck,
-          // Move generally South-West towards Addis Ababa
-          lat: truck.lat - (0.0003 + Math.random() * 0.0003),
-          lng: truck.lng - (0.0005 + Math.random() * 0.0005),
-          speed: Math.max(40, Math.min(85, (truck.speed || 60) + Math.floor(Math.random() * 6) - 3))
-        }));
-        
-        return { ...prev, trucks: newTrucks };
-      });
-    }, 1500);
-    return () => clearInterval(interval);
-  }, []);
-
-  return { telemetry, isConnected };
+  return { telemetry, isConnected, loading, refreshTelemetry: fetchLiveAssets };
 }
+

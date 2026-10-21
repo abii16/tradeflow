@@ -296,15 +296,9 @@ export default function ContractRates() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-[#242424] gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E]">
-              <FileSignature size={20} />
-            </div>
-            <span>{t('crm_title', 'Contract Rates Management')}</span>
+          <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight">
+            {t('crm_title', 'Contract Rates')}
           </h1>
-          <p className="text-xs text-[#8F8F8F] mt-1 font-mono">
-            {t('crm_subtitle', 'Manage long-term locked rates and monitor spot market divergence (FR-04).')}
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -329,11 +323,11 @@ export default function ContractRates() {
 
       {/* Top Executive KPI Metric Cards (Supabase Brand Design) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Active Framework SLAs */}
+        {/* Card 1: Active SLAs */}
         <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
-              {t('crm_kpi_active_contracts', 'Active Framework SLAs')}
+              {t('crm_kpi_active_contracts', 'Active SLAs')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5">
               <span className="text-2xl font-bold font-mono text-[#EDEDED]">{activeCount}</span>
@@ -341,18 +335,17 @@ export default function ContractRates() {
                 <CheckCircle2 size={12} className="text-[#3ECF8E]" /> Guaranteed
               </span>
             </div>
-            <p className="text-[10px] text-[#707070] font-mono mt-1">Multi-corridor locked volume</p>
           </div>
           <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
             <ShieldCheck size={20} />
           </div>
         </div>
 
-        {/* Card 2: Locked Corridor Volume */}
+        {/* Card 2: Locked Volume */}
         <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
-              {t('crm_kpi_hedged_volume', 'Locked Corridor Volume')}
+              {t('crm_kpi_hedged_volume', 'Locked Volume')}
             </p>
             <div className="flex items-baseline gap-1 mt-1.5 font-mono">
               <span className="text-xs text-[#3ECF8E] font-bold">ETB</span>
@@ -360,26 +353,26 @@ export default function ContractRates() {
                 {totalLockedVolume > 0 ? (totalLockedVolume / 1000).toFixed(0) + 'k' : '0'}
               </span>
             </div>
-            <p className="text-[10px] text-[#707070] font-mono mt-1">Total hedged freight SLA value</p>
           </div>
           <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
             <DollarSign size={20} />
           </div>
         </div>
 
-        {/* Card 3: Divergence Alerts */}
+        {/* Card 3: Rate Alerts */}
         <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
-              {t('crm_kpi_divergence_alerts', 'Divergence Alerts (>15%)')}
+              {t('crm_kpi_divergence_alerts', 'Rate Alerts')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5 font-mono">
-              <span className={`text-2xl font-bold ${reviewCount > 0 ? 'text-amber-400' : 'text-[#EDEDED]'}`}>
+              <span className="text-2xl font-bold text-[#EDEDED]">
                 {reviewCount}
               </span>
               {reviewCount > 0 ? (
-                <span className="text-xs text-amber-400 font-medium flex items-center gap-1">
-                  <AlertTriangle size={12} /> Review Required
+                <span className="text-xs text-[#8F8F8F] font-medium flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span>Review Required</span>
                 </span>
               ) : (
                 <span className="text-xs text-[#3ECF8E] font-medium flex items-center gap-1">
@@ -387,22 +380,17 @@ export default function ContractRates() {
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-[#707070] font-mono mt-1">Per SRS Section 3.4 (FR-04.2)</p>
           </div>
-          <div className={`w-11 h-11 rounded-lg flex items-center justify-center shrink-0 ${
-            reviewCount > 0 
-              ? 'bg-amber-500/10 border border-amber-500/25 text-amber-400' 
-              : 'bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E]'
-          }`}>
-            <AlertTriangle size={20} />
+          <div className="w-11 h-11 rounded-lg bg-[#121212] border border-[#242424] flex items-center justify-center text-[#8F8F8F] shrink-0 shadow-sm">
+            <AlertTriangle size={20} className={reviewCount > 0 ? "text-amber-400/80" : "text-[#707070]"} />
           </div>
         </div>
 
-        {/* Card 4: Net Hedge Advantage */}
+        {/* Card 4: Hedge Advantage */}
         <div className="bg-[#171717] hover:bg-[#1C1C1C] border border-[#242424] hover:border-[#3ECF8E]/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow-[0_4px_20px_rgba(62,207,142,0.06)]">
           <div>
             <p className="text-[11px] font-mono font-semibold text-[#8F8F8F] uppercase tracking-wider">
-              {t('crm_kpi_hedge_benefit', 'Net Hedge Advantage')}
+              {t('crm_kpi_hedge_benefit', 'Hedge Advantage')}
             </p>
             <div className="flex items-baseline gap-2 mt-1.5 font-mono">
               <span className="text-2xl font-bold text-[#3ECF8E]">
@@ -412,7 +400,6 @@ export default function ContractRates() {
                 <TrendingUp size={12} /> Spot Delta
               </span>
             </div>
-            <p className="text-[10px] text-[#707070] font-mono mt-1">Protection vs spot market swings</p>
           </div>
           <div className="w-11 h-11 rounded-lg bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center justify-center text-[#3ECF8E] shrink-0 shadow-[0_0_12px_rgba(62,207,142,0.1)]">
             <Scale size={20} />
@@ -426,7 +413,7 @@ export default function ContractRates() {
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#707070]" />
           <input
             type="text"
-            placeholder="Search by corridor (Djibouti, Modjo...) or carrier partner..."
+            placeholder={t('crm_search_placeholder', 'Search contracts or carriers...')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-xs bg-[#121212] border border-[#242424] rounded-lg text-[#EDEDED] placeholder-[#707070] font-mono focus:outline-none focus:border-[#3ECF8E] transition"
@@ -455,11 +442,12 @@ export default function ContractRates() {
           <button
             type="button"
             onClick={() => setStatusFilter('REVIEW_REQUIRED')}
-            className={`px-3 py-1.5 rounded-md font-semibold font-mono transition-all cursor-pointer ${
-              statusFilter === 'REVIEW_REQUIRED' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
+            className={`px-3 py-1.5 rounded-md font-semibold font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
+              statusFilter === 'REVIEW_REQUIRED' ? 'bg-[#242424] text-[#EDEDED] border border-[#3A3A3A] shadow-sm' : 'text-[#8F8F8F] hover:text-[#EDEDED]'
             }`}
           >
-            Review Required ({reviewCount})
+            {reviewCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />}
+            <span>Review Required ({reviewCount})</span>
           </button>
         </div>
       </div>
@@ -470,10 +458,10 @@ export default function ContractRates() {
           <thead className="text-[10px] font-bold text-[#8F8F8F] bg-[#121212] uppercase border-b border-[#242424] tracking-wider font-mono">
             <tr>
               <th className="px-3.5 py-3 font-semibold w-[12%]">{t('crm_col_id', 'Contract ID')}</th>
-              <th className="px-3.5 py-3 font-semibold w-[26%]">{t('crm_col_carrier', 'Carrier & Route')}</th>
+              <th className="px-3.5 py-3 font-semibold w-[28%]">{t('crm_col_carrier', 'Carrier & Route')}</th>
               <th className="px-3.5 py-3 font-semibold w-[12%]">{t('crm_col_locked', 'Locked Rate')}</th>
-              <th className="px-3.5 py-3 font-semibold w-[12%]">{t('crm_col_spot', 'Current Spot')}</th>
-              <th className="px-3.5 py-3 font-semibold w-[13%]">{t('crm_col_divergence', 'Divergence')}</th>
+              <th className="px-3.5 py-3 font-semibold w-[12%]">{t('crm_col_spot', 'Spot Rate')}</th>
+              <th className="px-3.5 py-3 font-semibold w-[11%]">{t('crm_col_divergence', 'Divergence')}</th>
               <th className="px-3.5 py-3 font-semibold w-[10%]">{t('crm_col_status', 'Status')}</th>
               <th className="px-3.5 py-3 font-semibold text-right w-[15%] pr-4">{t('crm_col_actions', 'Actions')}</th>
             </tr>
@@ -484,7 +472,7 @@ export default function ContractRates() {
                 <td colSpan={7} className="px-4 py-12 text-center text-[#8F8F8F]">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <RefreshCw size={22} className="animate-spin text-[#3ECF8E]" />
-                    <span className="text-xs">Evaluating corridor tariff agreements against AI dynamic pricing engine...</span>
+                    <span className="text-xs">Evaluating corridor tariff agreements against AI spot pricing engine...</span>
                   </div>
                 </td>
               </tr>
@@ -511,13 +499,8 @@ export default function ContractRates() {
                   <tr key={contract.id} className="hover:bg-[#1C1C1C] transition-colors">
                     {/* Contract ID */}
                     <td className="px-3.5 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-xs font-bold text-[#EDEDED]">CT-{contract.id.substring(0, 6).toUpperCase()}</span>
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-[#121212] border border-[#242424] text-[#8F8F8F] font-mono">
-                          SLA
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-[#8F8F8F] font-mono mt-0.5 flex items-center gap-1">
+                      <div className="font-mono text-xs font-bold text-[#EDEDED]">CT-{contract.id.substring(0, 6).toUpperCase()}</div>
+                      <div className="text-[10px] text-[#707070] font-mono mt-0.5 flex items-center gap-1">
                         <Calendar size={10} className="text-[#707070] shrink-0" />
                         <span>{new Date(contract.validUntil).toLocaleDateString()}</span>
                       </div>
@@ -525,19 +508,11 @@ export default function ContractRates() {
 
                     {/* Carrier & Route */}
                     <td className="px-3.5 py-3">
-                      <div className="font-semibold text-[#EDEDED] flex items-center gap-1.5">
+                      <div className="font-semibold text-[#EDEDED] flex items-center gap-1.5 truncate">
                         <Truck size={12} className="text-[#3ECF8E] shrink-0" />
                         <span className="truncate">{contract.companyName || contract.transporterName || 'Authorized Carrier'}</span>
-                        <span className="text-[8px] px-1 py-0.5 bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E] rounded font-mono font-bold shrink-0">
-                          CARRIER
-                        </span>
                       </div>
-                      {contract.transporterName && contract.companyName && contract.transporterName !== contract.companyName && (
-                        <div className="text-[10px] text-[#8F8F8F] font-mono truncate">
-                          Lead: {contract.transporterName}
-                        </div>
-                      )}
-                      <div className="text-[11px] text-[#8F8F8F] font-mono mt-0.5 flex items-center gap-1">
+                      <div className="text-[11px] text-[#8F8F8F] font-mono mt-0.5 flex items-center gap-1.5 truncate">
                         <span className="text-[#EDEDED]">{contract.origin}</span>
                         <ArrowRight size={10} className="text-[#3ECF8E] shrink-0" />
                         <span className="text-[#EDEDED]">{contract.destination}</span>
@@ -547,61 +522,47 @@ export default function ContractRates() {
                     {/* Locked Rate */}
                     <td className="px-3.5 py-3 font-mono">
                       <div className="text-xs font-bold text-[#EDEDED]">ETB {Number(contract.lockedRate).toLocaleString()}</div>
-                      <div className="text-[9px] text-[#707070] font-normal">Guaranteed Collar</div>
                     </td>
 
                     {/* Current Spot */}
                     <td className="px-3.5 py-3 font-mono">
                       <div className="text-xs text-[#3ECF8E] font-semibold">ETB {currentSpot.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-                      <div className="text-[9px] text-[#707070]">ML Benchmark</div>
                     </td>
 
                     {/* Divergence */}
-                    <td className="px-3.5 py-3">
+                    <td className="px-3.5 py-3 font-mono">
                       {exceedsThreshold ? (
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1 text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded text-[11px] font-bold w-fit font-mono">
-                            <AlertTriangle size={11} className="shrink-0 text-amber-400" />
-                            <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
-                          </div>
-                          <span className="text-[9px] text-amber-400/80 font-mono">Exceeds ±15%</span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 px-2 py-0.5 rounded text-[11px] font-bold">
+                          <AlertTriangle size={11} className="shrink-0" />
+                          <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
+                        </span>
                       ) : (
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1 text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 px-1.5 py-0.5 rounded text-[11px] font-bold w-fit font-mono">
-                            <CheckCircle2 size={11} className="shrink-0 text-[#3ECF8E]" />
-                            <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
-                          </div>
-                          <span className="text-[9px] text-[#8F8F8F] font-mono">Within ±15% collar</span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 px-2 py-0.5 rounded text-[11px] font-bold">
+                          <CheckCircle2 size={11} className="shrink-0" />
+                          <span>{divergence > 0 ? `+${divergence.toFixed(1)}%` : `${divergence.toFixed(1)}%`}</span>
+                        </span>
                       )}
                     </td>
 
                     {/* Status */}
-                    <td className="px-3.5 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] border font-bold font-mono uppercase tracking-wider inline-flex items-center gap-1 ${
-                        contract.status === 'REVIEW_REQUIRED'
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : exceedsThreshold
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/30'
+                    <td className="px-3.5 py-3 font-mono">
+                      <span className={`px-2 py-0.5 rounded-md text-[9px] border font-medium inline-flex items-center gap-1.5 ${
+                        contract.status === 'REVIEW_REQUIRED' || exceedsThreshold
+                          ? 'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                          : 'bg-[#3ECF8E]/10 border-[#3ECF8E]/25 text-[#3ECF8E]'
                       }`}>
-                        {contract.status === 'REVIEW_REQUIRED' ? (
-                          <>
-                            <AlertTriangle size={9} />
-                            <span>REVIEW</span>
-                          </>
-                        ) : exceedsThreshold ? (
-                          <>
-                            <AlertTriangle size={9} />
-                            <span>FLAGGED</span>
-                          </>
-                        ) : (
-                          <>
-                            <ShieldCheck size={9} />
-                            <span>ACTIVE</span>
-                          </>
-                        )}
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                          contract.status === 'REVIEW_REQUIRED' || exceedsThreshold
+                            ? 'bg-amber-400'
+                            : 'bg-[#3ECF8E]'
+                        }`} />
+                        <span>
+                          {contract.status === 'REVIEW_REQUIRED' 
+                            ? 'REVIEW' 
+                            : exceedsThreshold 
+                            ? 'FLAGGED' 
+                            : 'ACTIVE'}
+                        </span>
                       </span>
                     </td>
 
@@ -612,8 +573,8 @@ export default function ContractRates() {
                         <button
                           type="button"
                           onClick={() => setAuditContract(contract)}
-                          className="bg-[#121212] hover:bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#242424] hover:border-[#3ECF8E]/40 px-2 py-1 rounded-md text-[11px] font-semibold font-mono transition-all cursor-pointer flex items-center gap-1 active:scale-95 shrink-0"
-                          title="Audit calculation inputs & cryptographic trace (FR-04.3)"
+                          className="bg-[#121212] hover:bg-[#1C1C1C] text-[#8F8F8F] hover:text-[#EDEDED] border border-[#242424] hover:border-[#3ECF8E]/40 px-2.5 py-1 rounded-md text-[11px] font-semibold font-mono transition-all cursor-pointer flex items-center gap-1 active:scale-95 shrink-0"
+                          title="Audit calculation inputs & cryptographic trace"
                         >
                           <FileText size={11} className="text-[#8F8F8F]" />
                           <span>Details</span>
@@ -631,7 +592,7 @@ export default function ContractRates() {
                             <span>{renegotiatingId === contract.id ? 'Updating...' : t('crm_renegotiate', 'Renegotiate')}</span>
                           </button>
                         ) : (
-                          <span className="text-[11px] text-[#3ECF8E] font-medium font-mono px-1 flex items-center gap-1 shrink-0">
+                          <span className="text-[11px] text-[#3ECF8E] font-medium font-mono px-2.5 py-1 rounded-md bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 flex items-center gap-1 shrink-0">
                             <CheckCircle2 size={11} className="text-[#3ECF8E]" />
                             <span>Compliant</span>
                           </span>
