@@ -369,6 +369,8 @@
   "crm_renegotiate_notes": "የድርድር ምክንያት / የነዳጅ ዋጋ ማስታወሻ",
   "crm_quick_corridors": "የተመረጡ ዋና ኮሪደሮች",
   "crm_live_benchmark": "የቀጥታ AI የቦታ ዋጋ መነሻ",
+  "telematics_title": "የቀጥታ ቴሌሜትሪክስ",
+  "telematics_subtitle": "የመስመር ጂፒኤስ ክትትል እና የ AI ETA።",
   "incoming_manifest_queue": "የሚገቡ ማኒፌስቶች ዝርዝር",
   "select_manifest_check": "አውቶማቲክ ምርመራ ለማካሄድ ማኒፌስት ይምረጡ",
   "manifest_id": "የማኒፌስት መለያ",

@@ -126,14 +126,11 @@ export default function TelematicsTab() {
       {/* Header */}
       <div className="pb-3 border-b border-[#242424] shrink-0 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-[#EDEDED] tracking-tight">{t('telematics', 'Live Telematics & ETA Map')}</h1>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-[#3ECF8E]/10 border border-[#3ECF8E]/25 text-[#3ECF8E] font-mono font-bold">
-              SRS FR-03 COMPLIANT
-            </span>
-          </div>
+          <h1 className="text-xl font-bold text-[#EDEDED] tracking-tight">
+            {t('telematics_title', 'Live Telematics')}
+          </h1>
           <p className="text-xs text-[#8F8F8F] font-mono mt-0.5">
-            Real-time GPS ingestion & PyTorch deep learning ETA predictions across Djibouti–Modjo corridor
+            {t('telematics_subtitle', 'Corridor GPS tracking & AI ETA.')}
           </p>
         </div>
 

@@ -368,6 +368,8 @@
   "crm_renegotiate_notes": "Renegotiation Justification / Fuel Index Note",
   "crm_quick_corridors": "Strategic Corridor Presets",
   "crm_live_benchmark": "Live AI Spot Benchmark",
+  "telematics_title": "Live Telematics",
+  "telematics_subtitle": "Corridor GPS tracking & AI ETA.",
   "incoming_manifest_queue": "Incoming Manifest Queue",
   "select_manifest_check": "Select a manifest to run automated checks",
   "manifest_id": "MANIFEST ID",
