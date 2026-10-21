@@ -212,7 +212,7 @@ export default function FreightOrderForm({
           <div className="space-y-3">
             <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
               <MapPin size={13} className="text-[#3ECF8E]" />
-              <span>1. Corridor Route & Terminals</span>
+              <span>1. Route & Terminals</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -294,7 +294,7 @@ export default function FreightOrderForm({
           <div className="space-y-3 pt-2 border-t border-[#2E2E2E]">
             <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
               <Package size={13} className="text-[#3ECF8E]" />
-              <span>2. Cargo Classification & Physical Specs (SRS FR-02.1)</span>
+              <span>2. Cargo Details</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -433,7 +433,7 @@ export default function FreightOrderForm({
           <div className="space-y-3 pt-2 border-t border-[#2E2E2E]">
             <div className="text-[11px] font-mono font-bold text-[#8F8F8F] uppercase tracking-wider flex items-center gap-1.5">
               <Clock size={13} className="text-[#3ECF8E]" />
-              <span>3. Dispatch Window & Operational Handling (SRS FR-04.1)</span>
+              <span>3. Dispatch Window</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
