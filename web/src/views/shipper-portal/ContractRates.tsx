@@ -299,9 +299,6 @@ export default function ContractRates() {
           <h1 className="text-2xl font-bold text-[#EDEDED] tracking-tight">
             {t('crm_title', 'Contract Rates')}
           </h1>
-          <p className="text-xs text-[#8F8F8F] mt-1 font-mono">
-            {t('crm_subtitle', 'Manage locked rates & monitor spot divergence.')}
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <button
