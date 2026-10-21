@@ -98,6 +98,7 @@ export const GoogleAuthDto = z.object({
   role: RoleEnum.optional().default('SHIPPER'),
   companyName: z.string().optional(),
   phone: z.string().optional(),
+  intent: z.enum(['login', 'signup']).optional().default('login'),
 });
 
 export const RefreshTokenDto = z.object({

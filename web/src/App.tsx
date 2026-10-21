@@ -60,6 +60,16 @@ function AppContent() {
   const { isLoading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
+    const isRegistrationBlocked = sessionStorage.getItem('tradeflow_registration_blocked') === 'true' ||
+                                  localStorage.getItem('tradeflow_registration_blocked') === 'true';
+    const isOauthPending = window.location.hash.includes('access_token') || 
+                           window.location.search.includes('oauth_intent') || 
+                           sessionStorage.getItem('tradeflow_auth_banner_error') !== null ||
+                           isRegistrationBlocked;
+    if (isOauthPending || isRegistrationBlocked) {
+      return;
+    }
+
     if (!isLoading && isAuthenticated && user && portal === 'selector') {
       const targetMap: Record<string, PortalView> = {
         'SHIPPER': 'shipper',

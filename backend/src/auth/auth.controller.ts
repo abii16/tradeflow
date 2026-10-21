@@ -32,7 +32,8 @@ router.post('/register', authLimiter, auditMiddleware('SECURITY_AUTH_REGISTER'),
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: 'Validation failed', details: error.errors });
     } else {
-      res.status(400).json({ error: error.message || 'Registration failed' });
+      const isConflict = error.message && error.message.toLowerCase().includes('already registered');
+      res.status(isConflict ? 409 : 400).json({ error: error.message || 'Registration failed' });
     }
   }
 });
@@ -68,7 +69,8 @@ router.post('/google', authLimiter, auditMiddleware('SECURITY_AUTH_GOOGLE'), asy
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: 'Validation failed', details: error.errors });
     } else {
-      res.status(401).json({ error: error.message || 'Google authentication failed' });
+      const isConflict = error.message && error.message.toLowerCase().includes('already registered');
+      res.status(isConflict ? 409 : 401).json({ error: error.message || 'Google authentication failed' });
     }
   }
 });
@@ -84,7 +86,8 @@ router.post('/google/callback', authLimiter, auditMiddleware('SECURITY_AUTH_GOOG
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: 'Validation failed', details: error.errors });
     } else {
-      res.status(401).json({ error: error.message || 'Google callback failed' });
+      const isConflict = error.message && error.message.toLowerCase().includes('already registered');
+      res.status(isConflict ? 409 : 401).json({ error: error.message || 'Google callback failed' });
     }
   }
 });

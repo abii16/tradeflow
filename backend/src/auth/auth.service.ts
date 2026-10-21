@@ -5,7 +5,7 @@ import { verifications } from '../db/schema/verifications';
 import { vehicles } from '../db/schema/vehicles';
 import { userSessions } from '../db/schema/sessions';
 import { auditLogs } from '../db/schema/audit_logs';
-import { eq, and, ne, desc, gt } from 'drizzle-orm';
+import { eq, and, ne, desc, gt, sql } from 'drizzle-orm';
 import * as argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
@@ -63,11 +63,27 @@ export class AuthService {
   async register(data: RegisterRequestType) {
     let userObj: { id: string; email: string };
     const hashedPassword = await argon2.hash(data.password);
+    const normalizedEmail = data.email.trim().toLowerCase();
 
-    // Check duplicate in local database first
-    const [existingLocal] = await db.select().from(users).where(eq(users.email, data.email));
-    if (existingLocal && existingLocal.email === data.email) {
-      throw new Error('Registration failed: User already registered');
+    // 1. Check duplicate email in local database first (case-insensitive)
+    const [existingLocal] = await db
+      .select()
+      .from(users)
+      .where(sql`lower(${users.email}) = ${normalizedEmail}`);
+    if (existingLocal) {
+      throw new Error('Registration failed: An account with this email is already registered. Please sign in instead.');
+    }
+
+    // 2. Check duplicate phone in local database
+    if (data.phone) {
+      const normalizedPhone = data.phone.trim();
+      const [existingPhone] = await db
+        .select()
+        .from(users)
+        .where(eq(users.phone, normalizedPhone));
+      if (existingPhone) {
+        throw new Error('Registration failed: An account with this phone number is already registered. Please sign in instead.');
+      }
     }
 
     if (this.supabaseUrl && this.supabaseAnonKey) {
@@ -81,7 +97,7 @@ export class AuthService {
             'Authorization': `Bearer ${this.supabaseAnonKey}`,
           },
           body: JSON.stringify({
-            email: data.email,
+            email: normalizedEmail,
             password: data.password,
             data: {
               full_name: data.fullName,
@@ -99,11 +115,21 @@ export class AuthService {
         });
 
         const result = await response.json();
-        if (response.ok && (result.user || result.id)) {
+        if (response.ok) {
+          // Supabase anti-enumeration returns 200 with empty identities or fake user if email already registered
+          if (result.identities && Array.isArray(result.identities) && result.identities.length === 0) {
+            throw new Error('Registration failed: An account with this email is already registered. Please sign in instead.');
+          }
+          if (result.user && Array.isArray(result.user.identities) && result.user.identities.length === 0) {
+            throw new Error('Registration failed: An account with this email is already registered. Please sign in instead.');
+          }
           userObj = result.user || result;
         } else {
           // Supabase responded with a validation error (e.g. user already exists, invalid format)
           const errorMsg = result.msg || result.error_description || result.error || 'Registration failed';
+          if (/already registered|already exists|user_already_exists/i.test(errorMsg)) {
+            throw new Error('Registration failed: An account with this email is already registered. Please sign in instead.');
+          }
           throw new Error(`Registration failed: ${errorMsg}`);
         }
       } catch (err: any) {
@@ -112,17 +138,22 @@ export class AuthService {
           throw err;
         }
         console.warn('Supabase signup network fetch failed (offline/unreachable), continuing with local database registration:', err);
-        userObj = { id: crypto.randomUUID(), email: data.email };
+        userObj = { id: crypto.randomUUID(), email: normalizedEmail };
       }
     } else {
-      userObj = { id: crypto.randomUUID(), email: data.email };
+      userObj = { id: crypto.randomUUID(), email: normalizedEmail };
+    }
+
+    // 4. Ensure ID collision doesn't overwrite an existing user
+    const [existingById] = await db.select().from(users).where(eq(users.id, userObj.id));
+    if (existingById) {
+      throw new Error('Registration failed: An account with this email is already registered. Please sign in instead.');
     }
 
     try {
       const isCommercialEntity = ['SHIPPER', 'TRANSPORTER', 'FORWARDER'].includes(data.role);
       const initialVerificationStatus = isCommercialEntity ? 'PENDING' : 'UNVERIFIED';
 
-      const [existingUser] = await db.select().from(users).where(eq(users.id, userObj.id));
       const metadataPayload = {
         businessSector: data.businessSector,
         businessAddress: data.businessAddress,
@@ -139,46 +170,25 @@ export class AuthService {
       const resolvedOperatorLicense = data.operatorLicense || (data.role === 'TRANSPORTER' ? data.tradeLicense : null);
       const resolvedCapacity = data.vehicleCapacity || (data.fleetSize ? `${data.fleetSize} Heavy Trucks` : null);
 
-      if (existingUser) {
-        await db.update(users).set({
-          fullName: data.fullName,
-          phone: data.phone,
-          role: data.role,
-          passwordHash: hashedPassword,
-          companyName: data.companyName,
-          tinNumber: data.tinNumber,
-          tradeLicense: data.tradeLicense,
-          badgeId: data.badgeId || null,
-          fleetName: resolvedFleetName,
-          operatorLicense: resolvedOperatorLicense,
-          vehicleCapacity: resolvedCapacity,
-          verificationStatus: initialVerificationStatus,
-          metadata: {
-            ...(typeof existingUser.metadata === 'object' && existingUser.metadata ? existingUser.metadata : {}),
-            ...metadataPayload,
-          },
-          updatedAt: new Date(),
-        }).where(eq(users.id, userObj.id));
-      } else {
-        await db.insert(users).values({
-          id: userObj.id,
-          email: userObj.email,
-          passwordHash: hashedPassword,
-          fullName: data.fullName,
-          phone: data.phone,
-          role: data.role,
-          companyName: data.companyName,
-          tinNumber: data.tinNumber,
-          tradeLicense: data.tradeLicense,
-          badgeId: data.badgeId || null,
-          fleetName: resolvedFleetName,
-          operatorLicense: resolvedOperatorLicense,
-          vehicleCapacity: resolvedCapacity,
-          isVerified: false,
-          verificationStatus: initialVerificationStatus,
-          metadata: metadataPayload,
-        });
-      }
+      // Strictly INSERT new user - never overwrite existing user in registration!
+      await db.insert(users).values({
+        id: userObj.id,
+        email: normalizedEmail,
+        passwordHash: hashedPassword,
+        fullName: data.fullName,
+        phone: data.phone,
+        role: data.role,
+        companyName: data.companyName,
+        tinNumber: data.tinNumber,
+        tradeLicense: data.tradeLicense,
+        badgeId: data.badgeId || null,
+        fleetName: resolvedFleetName,
+        operatorLicense: resolvedOperatorLicense,
+        vehicleCapacity: resolvedCapacity,
+        isVerified: false,
+        verificationStatus: initialVerificationStatus,
+        metadata: metadataPayload,
+      });
 
       // If commercial entity, create or update initial PENDING verification queue record
       if (isCommercialEntity) {
@@ -547,8 +557,16 @@ export class AuthService {
       throw new Error('Google authentication failed: Email is required');
     }
 
-    // 3. Check if user already exists in TradeFlow database
-    let [user] = await db.select().from(users).where(eq(users.email, googleEmail));
+    const normalizedGoogleEmail = googleEmail.trim().toLowerCase();
+    // 3. Check if user already exists in TradeFlow database (case-insensitive)
+    let [user] = await db
+      .select()
+      .from(users)
+      .where(sql`lower(${users.email}) = ${normalizedGoogleEmail}`);
+
+    if (data.intent === 'signup' && user) {
+      throw new Error(`Registration failed: An account with this Google email (${googleEmail}) is already registered. Please sign in instead.`);
+    }
 
     if (user) {
       // Securely link existing account with Google provider metadata

@@ -5,9 +5,10 @@ import { useAuth } from '../../hooks/useAuth';
 interface LoginModalProps {
   onClose: () => void;
   onSuccess?: () => void;
+  onSwitchToRegister?: () => void;
 }
 
-export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
+export default function LoginModal({ onClose, onSuccess, onSwitchToRegister }: LoginModalProps) {
   const { login, loginWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,7 +77,7 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
             type="button" 
             onClick={async () => {
               try {
-                await loginWithGoogle();
+                await loginWithGoogle(undefined, 'login');
               } catch(err: any) {
                 setError(err.message || 'Google Sign In failed');
               }
@@ -186,6 +187,23 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
               >
                 {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Authenticating...</> : 'Log In'}
               </button>
+            </div>
+
+            <div className="pt-4 text-center border-t border-[#2E2E2E] mt-4">
+              <p className="text-xs text-[#8F8F8F]">
+                Don't have an account yet?{' '}
+                {onSwitchToRegister ? (
+                  <button
+                    type="button"
+                    onClick={onSwitchToRegister}
+                    className="text-[#3ECF8E] hover:underline font-bold"
+                  >
+                    Register here
+                  </button>
+                ) : (
+                  <span className="text-[#3ECF8E] font-bold">Register here</span>
+                )}
+              </p>
             </div>
           </form>
         </div>

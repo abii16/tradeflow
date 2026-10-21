@@ -90,6 +90,23 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
     };
   }, []);
 
+  React.useEffect(() => {
+    const isRegistrationBlocked = sessionStorage.getItem('tradeflow_registration_blocked') === 'true' ||
+                                  localStorage.getItem('tradeflow_registration_blocked') === 'true';
+    if (sessionStorage.getItem('tradeflow_auth_banner_error') || 
+        window.location.search.includes('oauth_intent=signup') ||
+        isRegistrationBlocked) {
+      setShowRegistration(true);
+      setShowLoginModal(false);
+    }
+    const handleAuthError = () => {
+      setShowRegistration(true);
+      setShowLoginModal(false);
+    };
+    window.addEventListener('tradeflow_auth_error', handleAuthError);
+    return () => window.removeEventListener('tradeflow_auth_error', handleAuthError);
+  }, []);
+
   const fetchLandingMetrics = async () => {
     try {
       const data = await apiClient('/public/landing-metrics', { method: 'GET' });
@@ -157,9 +174,32 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
   return (
     <div className="min-h-screen w-full overflow-y-auto bg-[#1C1C1C] font-inter text-[#EDEDED] smooth-scroll relative">
-      {renderComplianceModal()}
-      {showRegistration && <RegistrationFlow onClose={() => setShowRegistration(false)} />}
-      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      {showRegistration && (
+        <RegistrationFlow
+          onClose={() => {
+            sessionStorage.removeItem('tradeflow_auth_banner_error');
+            sessionStorage.removeItem('tradeflow_registration_blocked');
+            localStorage.removeItem('tradeflow_registration_blocked');
+            setShowRegistration(false);
+          }}
+          onSwitchToLogin={() => {
+            sessionStorage.removeItem('tradeflow_auth_banner_error');
+            sessionStorage.removeItem('tradeflow_registration_blocked');
+            localStorage.removeItem('tradeflow_registration_blocked');
+            setShowRegistration(false);
+            setShowLoginModal(true);
+          }}
+        />
+      )}
+      {showLoginModal && (
+        <LoginModal
+          onClose={() => setShowLoginModal(false)}
+          onSwitchToRegister={() => {
+            setShowLoginModal(false);
+            setShowRegistration(true);
+          }}
+        />
+      )}
 
       {/* =================================================================================
           SECTION 1: HERO SECTION
@@ -285,10 +325,16 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
               }}
               className="bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-bold text-xs md:text-sm px-6 py-3.5 rounded-xl shadow-[0_0_25px_rgba(62,207,142,0.3)] transition duration-200 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
             >
-              {isAuthenticated && user?.role === 'ADMIN' ? (
-                <>
-                  <Shield size={16} /> OPERATIONS CONTROL TOWER
-                </>
+              {isAuthenticated ? (
+                user?.role === 'ADMIN' ? (
+                  <>
+                    <Shield size={16} /> OPERATIONS CONTROL TOWER
+                  </>
+                ) : (
+                  <>
+                    LAUNCH {user?.role || 'PORTAL'} PLATFORM
+                  </>
+                )
               ) : (
                 'GET STARTED'
               )}
