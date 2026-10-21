@@ -124,9 +124,13 @@ export async function apiClient<T = any>(endpoint: string, options: FetchOptions
   const { data, headers, ...customOptions } = options;
   const method = data ? 'POST' : (options.method || 'GET');
 
-  // Prioritize verified backend session token (contains DB role), fallback to Supabase token
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = getAuthToken() || session?.access_token;
+  // Prioritize verified backend session token (contains DB role), fallback to Supabase token for non-auth requests
+  const directToken = getAuthToken();
+  let token = directToken;
+  if (!token && !endpoint.startsWith('/auth')) {
+    const { data: { session } } = await supabase.auth.getSession();
+    token = session?.access_token || null;
+  }
 
   const finalHeaders = {
     ...headers,
@@ -275,6 +279,13 @@ export async function getShipperActiveShipment() {
   return apiClient('/shipper/shipments/active', { method: 'GET' });
 }
 
+export async function rateShipmentCarrier(shipmentId: string, rating: number, comment?: string) {
+  return apiClient(`/shipper/shipments/${shipmentId}/rate`, {
+    method: 'POST',
+    data: { rating, comment }
+  });
+}
+
 export async function getShipperLoads() {
   return apiClient('/shipper/loads', { method: 'GET' });
 }
@@ -285,6 +296,10 @@ export async function acceptBidEscrow(bidId: string) {
 
 export async function triggerAiMatching(loadId: string) {
   return apiClient(`/shipper/loads/${loadId}/match`, { method: 'POST' });
+}
+
+export async function getShipperTransporters() {
+  return apiClient('/shipper/transporters', { method: 'GET' });
 }
 
 export async function getContractRates() {
