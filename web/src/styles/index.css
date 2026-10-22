@@ -22,5 +22,34 @@
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3ECF8E;
+  background: #24b47e;
+}
+
+/* Supabase Theme styling for Leaflet controls */
+.leaflet-control-zoom {
+  border: 1px solid #2E2E2E !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+.leaflet-control-zoom a {
+  background-color: #1C1C1C !important;
+  color: #EDEDED !important;
+  border-bottom: 1px solid #2E2E2E !important;
+  transition: all 0.2s ease !important;
+}
+.leaflet-control-zoom a:hover {
+  background-color: #282828 !important;
+  color: #24b47e !important;
+}
+.leaflet-control-attribution {
+  background: rgba(20, 20, 20, 0.85) !important;
+  backdrop-filter: blur(4px);
+  color: #707070 !important;
+  font-size: 9px !important;
+  border-top-left-radius: 6px;
+  padding: 2px 6px !important;
+}
+.leaflet-control-attribution a {
+  color: #8F8F8F !important;
 }
