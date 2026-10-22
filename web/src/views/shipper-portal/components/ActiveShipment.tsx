@@ -459,21 +459,24 @@ export default function ActiveShipment() {
       )}
 
       {/* Header */}
-      <div className="p-4 border-b border-[#2E2E2E] bg-[#181818] flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-[#8F8F8F]">
+      <div className="p-3.5 px-4 border-b border-[#2E2E2E] bg-[#181818] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#8F8F8F] whitespace-nowrap">
               {t('live_shipment_track', 'Live Shipment Track')}
             </span>
             <span className="w-1.5 h-1.5 rounded-full bg-[#24b47e] animate-pulse" />
           </div>
-          <div className="flex items-center gap-2.5 flex-wrap">
+
+          <span className="text-[#3E3E3E] hidden sm:inline">•</span>
+
+          <div className="flex items-center gap-2 whitespace-nowrap">
             <h2 className="text-sm font-semibold font-mono text-[#EDEDED] tracking-tight">
               {shipment?.trackingNumber || 'SHP-E34176EA-DJM'}
             </h2>
             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#141414] border border-[#2E2E2E] text-[11px] font-mono text-[#8F8F8F]">
               <span className="text-[#EDEDED]">{originName}</span>
-              <span className="text-[#24b47e]">→</span>
+              <span className="text-[#24b47e] font-bold">→</span>
               <span className="text-[#EDEDED]">{destName}</span>
             </div>
           </div>
