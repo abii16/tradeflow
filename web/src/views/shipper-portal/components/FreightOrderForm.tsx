@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
+  Calendar,
   ChevronDown, 
   Lock, 
   ShieldAlert, 
@@ -40,6 +41,7 @@ export default function FreightOrderForm({
   const [urgencyTier, setUrgencyTier] = useState<string>('');
   const [earliestPickup, setEarliestPickup] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
+  const datePickerRef = useRef<HTMLInputElement>(null);
 
   // Helper to extract canonical corridor city for AI Spot Model
   const extractCity = (str: string, fallback: string = ''): string => {
@@ -379,14 +381,43 @@ export default function FreightOrderForm({
               {/* Earliest Pickup Date */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup</label>
-                <input
-                  type="text"
-                  name="earliestPickup"
-                  value={earliestPickup}
-                  onChange={(e) => setEarliestPickup(e.target.value)}
-                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
-                  placeholder="Earliest Pickup"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    name="earliestPickup"
+                    value={earliestPickup}
+                    onChange={(e) => setEarliestPickup(e.target.value)}
+                    className="w-full pl-3.5 pr-10 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                    placeholder="Earliest Pickup"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (datePickerRef.current) {
+                        try {
+                          datePickerRef.current.showPicker();
+                        } catch {
+                          datePickerRef.current.focus();
+                        }
+                      }
+                    }}
+                    className="absolute right-2.5 p-1.5 text-[#8F8F8F] hover:text-[#24b47e] transition-colors cursor-pointer rounded flex items-center justify-center"
+                    title="Choose date from calendar"
+                  >
+                    <Calendar size={15} />
+                  </button>
+                  <input
+                    ref={datePickerRef}
+                    type="date"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    value={earliestPickup && /^\d{4}-\d{2}-\d{2}$/.test(earliestPickup) ? earliestPickup : ''}
+                    onChange={(e) => {
+                      if (e.target.value) setEarliestPickup(e.target.value);
+                    }}
+                    className="sr-only"
+                  />
+                </div>
               </div>
 
               {/* Special Handling */}
