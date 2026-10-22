@@ -378,40 +378,27 @@ export default function BidsTab() {
                     </div>
                   </div>
 
-                  {/* Middle Column: Sleek Corridor Route Visualizer */}
+                  {/* Middle Column: Sleek Single-Line Corridor Route Visualizer */}
                   <div className="flex-1 px-2 lg:px-6 mb-3 lg:mb-0 flex items-center justify-center">
-                    <div className="flex items-center gap-3 w-full max-w-md justify-between bg-[#121212] px-3.5 py-2 rounded-lg border border-[#222222]">
+                    <div className="flex items-center gap-3 w-full max-w-md justify-between bg-[#121212] px-3.5 py-1.5 rounded-lg border border-[#222222]">
                       {/* Origin Node */}
-                      <div className="flex flex-col text-left min-w-0 max-w-[42%]">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-white truncate" title={originCity}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                          <span className="truncate">{originCity.split('/')[0].split(',')[0]}</span>
-                        </div>
-                        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider pl-3">
-                          Origin Hub
-                        </span>
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-white truncate min-w-0 max-w-[42%]" title={originCity}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                        <span className="truncate">{originCity.split('/')[0].split(',')[0]}</span>
                       </div>
 
-                      {/* Animated Connector Arrow */}
-                      <div className="flex flex-col items-center justify-center px-1 shrink-0">
-                        <div className="flex items-center gap-1 text-zinc-500">
-                          <span className="w-1.5 h-px bg-[#2E2E2E]" />
-                          <Truck size={12} className="shrink-0 text-zinc-400" />
-                          <ArrowRight size={11} className="shrink-0 text-zinc-500" />
-                          <span className="w-1.5 h-px bg-[#2E2E2E]" />
-                        </div>
-                        <span className="text-[8px] font-mono text-zinc-500 tracking-wider mt-0.5">CORRIDOR</span>
+                      {/* Connector Arrow */}
+                      <div className="flex items-center gap-1 text-zinc-500 shrink-0 px-1">
+                        <span className="w-1.5 h-px bg-[#2E2E2E]" />
+                        <Truck size={12} className="shrink-0 text-zinc-400" />
+                        <ArrowRight size={11} className="shrink-0 text-zinc-500" />
+                        <span className="w-1.5 h-px bg-[#2E2E2E]" />
                       </div>
 
                       {/* Destination Node */}
-                      <div className="flex flex-col text-right min-w-0 max-w-[42%] items-end">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-white truncate justify-end" title={destCity}>
-                          <span className="truncate">{destCity.split('/')[0].split(',')[0]}</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                        </div>
-                        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider pr-3">
-                          Destination
-                        </span>
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-white truncate min-w-0 max-w-[42%] justify-end" title={destCity}>
+                        <span className="truncate">{destCity.split('/')[0].split(',')[0]}</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                       </div>
                     </div>
                   </div>
