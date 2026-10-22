@@ -38,11 +38,8 @@ export default function FreightOrderForm({
   const [cargoDescription, setCargoDescription] = useState('');
   const [weightKg, setWeightKg] = useState('');
   const [volumeM3, setVolumeM3] = useState('');
-  const [truckType, setTruckType] = useState<string>('FLATBED');
-  const [customTruckType, setCustomTruckType] = useState<string>('');
-  const [isCustomTruckType, setIsCustomTruckType] = useState<boolean>(false);
+  const [truckType, setTruckType] = useState<string>('');
   const [urgencyTier, setUrgencyTier] = useState<string>('standard');
-  const [customUrgencyHours, setCustomUrgencyHours] = useState<string>('24');
   const [earliestPickup, setEarliestPickup] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
 
@@ -74,43 +71,13 @@ export default function FreightOrderForm({
     setCargoCategory(val);
     const cat = val.toLowerCase();
     if (cat.includes('refrig') || cat.includes('cold') || cat.includes('perish')) {
-      setTruckType('REEFER');
-      setIsCustomTruckType(false);
+      setTruckType('Reefer');
     } else if (cat.includes('bulk') || cat.includes('agri') || cat.includes('grain')) {
-      setTruckType('SIDE_WALL');
-      setIsCustomTruckType(false);
+      setTruckType('Side-Wall Box');
     } else if (cat.includes('haz') || cat.includes('chem') || cat.includes('fuel')) {
-      setTruckType('TANKER');
-      setIsCustomTruckType(false);
+      setTruckType('Tanker');
     } else if (cat.includes('oversize') || cat.includes('heavy') || cat.includes('machin')) {
-      setTruckType('LOWBED');
-      setIsCustomTruckType(false);
-    }
-  };
-
-  const handleTruckTypeChange = (type: string) => {
-    setTruckType(type);
-    if (type === 'CUSTOM') {
-      setIsCustomTruckType(true);
-    } else {
-      setIsCustomTruckType(false);
-    }
-  };
-
-  // Preset volume helper
-  const handleContainerPreset = (preset: '20ft' | '40ft' | '40hc' | 'bulk') => {
-    if (preset === '20ft') {
-      setVolumeM3('33');
-      setWeightKg('24000');
-    } else if (preset === '40ft') {
-      setVolumeM3('67');
-      setWeightKg('28000');
-    } else if (preset === '40hc') {
-      setVolumeM3('76');
-      setWeightKg('30000');
-    } else if (preset === 'bulk') {
-      setVolumeM3('50');
-      setWeightKg('40000');
+      setTruckType('Lowbed');
     }
   };
 
@@ -138,10 +105,8 @@ export default function FreightOrderForm({
       const originCity = extractCity(origin, 'Djibouti') || 'Djibouti';
       const destinationCity = extractCity(destination, 'Modjo') || 'Modjo';
       const effectiveCategory = cargoCategory.trim() || 'Dry Cargo';
-      const effectiveTruckType = (truckType === 'CUSTOM' || isCustomTruckType)
-        ? (customTruckType.trim() || 'CUSTOM_TRUCK')
-        : truckType;
-      const pickupWindowHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : urgencyTier === 'custom' ? (Number(customUrgencyHours) || 24) : 24;
+      const effectiveTruckType = truckType.trim() || 'Flatbed';
+      const pickupWindowHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
 
       const payload = {
         origin: {
@@ -193,10 +158,8 @@ export default function FreightOrderForm({
       const originCity = extractCity(origin, 'Djibouti');
       const destinationCity = extractCity(destination, 'Modjo');
       const effectiveCategory = cargoCategory.trim() || 'Dry Cargo';
-      const effectiveTruckType = (truckType === 'CUSTOM' || isCustomTruckType)
-        ? (customTruckType.trim() || 'CUSTOM_TRUCK')
-        : truckType;
-      const expiryHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : urgencyTier === 'custom' ? (Number(customUrgencyHours) || 24) : 24;
+      const effectiveTruckType = truckType.trim() || 'Flatbed';
+      const expiryHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
 
       await postLoad({
         title: `${effectiveCategory.toUpperCase()}: ${cargoDescription || 'Commercial Freight'}`,
@@ -340,14 +303,7 @@ export default function FreightOrderForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 pt-1">
               {/* Weight */}
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-[#EDEDED]">Gross Weight</label>
-                  {weightNum > 0 && (
-                    <span className="text-[10px] font-mono text-[#8F8F8F]">
-                      ≈ {weightTons} Tons
-                    </span>
-                  )}
-                </div>
+                <label className="text-xs font-semibold text-[#EDEDED]">Gross Weight</label>
                 <div className="relative flex items-center">
                   <input
                     type="number"
@@ -356,44 +312,16 @@ export default function FreightOrderForm({
                     value={weightKg}
                     onChange={(e) => setWeightKg(e.target.value)}
                     required
-                    className="w-full px-3 pr-10 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
-                    placeholder="28000"
+                    className="w-full px-3.5 pr-10 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-mono"
+                    placeholder="Gross Weight"
                   />
-                  <span className="absolute right-3 text-xs font-mono font-bold text-[#8F8F8F] pointer-events-none">kg</span>
+                  <span className="absolute right-3 text-xs font-mono text-[#8F8F8F] pointer-events-none">kg</span>
                 </div>
               </div>
 
               {/* Volume */}
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-[#EDEDED]">Volume</label>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleContainerPreset('20ft')}
-                      className="text-[9px] px-1 py-0.5 bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-[#2E2E2E] text-[#8F8F8F] rounded"
-                      title="20ft Container preset"
-                    >
-                      20ft
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleContainerPreset('40ft')}
-                      className="text-[9px] px-1 py-0.5 bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-[#2E2E2E] text-[#8F8F8F] rounded"
-                      title="40ft Container preset"
-                    >
-                      40ft
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleContainerPreset('40hc')}
-                      className="text-[9px] px-1 py-0.5 bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-[#2E2E2E] text-[#8F8F8F] rounded"
-                      title="40ft High Cube preset"
-                    >
-                      40HC
-                    </button>
-                  </div>
-                </div>
+                <label className="text-xs font-semibold text-[#EDEDED]">Volume</label>
                 <div className="relative flex items-center">
                   <input
                     type="number"
@@ -401,60 +329,24 @@ export default function FreightOrderForm({
                     step="1"
                     value={volumeM3}
                     onChange={(e) => setVolumeM3(e.target.value)}
-                    className="w-full px-3 pr-10 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-mono"
-                    placeholder="33"
+                    className="w-full px-3.5 pr-10 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-mono"
+                    placeholder="Volume"
                   />
-                  <span className="absolute right-3 text-xs font-mono font-bold text-[#8F8F8F] pointer-events-none">m³</span>
+                  <span className="absolute right-3 text-xs font-mono text-[#8F8F8F] pointer-events-none">m³</span>
                 </div>
               </div>
 
               {/* Equipment */}
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-[#EDEDED]">Equipment</label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isCustomTruckType || truckType === 'CUSTOM') {
-                        setIsCustomTruckType(false);
-                        setTruckType('FLATBED');
-                      } else {
-                        setIsCustomTruckType(true);
-                        setTruckType('CUSTOM');
-                      }
-                    }}
-                    className="text-[10px] font-mono text-[#3ECF8E] hover:underline cursor-pointer"
-                  >
-                    {isCustomTruckType || truckType === 'CUSTOM' ? 'Standard Options' : '+ Custom (በራስዎ መጻፍ)'}
-                  </button>
-                </div>
-                <div className="relative">
-                  <select
-                    value={truckType}
-                    onChange={(e) => handleTruckTypeChange(e.target.value)}
-                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="FLATBED">Flatbed (40ft)</option>
-                    <option value="SIDE_WALL">Side-Wall Box</option>
-                    <option value="REEFER">Reefer (-20°C)</option>
-                    <option value="TANKER">Tanker (Fuel)</option>
-                    <option value="LOWBED">Lowbed (Heavy)</option>
-                    <option value="CUSTOM">Other / ሌላ ተሽከርካሪ (በራስዎ ያስገቡ)...</option>
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
-                </div>
-                {(isCustomTruckType || truckType === 'CUSTOM') && (
-                  <div className="pt-1 animate-in fade-in slide-in-from-top-1">
-                    <input
-                      type="text"
-                      value={customTruckType}
-                      onChange={(e) => setCustomTruckType(e.target.value)}
-                      required={isCustomTruckType || truckType === 'CUSTOM'}
-                      className="w-full px-3 bg-[#1C1C1C] border border-[#3ECF8E]/50 h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                      placeholder="የተሽከርካሪ ዓይነት (e.g. Isuzu NPR, Sino Truck, Car Carrier, Box Van...)"
-                    />
-                  </div>
-                )}
+                <label className="text-xs font-semibold text-[#EDEDED]">Equipment</label>
+                <input
+                  type="text"
+                  name="equipment"
+                  value={truckType}
+                  onChange={(e) => setTruckType(e.target.value)}
+                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                  placeholder="Equipment"
+                />
               </div>
             </div>
           </div>
@@ -468,54 +360,28 @@ export default function FreightOrderForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {/* Urgency */}
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-[#EDEDED]">Urgency</label>
-                  {urgencyTier === 'custom' && (
-                    <span className="text-[10px] font-mono text-[#3ECF8E]">
-                      {customUrgencyHours}h Window
-                    </span>
-                  )}
-                </div>
+                <label className="text-xs font-semibold text-[#EDEDED]">Urgency</label>
                 <div className="relative">
                   <select
                     value={urgencyTier}
                     onChange={(e) => setUrgencyTier(e.target.value)}
-                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
+                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all appearance-none cursor-pointer"
                   >
                     <option value="standard">Standard (24h)</option>
-                    <option value="high">Express (+15%)</option>
-                    <option value="low">Economy (-5%)</option>
-                    <option value="custom">Custom Hours (በራስዎ ሰዓት ይወስኑ)...</option>
+                    <option value="high">Express (12h)</option>
+                    <option value="low">Economy (48h)</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
                 </div>
-                {urgencyTier === 'custom' && (
-                  <div className="pt-1 animate-in fade-in slide-in-from-top-1">
-                    <input
-                      type="number"
-                      min="1"
-                      max="720"
-                      value={customUrgencyHours}
-                      onChange={(e) => setCustomUrgencyHours(e.target.value)}
-                      className="w-full px-3 bg-[#1C1C1C] border border-[#3ECF8E]/50 h-9 text-xs font-mono rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                      placeholder="የመጫኛ ሰዓት ገደብ (Hours, e.g. 18, 36, 72)"
-                    />
-                  </div>
-                )}
               </div>
 
-              {/* Earliest Pickup Date (Ethiopian Calendar) */}
+              {/* Earliest Pickup Date */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup</label>
-                  <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded border border-[#3ECF8E]/20">
-                    የኢትዮጵያ አቆጣጠር
-                  </span>
-                </div>
+                <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup</label>
                 <EthiopianDatePicker
                   value={earliestPickup}
                   onChange={(iso) => setEarliestPickup(iso)}
-                  placeholder="ቀን ይምረጡ (e.g. ጥቅምት 11, 2017)"
+                  placeholder="Earliest Pickup"
                 />
               </div>
 
@@ -526,8 +392,8 @@ export default function FreightOrderForm({
                   type="text"
                   value={specialInstructions}
                   onChange={(e) => setSpecialInstructions(e.target.value)}
-                  className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                  placeholder="e.g. Tarpaulin, Fragile"
+                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                  placeholder="Special Handling"
                 />
               </div>
             </div>
