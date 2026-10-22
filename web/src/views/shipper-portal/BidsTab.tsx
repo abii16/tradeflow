@@ -436,16 +436,11 @@ export default function BidsTab() {
                   <div className="border-t border-[#242424] bg-[#121212] p-4 sm:p-5 animate-in slide-in-from-top-1 duration-200">
                     {/* Header of Expanded Area */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-[#171717] p-3 rounded-lg border border-[#242424]">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-white">AI Neural Freight Matching</span>
-                          <span className="text-[10px] font-mono text-zinc-400 bg-[#1C1C1C] px-1.5 py-0.2 rounded border border-[#2A2A2A]">
-                            v1.0
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-zinc-400 mt-0.5">
-                          Ranked by proximity, rate, and carrier reliability.
-                        </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-white">AI Neural Freight Matching</span>
+                        <span className="text-[10px] font-mono text-zinc-400 bg-[#1C1C1C] px-1.5 py-0.5 rounded border border-[#2A2A2A]">
+                          v1.0
+                        </span>
                       </div>
 
                       {(load.status === 'POSTED' || load.status === 'OPEN_FOR_BIDDING') && (
