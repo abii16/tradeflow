@@ -10,7 +10,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { postLoad, calculateSpotRate } from '@/lib/apiClient';
-import EthiopianDatePicker from '@/components/common/EthiopianDatePicker';
 import toast from 'react-hot-toast';
 
 interface FreightOrderFormProps {
@@ -39,7 +38,7 @@ export default function FreightOrderForm({
   const [weightKg, setWeightKg] = useState('');
   const [volumeM3, setVolumeM3] = useState('');
   const [truckType, setTruckType] = useState<string>('');
-  const [urgencyTier, setUrgencyTier] = useState<string>('standard');
+  const [urgencyTier, setUrgencyTier] = useState<string>('');
   const [earliestPickup, setEarliestPickup] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
 
@@ -106,7 +105,11 @@ export default function FreightOrderForm({
       const destinationCity = extractCity(destination, 'Modjo') || 'Modjo';
       const effectiveCategory = cargoCategory.trim() || 'Dry Cargo';
       const effectiveTruckType = truckType.trim() || 'Flatbed';
-      const pickupWindowHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
+      const u = (urgencyTier || '').toLowerCase();
+      const isUrgent = u.includes('high') || u.includes('express') || u.includes('urgent') || u.includes('12') || u.includes('fast') || u.includes('imm');
+      const isEconomy = u.includes('low') || u.includes('econ') || u.includes('48') || u.includes('slow');
+      const pickupWindowHours = isUrgent ? 12 : isEconomy ? 48 : 24;
+      const effectiveUrgency = isUrgent ? 'high' : isEconomy ? 'low' : 'standard';
 
       const payload = {
         origin: {
@@ -121,8 +124,8 @@ export default function FreightOrderForm({
         truckType: effectiveTruckType,
         weightKg: Number(weightKg) || 1000,
         volumeM3: volumeM3 ? Number(volumeM3) : undefined,
-        urgency: urgencyTier === 'high' ? 'high' : urgencyTier === 'low' ? 'low' : 'standard',
-        isUrgent: urgencyTier === 'high',
+        urgency: effectiveUrgency,
+        isUrgent: isUrgent,
         pickupWindowHours: pickupWindowHours,
         currency: 'ETB',
       };
@@ -159,7 +162,10 @@ export default function FreightOrderForm({
       const destinationCity = extractCity(destination, 'Modjo');
       const effectiveCategory = cargoCategory.trim() || 'Dry Cargo';
       const effectiveTruckType = truckType.trim() || 'Flatbed';
-      const expiryHours = urgencyTier === 'high' ? 12 : urgencyTier === 'low' ? 48 : 24;
+      const u = (urgencyTier || '').toLowerCase();
+      const isUrgent = u.includes('high') || u.includes('express') || u.includes('urgent') || u.includes('12') || u.includes('fast') || u.includes('imm');
+      const isEconomy = u.includes('low') || u.includes('econ') || u.includes('48') || u.includes('slow');
+      const expiryHours = isUrgent ? 12 : isEconomy ? 48 : 24;
 
       await postLoad({
         title: `${effectiveCategory.toUpperCase()}: ${cargoDescription || 'Commercial Freight'}`,
@@ -361,28 +367,40 @@ export default function FreightOrderForm({
               {/* Urgency */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-[#EDEDED]">Urgency</label>
-                <div className="relative">
-                  <select
-                    value={urgencyTier}
-                    onChange={(e) => setUrgencyTier(e.target.value)}
-                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="standard">Standard (24h)</option>
-                    <option value="high">Express (12h)</option>
-                    <option value="low">Economy (48h)</option>
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
-                </div>
+                <input
+                  type="text"
+                  name="urgency"
+                  value={urgencyTier}
+                  onChange={(e) => setUrgencyTier(e.target.value)}
+                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                  placeholder="Urgency"
+                />
               </div>
 
               {/* Earliest Pickup Date */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup</label>
-                <EthiopianDatePicker
-                  value={earliestPickup}
-                  onChange={(iso) => setEarliestPickup(iso)}
-                  placeholder="Earliest Pickup"
-                />
+                <div className="relative flex items-center">
+                  <Calendar size={14} className="absolute left-3.5 text-[#8F8F8F] pointer-events-none" />
+                  <input
+                    type="text"
+                    name="earliestPickup"
+                    value={earliestPickup}
+                    onChange={(e) => setEarliestPickup(e.target.value)}
+                    className="w-full pl-9 pr-9 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                    placeholder="Earliest Pickup"
+                  />
+                  <input
+                    type="date"
+                    tabIndex={-1}
+                    onChange={(e) => {
+                      if (e.target.value) setEarliestPickup(e.target.value);
+                    }}
+                    className="absolute right-2 opacity-0 w-6 h-6 cursor-pointer"
+                    title="Pick date"
+                  />
+                  <Calendar size={13} className="absolute right-3 text-[#8F8F8F] pointer-events-none opacity-60" />
+                </div>
               </div>
 
               {/* Special Handling */}
@@ -404,7 +422,7 @@ export default function FreightOrderForm({
         <div className="p-5 bg-[#1C1C1C] border-t border-[#2E2E2E] flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs text-[#8F8F8F]">
             <Sparkles size={14} className="text-[#24b47e]" />
-            <span>AI Spot Engine calculates real-time corridor rates</span>
+            <span>AI Spot Engine</span>
           </div>
 
           <button
