@@ -525,74 +525,50 @@ export default function BidsTab() {
                                   >
                                     {/* Carrier Column */}
                                     <TableCell className="pl-4 py-3">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-7 h-7 rounded-md bg-[#1C1C1C] border border-[#282828] flex items-center justify-center text-zinc-200 font-medium font-mono text-xs shadow-sm">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="w-6 h-6 rounded bg-[#1C1C1C] border border-[#282828] flex items-center justify-center text-zinc-300 font-medium font-mono text-xs shrink-0">
                                           {(bid.transporterName || bid.transporter || 'T')[0].toUpperCase()}
                                         </div>
-                                        <div>
-                                          <div className="text-xs font-semibold text-white flex items-center gap-2">
-                                            <span>{bid.transporterName || bid.transporter || 'Verified Transporter'}</span>
-                                            {isTopPick && (
-                                              <span className="bg-[#14231b] text-emerald-400 border border-[#1e3c2c] text-[9px] font-mono px-1.5 py-0.2 rounded font-medium uppercase tracking-wider flex items-center gap-1">
-                                                <Star size={9} className="fill-emerald-400 text-emerald-400" /> Top AI Pick
-                                              </span>
-                                            )}
-                                            {bid.aiMatchScore && (
-                                              <span className="bg-[#14231b] text-emerald-400 border border-[#1e3c2c] text-[9px] font-mono px-1.5 py-0.2 rounded font-medium">
-                                                {bid.aiMatchScore}% Match
-                                              </span>
-                                            )}
-                                          </div>
-                                          <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1 mt-0.5">
-                                            <ShieldCheck size={11} className="text-emerald-400" />
-                                            <span>{bid.transporterCompany || 'East African Logistics Fleet'}</span>
-                                            <span className="text-zinc-600">·</span>
-                                            <span className="text-emerald-400/90">INSA Certified</span>
-                                          </span>
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <span className="text-xs font-medium text-white truncate">{bid.transporterName || bid.transporter || 'Verified Transporter'}</span>
+                                          {isTopPick ? (
+                                            <span className="bg-[#14231b] text-emerald-400 border border-[#1e3c2c] text-[9px] font-mono px-1.5 py-0.5 rounded shrink-0">
+                                              Top Pick
+                                            </span>
+                                          ) : bid.aiMatchScore ? (
+                                            <span className="bg-[#181818] text-zinc-400 border border-[#262626] text-[9px] font-mono px-1.5 py-0.5 rounded shrink-0">
+                                              {Math.round(bid.aiMatchScore)}% Match
+                                            </span>
+                                          ) : null}
                                         </div>
                                       </div>
                                     </TableCell>
 
                                     {/* Rating & Verification */}
                                     <TableCell className="py-3">
-                                      <div className="flex items-center gap-1.5 bg-[#161616] px-2 py-0.5 rounded-md border border-[#262626] w-fit">
+                                      <div className="flex items-center gap-1 text-xs font-mono text-zinc-300">
                                         <Star size={11} className="fill-amber-400 text-amber-400" />
-                                        <span className="text-xs font-semibold text-amber-300 font-mono">
-                                          {bid.transporterRating || bid.rating || '4.9'}
-                                        </span>
-                                        <span className="text-[10px] text-zinc-500">/5.0</span>
+                                        <span>{bid.transporterRating || bid.rating || '4.9'}</span>
                                       </div>
                                     </TableCell>
 
                                     {/* Proximity & Distance */}
                                     <TableCell className="py-3">
-                                      <div className="flex flex-col">
-                                        <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5 font-mono">
-                                          <MapPin size={11} className="text-emerald-400" />
-                                          {bid.proximity || '< 12 km from port'}
-                                        </span>
-                                        <span className="text-[10px] text-zinc-500 font-mono mt-0.5">
-                                          Equipment: Flatbed / Container Ready
-                                        </span>
+                                      <div className="flex items-center gap-1 text-xs font-mono text-zinc-300">
+                                        <MapPin size={11} className="text-zinc-500" />
+                                        <span>{bid.proximity || '< 12 km'}</span>
                                       </div>
                                     </TableCell>
 
                                     {/* Pricing Quote */}
                                     <TableCell className="py-3">
-                                      <div className="flex flex-col">
-                                        <div className="flex items-baseline gap-1.5">
-                                          <span className="text-xs font-semibold font-mono tracking-tight text-white">
-                                            ETB {Number(bid.amount || bid.bidAmount).toLocaleString()}
-                                          </span>
-                                          {isTopPick && (
-                                            <span className="text-[9px] font-mono font-medium text-emerald-400 bg-[#14231b] px-1 rounded border border-[#1e3c2c]">
-                                              Best Rate
-                                            </span>
-                                          )}
-                                        </div>
-                                        {i > 0 && sortedArr[0] && (
-                                          <span className="text-[10px] text-zinc-500 font-mono">
-                                            +{ (Number(bid.amount) - Number(sortedArr[0].amount)).toLocaleString() } vs Top Pick
+                                      <div className="flex items-center gap-1.5 font-mono">
+                                        <span className="text-xs font-semibold text-white">
+                                          ETB {Number(bid.amount || bid.bidAmount).toLocaleString()}
+                                        </span>
+                                        {isTopPick && (
+                                          <span className="text-[9px] font-mono text-emerald-400 bg-[#14231b] px-1 rounded border border-[#1e3c2c]">
+                                            Best Rate
                                           </span>
                                         )}
                                       </div>
@@ -604,24 +580,19 @@ export default function BidsTab() {
                                         type="button"
                                         onClick={() => handleAcceptBid(bid.id)}
                                         disabled={loading || (load.status !== 'POSTED' && load.status !== 'OPEN_FOR_BIDDING' && load.status !== 'MATCHED') || bid.status === 'REJECTED'}
-                                        className={`text-xs px-3.5 py-1.5 rounded-md font-medium transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                                           bid.status === 'ACCEPTED'
                                             ? 'bg-[#14231b] text-emerald-400 border border-[#1e3c2c]'
                                             : 'bg-[#24b47e] hover:bg-[#1fa16f] text-white border border-emerald-600/30'
                                         }`}
                                       >
-                                        <span className="flex items-center gap-1.5 justify-end">
-                                          {bid.status === 'ACCEPTED' ? (
-                                            <>
-                                              <Lock size={12} /> Escrow Secured
-                                            </>
-                                          ) : (
-                                            <>
-                                              <span>Accept & Lock Escrow</span>
-                                              <ArrowRight size={13} />
-                                            </>
-                                          )}
-                                        </span>
+                                        {bid.status === 'ACCEPTED' ? (
+                                          <span className="flex items-center gap-1">
+                                            <Lock size={11} /> Secured
+                                          </span>
+                                        ) : (
+                                          <span>Accept Bid</span>
+                                        )}
                                       </button>
                                     </TableCell>
                                   </TableRow>
