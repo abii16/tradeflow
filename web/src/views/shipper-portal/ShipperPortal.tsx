@@ -69,11 +69,11 @@ export default function ShipperPortal({ onSwitchPortal }: ShipperPortalProps) {
   };
 
   return (
-    <div className="flex h-screen bg-[#1C1C1C] w-full overflow-hidden font-inter text-[#EDEDED]">
+    <div className="flex h-screen bg-[#121212] w-full overflow-hidden font-inter text-[#EDEDED]">
       <ShipperSidebar activeTab={activeTab} setActiveTab={setActiveTab} onSwitchPortal={onSwitchPortal} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <UniversalTopBar />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#181818] p-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#121212] p-5 sm:p-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#262626] [&::-webkit-scrollbar-thumb]:rounded-full">
           {renderTab()}
         </main>
       </div>

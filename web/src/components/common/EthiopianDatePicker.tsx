@@ -118,6 +118,7 @@ export default function EthiopianDatePicker({
     const gDate = toGregorian(updated.year, updated.month, updated.day, updated.hour, updated.minute);
     const isoStr = formatToInputIso(gDate);
     onChange(isoStr);
+    setIsOpen(false);
   };
 
   const handleManualFieldChange = (field: 'day' | 'month' | 'year', val: number) => {
@@ -197,6 +198,7 @@ export default function EthiopianDatePicker({
 
     const isoStr = formatToInputIso(d);
     onChange(isoStr);
+    setIsOpen(false);
   };
 
   const formatToInputIso = (d: Date): string => {
@@ -217,32 +219,24 @@ export default function EthiopianDatePicker({
     selectedEth.minute
   );
 
-  const displayString = value ? formatEthiopian(selectedEth, { includeTime: true, amharic: true }) : '';
+  const displayString = value ? formatEthiopian(selectedEth, { includeTime: false, amharic: true }) : '';
 
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Trigger Input Box */}
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-3 pl-9 pr-20 bg-[#1C1C1C] border ${
-          isOpen ? 'border-[#3ECF8E] ring-2 ring-[#3ECF8E]/20' : 'border-[#2E2E2E] hover:border-[#3E3E3E]'
+        className={`w-full px-3 pl-9 bg-[#1C1C1C] border ${
+          isOpen ? 'border-[#24b47e] ring-1 ring-[#24b47e]/30' : 'border-[#2E2E2E] hover:border-[#3E3E3E]'
         } h-10 text-xs font-medium rounded-lg text-[#EDEDED] transition-all cursor-pointer flex items-center select-none ${className}`}
       >
-        <Calendar size={15} className="absolute left-3 text-[#8F8F8F] pointer-events-none" />
+        <Calendar size={14} className="absolute left-3 text-[#8F8F8F] pointer-events-none" />
 
         {displayString ? (
-          <div className="flex items-center justify-between w-full">
-            <span className="font-mono text-[#EDEDED] truncate">{displayString}</span>
-          </div>
+          <span className="font-sans text-[#EDEDED] truncate">{displayString}</span>
         ) : (
-          <span className="text-[#666666] truncate">{placeholder}</span>
+          <span className="text-[#707070] truncate">{placeholder}</span>
         )}
-
-        <div className="absolute right-2.5 flex items-center gap-1.5 pointer-events-none">
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20">
-            ዓ.ም.
-          </span>
-        </div>
       </div>
 
       {/* Hidden input for HTML form compliance */}
@@ -396,9 +390,9 @@ export default function EthiopianDatePicker({
                       onClick={() => handleSelectDay(day)}
                       className={`h-7 w-7 rounded-lg text-xs font-mono font-medium flex items-center justify-center transition-all ${
                         isSelected
-                          ? 'bg-[#3ECF8E] text-[#1C1C1C] font-bold shadow-md shadow-[#3ECF8E]/30 scale-105'
+                          ? 'bg-[#24b47e] text-white font-bold shadow-md shadow-[#24b47e]/30 scale-105'
                           : isToday
-                          ? 'border border-[#3ECF8E] text-[#3ECF8E] hover:bg-[#2A2A2A]'
+                          ? 'border border-[#24b47e] text-[#24b47e] hover:bg-[#2A2A2A]'
                           : 'text-[#EDEDED] hover:bg-[#2A2A2A] hover:text-white'
                       }`}
                     >

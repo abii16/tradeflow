@@ -53,7 +53,7 @@ function resolveCoordinate(locationName?: string, fallback: [number, number] = [
 }
 
 // Custom Leaflet Icons
-const createTerminalIcon = (label: string, color: string = '#3ECF8E') => {
+const createTerminalIcon = (label: string, color: string = '#24b47e') => {
   return L.divIcon({
     className: 'custom-terminal-marker',
     html: `
@@ -74,16 +74,16 @@ const createTruckRadarIcon = (plate: string, speedText: string) => {
     className: 'custom-truck-radar-marker',
     html: `
       <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-        <span style="position: absolute; top: -6px; left: -6px; width: 44px; height: 44px; border-radius: 9999px; background-color: rgba(62,207,142,0.3); animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-        <div style="position: relative; width: 32px; height: 32px; border-radius: 8px; background-color: #1C1C1C; border: 2px solid #3ECF8E; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(62,207,142,0.6);">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3ECF8E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <span style="position: absolute; top: -6px; left: -6px; width: 44px; height: 44px; border-radius: 9999px; background-color: rgba(36,180,126,0.3); animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+        <div style="position: relative; width: 32px; height: 32px; border-radius: 8px; background-color: #1C1C1C; border: 2px solid #24b47e; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(36,180,126,0.6);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24b47e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10 17h4V5H2v12h3"/>
             <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/>
             <circle cx="7.5" cy="17.5" r="2.5"/>
             <circle cx="17.5" cy="17.5" r="2.5"/>
           </svg>
         </div>
-        <div style="margin-top: 3px; background: rgba(15,15,15,0.95); border: 1px solid #3ECF8E; border-radius: 4px; padding: 1px 6px; font-size: 9px; font-family: monospace; font-weight: bold; color: #3ECF8E; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.8);">
+        <div style="margin-top: 3px; background: rgba(15,15,15,0.95); border: 1px solid #24b47e; border-radius: 4px; padding: 1px 6px; font-size: 9px; font-family: monospace; font-weight: bold; color: #24b47e; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.8);">
           ${plate} • ${speedText}
         </div>
       </div>
@@ -336,8 +336,22 @@ export default function ActiveShipment() {
     toast.success('Official Smart e-CMR Waybill document generated for PDF export!');
   };
 
-  if (loading) return <div className="p-4 text-xs text-[#8F8F8F]">Loading active shipment telemetry...</div>;
-  if (!shipment) return <div className="p-4 bg-[#232323] border border-[#2E2E2E] rounded-md text-xs text-[#8F8F8F] text-center">No active shipments in transit.</div>;
+  if (loading) {
+    return (
+      <div className="p-8 bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl flex items-center justify-center gap-3 text-xs text-[#8F8F8F]">
+        <div className="w-4 h-4 rounded-full border-2 border-[#24b47e] border-t-transparent animate-spin" />
+        <span>Loading active shipment telemetry...</span>
+      </div>
+    );
+  }
+
+  if (!shipment) {
+    return (
+      <div className="p-8 bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl text-xs text-[#8F8F8F] text-center">
+        No active shipments in transit.
+      </div>
+    );
+  }
 
   // Resolve Real Corridor Geographic Waypoints from Load Origin & Destination
   const originName = shipment.load?.origin?.city || shipment.load?.origin?.address || 'Djibouti';
@@ -421,7 +435,7 @@ export default function ActiveShipment() {
   const isDisputed = shipment?.payment?.status === 'DISPUTED';
 
   return (
-    <div className="bg-[#232323] border border-[#2E2E2E] rounded-md shadow-lg shadow-black/40 overflow-hidden">
+    <div className="bg-[#1C1C1C] border border-[#2E2E2E] rounded-xl shadow-lg shadow-black/40 overflow-hidden font-sans">
       {showRatingModal && (
         <RatingModal
           transporterName={resolvedTransporterName}
@@ -445,59 +459,75 @@ export default function ActiveShipment() {
       )}
 
       {/* Header */}
-      <div className="p-3.5 border-b border-[#2E2E2E] flex justify-between items-center bg-[#1F1F1F]">
-        <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[#8F8F8F]">{t('live_shipment_track')}</span>
-          <h2 className="text-sm font-semibold text-[#EDEDED] flex items-center gap-2">
-            <span>{shipment?.trackingNumber || 'SHP-9021-DJM'}</span>
-            <span className="text-[10px] font-mono text-[#8F8F8F] font-normal">
-              ({originName} ➔ {destName})
+      <div className="p-3.5 px-4 border-b border-[#2E2E2E] bg-[#181818] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#8F8F8F] whitespace-nowrap">
+              {t('live_shipment_track', 'Live Shipment Track')}
             </span>
-          </h2>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#24b47e] animate-pulse" />
+          </div>
+
+          <span className="text-[#3E3E3E] hidden sm:inline">•</span>
+
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <h2 className="text-sm font-semibold font-mono text-[#EDEDED] tracking-tight">
+              {shipment?.trackingNumber || 'SHP-E34176EA-DJM'}
+            </h2>
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#141414] border border-[#2E2E2E] text-[11px] font-mono text-[#8F8F8F]">
+              <span className="text-[#EDEDED]">{originName}</span>
+              <span className="text-[#24b47e] font-bold">→</span>
+              <span className="text-[#EDEDED]">{destName}</span>
+            </div>
+          </div>
         </div>
+
         <div className="flex items-center gap-2">
           {isDisputed ? (
-            <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md" title="TeleBirr Escrow Frozen for Mediation">
-              <AlertCircle size={11} className="text-amber-400" />
-              <span>Disputed (Escrow Frozen)</span>
+            <span className="flex items-center gap-1.5 text-xs font-mono font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg" title="TeleBirr Escrow Frozen for Mediation">
+              <AlertCircle size={12} className="text-amber-400" />
+              <span>Disputed</span>
             </span>
           ) : (
             <button
               type="button"
               onClick={() => setShowDisputeModal(true)}
-              className="flex items-center gap-1 text-[11px] font-medium text-[#8F8F8F] hover:text-amber-400 bg-[#181818] hover:bg-amber-500/10 border border-[#2E2E2E] hover:border-amber-500/30 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-medium text-[#8F8F8F] hover:text-[#EDEDED] bg-[#141414] hover:bg-[#202020] border border-[#2E2E2E] hover:border-[#3E3E3E] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
               title="Raise Escrow Dispute / Cargo Incident (SRS FR-10.3)"
             >
-              <Scale size={11} />
-              <span>{t('dispute_escrow', 'Dispute Escrow')}</span>
+              <Scale size={12} />
+              <span>{t('dispute_escrow', 'Dispute')}</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={() => setShowRatingModal(true)}
-            className="flex items-center gap-1 text-[11px] font-medium text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-medium text-[#8F8F8F] hover:text-[#EDEDED] bg-[#141414] hover:bg-[#202020] border border-[#2E2E2E] hover:border-[#3E3E3E] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
           >
-            <Star size={11} className="fill-amber-500 text-amber-500" /> {t('rate_carrier')}
+            <Star size={12} className="text-[#8F8F8F] hover:text-amber-400" />
+            <span>{t('rate_carrier', 'Rate')}</span>
           </button>
-          <span className="px-2.5 py-0.5 bg-[#3ECF8E]/10 text-[#3ECF8E] text-[11px] font-mono font-bold rounded border border-[#3ECF8E]/20">
+
+          <span className="px-2.5 py-1 bg-[#24b47e]/10 text-[#24b47e] text-xs font-mono font-semibold rounded-lg border border-[#24b47e]/30 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#24b47e]" />
             {status}
           </span>
         </div>
       </div>
 
       {/* Mini Map with Live Telematics Radar (SRS FR-03.1) */}
-      <div className="h-64 w-full border-b border-[#2E2E2E] relative">
+      <div className="h-64 w-full border-b border-[#2E2E2E] relative bg-[#141414]">
         <MapContainer center={mapCenter} zoom={6} scrollWheelZoom={false} className="h-full w-full">
           <TileLayer
             attribution="&copy; Google"
             url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
           />
           {/* Corridor Highway Polyline */}
-          <Polyline positions={routeLine} color="#3ECF8E" weight={3.5} dashArray="5, 5" opacity={0.8} />
+          <Polyline positions={routeLine} color="#24b47e" weight={3.5} dashArray="5, 5" opacity={0.8} />
 
           {/* Origin Terminal Pin */}
-          <Marker position={originCoord} icon={createTerminalIcon(originName, '#3ECF8E')} />
+          <Marker position={originCoord} icon={createTerminalIcon(originName, '#24b47e')} />
 
           {/* Intermediate Checkpoints */}
           {isDjiboutiModjoCorridor && (
@@ -522,30 +552,49 @@ export default function ActiveShipment() {
             </Popup>
           </Marker>
         </MapContainer>
+      </div>
 
-        {/* Floating Telematics Telemetry Badge */}
-        <div className="absolute bottom-2 left-2 z-[400] bg-[#1C1C1C]/95 backdrop-blur-md px-3 py-1.5 rounded-lg text-[10px] font-mono border border-[#2E2E2E] shadow-md text-[#EDEDED] flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-pulse" />
-          <span>
-            Plate: <strong className="text-[#3ECF8E]">{shipment?.truckPlate || 'ET-3-A-89214'}</strong> • Carrier: <strong className="text-white">{resolvedTransporterName}</strong> • Speed: <strong className="text-zinc-200">{speedText}</strong> • Status: <strong className="text-amber-400">{status}</strong>
+      {/* Clean Structured Telemetry Strip */}
+      <div className="px-4 py-2.5 bg-[#141414] border-b border-[#2E2E2E] flex items-center justify-between flex-wrap gap-2 text-xs">
+        <div className="flex items-center gap-2.5">
+          <span className="flex items-center gap-1.5 font-mono text-[#24b47e] font-semibold text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#24b47e] animate-pulse" />
+            {shipment?.truckPlate || 'ET-3-A-89214'}
+          </span>
+          <span className="text-[#4A4A4A]">•</span>
+          <span className="text-[#8F8F8F] text-xs truncate max-w-[200px]" title={resolvedTransporterName}>
+            {resolvedTransporterName}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 text-xs font-mono">
+          <span className="text-[#8F8F8F]">
+            Speed: <strong className="text-[#EDEDED] font-semibold">{speedText}</strong>
+          </span>
+          <span className="text-[#4A4A4A]">•</span>
+          <span className="text-[#8F8F8F]">
+            Status: <strong className="text-[#24b47e] font-semibold">{status}</strong>
           </span>
         </div>
       </div>
 
       {/* Progress Track & Dynamic Milestones (SRS Section 3.3 / FR-03.2 & FR-03.3) */}
       <div className="p-4 space-y-4">
-        <div>
-          <div className="flex justify-between text-xs text-[#8F8F8F] mb-1.5 font-medium">
-            <span>
-              {t('milestone_progress')} <strong className="text-[#3ECF8E]">({progressPercent}%)</strong>
-            </span>
-            <span className="text-[#EDEDED] font-mono">
-              ETA: <strong className="text-[#3ECF8E]">{etaText}</strong>
-            </span>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-[#EDEDED]">{t('milestone_progress', 'Milestone Progress')}</span>
+              <span className="px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-[#24b47e]/10 text-[#24b47e] border border-[#24b47e]/20">
+                {progressPercent}%
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="text-[#8F8F8F]">ETA:</span>
+              <span className="font-mono font-semibold text-[#24b47e]">{etaText}</span>
+            </div>
           </div>
-          <div className="w-full bg-[#181818] h-2 rounded-full overflow-hidden border border-[#2E2E2E]">
+          <div className="w-full bg-[#141414] h-2 rounded-full overflow-hidden border border-[#2E2E2E]">
             <div 
-              className="bg-gradient-to-r from-[#3ECF8E] to-emerald-400 h-full transition-all duration-500 rounded-full shadow-[0_0_10px_rgba(62,207,142,0.5)]" 
+              className="bg-[#24b47e] h-full transition-all duration-500 rounded-full shadow-[0_0_8px_rgba(36,180,126,0.4)]" 
               style={{ width: `${progressPercent}%` }} 
             />
           </div>
@@ -553,33 +602,48 @@ export default function ActiveShipment() {
 
         {/* Dynamic Milestones list */}
         <div className="pt-2 border-t border-[#2E2E2E]">
-          <div className="relative pl-6 space-y-4">
-            <div className="absolute top-2 bottom-2 left-[9px] w-[2px] bg-[#2E2E2E]"></div>
-            {milestones.map((m, idx) => (
-              <div key={idx} className="relative flex items-center justify-between text-xs">
-                <div
-                  className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 bg-[#232323] transition-all ${
-                    m.state === 'done' || m.state === 'active'
-                      ? 'border-[#3ECF8E] text-[#3ECF8E]'
-                      : 'border-[#2E2E2E] text-[#8F8F8F]'
-                  } ${m.state === 'active' ? 'shadow-[0_0_12px_rgba(62,207,142,0.4)] ring-4 ring-[#3ECF8E]/20' : ''}`}
-                >
-                  {m.state === 'done' ? (
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : m.state === 'active' ? (
-                    <div className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-ping"></div>
-                  ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#4A4A4A]"></div>
-                  )}
+          <div className="relative pl-7 space-y-3.5">
+            <div className="absolute top-2.5 bottom-2.5 left-[10px] w-[2px] bg-[#2E2E2E]"></div>
+            {milestones.map((m, idx) => {
+              const isDone = m.state === 'done';
+              const isActive = m.state === 'active';
+
+              return (
+                <div key={idx} className="relative flex items-center justify-between gap-3 text-xs">
+                  <div
+                    className={`absolute -left-7 w-5 h-5 rounded-full flex items-center justify-center shrink-0 border transition-all z-10 ${
+                      isDone
+                        ? 'bg-[#24b47e] border-[#24b47e] text-black shadow-sm'
+                        : isActive
+                        ? 'bg-[#1C1C1C] border-[#24b47e] text-[#24b47e] ring-4 ring-[#24b47e]/20'
+                        : 'bg-[#1C1C1C] border-[#2E2E2E] text-[#707070]'
+                    }`}
+                  >
+                    {isDone ? (
+                      <Check size={11} strokeWidth={3} />
+                    ) : isActive ? (
+                      <span className="w-2 h-2 rounded-full bg-[#24b47e] animate-pulse" />
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#4A4A4A]" />
+                    )}
+                  </div>
+                  <span className={`truncate font-medium ${isDone || isActive ? 'text-[#EDEDED]' : 'text-[#707070]'}`}>
+                    {m.title}
+                  </span>
+                  <span
+                    className={`text-[11px] font-mono shrink-0 px-2 py-0.5 rounded ${
+                      isActive
+                        ? 'bg-[#24b47e]/10 text-[#24b47e] border border-[#24b47e]/20 font-semibold'
+                        : isDone
+                        ? 'text-[#8F8F8F]'
+                        : 'text-[#707070]'
+                    }`}
+                  >
+                    {m.time}
+                  </span>
                 </div>
-                <span className={`pl-2 truncate ${m.state === 'done' || m.state === 'active' ? 'text-[#EDEDED] font-medium' : 'text-[#8F8F8F]'}`}>
-                  {m.title}
-                </span>
-                <span className="text-[11px] font-mono text-[#8F8F8F] font-medium shrink-0">{m.time}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -588,9 +652,9 @@ export default function ActiveShipment() {
           <button
             type="button"
             onClick={handleDownloadWaybill}
-            className="w-full bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] py-2.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_15px_rgba(62,207,142,0.2)]"
+            className="w-full bg-[#24b47e] hover:bg-[#1fa16f] text-[#0E0E0E] py-2.5 rounded-lg text-xs font-semibold shadow-sm shadow-[#24b47e]/20 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
           >
-            <FileText size={15} />
+            <FileText size={15} strokeWidth={2.2} />
             <span>{t('download_waybill', 'Download Smart e-CMR Waybill (PDF)')}</span>
           </button>
         </div>
