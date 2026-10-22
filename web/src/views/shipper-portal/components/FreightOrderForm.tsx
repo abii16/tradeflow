@@ -5,7 +5,6 @@ import {
   Lock, 
   ShieldAlert, 
   Truck, 
-  Calendar, 
   Sparkles, 
   AlertTriangle
 } from 'lucide-react';
@@ -380,27 +379,14 @@ export default function FreightOrderForm({
               {/* Earliest Pickup Date */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-[#EDEDED]">Earliest Pickup</label>
-                <div className="relative flex items-center">
-                  <Calendar size={14} className="absolute left-3.5 text-[#8F8F8F] pointer-events-none" />
-                  <input
-                    type="text"
-                    name="earliestPickup"
-                    value={earliestPickup}
-                    onChange={(e) => setEarliestPickup(e.target.value)}
-                    className="w-full pl-9 pr-9 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
-                    placeholder="Earliest Pickup"
-                  />
-                  <input
-                    type="date"
-                    tabIndex={-1}
-                    onChange={(e) => {
-                      if (e.target.value) setEarliestPickup(e.target.value);
-                    }}
-                    className="absolute right-2 opacity-0 w-6 h-6 cursor-pointer"
-                    title="Pick date"
-                  />
-                  <Calendar size={13} className="absolute right-3 text-[#8F8F8F] pointer-events-none opacity-60" />
-                </div>
+                <input
+                  type="text"
+                  name="earliestPickup"
+                  value={earliestPickup}
+                  onChange={(e) => setEarliestPickup(e.target.value)}
+                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                  placeholder="Earliest Pickup"
+                />
               </div>
 
               {/* Special Handling */}
