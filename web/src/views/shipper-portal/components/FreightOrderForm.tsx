@@ -50,19 +50,25 @@ export default function FreightOrderForm({
 
   // Helper to extract canonical corridor city for AI Spot Model
   const extractCity = (str: string, fallback: string = ''): string => {
-    if (!str || !str.trim()) return '';
-    const s = str.toLowerCase();
+    if (!str || !str.trim()) return fallback;
+    const s = str.trim().toLowerCase();
     if (s.includes('djibouti')) return 'Djibouti';
     if (s.includes('galafi')) return 'Galafi';
-    if (s.includes('semera')) return 'Semera';
+    if (s.includes('semera') || s.includes('samara')) return 'Semera';
     if (s.includes('kombolcha')) return 'Kombolcha';
     if (s.includes('dire')) return 'Dire Dawa';
     if (s.includes('hawassa')) return 'Hawassa';
-    if (s.includes('modjo')) return 'Modjo';
+    if (s.includes('modjo') || s.includes('mojo')) return 'Modjo';
     if (s.includes('adama') || s.includes('nazret')) return 'Adama';
     if (s.includes('mekelle')) return 'Mekelle';
-    if (s.includes('addis') || s.includes('kality')) return 'Addis Ababa';
-    return fallback || str.trim();
+    if (s.includes('addis') || s.includes('kality') || s.includes('akaki')) return 'Addis Ababa';
+    if (s.includes('bahir') || s.includes('dar')) return 'Bahir Dar';
+    if (s.includes('gondar')) return 'Gondar';
+    if (s.includes('jimma')) return 'Jimma';
+    if (s.includes('harar')) return 'Harar';
+    if (s.includes('moyale')) return 'Moyale';
+    const trimmed = str.trim();
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
   };
 
   // Sync recommended truck type when cargo category changes
@@ -270,37 +276,20 @@ export default function FreightOrderForm({
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-[#EDEDED]">{t('origin', 'Origin')}</label>
                   {originCity && (
-                    <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-mono text-[#24b47e] bg-[#24b47e]/10 px-1.5 py-0.5 rounded">
                       {originCity}
                     </span>
                   )}
                 </div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    list="origin-corridor-list"
-                    name="origin"
-                    value={origin}
-                    onChange={(e) => setOrigin(e.target.value)}
-                    required
-                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
-                    placeholder="e.g. Djibouti DCT"
-                  />
-                  <datalist id="origin-corridor-list">
-                    <option value="Djibouti Port / Doraleh Container Terminal (DCT)" />
-                    <option value="Djibouti Free Trade Zone (DFTZ)" />
-                    <option value="Galafi Border Clearance Terminal" />
-                    <option value="Semera Logistics Hub" />
-                    <option value="Kombolcha Dry Port & Terminal" />
-                    <option value="Dire Dawa Free Trade Zone" />
-                    <option value="Hawassa Industrial Park Terminal" />
-                    <option value="Modjo Dry Port & Terminal (Outbound Export)" />
-                    <option value="Adama Industrial Hub" />
-                    <option value="Addis Ababa / Kality Customs Clearance Branch" />
-                    <option value="Mekelle Freight Terminal" />
-                  </datalist>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
-                </div>
+                <input
+                  type="text"
+                  name="origin"
+                  value={origin}
+                  onChange={(e) => setOrigin(e.target.value)}
+                  required
+                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                  placeholder="Origin"
+                />
               </div>
 
               {/* Destination */}
@@ -308,35 +297,20 @@ export default function FreightOrderForm({
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-[#EDEDED]">{t('destination', 'Destination')}</label>
                   {destCity && (
-                    <span className="text-[10px] font-mono text-[#3ECF8E] bg-[#3ECF8E]/10 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-mono text-[#24b47e] bg-[#24b47e]/10 px-1.5 py-0.5 rounded">
                       {destCity}
                     </span>
                   )}
                 </div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    list="destination-corridor-list"
-                    name="destination"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                    required
-                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all font-sans"
-                    placeholder="e.g. Modjo Port"
-                  />
-                  <datalist id="destination-corridor-list">
-                    <option value="Modjo Dry Port & Terminal, Ethiopia" />
-                    <option value="Addis Ababa / Kality Customs Clearance Center" />
-                    <option value="Djibouti Container Terminal (Export Exit Port)" />
-                    <option value="Dire Dawa Free Trade Zone" />
-                    <option value="Semera Freight Hub" />
-                    <option value="Kombolcha Dry Port" />
-                    <option value="Hawassa Industrial Park" />
-                    <option value="Adama Industrial Hub" />
-                    <option value="Mekelle Hub" />
-                  </datalist>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
-                </div>
+                <input
+                  type="text"
+                  name="destination"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  required
+                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                  placeholder="Destination"
+                />
               </div>
             </div>
           </div>
@@ -615,7 +589,7 @@ export default function FreightOrderForm({
         {/* Submit Quote Button Bar */}
         <div className="p-5 bg-[#1C1C1C] border-t border-[#2E2E2E] flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs text-[#8F8F8F]">
-            <Sparkles size={14} className="text-[#3ECF8E]" />
+            <Sparkles size={14} className="text-[#24b47e]" />
             <span>AI Spot Engine calculates real-time corridor rates</span>
           </div>
 
@@ -623,7 +597,7 @@ export default function FreightOrderForm({
             type="submit"
             form="quote-form"
             disabled={loading}
-            className="flex items-center gap-2 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] px-6 py-2.5 rounded-lg text-xs font-bold shadow-md hover:shadow-[0_0_15px_rgba(62,207,142,0.3)] transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-2 bg-[#24b47e] hover:bg-[#1fa16f] text-white px-5 py-2.5 rounded-lg text-xs font-semibold shadow-sm hover:shadow-[0_0_15px_rgba(36,180,126,0.25)] transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer"
           >
             <Sparkles size={14} className={loading ? 'animate-spin' : ''} />
             <span>{loading ? 'Evaluating Model...' : 'Get AI Spot Quote'}</span>
@@ -758,7 +732,7 @@ export default function FreightOrderForm({
                 type="button"
                 onClick={handleConfirmBroadcast}
                 disabled={loading}
-                className="w-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1C1C] py-3 rounded-xl text-xs font-bold shadow-md hover:shadow-[0_0_20px_rgba(62,207,142,0.35)] hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-[#24b47e] hover:bg-[#1fa16f] text-white py-3 rounded-xl text-xs font-semibold shadow-sm hover:shadow-[0_0_20px_rgba(36,180,126,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Truck size={16} />
                 <span>{loading ? 'Broadcasting Freight Order...' : 'Broadcast Freight Order & Solicit Carrier Bids (FR-02)'}</span>
