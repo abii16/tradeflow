@@ -92,10 +92,10 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
   React.useEffect(() => {
     const isRegistrationBlocked = sessionStorage.getItem('tradeflow_registration_blocked') === 'true' ||
-                                  localStorage.getItem('tradeflow_registration_blocked') === 'true';
-    if (sessionStorage.getItem('tradeflow_auth_banner_error') || 
-        window.location.search.includes('oauth_intent=signup') ||
-        isRegistrationBlocked) {
+      localStorage.getItem('tradeflow_registration_blocked') === 'true';
+    if (sessionStorage.getItem('tradeflow_auth_banner_error') ||
+      window.location.search.includes('oauth_intent=signup') ||
+      isRegistrationBlocked) {
       setShowRegistration(true);
       setShowLoginModal(false);
     }
@@ -220,8 +220,8 @@ export default function LandingPage({ onSelectPortal }: LandingPageProps) {
 
         {/* TOP NAVIGATION HEADER */}
         <header className={`fixed top-0 left-0 w-full h-16 border-b px-8 flex items-center justify-between z-[60] backdrop-blur-md transition-all duration-300 ${isScrolled
-            ? 'bg-[#1C1C1C]/95 border-[#2E2E2E] shadow-2xl'
-            : 'bg-[#1C1C1C]/80 border-[#2E2E2E]'
+          ? 'bg-[#1C1C1C]/95 border-[#2E2E2E] shadow-2xl'
+          : 'bg-[#1C1C1C]/80 border-[#2E2E2E]'
           }`}>
           <div
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
