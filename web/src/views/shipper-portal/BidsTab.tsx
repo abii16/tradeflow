@@ -356,10 +356,10 @@ export default function BidsTab() {
                     isExpanded ? 'bg-[#181818]' : ''
                   }`}
                 >
-                  {/* Left Column: ID, Title & Specifications */}
-                  <div className="flex items-start gap-3 mb-3 lg:mb-0 w-full lg:w-[36%]">
+                  {/* Left Column: Title & Chevron */}
+                  <div className="flex items-center gap-3 mb-3 lg:mb-0 w-full lg:w-[36%]">
                     <div
-                      className={`mt-1 w-6 h-6 shrink-0 rounded-md flex items-center justify-center transition-all ${
+                      className={`w-6 h-6 shrink-0 rounded-md flex items-center justify-center transition-all ${
                         isExpanded
                           ? 'bg-[#222222] text-white border border-[#333333]'
                           : 'bg-[#1C1C1C] text-[#8F8F8F] group-hover:text-white border border-[#282828]'
@@ -372,27 +372,6 @@ export default function BidsTab() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-mono text-zinc-400 bg-[#121212] px-2 py-0.5 rounded border border-[#282828] tracking-wider">
-                          TF-LOAD-{load.id?.substring(0, 4)?.toUpperCase()}
-                        </span>
-
-                        {bidsCount > 0 ? (
-                          <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-[#14231b] px-2 py-0.5 rounded border border-[#1e3c2c]">
-                            <Activity size={10} className="text-emerald-400" />
-                            {bidsCount} BIDS
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-mono text-zinc-500 bg-[#1A1A1A] px-2 py-0.5 rounded border border-[#262626]">
-                            Awaiting Bids
-                          </span>
-                        )}
-
-                        <span className="text-[10px] font-mono text-zinc-500 hidden sm:inline-block">
-                          {weightTons} TONS
-                        </span>
-                      </div>
-
                       <h3 className="text-sm font-semibold text-white group-hover:text-zinc-200 transition-colors truncate">
                         {load.title || load.cargoType || 'Commercial Freight Cargo'}
                       </h3>
