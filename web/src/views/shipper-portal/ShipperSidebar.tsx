@@ -73,8 +73,14 @@ export default function ShipperSidebar({ activeTab, setActiveTab, onSwitchPortal
   return (
     <aside className="w-64 bg-[#121212] border-r border-[#242424] flex flex-col justify-between shrink-0 h-screen select-none relative z-20">
       {/* Brand Header */}
-      <div className="h-16 border-b border-[#242424] flex items-center px-5 bg-[#121212]/90 backdrop-blur-md sticky top-0 z-30">
-        <span className="font-extrabold text-lg text-[#EDEDED] tracking-tight">TradeFlow</span>
+      <div className="h-16 border-b border-[#242424] flex items-center justify-between px-5 bg-[#121212]/90 backdrop-blur-md sticky top-0 z-30">
+        <div className="flex items-center select-none">
+          <span className="text-2xl font-serif text-white tracking-tighter pr-0.5">T</span>
+          <span className="font-extrabold text-lg text-white tracking-tight">rade<span className="text-[#3ECF8E]">Flow</span></span>
+        </div>
+        <span className="text-[9px] font-mono font-bold bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25 px-1.5 py-0.5 rounded uppercase tracking-wider">
+          SHIPPER
+        </span>
       </div>
 
       {/* Navigation Groups */}

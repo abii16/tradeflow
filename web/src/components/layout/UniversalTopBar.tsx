@@ -30,11 +30,11 @@ export default function UniversalTopBar() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'SHIPPER': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'TRANSPORTER': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'FORWARDER': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-      case 'CUSTOMS_OFFICER': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'ADMIN': return 'bg-[#3ECF8E] text-black hover:bg-[#34b27b] transition-colors font-bold border-[#2E2E2E]';
+      case 'SHIPPER': return 'bg-[#3ECF8E]/15 text-[#3ECF8E] border-[#3ECF8E]/30';
+      case 'TRANSPORTER': return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+      case 'FORWARDER': return 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30';
+      case 'CUSTOMS_OFFICER': return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+      case 'ADMIN': return 'bg-[#3ECF8E] text-zinc-950 hover:bg-[#34b27b] transition-colors font-bold border-transparent';
       default: return 'bg-[#181818] text-[#EDEDED] border-[#2E2E2E]';
     }
   };
@@ -51,7 +51,7 @@ export default function UniversalTopBar() {
   };
 
   return (
-    <header className="h-14 bg-[#232323] border-b border-[#2E2E2E] flex items-center justify-between px-5 shrink-0 w-full z-10 sticky top-0">
+    <header className="h-14 bg-[#121212]/90 backdrop-blur-md border-b border-[#242424] flex items-center justify-between px-5 shrink-0 w-full z-10 sticky top-0">
       {/* Left side: Functional Search */}
       <HeaderSearch />
 
