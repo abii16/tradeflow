@@ -343,57 +343,57 @@ export default function BidsTab() {
             return (
               <div
                 key={load.id || index}
-                className={`group bg-[#171717] rounded-xl overflow-hidden transition-all duration-200 border ${
+                className={`group bg-[#161616] rounded-xl overflow-hidden transition-all duration-200 border ${
                   isExpanded
-                    ? 'border-[#3ECF8E]/40 shadow-[0_4px_28px_rgba(0,0,0,0.6)] ring-1 ring-[#3ECF8E]/20'
-                    : 'border-[#262626] hover:border-[#3ECF8E]/30 hover:bg-[#1A1A1A]'
+                    ? 'border-[#333333] shadow-md bg-[#171717]'
+                    : 'border-[#242424] hover:border-[#333333] hover:bg-[#181818]'
                 }`}
               >
                 {/* CARD SUMMARY HEADER ROW */}
                 <div
                   onClick={() => setExpandedLoad(isExpanded ? null : load.id)}
                   className={`p-4 flex flex-col lg:flex-row lg:items-center justify-between cursor-pointer transition-colors select-none ${
-                    isExpanded ? 'bg-[#1A1A1A]' : ''
+                    isExpanded ? 'bg-[#181818]' : ''
                   }`}
                 >
                   {/* Left Column: ID, Title & Specifications */}
-                  <div className="flex items-start gap-3.5 mb-3 lg:mb-0 w-full lg:w-[36%]">
+                  <div className="flex items-start gap-3 mb-3 lg:mb-0 w-full lg:w-[36%]">
                     <div
-                      className={`mt-1 w-6 h-6 shrink-0 rounded-lg flex items-center justify-center transition-all ${
+                      className={`mt-1 w-6 h-6 shrink-0 rounded-md flex items-center justify-center transition-all ${
                         isExpanded
-                          ? 'bg-[#3ECF8E] text-zinc-950 font-bold'
-                          : 'bg-[#202020] text-[#8F8F8F] group-hover:text-[#3ECF8E] group-hover:bg-[#3ECF8E]/10'
+                          ? 'bg-[#222222] text-white border border-[#333333]'
+                          : 'bg-[#1C1C1C] text-[#8F8F8F] group-hover:text-white border border-[#282828]'
                       }`}
                     >
                       <ChevronDown
-                        size={14}
-                        className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                        size={13}
+                        className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                       />
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-mono font-bold text-zinc-400 bg-[#121212] px-2 py-0.5 rounded border border-[#282828] tracking-widest">
+                        <span className="text-[10px] font-mono text-zinc-400 bg-[#121212] px-2 py-0.5 rounded border border-[#282828] tracking-wider">
                           TF-LOAD-{load.id?.substring(0, 4)?.toUpperCase()}
                         </span>
 
                         {bidsCount > 0 ? (
-                          <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-2 py-0.5 rounded border border-[#3ECF8E]/25">
-                            <Activity size={10} className="animate-pulse" />
+                          <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-[#14231b] px-2 py-0.5 rounded border border-[#1e3c2c]">
+                            <Activity size={10} className="text-emerald-400" />
                             {bidsCount} BIDS
                           </span>
                         ) : (
-                          <span className="text-[10px] font-mono text-[#8F8F8F] bg-[#1F1F1F] px-2 py-0.5 rounded border border-[#2E2E2E]">
+                          <span className="text-[10px] font-mono text-zinc-500 bg-[#1A1A1A] px-2 py-0.5 rounded border border-[#262626]">
                             Awaiting Bids
                           </span>
                         )}
 
-                        <span className="text-[10px] font-mono text-[#8F8F8F] hidden sm:inline-block">
+                        <span className="text-[10px] font-mono text-zinc-500 hidden sm:inline-block">
                           {weightTons} TONS
                         </span>
                       </div>
 
-                      <h3 className="text-sm font-bold text-white group-hover:text-[#3ECF8E] transition-colors truncate">
+                      <h3 className="text-sm font-semibold text-white group-hover:text-zinc-200 transition-colors truncate">
                         {load.title || load.cargoType || 'Commercial Freight Cargo'}
                       </h3>
                     </div>
@@ -401,36 +401,36 @@ export default function BidsTab() {
 
                   {/* Middle Column: Sleek Corridor Route Visualizer */}
                   <div className="flex-1 px-2 lg:px-6 mb-3 lg:mb-0 flex items-center justify-center">
-                    <div className="flex items-center gap-3 w-full max-w-md justify-between bg-[#131313] px-3.5 py-2 rounded-lg border border-[#242424]">
+                    <div className="flex items-center gap-3 w-full max-w-md justify-between bg-[#121212] px-3.5 py-2 rounded-lg border border-[#222222]">
                       {/* Origin Node */}
                       <div className="flex flex-col text-left min-w-0 max-w-[42%]">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-white truncate" title={originCity}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] shrink-0 shadow-[0_0_6px_#3ECF8E]" />
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-white truncate" title={originCity}>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                           <span className="truncate">{originCity.split('/')[0].split(',')[0]}</span>
                         </div>
-                        <span className="text-[9px] font-mono text-[#8F8F8F] uppercase tracking-wider pl-3">
+                        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider pl-3">
                           Origin Hub
                         </span>
                       </div>
 
                       {/* Animated Connector Arrow */}
                       <div className="flex flex-col items-center justify-center px-1 shrink-0">
-                        <div className="flex items-center gap-1 text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors">
+                        <div className="flex items-center gap-1 text-zinc-500">
                           <span className="w-1.5 h-px bg-[#2E2E2E]" />
-                          <Truck size={13} className="shrink-0 text-[#3ECF8E]" />
-                          <ArrowRight size={12} className="shrink-0 text-[#8F8F8F]" />
+                          <Truck size={12} className="shrink-0 text-zinc-400" />
+                          <ArrowRight size={11} className="shrink-0 text-zinc-500" />
                           <span className="w-1.5 h-px bg-[#2E2E2E]" />
                         </div>
-                        <span className="text-[8px] font-mono text-[#8F8F8F] tracking-widest mt-0.5">CORRIDOR</span>
+                        <span className="text-[8px] font-mono text-zinc-500 tracking-wider mt-0.5">CORRIDOR</span>
                       </div>
 
                       {/* Destination Node */}
                       <div className="flex flex-col text-right min-w-0 max-w-[42%] items-end">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-white truncate justify-end" title={destCity}>
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-white truncate justify-end" title={destCity}>
                           <span className="truncate">{destCity.split('/')[0].split(',')[0]}</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] shrink-0 shadow-[0_0_6px_#3ECF8E]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                         </div>
-                        <span className="text-[9px] font-mono text-[#8F8F8F] uppercase tracking-wider pr-3">
+                        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider pr-3">
                           Destination
                         </span>
                       </div>
@@ -438,33 +438,26 @@ export default function BidsTab() {
                   </div>
 
                   {/* Right Column: Status Badge & Expand Action */}
-                  <div className="flex items-center justify-between lg:justify-end gap-3 w-full lg:w-auto pt-2 lg:pt-0 border-t lg:border-t-0 border-[#242424]">
+                  <div className="flex items-center justify-between lg:justify-end gap-2.5 w-full lg:w-auto pt-2 lg:pt-0 border-t lg:border-t-0 border-[#242424]">
                     <span
-                      className={`flex items-center gap-1.5 px-3 py-1 text-[11px] font-mono font-bold rounded-full border shadow-sm ${
+                      className={`flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-medium rounded-full border ${
                         statusLabel === 'open'
-                          ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/25'
+                          ? 'bg-[#14231b] text-emerald-400 border-[#1e3c2c]'
                           : statusLabel === 'transit'
-                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/25'
-                          : 'bg-[#1F1F1F] text-[#8F8F8F] border-[#2E2E2E]'
+                          ? 'bg-[#121d27] text-blue-400 border-[#1c2d3d]'
+                          : 'bg-[#1A1A1A] text-zinc-400 border-[#282828]'
                       }`}
                     >
-                      {statusLabel === 'open' && (
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3ECF8E] opacity-75" />
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#3ECF8E]" />
-                        </span>
-                      )}
-                      {statusLabel === 'transit' && <Zap size={11} className="text-blue-400" />}
-                      {statusLabel === 'completed' && <CheckCircle2 size={11} className="text-[#8F8F8F]" />}
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusLabel === 'open' ? 'bg-emerald-400' : statusLabel === 'transit' ? 'bg-blue-400' : 'bg-zinc-500'}`} />
                       {statusLabel === 'open' ? 'Open for Bidding' : statusLabel === 'transit' ? 'In Transit' : 'Completed'}
                     </span>
 
                     <button
                       type="button"
-                      className={`text-xs font-bold px-3 py-1 rounded-lg border transition-all ${
+                      className={`text-xs font-medium px-3 py-1 rounded-md border transition-all ${
                         isExpanded
-                          ? 'bg-[#3ECF8E]/15 text-[#3ECF8E] border-[#3ECF8E]/30'
-                          : 'bg-[#1F1F1F] text-[#EDEDED] border-[#282828] hover:border-[#3ECF8E]/40 hover:text-[#3ECF8E]'
+                          ? 'bg-[#222222] text-white border-[#383838]'
+                          : 'bg-[#181818] text-zinc-300 border-[#262626] hover:border-[#383838] hover:text-white'
                       }`}
                     >
                       {isExpanded ? 'Hide Bids' : bidsCount > 0 ? `View Bids (${bidsCount})` : 'Inspect'}
@@ -474,21 +467,21 @@ export default function BidsTab() {
 
                 {/* EXPANDED SECTION: AI SMART MATCHING & CARRIER BIDS TABLE */}
                 {isExpanded && (
-                  <div className="border-t border-[#262626] bg-[#131313] p-4 sm:p-5 animate-in slide-in-from-top-1 duration-200">
+                  <div className="border-t border-[#242424] bg-[#121212] p-4 sm:p-5 animate-in slide-in-from-top-1 duration-200">
                     {/* Header of Expanded Area */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-[#181818] p-3 rounded-xl border border-[#242424]">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-[#171717] p-3 rounded-lg border border-[#242424]">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-[#3ECF8E]/15 border border-[#3ECF8E]/25 text-[#3ECF8E] flex items-center justify-center shrink-0">
-                          <Sparkles size={14} />
+                        <div className="w-6 h-6 rounded-md bg-[#132219] border border-[#1e3c2c] text-emerald-400 flex items-center justify-center shrink-0">
+                          <Sparkles size={13} />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-white">AI Neural Freight Match Engine</span>
-                            <span className="text-[9px] font-mono font-bold bg-[#3ECF8E]/15 text-[#3ECF8E] px-1.5 py-0.2 rounded border border-[#3ECF8E]/25">
+                            <span className="text-xs font-medium text-white">AI Neural Freight Match Engine</span>
+                            <span className="text-[10px] font-mono text-zinc-400 bg-[#1C1C1C] px-1.5 py-0.2 rounded border border-[#2A2A2A]">
                               PyTorch Model v1.0
                             </span>
                           </div>
-                          <p className="text-[11px] text-[#8F8F8F] font-mono">
+                          <p className="text-[11px] text-zinc-500 font-mono">
                             Ranked by proximity, equipment compliance, axle-load safety score & spot rate index (FR-02)
                           </p>
                         </div>
@@ -499,32 +492,32 @@ export default function BidsTab() {
                           type="button"
                           onClick={() => handleTriggerMatch(load.id)}
                           disabled={matchingLoadId === load.id}
-                          className="px-3 py-1.5 bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/20 text-[#3ECF8E] border border-[#3ECF8E]/30 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+                          className="px-3 py-1.5 bg-[#181818] hover:bg-[#202020] text-zinc-200 hover:text-white border border-[#2E2E2E] hover:border-[#383838] rounded-md text-xs font-medium flex items-center gap-1.5 transition-all disabled:opacity-50 shrink-0 cursor-pointer shadow-sm"
                         >
-                          <RefreshCw size={12} className={matchingLoadId === load.id ? 'animate-spin' : ''} />
+                          <RefreshCw size={12} className={`text-emerald-400 ${matchingLoadId === load.id ? 'animate-spin' : ''}`} />
                           <span>{matchingLoadId === load.id ? 'Evaluating Neural Net...' : 'Re-scan AI Matches'}</span>
                         </button>
                       )}
                     </div>
 
                     {/* Bids Table */}
-                    <div className="rounded-xl border border-[#242424] overflow-hidden bg-[#171717] shadow-sm">
+                    <div className="rounded-lg border border-[#242424] overflow-hidden bg-[#141414] shadow-sm">
                       <Table>
-                        <TableHeader className="bg-[#121212]">
+                        <TableHeader className="bg-[#111111]">
                           <TableRow className="border-b border-[#242424] hover:bg-transparent">
-                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-[#8F8F8F] h-10 pl-4">
+                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 h-9 pl-4">
                               Transporter / Carrier
                             </TableHead>
-                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-[#8F8F8F] h-10">
+                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 h-9">
                               Rating & Verification
                             </TableHead>
-                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-[#8F8F8F] h-10">
+                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 h-9">
                               Proximity & Fleet
                             </TableHead>
-                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-[#8F8F8F] h-10">
+                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 h-9">
                               Freight Quote (ETB)
                             </TableHead>
-                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-[#8F8F8F] h-10 text-right pr-4">
+                            <TableHead className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 h-9 text-right pr-4">
                               Action
                             </TableHead>
                           </TableRow>
@@ -533,21 +526,21 @@ export default function BidsTab() {
                           {(!load.bids || load.bids.length === 0) ? (
                             <TableRow>
                               <TableCell colSpan={5} className="h-44 text-center">
-                                <div className="flex flex-col items-center justify-center text-[#8F8F8F] py-6">
-                                  <div className="w-12 h-12 rounded-full bg-[#1A1A1A] border border-[#262626] flex items-center justify-center text-[#3ECF8E] mb-3">
-                                    <Activity size={22} className="animate-pulse" />
+                                <div className="flex flex-col items-center justify-center text-zinc-400 py-6">
+                                  <div className="w-10 h-10 rounded-lg bg-[#181818] border border-[#262626] flex items-center justify-center text-emerald-400 mb-2.5">
+                                    <Activity size={18} />
                                   </div>
-                                  <h4 className="text-sm font-bold text-white mb-1">Scanning Regional Carrier Fleet...</h4>
-                                  <p className="text-xs text-[#8F8F8F] max-w-sm">
+                                  <h4 className="text-xs font-medium text-white mb-0.5">Scanning Regional Carrier Fleet...</h4>
+                                  <p className="text-[11px] text-zinc-500 max-w-sm text-center">
                                     No direct bids placed yet. Trigger our AI neural matcher to generate verified carrier shortlist.
                                   </p>
                                   <button
                                     type="button"
                                     onClick={() => handleTriggerMatch(load.id)}
                                     disabled={matchingLoadId === load.id}
-                                    className="mt-4 text-xs bg-[#1C1C1C] hover:bg-[#242424] text-white border border-[#333333] hover:border-[#3ECF8E]/50 font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
+                                    className="mt-3.5 text-xs bg-[#1C1C1C] hover:bg-[#222222] text-white border border-[#2E2E2E] hover:border-[#383838] font-medium px-3.5 py-1.5 rounded-md flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
                                   >
-                                    <Sparkles size={13} className={`text-[#3ECF8E] ${matchingLoadId === load.id ? 'animate-spin' : ''}`} />
+                                    <Sparkles size={12} className={`text-emerald-400 ${matchingLoadId === load.id ? 'animate-spin' : ''}`} />
                                     <span>{matchingLoadId === load.id ? 'Running Match Models...' : 'Trigger AI Smart Match Now'}</span>
                                   </button>
                                 </div>
@@ -568,81 +561,81 @@ export default function BidsTab() {
                                 return (
                                   <TableRow
                                     key={bid.id || i}
-                                    className={`border-b border-[#242424] transition-colors ${
+                                    className={`border-b border-[#202020] transition-colors ${
                                       isTopPick
-                                        ? 'bg-[#3ECF8E]/[0.04] hover:bg-[#3ECF8E]/[0.08]'
-                                        : 'bg-transparent hover:bg-[#1C1C1C]'
+                                        ? 'bg-[#14231b]/20 hover:bg-[#14231b]/35'
+                                        : 'bg-transparent hover:bg-[#181818]'
                                     }`}
                                   >
                                     {/* Carrier Column */}
-                                    <TableCell className="pl-4 py-3.5">
+                                    <TableCell className="pl-4 py-3">
                                       <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-[#121212] border border-[#2A2A2A] flex items-center justify-center text-[#3ECF8E] font-bold font-mono text-xs shadow-sm">
+                                        <div className="w-7 h-7 rounded-md bg-[#1C1C1C] border border-[#282828] flex items-center justify-center text-zinc-200 font-medium font-mono text-xs shadow-sm">
                                           {(bid.transporterName || bid.transporter || 'T')[0].toUpperCase()}
                                         </div>
                                         <div>
-                                          <div className="text-sm font-bold text-white flex items-center gap-2">
+                                          <div className="text-xs font-semibold text-white flex items-center gap-2">
                                             <span>{bid.transporterName || bid.transporter || 'Verified Transporter'}</span>
                                             {isTopPick && (
-                                              <span className="bg-[#3ECF8E]/15 text-[#3ECF8E] border border-[#3ECF8E]/30 text-[9px] font-mono px-1.5 py-0.2 rounded font-bold uppercase tracking-wider flex items-center gap-1">
-                                                <Star size={9} className="fill-[#3ECF8E]" /> Top AI Pick
+                                              <span className="bg-[#14231b] text-emerald-400 border border-[#1e3c2c] text-[9px] font-mono px-1.5 py-0.2 rounded font-medium uppercase tracking-wider flex items-center gap-1">
+                                                <Star size={9} className="fill-emerald-400 text-emerald-400" /> Top AI Pick
                                               </span>
                                             )}
                                             {bid.aiMatchScore && (
-                                              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-mono px-1.5 py-0.2 rounded font-bold">
+                                              <span className="bg-[#14231b] text-emerald-400 border border-[#1e3c2c] text-[9px] font-mono px-1.5 py-0.2 rounded font-medium">
                                                 {bid.aiMatchScore}% Match
                                               </span>
                                             )}
                                           </div>
-                                          <span className="text-[10px] text-[#8F8F8F] font-mono flex items-center gap-1 mt-0.5">
-                                            <ShieldCheck size={11} className="text-[#3ECF8E]" />
+                                          <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1 mt-0.5">
+                                            <ShieldCheck size={11} className="text-emerald-400" />
                                             <span>{bid.transporterCompany || 'East African Logistics Fleet'}</span>
-                                            <span className="text-[#555]">·</span>
-                                            <span className="text-[#3ECF8E]">INSA Certified</span>
+                                            <span className="text-zinc-600">·</span>
+                                            <span className="text-emerald-400/90">INSA Certified</span>
                                           </span>
                                         </div>
                                       </div>
                                     </TableCell>
 
                                     {/* Rating & Verification */}
-                                    <TableCell className="py-3.5">
-                                      <div className="flex items-center gap-1.5 bg-[#121212] px-2 py-1 rounded-md border border-[#262626] w-fit">
-                                        <Star size={12} className="fill-amber-400 text-amber-400" />
-                                        <span className="text-xs font-bold text-amber-300 font-mono">
+                                    <TableCell className="py-3">
+                                      <div className="flex items-center gap-1.5 bg-[#161616] px-2 py-0.5 rounded-md border border-[#262626] w-fit">
+                                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                                        <span className="text-xs font-semibold text-amber-300 font-mono">
                                           {bid.transporterRating || bid.rating || '4.9'}
                                         </span>
-                                        <span className="text-[10px] text-[#8F8F8F]">/5.0</span>
+                                        <span className="text-[10px] text-zinc-500">/5.0</span>
                                       </div>
                                     </TableCell>
 
                                     {/* Proximity & Distance */}
-                                    <TableCell className="py-3.5">
+                                    <TableCell className="py-3">
                                       <div className="flex flex-col">
-                                        <span className="text-xs font-medium text-[#EDEDED] flex items-center gap-1.5 font-mono">
-                                          <MapPin size={12} className="text-[#3ECF8E]" />
+                                        <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5 font-mono">
+                                          <MapPin size={11} className="text-emerald-400" />
                                           {bid.proximity || '< 12 km from port'}
                                         </span>
-                                        <span className="text-[10px] text-[#8F8F8F] font-mono mt-0.5">
+                                        <span className="text-[10px] text-zinc-500 font-mono mt-0.5">
                                           Equipment: Flatbed / Container Ready
                                         </span>
                                       </div>
                                     </TableCell>
 
                                     {/* Pricing Quote */}
-                                    <TableCell className="py-3.5">
+                                    <TableCell className="py-3">
                                       <div className="flex flex-col">
                                         <div className="flex items-baseline gap-1.5">
-                                          <span className="text-sm font-black font-mono tracking-tight text-white">
+                                          <span className="text-xs font-semibold font-mono tracking-tight text-white">
                                             ETB {Number(bid.amount || bid.bidAmount).toLocaleString()}
                                           </span>
                                           {isTopPick && (
-                                            <span className="text-[9px] font-mono font-bold text-[#3ECF8E] bg-[#3ECF8E]/10 px-1 rounded">
+                                            <span className="text-[9px] font-mono font-medium text-emerald-400 bg-[#14231b] px-1 rounded border border-[#1e3c2c]">
                                               Best Rate
                                             </span>
                                           )}
                                         </div>
                                         {i > 0 && sortedArr[0] && (
-                                          <span className="text-[10px] text-[#8F8F8F] font-mono">
+                                          <span className="text-[10px] text-zinc-500 font-mono">
                                             +{ (Number(bid.amount) - Number(sortedArr[0].amount)).toLocaleString() } vs Top Pick
                                           </span>
                                         )}
@@ -650,14 +643,14 @@ export default function BidsTab() {
                                     </TableCell>
 
                                     {/* Action Button */}
-                                    <TableCell className="text-right pr-4 py-3.5">
+                                    <TableCell className="text-right pr-4 py-3">
                                       <button
                                         type="button"
                                         onClick={() => handleAcceptBid(bid.id)}
                                         disabled={loading || (load.status !== 'POSTED' && load.status !== 'OPEN_FOR_BIDDING' && load.status !== 'MATCHED') || bid.status === 'REJECTED'}
-                                        className={`text-xs px-3.5 py-1.5 rounded-lg font-medium transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        className={`text-xs px-3.5 py-1.5 rounded-md font-medium transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                                           bid.status === 'ACCEPTED'
-                                            ? 'bg-[#14231b] text-[#3ECF8E] border border-[#1e3c2c]'
+                                            ? 'bg-[#14231b] text-emerald-400 border border-[#1e3c2c]'
                                             : 'bg-[#24b47e] hover:bg-[#1fa16f] text-white border border-emerald-600/30'
                                         }`}
                                       >
@@ -684,12 +677,12 @@ export default function BidsTab() {
                     </div>
 
                     {/* Escrow Disclaimer Note */}
-                    <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-[#8F8F8F] bg-[#171717] px-3.5 py-2 rounded-lg border border-[#242424]">
+                    <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-zinc-400 bg-[#141414] px-3.5 py-2 rounded-lg border border-[#242424]">
                       <span className="flex items-center gap-2">
-                        <ShieldCheck size={14} className="text-[#3ECF8E]" />
+                        <ShieldCheck size={14} className="text-emerald-400" />
                         <span>TeleBirr Escrow Smart-Settlement locks funds upon acceptance. Payout triggers strictly after e-PoD receipt.</span>
                       </span>
-                      <span className="text-[#3ECF8E] font-bold hidden sm:inline-block">INSA Audited</span>
+                      <span className="text-emerald-400 font-medium hidden sm:inline-block">INSA Audited</span>
                     </div>
                   </div>
                 )}
