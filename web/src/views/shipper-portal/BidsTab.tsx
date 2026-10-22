@@ -436,21 +436,16 @@ export default function BidsTab() {
                   <div className="border-t border-[#242424] bg-[#121212] p-4 sm:p-5 animate-in slide-in-from-top-1 duration-200">
                     {/* Header of Expanded Area */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-[#171717] p-3 rounded-lg border border-[#242424]">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-6 h-6 rounded-md bg-[#132219] border border-[#1e3c2c] text-emerald-400 flex items-center justify-center shrink-0">
-                          <Sparkles size={13} />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-white">AI Neural Freight Matching</span>
+                          <span className="text-[10px] font-mono text-zinc-400 bg-[#1C1C1C] px-1.5 py-0.2 rounded border border-[#2A2A2A]">
+                            v1.0
+                          </span>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-white">AI Neural Freight Match Engine</span>
-                            <span className="text-[10px] font-mono text-zinc-400 bg-[#1C1C1C] px-1.5 py-0.2 rounded border border-[#2A2A2A]">
-                              PyTorch Model v1.0
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-zinc-500 font-mono">
-                            Ranked by proximity, equipment compliance, axle-load safety score & spot rate index (FR-02)
-                          </p>
-                        </div>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">
+                          Ranked by proximity, rate, and carrier reliability.
+                        </p>
                       </div>
 
                       {(load.status === 'POSTED' || load.status === 'OPEN_FOR_BIDDING') && (
