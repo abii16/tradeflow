@@ -34,9 +34,7 @@ export default function FreightOrderForm({
   // Form State adhering to SRS Section 3.2 (FR-02.1) & Section 3.4 (FR-04.1)
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [cargoCategory, setCargoCategory] = useState<string>('dry');
-  const [customCategory, setCustomCategory] = useState<string>('');
-  const [isCustomCategory, setIsCustomCategory] = useState<boolean>(false);
+  const [cargoCategory, setCargoCategory] = useState<string>('');
   const [cargoDescription, setCargoDescription] = useState('');
   const [weightKg, setWeightKg] = useState('');
   const [volumeM3, setVolumeM3] = useState('');
@@ -72,27 +70,20 @@ export default function FreightOrderForm({
   };
 
   // Sync recommended truck type when cargo category changes
-  const handleCategoryChange = (cat: string) => {
-    setCargoCategory(cat);
-    if (cat === 'CUSTOM') {
-      setIsCustomCategory(true);
-      return;
-    }
-    setIsCustomCategory(false);
-    if (cat === 'refrigerated') {
+  const handleCategoryChange = (val: string) => {
+    setCargoCategory(val);
+    const cat = val.toLowerCase();
+    if (cat.includes('refrig') || cat.includes('cold') || cat.includes('perish')) {
       setTruckType('REEFER');
       setIsCustomTruckType(false);
-    } else if (cat === 'bulk') {
+    } else if (cat.includes('bulk') || cat.includes('agri') || cat.includes('grain')) {
       setTruckType('SIDE_WALL');
       setIsCustomTruckType(false);
-    } else if (cat === 'hazmat') {
+    } else if (cat.includes('haz') || cat.includes('chem') || cat.includes('fuel')) {
       setTruckType('TANKER');
       setIsCustomTruckType(false);
-    } else if (cat === 'oversized') {
+    } else if (cat.includes('oversize') || cat.includes('heavy') || cat.includes('machin')) {
       setTruckType('LOWBED');
-      setIsCustomTruckType(false);
-    } else {
-      setTruckType('FLATBED');
       setIsCustomTruckType(false);
     }
   };
@@ -146,9 +137,7 @@ export default function FreightOrderForm({
 
       const originCity = extractCity(origin, 'Djibouti') || 'Djibouti';
       const destinationCity = extractCity(destination, 'Modjo') || 'Modjo';
-      const effectiveCategory = (cargoCategory === 'CUSTOM' || isCustomCategory)
-        ? (customCategory.trim() || 'General Cargo')
-        : cargoCategory;
+      const effectiveCategory = cargoCategory.trim() || 'Dry Cargo';
       const effectiveTruckType = (truckType === 'CUSTOM' || isCustomTruckType)
         ? (customTruckType.trim() || 'CUSTOM_TRUCK')
         : truckType;
@@ -203,9 +192,7 @@ export default function FreightOrderForm({
       setLoading(true);
       const originCity = extractCity(origin, 'Djibouti');
       const destinationCity = extractCity(destination, 'Modjo');
-      const effectiveCategory = (cargoCategory === 'CUSTOM' || isCustomCategory)
-        ? (customCategory.trim() || 'General Cargo')
-        : cargoCategory;
+      const effectiveCategory = cargoCategory.trim() || 'Dry Cargo';
       const effectiveTruckType = (truckType === 'CUSTOM' || isCustomTruckType)
         ? (customTruckType.trim() || 'CUSTOM_TRUCK')
         : truckType;
@@ -324,67 +311,28 @@ export default function FreightOrderForm({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Category */}
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-[#EDEDED]">Category</label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isCustomCategory || cargoCategory === 'CUSTOM') {
-                        setIsCustomCategory(false);
-                        setCargoCategory('dry');
-                      } else {
-                        setIsCustomCategory(true);
-                        setCargoCategory('CUSTOM');
-                      }
-                    }}
-                    className="text-[10px] font-mono text-[#3ECF8E] hover:underline cursor-pointer"
-                  >
-                    {isCustomCategory || cargoCategory === 'CUSTOM' ? 'Standard Options' : '+ Custom (በራስዎ መጻፍ)'}
-                  </button>
-                </div>
-                <div className="relative">
-                  <select
-                    value={cargoCategory}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full px-3 pr-8 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="dry">Dry Cargo</option>
-                    <option value="bulk">Bulk Agri</option>
-                    <option value="refrigerated">Refrigerated</option>
-                    <option value="hazmat">Hazardous</option>
-                    <option value="fragile">Fragile</option>
-                    <option value="oversized">Oversized</option>
-                    <option value="CUSTOM">Other / ሌላ (በራስዎ ያስገቡ)...</option>
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8F8F8F] pointer-events-none" />
-                </div>
-                {(isCustomCategory || cargoCategory === 'CUSTOM') && (
-                  <div className="pt-1 animate-in fade-in slide-in-from-top-1">
-                    <input
-                      type="text"
-                      value={customCategory}
-                      onChange={(e) => setCustomCategory(e.target.value)}
-                      required={isCustomCategory || cargoCategory === 'CUSTOM'}
-                      className="w-full px-3 bg-[#1C1C1C] border border-[#3ECF8E]/50 h-9 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                      placeholder="የጭነቱን አይነት ያስገቡ (e.g. Livestock, Coffee, Minerals, Machinery...)"
-                    />
-                  </div>
-                )}
+                <label className="text-xs font-semibold text-[#EDEDED]">Category</label>
+                <input
+                  type="text"
+                  name="category"
+                  value={cargoCategory}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                  placeholder="Category"
+                />
               </div>
 
               {/* Description */}
               <div className="space-y-1.5 md:col-span-2">
                 <label className="text-xs font-semibold text-[#EDEDED]">Description</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={cargoDescription}
-                    onChange={(e) => setCargoDescription(e.target.value)}
-                    required
-                    className="w-full px-3 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 transition-all"
-                    placeholder="e.g. Coffee, Textiles"
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={cargoDescription}
+                  onChange={(e) => setCargoDescription(e.target.value)}
+                  required
+                  className="w-full px-3.5 bg-[#1C1C1C] border border-[#2E2E2E] h-10 text-xs font-medium rounded-lg text-[#EDEDED] placeholder-[#707070] focus:border-[#24b47e] focus:ring-1 focus:ring-[#24b47e]/30 transition-all font-sans"
+                  placeholder="Description"
+                />
               </div>
             </div>
 
