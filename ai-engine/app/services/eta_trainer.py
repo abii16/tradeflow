@@ -7,8 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-# Reuse the model definition from the engine
-from app.services.eta_engine import ETADeepModel, eta_engine
+from app.services.eta_engine import ETADeepModel, eta_engine, SimpleScaler
 
 
 class ETATrainerService:
@@ -51,10 +50,16 @@ class ETATrainerService:
         X = np.array(X, dtype=np.float32)
         y = np.array(y, dtype=np.float32)
 
-        # Scale X using the existing scaler (or optionally fit if you want to update scaler)
-        scaler = (
-            joblib.load(self.scaler_path) if os.path.exists(self.scaler_path) else None
-        )
+        # Scale X using the existing scaler or fallback SimpleScaler
+        scaler = None
+        if os.path.exists(self.scaler_path):
+            try:
+                scaler = joblib.load(self.scaler_path)
+            except Exception:
+                scaler = SimpleScaler()
+        else:
+            scaler = SimpleScaler()
+
         if scaler:
             X = scaler.transform(X)
 
